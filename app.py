@@ -33,8 +33,11 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Templates and static files
+async def add_now_to_context(request: Request):
+    return {"now": datetime.now()}
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+templates.env.globals["now"] = datetime.now 
 
 # Security
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
