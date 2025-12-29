@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Mentorship Program - ClearQ{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-primary to-secondary text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="text-center">
+                <span class="inline-block px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm mb-6">
+                    🎯 Structured Program
+                </span>
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">3-Month Career Acceleration Program</h1>
+                <p class="text-xl text-white/90 max-w-3xl mx-auto mb-8">
+                    Transform your career with our intensive mentorship program. Get personalized guidance, 
+                    weekly sessions, and guaranteed outcomes.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="#enroll" 
+                       class="px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
+                        Enroll Now
+                    </a>
+                    <a href="#curriculum" 
+                       class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-bold text-lg hover:bg-white/10 transition-all">
+                        View Curriculum
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Program Benefits -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What You'll Get</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Our comprehensive program includes everything you need for career success
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow">
+                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-6 mx-auto">
+                    <i class="fas fa-users text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Weekly 1:1 Sessions</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>12 personalized sessions</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Flexible scheduling</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Session recordings</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow">
+                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-6 mx-auto">
+                    <i class="fas fa-road text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Personalized Roadmap</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Custom career plan</span>
+                    </li>
+                    <li class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Skill assessment</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Progress tracking</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow">
+                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-6 mx-auto">
+                    <i class="fas fa-briefcase text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Job Support</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Resume optimization</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Mock interviews</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Job referrals</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Curriculum -->
+    <div id="curriculum" class="bg-gradient-to-b from-white to-gray-50 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Program Curriculum</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    A structured 3-month journey to career transformation
+                </p>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                <!-- Month 1 -->
+                <div class="mb-12">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">
+                            1
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">Month 1: Foundation & Assessment</h3>
+                            <p class="text-gray-600">Building your career foundation</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 1-2</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Initial assessment & goal setting</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Skill gap analysis</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Industry research & target companies</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 3-4</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Resume & LinkedIn optimization</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Personal branding workshop</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Network building strategies</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Month 2 -->
+                <div class="mb-12">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-xl">
+                            2
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">Month 2: Skill Development</h3>
+                            <p class="text-gray-600">Enhancing your professional skills</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 5-8</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Technical skill workshops</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Mock interviews (technical & behavioral)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Project portfolio development</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 9-10</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Communication & presentation skills</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Leadership & teamwork exercises</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Industry-specific training</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Month 3 -->
+                <div>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
+                            3
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">Month 3: Job Search & Placement</h3>
+                            <p class="text-gray-600">Securing your dream role</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 11-12</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Job application strategy</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Interview preparation intensives</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Salary negotiation training</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Ongoing Support</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>3-month alumni support</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Career transition assistance</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Network access</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing & Enrollment -->
+    <div id="enroll" class="bg-gradient-to-r from-primary to-secondary text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Enroll in the Program</h2>
+                <p class="text-xl text-white/90 max-w-2xl mx-auto">
+                    Invest in your career transformation with our comprehensive mentorship program
+                </p>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8">
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-baseline mb-4">
+                            <span class="text-5xl font-bold">₹9,999</span>
+                            <span class="ml-2 text-white/70">/ 3 months</span>
+                        </div>
+                        <p class="text-white/90">One-time payment for complete 3-month program</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-xl font-bold mb-4">What's Included</h4>
+                            <ul class="space-y-3">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>12 weekly 1:1 sessions</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Personalized career roadmap</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Resume & LinkedIn optimization</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Mock interviews (6 sessions)</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold mb-4">Bonus Features</h4>
+                            <ul class="space-y-3">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Job referral network access</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>3-month alumni support</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Certificate of completion</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Priority customer support</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-8 border-t border-white/20">
+                        <div class="text-center">
+                            {% if current_user %}
+                            <a href="#" 
+                               class="inline-flex items-center px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
+                                <i class="fas fa-rocket mr-2"></i>
+                                Enroll Now
+                            </a>
+                            {% else %}
+                            <a href="/register?next=/mentorship-program" 
+                               class="inline-flex items-center px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
+                                <i class="fas fa-user-plus mr-2"></i>
+                                Sign Up to Enroll
+                            </a>
+                            {% endif %}
+                            <p class="text-white/70 mt-4 text-sm">
+                                <i class="fas fa-shield-alt mr-1"></i>
+                                30-Day Money Back Guarantee
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Everything you need to know about our mentorship program
+            </p>
+        </div>
+
+        <div class="max-w-3xl mx-auto">
+            <div class="space-y-6">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-3">How is this different from regular mentorship?</h4>
+                    <p class="text-gray-600">
+                        Our program provides structured, goal-oriented mentorship with a defined curriculum, 
+                        weekly progress tracking, and guaranteed outcomes. Unlike regular mentorship, you get 
+                        a comprehensive career transformation plan with multiple support systems.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-3">Can I choose my mentor?</h4>
+                    <p class="text-gray-600">
+                        Yes! We match you with a mentor based on your career goals, industry, and personality. 
+                        You can review mentor profiles and request a different mentor if needed.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-3">What if I'm not satisfied with the program?</h4>
+                    <p class="text-gray-600">
+                        We offer a 30-day money-back guarantee. If you're not satisfied with the program within 
+                        the first 30 days, you can request a full refund.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-3">Is financing available?</h4>
+                    <p class="text-gray-600">
+                        Yes! We offer flexible payment plans. You can choose to pay in 3 monthly installments 
+                        of ₹3,999 each instead of the one-time payment.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
