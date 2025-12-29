@@ -14,3 +14,4 @@ Authlib
 python-jose
 httpx
 pytest
+psycopg2-binary
