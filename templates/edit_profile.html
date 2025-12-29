@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - ClearQ{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Edit Profile</h1>
+            <p class="text-gray-600 mt-2">Update your personal information and preferences</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Personal Information</h2>
+                    
+                    <form action="/profile/edit" method="POST" class="space-y-6">
+                        <!-- Basic Information -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Full Name
+                            </label>
+                            <input type="text" name="full_name" value="{{ current_user.full_name or '' }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="Enter your full name">
+                        </div>
+
+                        {% if current_user.role == 'mentor' %}
+                        <!-- Mentor Specific Fields -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Bio
+                            </label>
+                            <textarea name="bio" rows="4"
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                      placeholder="Tell learners about your experience, expertise, and mentoring style...">
+                                {{ mentor.bio if mentor else '' }}
+                            </textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Skills (comma separated)
+                            </label>
+                            <input type="text" name="skills" value="{{ mentor.skills if mentor else '' }}"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="e.g., Python, React, Product Management, Data Science">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    LinkedIn URL
+                                </label>
+                                <input type="url" name="linkedin_url" value="{{ mentor.linkedin_url if mentor else '' }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                       placeholder="https://linkedin.com/in/username">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    GitHub URL
+                                </label>
+                                <input type="url" name="github_url" value="{{ mentor.github_url if mentor else '' }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                       placeholder="https://github.com/username">
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="pt-6 border-t border-gray-200">
+                            <button type="submit"
+                                    class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                                Save Changes
+                            </button>
+                            <a href="/dashboard" 
+                               class="ml-3 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-8">
+                <!-- Profile Photo -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">Profile Photo</h3>
+                    
+                    <div class="flex flex-col items-center">
+                        <div class="relative mb-6">
+                            {% if current_user.profile_image %}
+                            <img src="/static/{{ current_user.profile_image }}" 
+                                 alt="{{ current_user.full_name or current_user.username }}"
+                                 class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg">
+                            {% else %}
+                            <div class="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-4xl font-bold border-4 border-white shadow-lg">
+                                {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper if current_user.full_name or current_user.username else 'U' }}
+                            </div>
+                            {% endif %}
+                            <div class="absolute -bottom-2 -right-2">
+                                <label for="profile-photo-upload" 
+                                       class="w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors shadow-lg">
+                                    <i class="fas fa-camera text-gray-600"></i>
+                                </label>
+                                <input type="file" id="profile-photo-upload" class="hidden" accept="image/*">
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm text-gray-500 text-center mb-4">
+                            Recommended: Square image, at least 400x400 pixels
+                        </p>
+                        
+                        <button id="upload-photo-btn"
+                                class="w-full px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                            Upload New Photo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Account Information -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">Account Information</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Email</p>
+                            <p class="font-medium text-gray-900">{{ current_user.email }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-gray-500">Username</p>
+                            <p class="font-medium text-gray-900">{{ current_user.username }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-gray-500">Account Type</p>
+                            <p class="font-medium text-gray-900">{{ current_user.role|title }}</p>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-gray-500">Member Since</p>
+                            <p class="font-medium text-gray-900">
+                                {{ current_user.created_at.strftime('%B %d, %Y') if current_user.created_at else 'N/A' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadBtn = document.getElementById('upload-photo-btn');
+    const fileInput = document.getElementById('profile-photo-upload');
+    
+    uploadBtn.addEventListener('click', function() {
+        fileInput.click();
+    });
+    
+    fileInput.addEventListener('change', async function() {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            const formData = new FormData();
+            formData.append('profile_photo', file);
+            
+            try {
+                uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Uploading...';
+                uploadBtn.disabled = true;
+                
+                const response = await fetch('/profile/upload-photo', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Profile photo updated successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    throw new Error(data.message || 'Upload failed');
+                }
+            } catch (error) {
+                showNotification('Failed to upload photo: ' + error.message, 'error');
+                uploadBtn.innerHTML = 'Upload New Photo';
+                uploadBtn.disabled = false;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
