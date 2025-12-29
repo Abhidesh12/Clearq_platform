@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - ClearQ{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Privacy Policy</h1>
+                <p class="text-gray-600">Last updated: {{ now.strftime('%B %d, %Y') }}</p>
+            </div>
+
+            <!-- Content -->
+            <div class="prose prose-lg max-w-none">
+                <p class="text-lg text-gray-700 mb-8">
+                    At ClearQ, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mentorship platform.
+                </p>
+
+                <section class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">1. Information We Collect</h2>
+                    
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">1.1 Personal Information</h3>
+                    <p class="text-gray-700 mb-4">
+                        When you register for an account, we collect personal information including:
+                    </p>
+                    <ul class="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                        <li>Full name and email address</li>
+                        <li>Username and password</li>
+                        <li>Profile picture</li>
+                        <li>Role (learner, mentor, or admin)</li>
+                        <li>Contact information</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">1.2 Mentor-Specific Information</h3>
+                    <p class="text-gray-700 mb-4">
+                        If you register as a mentor, we collect additional information:
+                    </p>
+                    <ul class="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                        <li>Professional experience and qualifications</li>
+                        <li>Industry and job title</li>
+                        <li>Skills and expertise</li>
+                        <li>Social media profiles (LinkedIn, GitHub, etc.)</li>
+                        <li>Service pricing and availability</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">1.3 Usage Data</h3>
+                    <p class="text-gray-700">
+                        We automatically collect information about your interactions with our platform:
+                    </p>
+                    <ul class="list-disc pl-6 text-gray-700 mt-2 space-y-2">
+                        <li>IP address and browser type</li>
+                        <li>Pages visited and time spent</li>
+                        <li>Booking and payment history</li>
+                        <li>Communication logs</li>
+                    </ul>
+                </section>
+
+                <section class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">2. How We Use Your Information</h2>
+                    
+                    <p class="text-gray-700 mb-4">
+                        We use the collected information for the following purposes:
+                    </p>
+                    
+                    <ul class="list-disc pl-6 text-gray-700 space-y-2">
+                        <li>To provide and maintain our mentorship platform</li>
+                        <li>To facilitate mentor-learner connections</li>
+                        <li>To process payments and bookings</li>
+                        <li>To verify mentor credentials</li>
+                        <li>To send important notifications and updates</li>
+                        <li>To improve our platform and user experience</li>
+                        <li>To comply with legal obligations</li>
+                    </ul>
+                </section>
+
+                <section class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">3. Data Sharing and Disclosure</h2>
+                    
+                    <p class="text-gray-700 mb-4">
+                        We may share your information in the following circumstances:
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">3.1 With Other Users</h3>
+                    <p class="text-gray-700 mb-4">
+                        As a mentor, your profile information (name, bio, skills, etc.) will be visible to learners on our platform. As a learner, your name will be visible to mentors you book sessions with.
+                    </p>
+
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">3.2 With Service Providers</h3>
+                    <p class="text-gray-700 mb-4">
+                        We use third-party services for:
+                    </p>
+                    <ul class="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                        <li>Payment processing (Razorpay)</li>
+                        <li>Email communications</li>
+                        <li>Hosting and infrastructure</li>
+                        <li>Analytics and monitoring</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">3.3 Legal Requirements</h3>
+                    <p class="text-gray-700">
+                        We may disclose your information if required by law or in response to valid requests by public authorities.
+                    </p>
+                </section>
+
+                <section class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">4. Data Security</h2>
+                    
+                    <p class="text-gray-700 mb-4">
+                        We implement appropriate security measures to protect your personal information:
+                    </p>
+                    
+                    <ul class="list-disc pl-6 text-gray-700 space-y-2">
+                        <li>Encryption of sensitive data</li>
+                        <li>Secure payment processing</li>
+                        <li>Regular security audits</li>
+                        <li>Access controls and authentication</li>
+                        <li>Secure data storage and backups</li>
+                    </ul>
+                </section>
+
+                <section class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">5. Your Rights</h2>
+                    
+                    <p class="text-gray-700 mb-4">
+                        You have the following rights regarding your personal data:
+                    </p>
+                    
+                    <ul class="list-disc pl-6 text-gray-700 space-y-2">
+                        <li><strong>Access:</strong> Request a copy of your personal data</li>
+                        <li><strong>Correction:</strong> Update or correct inaccurate data</li>
+                        <li><strong>Deletion:</strong> Request deletion of your personal data</li>
+                        <li><strong>Objection:</strong> Object to certain data processing activities</li>
+                        <li><strong>Portability:</strong> Request transfer of your data to another service</li>
+                    </ul>
+                    
+                    <p class="text-gray-700 mt-4">
+                        To exercise these rights, please contact us at <a href="mailto:privacy@clearq.in" class="text-primary hover:text-primary-dark">privacy@clearq.in</a>.
+                    </p>
+                </section>
+
+                <section class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">6. Cookies and Tracking</h2>
+                    
+                    <p class="text-gray-700 mb-4">
+                        We use cookies and similar tracking technologies to:
+                    </p>
+                    
+                    <ul class="list-disc pl-6 text-gray-700 space-y-2">
+                        <li>Maintain user sessions</li>
+                        <li>Remember preferences</li>
+                        <li>Analyze platform usage</li>
+                        <li>Improve user experience</li>
+                    </ul>
+                    
+                    <p class="text-gray-700 mt-4">
+                        You can control cookies through your browser settings. However, disabling cookies may affect your ability to use certain features of our platform.
+                    </p>
+                </section>
+
+                <section class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">7. Children's Privacy</h2>
+                    
+                    <p class="text-gray-700">
+                        Our platform is not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.
+                    </p>
+                </section>
+
+                <section class="mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">8. Changes to This Policy</h2>
+                    
+                    <p class="text-gray-700">
+                        We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date. You are advised to review this Privacy Policy periodically for any changes.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">9. Contact Us</h2>
+                    
+                    <p class="text-gray-700">
+                        If you have any questions about this Privacy Policy, please contact us:
+                    </p>
+                    
+                    <div class="bg-gray-50 rounded-lg p-6 mt-4">
+                        <p class="text-gray-700"><strong>Email:</strong> <a href="mailto:privacy@clearq.in" class="text-primary hover:text-primary-dark">privacy@clearq.in</a></p>
+                        <p class="text-gray-700 mt-2"><strong>Address:</strong> ClearQ Mentorship Platform</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
