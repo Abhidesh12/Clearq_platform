@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ClearQ{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-primary to-secondary text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div>
+                    <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+                    <p class="text-white/90 mt-1">Manage platform operations and user accounts</p>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <a href="#" 
+                       class="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Total Users</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ stats.total_users|default('0') }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center text-sm">
+                        <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+                        <span class="text-green-600 font-medium">12%</span>
+                        <span class="text-gray-500 ml-2">from last month</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Active Mentors</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ stats.total_mentors|default('0') }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
+                        <i class="fas fa-chalkboard-teacher text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center text-sm">
+                        <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+                        <span class="text-green-600 font-medium">8%</span>
+                        <span class="text-gray-500 ml-2">from last month</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Total Bookings</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ stats.total_bookings|default('0') }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                        <i class="fas fa-calendar-check text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center text-sm">
+                        <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+                        <span class="text-green-600 font-medium">24%</span>
+                        <span class="text-gray-500 ml-2">from last month</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 mb-1">Total Revenue</p>
+                        <p class="text-3xl font-bold text-gray-900">₹{{ stats.revenue|default('0') }}</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center">
+                        <i class="fas fa-rupee-sign text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex items-center text-sm">
+                        <i class="fas fa-arrow-up text-green-500 mr-1"></i>
+                        <span class="text-green-600 font-medium">18%</span>
+                        <span class="text-gray-500 ml-2">from last month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column -->
+            <div class="lg:col-span-2">
+                <!-- Pending Approvals -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Pending Mentor Approvals</h2>
+                        <span class="text-sm text-gray-600">{{ pending_mentors|length if pending_mentors else 0 }} pending</span>
+                    </div>
+                    
+                    {% if pending_mentors and pending_mentors|length > 0 %}
+                    <div class="space-y-4">
+                        {% for mentor in pending_mentors %}
+                        <div class="border border-gray-200 rounded-xl p-4 hover:border-primary transition-colors">
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-center gap-4">
+                                    {% if mentor.user.profile_image %}
+                                    <img src="/static/{{ mentor.user.profile_image }}" 
+                                         alt="{{ mentor.user.full_name }}"
+                                         class="w-14 h-14 rounded-full object-cover">
+                                    {% else %}
+                                    <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
+                                        {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">{{ mentor.user.full_name or mentor.user.username }}</h3>
+                                        <div class="flex items-center gap-4 mt-2">
+                                            <span class="flex items-center text-sm text-gray-600">
+                                                <i class="fas fa-envelope mr-2"></i>
+                                                {{ mentor.user.email }}
+                                            </span>
+                                            <span class="flex items-center text-sm text-gray-600">
+                                                <i class="fas fa-clock mr-2"></i>
+                                                {{ mentor.created_at.strftime('%b %d, %Y') if mentor.created_at else 'N/A' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2 mt-2">
+                                            {% if mentor.industry %}
+                                            <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
+                                                {{ mentor.industry }}
+                                            </span>
+                                            {% endif %}
+                                            {% if mentor.experience_years %}
+                                            <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-full">
+                                                {{ mentor.experience_years }} years exp
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" class="flex gap-2">
+                                        <button type="submit" name="action" value="approve"
+                                                class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center">
+                                            <i class="fas fa-check mr-1"></i> Approve
+                                        </button>
+                                        <button type="submit" name="action" value="reject"
+                                                class="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center">
+                                            <i class="fas fa-times mr-1"></i> Reject
+                                        </button>
+                                    </form>
+                                    <a href="#" class="text-primary text-sm font-medium hover:text-primary-dark">
+                                        View Full Profile →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-100 to-green-200 flex items-center justify-center">
+                            <i class="fas fa-check text-green-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">All Caught Up!</h3>
+                        <p class="text-gray-500">No pending mentor approvals</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
+                    
+                    <div class="space-y-4">
+                        {% for i in range(5) %}
+                        <div class="flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                                <i class="fas fa-user-plus text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-900">New User Registration</h4>
+                                <p class="text-sm text-gray-600">John Doe registered as a learner</p>
+                            </div>
+                            <span class="text-sm text-gray-500">2 hours ago</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-8">
+                <!-- Quick Stats -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">Platform Health</h3>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">Server Status</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-circle mr-1" style="font-size: 6px;"></i> Operational
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">Database Status</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-circle mr-1" style="font-size: 6px;"></i> Healthy
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 98%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm text-gray-600">Payment Gateway</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-circle mr-1" style="font-size: 6px;"></i> Active
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">Quick Actions</h3>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <a href="#" 
+                           class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-colors">
+                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-2">
+                                <i class="fas fa-user-cog text-blue-600"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Manage Users</span>
+                        </a>
+                        
+                        <a href="#" 
+                           class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-colors">
+                            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-2">
+                                <i class="fas fa-chart-line text-green-600"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Analytics</span>
+                        </a>
+                        
+                        <a href="#" 
+                           class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-colors">
+                            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-2">
+                                <i class="fas fa-cog text-purple-600"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Settings</span>
+                        </a>
+                        
+                        <a href="#" 
+                           class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-colors">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center mb-2">
+                                <i class="fas fa-file-invoice text-yellow-600"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-900">Reports</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
