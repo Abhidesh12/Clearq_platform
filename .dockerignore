@@ -1,9 +1,0 @@
-__pycache__/
-*.pyc
-.env
-.env.*
-.venv/
-.git/
-.gitignore
-build/
-dist/
