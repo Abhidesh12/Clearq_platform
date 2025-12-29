@@ -39,7 +39,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["now"] = datetime.now 
 
+from passlib.context import CryptContext
 
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto"
+)
 
 # Security
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
