@@ -39,6 +39,15 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["now"] = datetime.now 
 
+from passlib.context import CryptContext
+
+# Use bcrypt with automatic handling of long passwords
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto"
+)
+hashed_password = pwd_context.hash(password)  # No length limit!
+
 # Security
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
