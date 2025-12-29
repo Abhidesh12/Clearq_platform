@@ -1,0 +1,121 @@
+/* Custom CSS for ClearQ Platform */
+
+/* Form validation styles */
+.form-input.valid {
+    border-color: #10b981;
+}
+
+.form-input.invalid {
+    border-color: #ef4444;
+}
+
+.validation-error {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Loading states */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* Profile image upload */
+.profile-image-upload {
+    position: relative;
+    cursor: pointer;
+}
+
+.profile-image-upload input[type="file"] {
+    display: none;
+}
+
+.profile-image-preview {
+    transition: all 0.3s ease;
+}
+
+.profile-image-preview:hover {
+    opacity: 0.8;
+}
+
+/* Calendar styling */
+.calendar-day {
+    transition: all 0.2s ease;
+}
+
+.calendar-day:hover:not(.disabled) {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+}
+
+.calendar-day.selected {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.calendar-day.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Mentor card hover effects */
+.mentor-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mentor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Service card animations */
+.service-card {
+    transition: all 0.3s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-8px);
+}
+
+/* Payment success animation */
+.payment-success {
+    animation: successPulse 2s ease-in-out;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .mentor-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .service-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-only {
+        display: block !important;
+    }
+}
