@@ -1,947 +1,932 @@
 import os
+import uuid
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import List, Optional
+from pathlib import Path
 
-from dotenv import load_dotenv
-from fastapi import (Depends, FastAPI, Form, HTTPException, Request, Response,
-                     UploadFile, File)
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float, DateTime, ForeignKey, Text
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship, Session
 from passlib.context import CryptContext
-from sqlmodel import Field, Session, SQLModel, create_engine, select
-from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-import smtplib, ssl
-from email.message import EmailMessage
-from starlette.middleware.sessions import SessionMiddleware
-from authlib.integrations.starlette_client import OAuth, OAuthError
-import logging
-import secrets, json
-
-# Load environment
-load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./dev.db')
-SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-change-me')
-SMTP_HOST = os.getenv('SMTP_HOST')
-
-# Use pbkdf2_sha256 primary scheme to avoid bcrypt backend issues in some test environments
-pwd_context = CryptContext(schemes=["pbkdf2_sha256", "bcrypt"], deprecated="auto")
-serializer = URLSafeTimedSerializer(SECRET_KEY)
-
-app = FastAPI(title='ClearQ')
-# Session middleware required by authlib (Google OAuth)
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
-app.mount('/static', StaticFiles(directory='static'), name='static')
-templates = Jinja2Templates(directory='templates')
-
-# OAuth client (Google)
-oauth = OAuth()
-if os.getenv('GOOGLE_CLIENT_ID') and os.getenv('GOOGLE_CLIENT_SECRET'):
-    oauth.register(
-        name='google',
-        client_id=os.getenv('GOOGLE_CLIENT_ID'),
-        client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
-        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-        client_kwargs={'scope': 'openid email profile'}
-    )
-
-logging.basicConfig(level=logging.INFO)
-
-
-# Database
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith('sqlite') else {})
-
-
-class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    email: str = Field(index=True, nullable=False, unique=True)
-    password_hash: Optional[str] = None
-    role: str = Field(default='learner')  # learner, mentor, admin
-    is_active: bool = Field(default=True)
-    is_verified: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    full_name: Optional[str] = None
-    profile_image: Optional[str] = None
-    google_id: Optional[str] = None
-
-
-class MentorProfile(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key='user.id')
-    bio: Optional[str] = None
-    experience: Optional[str] = None
-    industry: Optional[str] = None
-    is_approved: bool = Field(default=False)
-
-
-# Services, availability, bookings, and reviews
-from sqlalchemy import UniqueConstraint
-
-class Service(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    mentor_id: int = Field(foreign_key='user.id', index=True)
-    name: str
-    description: Optional[str] = None
-    price: int = Field(default=0)  # in INR rupees
-    duration_minutes: int = Field(default=60)
-    digital_product_url: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-
-
-class Availability(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    mentor_id: int = Field(foreign_key='user.id', index=True)
-    date: str = Field(nullable=False)  # YYYY-MM-DD
-    start_time: str = Field(nullable=False)  # HH:MM
-    end_time: str = Field(nullable=False)  # HH:MM
-
-
-class Booking(SQLModel, table=True):
-    __table_args__ = (UniqueConstraint('mentor_id', 'service_id', 'date', 'time', name='uq_booking_slot'),)
-    id: Optional[int] = Field(default=None, primary_key=True)
-    service_id: int = Field(foreign_key='service.id', index=True)
-    mentor_id: int = Field(foreign_key='user.id', index=True)
-    learner_id: int = Field(foreign_key='user.id', index=True)
-    date: str  # YYYY-MM-DD
-    time: str  # HH:MM
-    status: str = Field(default='created')  # created, pending_payment, paid, cancelled, completed
-    razorpay_order_id: Optional[str] = None
-    razorpay_payment_id: Optional[str] = None
-    razorpay_refund_id: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-
-
-class Review(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    booking_id: int = Field(foreign_key='booking.id')
-    learner_id: int = Field(foreign_key='user.id')
-    mentor_id: int = Field(foreign_key='user.id')
-    rating: int = Field(default=5)
-    comment: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-
-
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
-
-
-# Razorpay client (optional - run in test mode with test keys)
+from jose import JWTError, jwt
+from pydantic import BaseModel, EmailStr
 import razorpay
-RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
-RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
-RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET')
-razorpay_client = None
-if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
-    razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+from dotenv import load_dotenv
+import json
+from urllib.parse import urlencode
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    # dispose SQLAlchemy engine safely
+# Load environment variables
+load_dotenv()
+
+# Initialize FastAPI
+app = FastAPI(title="ClearQ Mentorship Platform")
+
+# Database configuration
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/clearq")
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+# Templates and static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+# Security
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# Razorpay configuration
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# File upload configuration
+UPLOAD_DIR = Path("static/uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Google OAuth configuration
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
+
+# ============ DATABASE MODELS ============
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    username = Column(String, unique=True, index=True)
+    password_hash = Column(String)
+    full_name = Column(String)
+    profile_image = Column(String, default="default-avatar.png")
+    role = Column(String, default="learner")  # learner, mentor, admin
+    is_active = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False)
+    google_id = Column(String, unique=True, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    mentor_profile = relationship("Mentor", back_populates="user", uselist=False)
+    bookings_as_learner = relationship("Booking", foreign_keys="[Booking.learner_id]", back_populates="learner")
+    bookings_as_mentor = relationship("Booking", foreign_keys="[Booking.mentor_id]", back_populates="mentor")
+    reviews = relationship("Review", back_populates="learner")
+
+class Mentor(Base):
+    __tablename__ = "mentors"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    experience_years = Column(Integer)
+    industry = Column(String)
+    job_title = Column(String)
+    company = Column(String)
+    bio = Column(Text)
+    skills = Column(Text)  # Comma-separated skills
+    linkedin_url = Column(String)
+    github_url = Column(String)
+    twitter_url = Column(String)
+    website_url = Column(String)
+    rating = Column(Float, default=0.0)
+    review_count = Column(Integer, default=0)
+    total_sessions = Column(Integer, default=0)
+    is_verified_by_admin = Column(Boolean, default=False)
+    verification_status = Column(String, default="pending")  # pending, approved, rejected
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User", back_populates="mentor_profile")
+    services = relationship("Service", back_populates="mentor")
+    availabilities = relationship("Availability", back_populates="mentor")
+
+class Service(Base):
+    __tablename__ = "services"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    mentor_id = Column(Integer, ForeignKey("mentors.id"))
+    name = Column(String, nullable=False)
+    description = Column(Text)
+    category = Column(String)  # mock-interview, resume-review, career-guidance, etc.
+    price = Column(Integer, nullable=False)  # in INR
+    duration_minutes = Column(Integer, default=60)
+    is_digital = Column(Boolean, default=False)
+    digital_product_url = Column(String)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    mentor = relationship("Mentor", back_populates="services")
+    bookings = relationship("Booking", back_populates="service")
+
+class Availability(Base):
+    __tablename__ = "availabilities"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    mentor_id = Column(Integer, ForeignKey("mentors.id"))
+    service_id = Column(Integer, ForeignKey("services.id"), nullable=True)
+    date = Column(DateTime, nullable=False)
+    start_time = Column(String, nullable=False)  # "14:00"
+    end_time = Column(String, nullable=False)    # "15:00"
+    is_booked = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    mentor = relationship("Mentor", back_populates="availabilities")
+
+class Booking(Base):
+    __tablename__ = "bookings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    learner_id = Column(Integer, ForeignKey("users.id"))
+    mentor_id = Column(Integer, ForeignKey("mentors.id"))
+    service_id = Column(Integer, ForeignKey("services.id"))
+    booking_date = Column(DateTime, nullable=False)
+    start_time = Column(String, nullable=False)
+    end_time = Column(String, nullable=False)
+    status = Column(String, default="pending")  # pending, confirmed, completed, cancelled
+    payment_status = Column(String, default="pending")  # pending, paid, failed, refunded
+    razorpay_order_id = Column(String)
+    razorpay_payment_id = Column(String)
+    amount_paid = Column(Integer)
+    meeting_link = Column(String)
+    notes = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    learner = relationship("User", foreign_keys=[learner_id], back_populates="bookings_as_learner")
+    mentor = relationship("Mentor", foreign_keys=[mentor_id], back_populates="bookings_as_mentor")
+    service = relationship("Service", back_populates="bookings")
+    review = relationship("Review", back_populates="booking", uselist=False)
+
+class Review(Base):
+    __tablename__ = "reviews"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    booking_id = Column(Integer, ForeignKey("bookings.id"), unique=True)
+    learner_id = Column(Integer, ForeignKey("users.id"))
+    mentor_id = Column(Integer, ForeignKey("mentors.id"))
+    rating = Column(Integer, nullable=False)  # 1-5
+    comment = Column(Text)
+    is_approved = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    booking = relationship("Booking", back_populates="review")
+    learner = relationship("User", back_populates="reviews")
+
+class Payment(Base):
+    __tablename__ = "payments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    booking_id = Column(Integer, ForeignKey("bookings.id"))
+    razorpay_order_id = Column(String)
+    razorpay_payment_id = Column(String)
+    amount = Column(Integer)
+    status = Column(String)  # created, attempted, paid, failed
+    payment_method = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Create tables
+Base.metadata.create_all(bind=engine)
+
+# ============ PYDANTIC SCHEMAS ============
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    username: str
+    password: str
+    full_name: str
+    role: str = "learner"
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class MentorProfileCreate(BaseModel):
+    experience_years: int
+    industry: str
+    job_title: str
+    company: str
+    bio: str
+    skills: str
+    linkedin_url: Optional[str] = None
+    github_url: Optional[str] = None
+
+class ServiceCreate(BaseModel):
+    name: str
+    description: str
+    category: str
+    price: int
+    duration_minutes: int = 60
+    is_digital: bool = False
+    digital_product_url: Optional[str] = None
+
+class AvailabilityCreate(BaseModel):
+    date: str
+    start_time: str
+    end_time: str
+    service_id: Optional[int] = None
+
+class BookingCreate(BaseModel):
+    service_id: int
+    date: str
+    time_slot: str
+
+# ============ DEPENDENCIES ============
+
+def get_db():
+    db = SessionLocal()
     try:
-        engine.dispose()
-    except Exception:
-        pass
-    # close any httpx or other client sessions if present
-    try:
-        if 'razorpay_client' in globals() and getattr(razorpay_client, "session", None):
-            razorpay_client.session.close()
-    except Exception:
-        pass
-@app.on_event('startup')
-def on_startup():
-    create_db_and_tables()
+        yield db
+    finally:
+        db.close()
 
-
-# Authentication helpers (cookie-based session)
-SESSION_COOKIE = 'session'
-
-
-def hash_password(password: str) -> str:
-    try:
-        return pwd_context.hash(password)
-    except ValueError as e:
-        # bcrypt backend can raise when password > 72 bytes; truncate as a fallback
-        msg = str(e)
-        if 'longer than 72 bytes' in msg:
-            truncated = password[:72]
-            return pwd_context.hash(truncated)
-        raise
-
-
-def verify_password(password: str, hash: str) -> bool:
-    return pwd_context.verify(password, hash)
-
-
-def create_session_token(user_id: int) -> str:
-    return serializer.dumps({'user_id': user_id})
-
-
-def load_session_token(token: str, max_age: int = 60 * 60 * 24 * 7) -> Optional[int]:
-    try:
-        data = serializer.loads(token, max_age=max_age)
-        return int(data.get('user_id'))
-    except (BadSignature, SignatureExpired):
-        return None
-
-
-def send_verification_email(to_email: str, verify_url: str):
-    """Send a simple verification email using SMTP configured in environment."""
-    host = os.getenv('SMTP_HOST')
-    port = int(os.getenv('SMTP_PORT', 587))
-    user = os.getenv('SMTP_USER')
-    password = os.getenv('SMTP_PASSWORD')
-    from_email = os.getenv('FROM_EMAIL') or user
-
-    if not host or not user or not password:
-        # Fallback: print URL for development
-        logging.warning('SMTP not configured, printing verification URL instead')
-        print(f'Verification URL for {to_email}: {verify_url}')
-        return
-
-    msg = EmailMessage()
-    msg['Subject'] = 'Verify your ClearQ email'
-    msg['From'] = from_email
-    msg['To'] = to_email
-    msg.set_content(f'Please verify your email by visiting: {verify_url}')
-
-    context = ssl.create_default_context()
-    try:
-        with smtplib.SMTP(host, port) as server:
-            server.starttls(context=context)
-            server.login(user, password)
-            server.send_message(msg)
-        logging.info('Sent verification email to %s', to_email)
-    except Exception as e:
-        logging.exception('Failed to send verification email: %s', e)
-
-
-def get_current_user(request: Request) -> Optional[User]:
-    session = request.cookies.get(SESSION_COOKIE)
-    if not session:
-        return None
-    user_id = load_session_token(session)
-    if not user_id:
-        return None
-    with Session(engine) as s:
-        user = s.get(User, user_id)
-        return user
-
-
-# Template globals: ensure env globals available (compat across versions)
-if hasattr(templates, 'env'):
-    templates.env.globals.update({})
-elif hasattr(templates, 'environment'):
-    templates.environment.globals.update({})
-
-
-def flash(request: Request, message: str, category: str = 'info'):
-    """Store a flash message in session to be shown on next page load."""
-    flashes = request.session.get('_flashes', [])
-    flashes.append({'message': message, 'category': category})
-    request.session['_flashes'] = flashes
-
-
-def get_and_clear_flashes(request: Request):
-    flashes = request.session.pop('_flashes', []) if request.session.get('_flashes') else []
-    return flashes
-
-
-def get_csrf_token(request: Request):
-    token = request.session.get('_csrf')
+def get_current_user(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
     if not token:
-        token = secrets.token_urlsafe(32)
-        request.session['_csrf'] = token
-    return token
+        return None
+    
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: int = payload.get("sub")
+        if user_id is None:
+            return None
+    except JWTError:
+        return None
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    return user if user and user.is_active else None
 
-
-async def validate_csrf(request: Request):
-    # Only validate POSTs and skip webhook endpoints
-    if request.method != 'POST':
-        return
-    path = request.url.path
-    if path.startswith('/webhook/'):
-        return
-    token = request.session.get('_csrf')
-    # Fallback to cookie if session store is not available (helps test client flows)
-    if not token:
-        token = request.cookies.get('csrf_token')
-    if not token:
-        raise HTTPException(status_code=403, detail='CSRF token missing')
-    # For form posts, require the csrf_token form field (safer for non-AJAX forms).
-    # For JSON/AJAX, accept X-CSRF-Token header.
-    content_type = request.headers.get('content-type', '')
-    submitted = None
-    if content_type.startswith('application/x-www-form-urlencoded') or content_type.startswith('multipart/form-data'):
-        # Prefer reading parsed form data (works even if FastAPI already parsed it)
-        try:
-            form = await request.form()
-            submitted = form.get('csrf_token')
-        except Exception:
-            # fallback to raw body parsing (best effort)
-            try:
-                import urllib.parse
-                body = await request.body()
-                params = urllib.parse.parse_qs(body.decode())
-                submitted = params.get('csrf_token', [None])[0]
-            except Exception:
-                submitted = None
-        # fallback to header if provided
-        if not submitted:
-            submitted = request.headers.get('X-CSRF-Token')
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
     else:
-        submitted = request.headers.get('X-CSRF-Token') or request.cookies.get('csrf_token')
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
-    if not submitted or submitted != token:
-        raise HTTPException(status_code=403, detail='Invalid CSRF token')
+# ============ HELPER FUNCTIONS ============
 
+def allowed_file(filename: str) -> bool:
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def render_template(request: Request, template_name: str, context: dict):
-    # inject current_user if not present
-    if 'current_user' not in context:
-        context['current_user'] = getattr(request.state, 'user', None)
-    context['flashes'] = get_and_clear_flashes(request)
-    context['request'] = request
-    csrf = get_csrf_token(request)
-    context['csrf_token'] = csrf
-    # Build response and set csrf cookie so that POSTs will carry it and validation can use it
-    resp = templates.TemplateResponse(template_name, context)
-    resp.set_cookie('csrf_token', csrf)
-    return resp
+def save_profile_image(file, user_id: int) -> str:
+    if not allowed_file(file.filename):
+        raise HTTPException(status_code=400, detail="Invalid file type")
+    
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"profile_{user_id}_{uuid.uuid4().hex[:8]}.{ext}"
+    file_path = UPLOAD_DIR / filename
+    
+    with open(file_path, "wb") as buffer:
+        content = file.file.read()
+        buffer.write(content)
+    
+    return f"uploads/{filename}"
 
+# ============ ROUTES ============
 
-# Dependencies
-def inject_user(request: Request):
-    user = get_current_user(request)
-    request.state.user = user
-    return user
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request, current_user = Depends(get_current_user)):
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "current_user": current_user,
+        "now": datetime.now()
+    })
 
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request, current_user = Depends(get_current_user)):
+    if current_user:
+        return RedirectResponse(url="/dashboard", status_code=303)
+    return templates.TemplateResponse("register.html", {"request": request})
 
-@app.get('/', response_class=HTMLResponse)
-def index(request: Request, current_user: User = Depends(inject_user)):
-    return render_template(request, 'index.html', {'year': datetime.utcnow().year})
+@app.post("/register")
+async def register_user(
+    request: Request,
+    email: str = Form(...),
+    username: str = Form(...),
+    password: str = Form(...),
+    full_name: str = Form(...),
+    role: str = Form("learner"),
+    db: Session = Depends(get_db)
+):
+    # Check if user exists
+    existing_user = db.query(User).filter(
+        (User.email == email) | (User.username == username)
+    ).first()
+    
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email or username already registered")
+    
+    # Create user
+    hashed_password = pwd_context.hash(password)
+    user = User(
+        email=email,
+        username=username,
+        password_hash=hashed_password,
+        full_name=full_name,
+        role=role,
+        is_verified=(role != "mentor")  # Mentors need admin verification
+    )
+    
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    
+    # If mentor, create mentor profile
+    if role == "mentor":
+        mentor = Mentor(user_id=user.id, verification_status="pending")
+        db.add(mentor)
+        db.commit()
+    
+    # Create access token
+    access_token = create_access_token(data={"sub": str(user.id)})
+    
+    response = RedirectResponse(url="/dashboard", status_code=303)
+    response.set_cookie(key="access_token", value=access_token, httponly=True)
+    return response
 
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request, current_user = Depends(get_current_user)):
+    if current_user:
+        return RedirectResponse(url="/dashboard", status_code=303)
+    
+    # Generate Google OAuth URL
+    google_auth_url = None
+    if GOOGLE_CLIENT_ID:
+        params = {
+            "client_id": GOOGLE_CLIENT_ID,
+            "redirect_uri": GOOGLE_REDIRECT_URI,
+            "response_type": "code",
+            "scope": "openid email profile",
+            "access_type": "offline",
+            "prompt": "consent"
+        }
+        google_auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
+    
+    return templates.TemplateResponse("login.html", {
+        "request": request,
+        "google_auth_url": google_auth_url
+    })
 
-@app.get('/health')
-def health():
-    """Simple health check for deployment platforms (returns 200)."""
-    return {'status': 'ok'}
+@app.post("/login")
+async def login_user(
+    request: Request,
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.email == email).first()
+    
+    if not user or not pwd_context.verify(password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Account deactivated")
+    
+    access_token = create_access_token(data={"sub": str(user.id)})
+    
+    response = RedirectResponse(url="/dashboard", status_code=303)
+    response.set_cookie(key="access_token", value=access_token, httponly=True)
+    return response
 
+@app.get("/auth/google/callback")
+async def google_auth_callback(request: Request, code: str, db: Session = Depends(get_db)):
+    # Implement Google OAuth callback
+    # This would involve exchanging code for token, getting user info
+    # For simplicity, we'll redirect to register with Google info
+    return RedirectResponse(url="/register")
 
-@app.get('/explore', response_class=HTMLResponse)
-def explore(request: Request, current_user: User = Depends(inject_user)):
-    # List services as explore results
-    with Session(engine) as s:
-        services = s.exec(select(Service).order_by(Service.created_at.desc())).all()
-    return render_template(request, 'explore.html', {'services': services, 'year': datetime.utcnow().year})
+@app.get("/explore", response_class=HTMLResponse)
+async def explore_mentors(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    mentors = db.query(Mentor).filter(
+        Mentor.is_verified_by_admin == True
+    ).all()
+    
+    return templates.TemplateResponse("explore.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentors": mentors
+    })
 
+@app.get("/mentor/{mentor_id}", response_class=HTMLResponse)
+async def mentor_profile(
+    request: Request,
+    mentor_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+    
+    services = db.query(Service).filter(
+        Service.mentor_id == mentor_id,
+        Service.is_active == True
+    ).all()
+    
+    # Generate sample availability dates (in real app, query from database)
+    import random
+    available_dates = []
+    for i in range(7):
+        date = datetime.now() + timedelta(days=i)
+        if random.choice([True, False]):  # Simulate availability
+            available_dates.append({
+                "day_name": date.strftime("%a"),
+                "day_num": date.day,
+                "month": date.strftime("%b"),
+                "full_date": date.strftime("%Y-%m-%d")
+            })
+    
+    return templates.TemplateResponse("mentor_profile.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor": mentor,
+        "services": services,
+        "available_dates": available_dates
+    })
 
-@app.get('/register', response_class=HTMLResponse, name='register_get')
-def register_get(request: Request):
-    return render_template(request, 'register.html', {'year': datetime.utcnow().year})
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    context = {"request": request, "current_user": current_user}
+    
+    if current_user.role == "learner":
+        bookings = db.query(Booking).filter(
+            Booking.learner_id == current_user.id
+        ).order_by(Booking.booking_date.desc()).limit(10).all()
+        context["bookings"] = bookings
+    
+    elif current_user.role == "mentor":
+        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+        if mentor:
+            bookings = db.query(Booking).filter(
+                Booking.mentor_id == mentor.id
+            ).order_by(Booking.booking_date.desc()).limit(10).all()
+            earnings = db.query(Booking).filter(
+                Booking.mentor_id == mentor.id,
+                Booking.payment_status == "paid"
+            ).with_entities(db.func.sum(Booking.amount_paid)).scalar() or 0
+            
+            context.update({
+                "mentor": mentor,
+                "bookings": bookings,
+                "earnings": earnings
+            })
+    
+    elif current_user.role == "admin":
+        pending_mentors = db.query(Mentor).filter(
+            Mentor.verification_status == "pending"
+        ).all()
+        recent_bookings = db.query(Booking).order_by(
+            Booking.created_at.desc()
+        ).limit(20).all()
+        
+        context.update({
+            "pending_mentors": pending_mentors,
+            "recent_bookings": recent_bookings
+        })
+    
+    return templates.TemplateResponse("dashboard.html", context)
 
+@app.get("/profile/edit", response_class=HTMLResponse)
+async def edit_profile_page(
+    request: Request,
+    current_user = Depends(get_current_user)
+):
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    return templates.TemplateResponse("edit_profile.html", {
+        "request": request,
+        "current_user": current_user
+    })
 
-# Mentor endpoints: add service and availability
-@app.get('/mentor/service/new', response_class=HTMLResponse)
-def mentor_service_get(request: Request, current_user: User = Depends(inject_user)):
-    if not current_user or current_user.role != 'mentor':
-        return RedirectResponse(url='/login')
-    return render_template(request, 'mentor_add_service.html', {})
+@app.post("/profile/edit")
+async def update_profile(
+    request: Request,
+    full_name: str = Form(None),
+    bio: str = Form(None),
+    skills: str = Form(None),
+    linkedin_url: str = Form(None),
+    github_url: str = Form(None),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if full_name:
+        user.full_name = full_name
+    
+    # Update mentor profile if exists
+    if current_user.role == "mentor":
+        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+        if mentor:
+            if bio: mentor.bio = bio
+            if skills: mentor.skills = skills
+            if linkedin_url: mentor.linkedin_url = linkedin_url
+            if github_url: mentor.github_url = github_url
+    
+    db.commit()
+    return RedirectResponse(url="/dashboard", status_code=303)
 
-
-@app.post('/mentor/service/create')
-async def mentor_service_create(request: Request, name: str = Form(...), description: str = Form(None), price: int = Form(0), duration_minutes: int = Form(60), digital_product_url: str = Form(None), current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user or current_user.role != 'mentor':
-        return RedirectResponse(url='/login')
-    with Session(engine) as s:
-        service = Service(mentor_id=current_user.id, name=name, description=description, price=price, duration_minutes=duration_minutes, digital_product_url=digital_product_url)
-        s.add(service)
-        s.commit()
-        s.refresh(service)
-    flash(request, 'Service created', 'success')
-    return RedirectResponse(url=f'/service/{service.id}', status_code=302)
-
-
-@app.get('/mentor/availability/new', response_class=HTMLResponse)
-def mentor_availability_get(request: Request, current_user: User = Depends(inject_user)):
-    if not current_user or current_user.role != 'mentor':
-        return RedirectResponse(url='/login')
-    return render_template(request, 'mentor_add_availability.html', {})
-
-
-@app.post('/mentor/availability/create')
-async def mentor_availability_create(request: Request, date: str = Form(...), start_time: str = Form(...), end_time: str = Form(...), current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user or current_user.role != 'mentor':
-        return RedirectResponse(url='/login')
-    with Session(engine) as s:
-        av = Availability(mentor_id=current_user.id, date=date, start_time=start_time, end_time=end_time)
-        s.add(av)
-        s.commit()
-    flash(request, 'Availability added', 'success')
-    return RedirectResponse(url='/mentor/availability/new', status_code=302)
-
-
-@app.post('/register')
-async def register_post(request: Request, email: str = Form(...), password: str = Form(...), full_name: str = Form(None), role: str = Form('learner')):
-    await validate_csrf(request)
-    with Session(engine) as s:
-        statement = select(User).where(User.email == email)
-        existing = s.exec(statement).first()
-        if existing:
-            return render_template(request, 'register.html', {'error': 'Email already registered'})
-        user = User(email=email, password_hash=hash_password(password), role=role, full_name=full_name)
-        s.add(user)
-        s.commit()
-        # send verification (placeholder prints)
-        token = serializer.dumps({'user_id': user.id})
-        verify_url = str(request.url_for('verify_email')) + f'?token={token}'
-        # Send verification email (will print if SMTP not configured)
-        send_verification_email(user.email, verify_url)
-        response = RedirectResponse(url='/', status_code=302)
-        # auto-login for dev
-        response.set_cookie(SESSION_COOKIE, create_session_token(user.id), httponly=True, max_age=60 * 60 * 24 * 7)
-        return response
-
-
-@app.get('/verify-email')
-def verify_email(token: str = '', response: Response = None):
-    user_id = load_session_token(token, max_age=60 * 60 * 24 * 7)
-    if not user_id:
-        raise HTTPException(status_code=400, detail='Invalid or expired token')
-    with Session(engine) as s:
-        user = s.get(User, user_id)
-        if not user:
-            raise HTTPException(status_code=404, detail='User not found')
-        user.is_verified = True
-        s.add(user)
-        s.commit()
-    return RedirectResponse(url='/', status_code=302)
-
-
-@app.get('/login', response_class=HTMLResponse, name='login_get')
-def login_get(request: Request):
-    return render_template(request, 'login.html', {})
-
-
-@app.post('/login')
-async def login_post(request: Request, response: Response, email: str = Form(...), password: str = Form(...)):
-    await validate_csrf(request)
-    with Session(engine) as s:
-        statement = select(User).where(User.email == email)
-        user = s.exec(statement).first()
-        if not user or not user.password_hash or not verify_password(password, user.password_hash):
-            raise HTTPException(status_code=400, detail='Invalid credentials')
-        token = create_session_token(user.id)
-        resp = RedirectResponse(url='/', status_code=302)
-        resp.set_cookie(SESSION_COOKIE, token, httponly=True, max_age=60 * 60 * 24 * 7)
-        return resp
-
-
-@app.get('/auth/google/login')
-async def google_login(request: Request):
-    # Redirect to Google's OAuth 2.0 authorization endpoint
-    redirect_uri = os.getenv('GOOGLE_REDIRECT_URI', str(request.url_for('google_callback')))
-    return await oauth.google.authorize_redirect(request, redirect_uri)
-
-
-@app.get('/auth/google/callback')
-async def google_callback(request: Request):
+@app.post("/profile/upload-photo")
+async def upload_profile_photo(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    form = await request.form()
+    file = form.get("profile_photo")
+    
+    if not file:
+        raise HTTPException(status_code=400, detail="No file uploaded")
+    
     try:
-        token = await oauth.google.authorize_access_token(request)
-    except OAuthError as e:
-        logging.exception('Google OAuth error: %s', e)
-        return RedirectResponse(url='/login')
-
-    # Try to get user info
-    userinfo = None
-    if 'userinfo' in token:
-        userinfo = token.get('userinfo')
-    else:
-        resp = await oauth.google.get('userinfo', token=token)
-        userinfo = resp.json()
-
-    email = userinfo.get('email')
-    google_id = userinfo.get('sub') or userinfo.get('id')
-    full_name = userinfo.get('name')
-
-    with Session(engine) as s:
-        statement = select(User).where((User.google_id == google_id) | (User.email == email))
-        existing = s.exec(statement).first()
-        if existing:
-            existing.google_id = google_id
-            existing.is_verified = True
-            s.add(existing)
-            s.commit()
-            user = existing
-        else:
-            user = User(email=email, role='learner', is_verified=True, google_id=google_id, full_name=full_name)
-            s.add(user)
-            s.commit()
-            s.refresh(user)
-
-    resp = RedirectResponse(url='/', status_code=302)
-    resp.set_cookie(SESSION_COOKIE, create_session_token(user.id), httponly=True, max_age=60 * 60 * 24 * 7)
-    return resp
-
-
-@app.get('/logout')
-def logout():
-    resp = RedirectResponse(url='/', status_code=302)
-    resp.delete_cookie(SESSION_COOKIE)
-    return resp
-
-
-@app.get('/profile', response_class=HTMLResponse)
-def profile(request: Request, current_user: User = Depends(inject_user)):
-    if not current_user:
-        return RedirectResponse(url='/login')
-    return render_template(request, 'profile.html', {})
-
-
-@app.post('/profile')
-async def profile_update(request: Request, full_name: str = Form(None), file: UploadFile = File(None), current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user:
-        return RedirectResponse(url='/login')
-    filename = None
-    if file:
-        ext = os.path.splitext(file.filename)[1]
-        filename = f'user_{current_user.id}_profile{ext}'
-        path = os.path.join('static', 'uploads', filename)
-        # Use aiofiles to write content
-        import aiofiles
-        async with aiofiles.open(path, 'wb') as out_file:
-            content = await file.read()
-            await out_file.write(content)
-    with Session(engine) as s:
-        user = s.get(User, current_user.id)
-        if full_name:
-            user.full_name = full_name
-        if filename:
-            user.profile_image = f'/static/uploads/{filename}'
-        s.add(user)
-        s.commit()
-    flash(request, 'Profile updated', 'success')
-    return RedirectResponse(url='/profile', status_code=302)
-
-
-# Simple API placeholder for time slots and booking
-@app.post('/api/time-slots/{mentor_id}')
-def time_slots(mentor_id: int, payload: dict):
-    date = payload.get('date')
-    # Return sample slots
-    return {'success': True, 'slots': ['09:00', '10:30', '13:00', '15:30']}
-
-
-@app.post('/api/create-booking')
-async def create_booking(request: Request, current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user:
-        return {'success': False, 'message': 'Unauthorized'}
-    payload = await request.json()
-    service_id = int(payload.get('service_id')) if payload.get('service_id') else None
-    mentor_id = int(payload.get('mentor_id')) if payload.get('mentor_id') else None
-    date = payload.get('date')
-    time = payload.get('time')
-    if not (service_id and mentor_id and date and time):
-        return {'success': False, 'message': 'Missing booking data'}
-    with Session(engine) as s:
-        # basic check: service exists and mentor matches
-        service = s.get(Service, service_id)
-        if not service or service.mentor_id != int(mentor_id):
-            return {'success': False, 'message': 'Service not found'}
-        # check existing booking
-        existing = s.exec(select(Booking).where((Booking.service_id == service_id) & (Booking.date == date) & (Booking.time == time))).first()
-        if existing:
-            return {'success': False, 'message': 'Slot already booked'}
-        booking = Booking(service_id=service_id, mentor_id=mentor_id, learner_id=current_user.id, date=date, time=time, status='created')
-        s.add(booking)
-        s.commit()
-        s.refresh(booking)
-        if razorpay_client:
-            try:
-                order = razorpay_client.order.create({'amount': service.price * 100, 'currency': 'INR', 'receipt': f'booking_{booking.id}', 'payment_capture': 1})
-                booking.razorpay_order_id = order.get('id')
-                booking.status = 'pending_payment'
-                s.add(booking)
-                s.commit()
-                return {'success': True, 'booking_id': booking.id, 'order': order}
-            except Exception as e:
-                logging.exception('Failed to create Razorpay order: %s', e)
-                # fallback: keep booking created but return error
-                return {'success': False, 'message': 'Payment provider error'}
-        else:
-            booking.status = 'paid'
-            s.add(booking)
-            s.commit()
-            return {'success': True, 'booking_id': booking.id}
-
-
-@app.post('/payment/verify')
-def payment_verify(payload: dict):
-    """Verify Razorpay payment signature and mark booking as paid."""
-    razorpay_payment_id = payload.get('razorpay_payment_id')
-    razorpay_order_id = payload.get('razorpay_order_id')
-    razorpay_signature = payload.get('razorpay_signature')
-
-    if not (razorpay_payment_id and razorpay_order_id and razorpay_signature):
-        return {'success': False, 'message': 'Missing signature data'}
-
-    if not razorpay_client:
-        return {'success': False, 'message': 'Razorpay not configured'}
-
-    try:
-        razorpay_client.utility.verify_payment_signature({'razorpay_order_id': razorpay_order_id, 'razorpay_payment_id': razorpay_payment_id}, razorpay_signature)
+        filename = save_profile_image(file, current_user.id)
+        user = db.query(User).filter(User.id == current_user.id).first()
+        user.profile_image = filename
+        db.commit()
+        
+        return JSONResponse({"success": True, "filename": filename})
     except Exception as e:
-        logging.exception('Razorpay signature verification failed: %s', e)
-        return {'success': False, 'message': 'Invalid signature'}
+        raise HTTPException(status_code=500, detail=str(e))
 
-    # Find booking with order id
-    with Session(engine) as s:
-        stmt = select(Booking).where(Booking.razorpay_order_id == razorpay_order_id)
-        booking = s.exec(stmt).first()
-        if not booking:
-            return {'success': False, 'message': 'Booking not found for order'}
-        booking.status = 'paid'
-        booking.razorpay_payment_id = razorpay_payment_id
-        s.add(booking)
-        s.commit()
-    return {'success': True, 'booking_id': booking.id}
+# ============ MENTOR ROUTES ============
 
+@app.get("/mentor/dashboard/services", response_class=HTMLResponse)
+async def mentor_services(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    services = db.query(Service).filter(Service.mentor_id == mentor.id).all()
+    
+    return templates.TemplateResponse("mentor_services.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor": mentor,
+        "services": services
+    })
 
-@app.post('/webhook/razorpay')
-async def razorpay_webhook(request: Request):
-    # Raw body required for signature verification
-    payload_raw = await request.body()
-    signature = request.headers.get('X-Razorpay-Signature')
-    if not RAZORPAY_WEBHOOK_SECRET or not signature:
-        logging.warning('Webhook secret not configured or signature missing')
-        return {'status': 'ignored'}
+@app.post("/mentor/services/create")
+async def create_service(
+    request: Request,
+    name: str = Form(...),
+    description: str = Form(...),
+    category: str = Form(...),
+    price: int = Form(...),
+    duration_minutes: int = Form(60),
+    is_digital: bool = Form(False),
+    digital_product_url: str = Form(None),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    service = Service(
+        mentor_id=mentor.id,
+        name=name,
+        description=description,
+        category=category,
+        price=price,
+        duration_minutes=duration_minutes,
+        is_digital=is_digital,
+        digital_product_url=digital_product_url
+    )
+    
+    db.add(service)
+    db.commit()
+    
+    return RedirectResponse(url="/mentor/dashboard/services", status_code=303)
+
+@app.get("/mentor/availability", response_class=HTMLResponse)
+async def mentor_availability(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    availabilities = db.query(Availability).filter(
+        Availability.mentor_id == mentor.id,
+        Availability.date >= datetime.now().date()
+    ).order_by(Availability.date, Availability.start_time).all()
+    
+    services = db.query(Service).filter(Service.mentor_id == mentor.id).all()
+    
+    return templates.TemplateResponse("mentor_availability.html", {
+        "request": request,
+        "current_user": current_user,
+        "availabilities": availabilities,
+        "services": services
+    })
+
+@app.post("/mentor/availability/create")
+async def create_availability(
+    request: Request,
+    date: str = Form(...),
+    start_time: str = Form(...),
+    end_time: str = Form(...),
+    service_id: int = Form(None),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    
+    # Check if time slot is available
+    existing = db.query(Availability).filter(
+        Availability.mentor_id == mentor.id,
+        Availability.date == datetime.strptime(date, "%Y-%m-%d").date(),
+        Availability.start_time == start_time
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Time slot already exists")
+    
+    availability = Availability(
+        mentor_id=mentor.id,
+        service_id=service_id,
+        date=datetime.strptime(date, "%Y-%m-%d").date(),
+        start_time=start_time,
+        end_time=end_time
+    )
+    
+    db.add(availability)
+    db.commit()
+    
+    return RedirectResponse(url="/mentor/availability", status_code=303)
+
+# ============ BOOKING & PAYMENT ROUTES ============
+
+@app.post("/api/create-booking")
+async def create_booking(
+    request: Request,
+    booking_data: dict,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "learner":
+        raise HTTPException(status_code=403, detail="Only learners can book sessions")
+    
+    service_id = booking_data.get("service_id")
+    date_str = booking_data.get("date")
+    time_slot = booking_data.get("time")
+    
+    service = db.query(Service).filter(Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Create Razorpay order
+    order_amount = service.price * 100  # Convert to paise
+    order_currency = "INR"
+    
     try:
-        # verify signature
-        razorpay_client.utility.verify_webhook_signature(payload_raw, signature, RAZORPAY_WEBHOOK_SECRET)
+        order_data = {
+            "amount": order_amount,
+            "currency": order_currency,
+            "payment_capture": 1,
+            "notes": {
+                "service_id": service_id,
+                "learner_id": current_user.id,
+                "date": date_str,
+                "time": time_slot
+            }
+        }
+        
+        razorpay_order = razorpay_client.order.create(order_data)
+        
+        # Create booking record
+        booking = Booking(
+            learner_id=current_user.id,
+            mentor_id=service.mentor_id,
+            service_id=service_id,
+            booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
+            start_time=time_slot,
+            end_time=(datetime.strptime(time_slot, "%H:%M") + timedelta(minutes=service.duration_minutes)).strftime("%H:%M"),
+            razorpay_order_id=razorpay_order["id"],
+            amount_paid=service.price
+        )
+        
+        db.add(booking)
+        db.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "booking_id": booking.id,
+            "razorpay_order_id": razorpay_order["id"],
+            "amount": service.price,
+            "currency": order_currency,
+            "key_id": RAZORPAY_KEY_ID
+        })
     except Exception as e:
-        logging.exception('Invalid webhook signature: %s', e)
-        return {'status': 'invalid signature'}
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/payment/verify")
+async def verify_payment(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    data = await request.json()
+    
     try:
-        event = json.loads(payload_raw.decode('utf-8'))
-        ev = event.get('event')
-        # payment captured
-        if ev == 'payment.captured' or ev == 'payment.authorized' or ev == 'order.paid':
-            entity = event.get('payload', {}).get('payment', {}).get('entity') or {}
-            order_id = entity.get('order_id')
-            payment_id = entity.get('id')
-            with Session(engine) as s:
-                stmt = select(Booking).where(Booking.razorpay_order_id == order_id)
-                booking = s.exec(stmt).first()
-                if booking and booking.status != 'paid':
-                    booking.status = 'paid'
-                    booking.razorpay_payment_id = payment_id
-                    s.add(booking)
-                    s.commit()
-        elif ev == 'payment.failed':
-            entity = event.get('payload', {}).get('payment', {}).get('entity') or {}
-            order_id = entity.get('order_id')
-            with Session(engine) as s:
-                stmt = select(Booking).where(Booking.razorpay_order_id == order_id)
-                booking = s.exec(stmt).first()
-                if booking:
-                    booking.status = 'cancelled'
-                    s.add(booking)
-                    s.commit()
-    except Exception as e:
-        logging.exception('Error processing webhook: %s', e)
-    return {'status': 'ok'}
+        razorpay_client.utility.verify_payment_signature({
+            'razorpay_order_id': data['razorpay_order_id'],
+            'razorpay_payment_id': data['razorpay_payment_id'],
+            'razorpay_signature': data['razorpay_signature']
+        })
+        
+        # Update booking status
+        booking = db.query(Booking).filter(
+            Booking.razorpay_order_id == data['razorpay_order_id']
+        ).first()
+        
+        if booking:
+            booking.payment_status = "paid"
+            booking.razorpay_payment_id = data['razorpay_payment_id']
+            booking.status = "confirmed"
+            db.commit()
+        
+        return JSONResponse({"success": True})
+    except:
+        raise HTTPException(status_code=400, detail="Payment verification failed")
 
+# ============ ADMIN ROUTES ============
 
-@app.get('/service/{service_id}', response_class=HTMLResponse)
-def service_detail(request: Request, service_id: int, current_user: User = Depends(inject_user)):
-    with Session(engine) as s:
-        service = s.get(Service, service_id)
-        if not service:
-            return RedirectResponse(url='/explore')
-        # reviews for mentor
-        reviews = s.exec(select(Review).where(Review.mentor_id == service.mentor_id).order_by(Review.created_at.desc())).all()
-        # check if current user can review (has a completed booking for this service)
-        can_review = False
-        completed_booking_id = None
-        if current_user and current_user.role == 'learner':
-            stmt = select(Booking).where((Booking.service_id == service.id) & (Booking.learner_id == current_user.id) & (Booking.status == 'completed'))
-            completed_booking = s.exec(stmt).first()
-            if completed_booking:
-                # ensure no existing review
-                rstmt = select(Review).where(Review.booking_id == completed_booking.id)
-                existing_review = s.exec(rstmt).first()
-                can_review = not bool(existing_review)
-                if can_review:
-                    completed_booking_id = completed_booking.id
-    return render_template(request, 'service_detail.html', {'service': service, 'reviews': reviews, 'can_review': can_review, 'completed_booking_id': completed_booking_id})
+@app.get("/admin/dashboard", response_class=HTMLResponse)
+async def admin_dashboard(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    pending_mentors = db.query(Mentor).filter(
+        Mentor.verification_status == "pending"
+    ).all()
+    
+    total_users = db.query(User).count()
+    total_mentors = db.query(Mentor).count()
+    total_bookings = db.query(Booking).count()
+    revenue = db.query(Booking).filter(
+        Booking.payment_status == "paid"
+    ).with_entities(db.func.sum(Booking.amount_paid)).scalar() or 0
+    
+    return templates.TemplateResponse("admin_dashboard.html", {
+        "request": request,
+        "current_user": current_user,
+        "pending_mentors": pending_mentors,
+        "stats": {
+            "total_users": total_users,
+            "total_mentors": total_mentors,
+            "total_bookings": total_bookings,
+            "revenue": revenue
+        }
+    })
 
-
-@app.get('/dashboard', response_class=HTMLResponse)
-def dashboard(request: Request, current_user: User = Depends(inject_user)):
-    if not current_user:
-        return RedirectResponse(url='/login')
-
-    with Session(engine) as s:
-        if current_user.role == 'mentor':
-            # Mentor dashboard: services, availability, bookings, earnings
-            services = s.exec(select(Service).where(Service.mentor_id == current_user.id)).all()
-            raw_bookings = s.exec(select(Booking).where(Booking.mentor_id == current_user.id).order_by(Booking.created_at.desc())).all()
-            bookings = []
-            earnings = 0
-            for b in raw_bookings:
-                svc = s.get(Service, b.service_id)
-                learner = s.get(User, b.learner_id)
-                bookings.append({'id': b.id, 'service_name': svc.name if svc else '', 'learner_email': learner.email if learner else '', 'date': b.date, 'time': b.time, 'status': b.status})
-                if b.status == 'paid' and svc:
-                    earnings += svc.price
-            return render_template(request, 'dashboard_mentor.html', {'services': services, 'bookings': bookings, 'earnings': earnings})
-        elif current_user.role == 'learner':
-            # Learner dashboard: bookings
-            raw_bookings = s.exec(select(Booking).where(Booking.learner_id == current_user.id).order_by(Booking.created_at.desc())).all()
-            bookings = []
-            for b in raw_bookings:
-                svc = s.get(Service, b.service_id)
-                mentor = s.get(User, b.mentor_id)
-                bookings.append({'id': b.id, 'service_name': svc.name if svc else '', 'mentor_email': mentor.email if mentor else '', 'date': b.date, 'time': b.time, 'status': b.status, 'service_id': b.service_id})
-            return render_template(request, 'dashboard_learner.html', {'bookings': bookings})
-        elif current_user.role == 'admin':
-            # Admin dashboard: quick stats
-            pending_mentors = s.exec(select(MentorProfile).where(MentorProfile.is_approved == False)).all()
-            total_bookings = s.exec(select(Booking)).all()
-            return render_template(request, 'dashboard_admin.html', {'pending_mentors': pending_mentors, 'total_bookings': len(total_bookings)})
-
-
-# Admin: list mentor profiles pending approval
-@app.get('/admin/mentors', response_class=HTMLResponse)
-def admin_list_mentors(request: Request, current_user: User = Depends(inject_user)):
-    if not current_user or current_user.role != 'admin':
-        return RedirectResponse(url='/login')
-    with Session(engine) as s:
-        pending = s.exec(select(MentorProfile).where(MentorProfile.is_approved == False)).all()
-        # attach user emails
-        mentor_data = []
-        for m in pending:
-            user = s.get(User, m.user_id)
-            mentor_data.append({'profile': m, 'user': user})
-    return render_template(request, 'admin_mentors.html', {'pending': mentor_data})
-
-
-# Admin: list bookings for refunding
-@app.get('/admin/bookings', response_class=HTMLResponse)
-def admin_list_bookings(request: Request, current_user: User = Depends(inject_user)):
-    if not current_user or current_user.role != 'admin':
-        return RedirectResponse(url='/login')
-    with Session(engine) as s:
-        raw = s.exec(select(Booking).order_by(Booking.created_at.desc())).all()
-        bookings = []
-        for b in raw:
-            svc = s.get(Service, b.service_id)
-            mentor = s.get(User, b.mentor_id)
-            learner = s.get(User, b.learner_id)
-            bookings.append({'id': b.id, 'service_name': svc.name if svc else '', 'mentor_email': mentor.email if mentor else '', 'learner_email': learner.email if learner else '', 'date': b.date, 'time': b.time, 'status': b.status, 'razorpay_payment_id': b.razorpay_payment_id})
-    return render_template(request, 'admin_bookings.html', {'bookings': bookings})
-
-
-@app.post('/admin/booking/{booking_id}/refund')
-async def admin_refund_booking(booking_id: int, request: Request, current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user or current_user.role != 'admin':
-        return RedirectResponse(url='/login')
-    if not razorpay_client:
-        flash(request, 'Razorpay not configured', 'error')
-        return RedirectResponse(url='/admin/bookings')
-    with Session(engine) as s:
-        booking = s.get(Booking, booking_id)
-        if not booking or booking.status != 'paid' or not booking.razorpay_payment_id:
-            flash(request, 'Cannot refund this booking', 'error')
-            return RedirectResponse(url='/admin/bookings')
-        svc = s.get(Service, booking.service_id)
-        amount_paise = (svc.price * 100) if svc else None
-        try:
-            refund = razorpay_client.payment.refund(booking.razorpay_payment_id, {'amount': amount_paise})
-            booking.status = 'refunded'
-            booking.razorpay_refund_id = refund.get('id')
-            s.add(booking)
-            s.commit()
-            flash(request, 'Refund initiated', 'success')
-        except Exception as e:
-            logging.exception('Refund failed: %s', e)
-            flash(request, 'Refund failed', 'error')
-    return RedirectResponse(url='/admin/bookings')
-
-
-@app.post('/admin/mentor/{mentor_id}/approve')
-async def admin_approve_mentor(mentor_id: int, request: Request, current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user or current_user.role != 'admin':
-        return RedirectResponse(url='/login')
-    with Session(engine) as s:
-        mentor = s.get(MentorProfile, mentor_id)
-        if not mentor:
-            flash(request, 'Mentor profile not found', 'error')
-            return RedirectResponse(url='/admin/mentors')
-        mentor.is_approved = True
-        s.add(mentor)
-        # ensure user role is mentor
-        user = s.get(User, mentor.user_id)
+@app.post("/admin/mentor/{mentor_id}/verify")
+async def verify_mentor(
+    mentor_id: int,
+    action: str = Form(...),  # approve or reject
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+    
+    if action == "approve":
+        mentor.is_verified_by_admin = True
+        mentor.verification_status = "approved"
+        # Activate user account
+        user = db.query(User).filter(User.id == mentor.user_id).first()
         if user:
-            user.role = 'mentor'
-            s.add(user)
-        s.commit()
-    flash(request, 'Mentor approved', 'success')
-    return RedirectResponse(url='/admin/mentors')
+            user.is_verified = True
+    elif action == "reject":
+        mentor.verification_status = "rejected"
+    
+    db.commit()
+    return RedirectResponse(url="/admin/dashboard", status_code=303)
 
+# ============ API ENDPOINTS ============
 
-@app.post('/admin/mentor/{mentor_id}/reject')
-async def admin_reject_mentor(mentor_id: int, request: Request, current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user or current_user.role != 'admin':
-        return RedirectResponse(url='/login')
-    with Session(engine) as s:
-        mentor = s.get(MentorProfile, mentor_id)
-        if not mentor:
-            flash(request, 'Mentor profile not found', 'error')
-            return RedirectResponse(url='/admin/mentors')
-        s.delete(mentor)
-        s.commit()
-    flash(request, 'Mentor rejected', 'success')
-    return RedirectResponse(url='/admin/mentors')
+@app.post("/api/time-slots/{mentor_id}")
+async def get_time_slots(
+    mentor_id: int,
+    data: dict,
+    db: Session = Depends(get_db)
+):
+    date_str = data.get("date")
+    if not date_str:
+        return JSONResponse({"success": False, "message": "Date required"})
+    
+    target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    
+    # Get booked time slots
+    booked_slots = db.query(Availability).filter(
+        Availability.mentor_id == mentor_id,
+        Availability.date == target_date,
+        Availability.is_booked == True
+    ).all()
+    
+    # Get all available time slots
+    available_slots = db.query(Availability).filter(
+        Availability.mentor_id == mentor_id,
+        Availability.date == target_date,
+        Availability.is_booked == False
+    ).all()
+    
+    booked_times = [slot.start_time for slot in booked_slots]
+    available_times = [slot.start_time for slot in available_slots]
+    
+    # Generate time slots (simplified - in real app, use mentor's availability)
+    all_slots = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"]
+    free_slots = [slot for slot in all_slots if slot not in booked_times]
+    
+    return JSONResponse({
+        "success": True,
+        "slots": free_slots[:4]  # Return first 4 available slots
+    })
 
+# ============ STATIC PAGES ============
 
-# Mentor actions: complete or cancel a booking
-@app.post('/mentor/booking/{booking_id}/complete')
-async def mentor_complete_booking(booking_id: int, request: Request, current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user or current_user.role != 'mentor':
-        return RedirectResponse(url='/login')
-    with Session(engine) as s:
-        booking = s.get(Booking, booking_id)
-        if not booking or booking.mentor_id != current_user.id:
-            flash(request, 'Booking not found or no permission', 'error')
-            return RedirectResponse(url='/dashboard')
-        booking.status = 'completed'
-        s.add(booking)
-        s.commit()
-    flash(request, 'Booking marked completed', 'success')
-    return RedirectResponse(url='/dashboard')
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_policy(request: Request):
+    return templates.TemplateResponse("privacy.html", {"request": request})
 
+@app.get("/terms", response_class=HTMLResponse)
+async def terms_of_service(request: Request):
+    return templates.TemplateResponse("terms.html", {"request": request})
 
-@app.post('/mentor/booking/{booking_id}/cancel')
-async def mentor_cancel_booking(booking_id: int, request: Request, current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user:
-        return RedirectResponse(url='/login')
-    with Session(engine) as s:
-        booking = s.get(Booking, booking_id)
-        if not booking:
-            flash(request, 'Booking not found', 'error')
-            return RedirectResponse(url='/dashboard')
-        # allow mentor (owner) or learner (booker) to cancel
-        if current_user.role == 'mentor' and booking.mentor_id == current_user.id:
-            booking.status = 'cancelled'
-        elif current_user.role == 'learner' and booking.learner_id == current_user.id:
-            # allow learner cancellation if not completed
-            if booking.status == 'completed':
-                flash(request, 'Cannot cancel a completed booking', 'error')
-                return RedirectResponse(url='/dashboard')
-            booking.status = 'cancelled'
-        else:
-            flash(request, 'No permission to cancel this booking', 'error')
-            return RedirectResponse(url='/dashboard')
-        s.add(booking)
-        s.commit()
-    flash(request, 'Booking cancelled', 'success')
-    return RedirectResponse(url='/dashboard')
+@app.get("/mentorship-program", response_class=HTMLResponse)
+async def mentorship_program(request: Request, current_user = Depends(get_current_user)):
+    return templates.TemplateResponse("mentorship_program.html", {
+        "request": request,
+        "current_user": current_user
+    })
 
+@app.get("/logout")
+async def logout():
+    response = RedirectResponse(url="/", status_code=303)
+    response.delete_cookie("access_token")
+    return response
 
-# Learner review submission
-@app.post('/booking/{booking_id}/review')
-async def booking_review(booking_id: int, request: Request, rating: int = Form(...), comment: str = Form(None), current_user: User = Depends(inject_user)):
-    await validate_csrf(request)
-    if not current_user or current_user.role != 'learner':
-        return RedirectResponse(url='/login')
-    with Session(engine) as s:
-        booking = s.get(Booking, booking_id)
-        if not booking or booking.learner_id != current_user.id:
-            flash(request, 'Booking not found or no permission', 'error')
-            return RedirectResponse(url='/dashboard')
-        if booking.status != 'completed':
-            flash(request, 'Can only review completed bookings', 'error')
-            return RedirectResponse(url='/dashboard')
-        # ensure no existing review
-        existing = s.exec(select(Review).where(Review.booking_id == booking.id)).first()
-        if existing:
-            flash(request, 'Review already submitted for this booking', 'error')
-            return RedirectResponse(url=f'/service/{booking.service_id}')
-        review = Review(booking_id=booking.id, learner_id=current_user.id, mentor_id=booking.mentor_id, rating=rating, comment=comment)
-        s.add(review)
-        s.commit()
-    flash(request, 'Thank you for your review!', 'success')
-    return RedirectResponse(url=f'/service/{booking.service_id}')
+# ============ ERROR HANDLERS ============
 
+@app.exception_handler(404)
+async def not_found_exception_handler(request: Request, exc: HTTPException):
+    return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
-# Minimal templates for register/login/profile
-register_html = '''{% extends "base.html" %}
-{% block content %}
-<h2>Register</h2>
-{% if error %}<p style="color:red">{{ error }}</p>{% endif %}
-<p><a href="/auth/google/login" style="display:inline-block;padding:0.5rem 1rem;border:1px solid #ddd;background:#fff;border-radius:6px;text-decoration:none;color:#111;margin-bottom:1rem;">Sign up with Google</a></p>
-<form action="/register" method="post">
-    <label>Email</label><br>
-    <input type="email" name="email" required><br>
-    <label>Password</label><br>
-    <input type="password" name="password" required><br>
-    <label>Full name</label><br>
-    <input type="text" name="full_name"><br>
-    <label>Role</label><br>
-    <select name="role"><option value="learner">Learner</option><option value="mentor">Mentor</option></select><br><br>
-    <button type="submit">Register</button>
-</form>
-{% endblock %}'''
+@app.exception_handler(500)
+async def internal_exception_handler(request: Request, exc: HTTPException):
+    return templates.TemplateResponse("500.html", {"request": request}, status_code=500)
 
-login_html = '''{% extends "base.html" %}
-{% block content %}
-<h2>Login</h2>
-<p><a href="/auth/google/login" style="display:inline-block;padding:0.5rem 1rem;border:1px solid #ddd;background:#fff;border-radius:6px;text-decoration:none;color:#111;margin-bottom:1rem;">Sign in with Google</a></p>
-<form action="/login" method="post">
-    <label>Email</label><br>
-    <input type="email" name="email" required><br>
-    <label>Password</label><br>
-    <input type="password" name="password" required><br><br>
-    <button type="submit">Login</button>
-</form>
-{% endblock %}'''
-
-profile_html = '''{% extends "base.html" %}
-{% block content %}
-<h2>Profile</h2>
-<p>Email: {{ current_user.email }}</p>
-<p>Full name: {{ current_user.full_name }}</p>
-{% if current_user.profile_image %}<img src="{{ current_user.profile_image }}" width="100">{% endif %}
-<form action="/profile" method="post" enctype="multipart/form-data">
-    <label>Full name</label><br>
-    <input type="text" name="full_name"><br>
-    <label>Profile image</label><br>
-    <input type="file" name="file"><br><br>
-    <button type="submit">Save</button>
-</form>
-{% endblock %}'''
-
-# Write templates to disk if not exists (first-run convenience)
-if not os.path.exists('templates/register.html'):
-    with open('templates/register.html', 'w', encoding='utf-8') as f:
-        f.write(register_html)
-if not os.path.exists('templates/login.html'):
-    with open('templates/login.html', 'w', encoding='utf-8') as f:
-        f.write(login_html)
-if not os.path.exists('templates/profile.html'):
-    with open('templates/profile.html', 'w', encoding='utf-8') as f:
-        f.write(profile_html)
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     import uvicorn
-    uvicorn.run('app:app', host='0.0.0.0', port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
