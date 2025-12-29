@@ -315,6 +315,8 @@ async def register_page(request: Request, current_user = Depends(get_current_use
         return RedirectResponse(url="/dashboard", status_code=303)
     return templates.TemplateResponse("register.html", {"request": request})
 
+from sqlalchemy import text
+
 @app.post("/register")
 async def register_user(
     request: Request,
@@ -325,37 +327,57 @@ async def register_user(
     role: str = Form("learner"),
     db: Session = Depends(get_db)
 ):
-    # Check if user exists
-    existing_user = db.query(User).filter(
-        (User.email == email) | (User.username == username)
-    ).first()
+    # Check if user exists using RAW SQL
+    result = db.execute(
+        text("SELECT * FROM users WHERE email = :email OR username = :username"),
+        {"email": email, "username": username}
+    ).fetchone()
     
-    if existing_user:
+    if result:
         raise HTTPException(status_code=400, detail="Email or username already registered")
     
-    # Create user
+    # Create user using RAW SQL
     hashed_password = pwd_context.hash(password)
-    user = User(
-        email=email,
-        username=username,
-        password_hash=hashed_password,
-        full_name=full_name,
-        role=role,
-        is_verified=(role != "mentor")  # Mentors need admin verification
+    is_verified = role != "mentor"
+    
+    # Insert user directly
+    db.execute(
+        text("""
+            INSERT INTO users (email, username, password_hash, full_name, role, is_verified, created_at)
+            VALUES (:email, :username, :password_hash, :full_name, :role, :is_verified, NOW())
+        """),
+        {
+            "email": email,
+            "username": username,
+            "password_hash": hashed_password,
+            "full_name": full_name,
+            "role": role,
+            "is_verified": is_verified
+        }
     )
-    
-    db.add(user)
     db.commit()
-    db.refresh(user)
     
-    # If mentor, create mentor profile
+    # Get the newly created user ID
+    user_result = db.execute(
+        text("SELECT id FROM users WHERE email = :email"),
+        {"email": email}
+    ).fetchone()
+    
+    user_id = user_result[0] if user_result else None
+    
+    if not user_id:
+        raise HTTPException(status_code=500, detail="Failed to create user")
+    
+    # If mentor, create mentor profile using RAW SQL
     if role == "mentor":
-        mentor = Mentor(user_id=user.id, verification_status="pending")
-        db.add(mentor)
+        db.execute(
+            text("INSERT INTO mentors (user_id, verification_status) VALUES (:user_id, 'pending')"),
+            {"user_id": user_id}
+        )
         db.commit()
     
     # Create access token
-    access_token = create_access_token(data={"sub": str(user.id)})
+    access_token = create_access_token(data={"sub": str(user_id)})
     
     response = RedirectResponse(url="/dashboard", status_code=303)
     response.set_cookie(key="access_token", value=access_token, httponly=True)
