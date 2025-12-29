@@ -1,0 +1,993 @@
+{% extends "base.html" %}
+
+{% block title %}{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }} - ClearQ Mentor{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .animate-fadeIn {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    .animate-slideInRight {
+        animation: slideInRight 0.5s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .floating-share {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 40;
+    }
+    
+    @media (max-width: 768px) {
+        .floating-share {
+            bottom: 16px;
+            right: 16px;
+        }
+    }
+    
+    /* Service Cards Grid */
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+        margin-top: 20px;
+    }
+    
+    .service-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        height: 100%;
+    }
+    
+    .service-card {
+        height: 100%;
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        padding: 24px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .service-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: #667eea;
+    }
+    
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .service-card:hover::before {
+        opacity: 1;
+    }
+    
+    .service-card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+    
+    .service-card-icon i {
+        font-size: 1.5rem;
+        color: #667eea;
+    }
+    
+    .service-card h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+    
+    .service-card-price {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #1f2937;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 12px;
+    }
+    
+    .service-card-description {
+        color: #6b7280;
+        line-height: 1.5;
+        margin-bottom: 20px;
+        font-size: 0.95rem;
+        min-height: 60px;
+    }
+    
+    .service-card-features {
+        margin-bottom: 20px;
+    }
+    
+    .service-card-features li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        color: #4b5563;
+    }
+    
+    .service-card-features i {
+        color: #10b981;
+        flex-shrink: 0;
+    }
+    
+    .service-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+        padding-top: 20px;
+        border-top: 1px solid #f3f4f6;
+    }
+    
+    .service-duration {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+    
+    .service-card-btn {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .service-card-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Quick Booking Styles */
+    .date-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 16px 0;
+        overflow-x: auto;
+        padding: 8px 0;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .date-selector::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .date-item {
+        min-width: 70px;
+        padding: 12px 8px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: white;
+        flex-shrink: 0;
+    }
+    
+    .date-item:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+    
+    .date-item.selected {
+        border-color: #667eea;
+        background: var(--primary-gradient);
+        color: white;
+    }
+    
+    .date-item.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f3f4f6;
+    }
+    
+    .date-item .day {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .date-item .date {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 4px 0;
+    }
+    
+    .date-item .month {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    .time-slots-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin: 16px 0;
+    }
+    
+    @media (max-width: 640px) {
+        .time-slots-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    .time-slot-btn {
+        padding: 10px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+    
+    .time-slot-btn:hover {
+        border-color: #667eea;
+        background: #f8fafc;
+    }
+    
+    .time-slot-btn.selected {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+    }
+    
+    .time-slot-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f3f4f6;
+    }
+    
+    .booking-summary {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+    }
+    
+    .booking-summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .booking-summary-item:last-child {
+        border-bottom: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .loading-spinner {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .loading-spinner i {
+        animation: spin 1s linear infinite;
+        margin-bottom: 10px;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .avatar-glow {
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .stat-card {
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+        backdrop-filter: blur(10px);
+    }
+    
+    .skill-tag {
+        background: linear-gradient(135deg, #f6f8ff, #ebf0ff);
+        transition: all 0.3s ease;
+    }
+    
+    .skill-tag:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #e6ebff, #d6e0ff);
+    }
+</style>
+
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <!-- Floating Share Button -->
+    <div class="floating-share animate-fadeIn">
+        <div class="relative group">
+            <button id="shareButton" class="w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110">
+                <i class="fas fa-share-alt text-white"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <button onclick="history.back()" 
+                            class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-all duration-200 group">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                            <i class="fas fa-arrow-left"></i>
+                        </div>
+                        <span class="font-medium hidden sm:block">Back</span>
+                    </button>
+                    <div class="ml-4">
+                        <h1 class="text-lg font-semibold text-gray-900">Mentor Profile</h1>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    {% if current_user and current_user.role == 'learner' %}
+                    <button onclick="scrollToBooking()" 
+                            class="hidden sm:inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+                        <i class="fas fa-calendar-check mr-2"></i>
+                        Book Session
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Profile Header -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 p-6 sm:p-8 mb-8 animate-fadeInUp">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/20 to-purple-200/20 rounded-full -translate-y-32 translate-x-32"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-br from-blue-100/10 to-purple-100/10 rounded-full translate-y-24 -translate-x-24"></div>
+            
+            <div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center gap-6">
+                <!-- Avatar -->
+                <div class="relative">
+                    <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold avatar-glow">
+                        {% if mentor.user.profile_image %}
+                            <img src="/static/{{ mentor.user.profile_image }}" 
+                                 alt="{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}" 
+                                 class="w-full h-full object-cover rounded-2xl">
+                        {% else %}
+                            {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper if mentor.user.full_name or mentor.user.username else 'M' }}
+                        {% endif %}
+                    </div>
+                    <div class="absolute -bottom-2 -right-2 bg-white rounded-full p-2 shadow-lg">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-emerald-600 flex items-center justify-center">
+                            <i class="fas fa-check text-white text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Profile Info -->
+                <div class="flex-1">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}</h1>
+                            <div class="flex items-center gap-4">
+                                <span class="text-lg text-gray-700 font-medium">{{ mentor.job_title if mentor.job_title else 'Expert Mentor' }}</span>
+                                {% if mentor.company %}
+                                <span class="text-gray-500">•</span>
+                                <span class="text-gray-600">{{ mentor.company }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-full border border-gray-200">
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span class="font-bold text-gray-900">{{ mentor.rating if mentor.rating else '4.9' }}</span>
+                                <span class="text-gray-500 text-sm">({{ mentor.review_count if mentor.review_count else '24' }} reviews)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <div class="stat-card px-4 py-3 rounded-xl">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-clock text-blue-600"></i>
+                                <span class="font-semibold text-gray-900">{{ mentor.experience_years if mentor.experience_years else '5+' }} years</span>
+                                <span class="text-gray-500">experience</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card px-4 py-3 rounded-xl">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-chart-line text-green-600"></i>
+                                <span class="font-semibold text-gray-900">95%</span>
+                                <span class="text-gray-500">success rate</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card px-4 py-3 rounded-xl">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-users text-purple-600"></i>
+                                <span class="font-semibold text-gray-900">{{ mentor.total_sessions if mentor.total_sessions else '150+' }}</span>
+                                <span class="text-gray-500">sessions</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Skills -->
+                    <div class="flex flex-wrap gap-2">
+                        {% if mentor.skills %}
+                            {% set skills_list = mentor.skills.split(',') %}
+                            {% for skill in skills_list[:5] %}
+                            <span class="skill-tag px-3 py-1.5 rounded-lg text-sm font-medium text-blue-700">
+                                {{ skill }}
+                            </span>
+                            {% endfor %}
+                            {% if skills_list|length > 5 %}
+                            <span class="px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 bg-gray-100">
+                                +{{ skills_list|length - 5 }} more
+                            </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-gray-500">No skills listed</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - About & Skills -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- About Section -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 animate-fadeInUp">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 flex items-center justify-center">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900">About {{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}</h2>
+                    </div>
+                    
+                    <div class="prose max-w-none">
+                        <p class="text-gray-700 leading-relaxed mb-6">
+                            {{ mentor.bio if mentor.bio else 'Experienced professional with a passion for mentoring and helping others grow in their careers.' }}
+                        </p>
+                        
+                        {% if mentor.industry %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">Industry</h4>
+                                <p class="text-gray-700">{{ mentor.industry }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Services Section -->
+                <div id="services-section" class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 animate-fadeInUp">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-green-100 to-emerald-100 flex items-center justify-center">
+                                <i class="fas fa-check-circle text-emerald-600"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-900">Available Services</h2>
+                        </div>
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700">
+                            {{ services|length if services else 0 }} Services
+                        </span>
+                    </div>
+                    
+                    {% if services and services|length > 0 %}
+                    <div class="services-grid">
+                        {% for service in services %}
+                        <a href="#" class="service-card-link">
+                            <div class="service-card">
+                                <div class="service-card-icon">
+                                    {% if 'resume' in service.name.lower() or 'cv' in service.name.lower() %}
+                                    <i class="fas fa-file-alt text-blue-600"></i>
+                                    {% elif 'interview' in service.name.lower() or 'mock' in service.name.lower() %}
+                                    <i class="fas fa-comments text-blue-600"></i>
+                                    {% elif 'career' in service.name.lower() or 'guidance' in service.name.lower() %}
+                                    <i class="fas fa-briefcase text-blue-600"></i>
+                                    {% elif 'coding' in service.name.lower() or 'technical' in service.name.lower() %}
+                                    <i class="fas fa-code text-blue-600"></i>
+                                    {% else %}
+                                    <i class="fas fa-graduation-cap text-blue-600"></i>
+                                    {% endif %}
+                                </div>
+                                
+                                <h3>{{ service.name }}</h3>
+                                <div class="service-card-price">₹{{ service.price if service.price else 0 }}</div>
+                                
+                                <p class="service-card-description">
+                                    {{ service.description if service.description else 'Personalized 1-on-1 mentoring session.' }}
+                                </p>
+                                
+                                <div class="service-card-features">
+                                    <ul>
+                                        <li>
+                                            <i class="fas fa-check text-green-500"></i>
+                                            <span>Personalized 1-on-1 session</span>
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-check text-green-500"></i>
+                                            <span>Expert guidance & feedback</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="service-card-footer">
+                                    <div class="service-duration">
+                                        <i class="fas fa-clock"></i>
+                                        {{ service.duration_minutes if service.duration_minutes else '60' }} mins
+                                    </div>
+                                    <span class="service-card-btn">
+                                        Book Now
+                                        <i class="fas fa-arrow-right"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12 border-2 border-dashed border-gray-300 rounded-2xl">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
+                            <i class="fas fa-check text-gray-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Services Available</h3>
+                        <p class="text-gray-500 max-w-sm mx-auto">This mentor hasn't added any services yet. Check back later!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Column - Quick Booking -->
+            <div class="space-y-8">
+                <!-- Quick Booking Card -->
+                <div id="quick-booking" class="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg border border-gray-100 p-6 animate-slideInRight lg:sticky lg:top-24">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-100 to-purple-100 flex items-center justify-center">
+                            <i class="fas fa-calendar text-blue-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900">Quick Booking</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Service</label>
+                            <select id="quick-service" class="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white">
+                                <option value="">Choose a service</option>
+                                {% for service in services %}
+                                <option value="{{ service.id }}" data-price="{{ service.price if service.price else 0 }}">
+                                    {{ service.name }} - ₹{{ service.price if service.price else 0 }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Date Selection -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Select Date</label>
+                            <div class="date-selector" id="dateContainer">
+                                {% if available_dates and available_dates|length > 0 %}
+                                    {% for date_info in available_dates[:7] %}
+                                    <div class="date-item {% if loop.first %}selected{% endif %}" 
+                                         data-date="{{ date_info.full_date if date_info.full_date else '' }}"
+                                         onclick="selectDate(this, '{{ date_info.full_date if date_info.full_date else '' }}')">
+                                        <div class="day">{{ date_info.day_name if date_info.day_name else 'Mon' }}</div>
+                                        <div class="date">{{ date_info.day_num if date_info.day_num else '1' }}</div>
+                                        <div class="month">{{ date_info.month if date_info.month else 'Jan' }}</div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-center w-full py-4 text-gray-500">
+                                        No dates available
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <input type="hidden" id="selected-date" value="{{ available_dates[0].full_date if available_dates and available_dates|length > 0 else '' }}">
+                        </div>
+                        
+                        <!-- Time Slots -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Select Time</label>
+                            <div id="time-slots-container">
+                                <div class="loading-spinner">
+                                    <i class="fas fa-spinner fa-spin text-gray-400 text-xl"></i>
+                                    <p class="text-sm text-gray-500 mt-2">Loading time slots...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Booking Summary -->
+                        <div class="booking-summary">
+                            <div class="booking-summary-item">
+                                <span class="text-gray-600">Service:</span>
+                                <span id="selected-service-name" class="font-medium">Not selected</span>
+                            </div>
+                            <div class="booking-summary-item">
+                                <span class="text-gray-600">Date:</span>
+                                <span id="selected-date-display" class="font-medium">Not selected</span>
+                            </div>
+                            <div class="booking-summary-item">
+                                <span class="text-gray-600">Time:</span>
+                                <span id="selected-time-display" class="font-medium">Not selected</span>
+                            </div>
+                            <div class="booking-summary-item">
+                                <span class="text-gray-600">Total:</span>
+                                <span id="selected-price" class="font-medium text-blue-600">₹0</span>
+                            </div>
+                        </div>
+                        
+                        <button onclick="quickBook()" 
+                                class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
+                                id="book-button" disabled>
+                            <i class="fas fa-calendar-check group-hover:scale-110 transition-transform"></i>
+                            {% if current_user and current_user.role == 'learner' %}
+                            Book Instantly
+                            {% else %}
+                            Login to Book
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Contact & Info Card -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 animate-slideInRight">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
+                            <i class="fas fa-envelope text-gray-600"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900">Contact Info</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        {% if mentor.user.email %}
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                                <i class="fas fa-envelope text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">Email</p>
+                                <span class="text-sm text-gray-600">{{ mentor.user.email }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if mentor.linkedin_url %}
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                                <i class="fab fa-linkedin text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">LinkedIn</p>
+                                <a href="{{ mentor.linkedin_url }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800">View Profile</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="pt-4 border-t border-gray-200">
+                            <p class="text-sm font-medium text-gray-900 mb-2">Response Time</p>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-clock text-green-500"></i>
+                                <span class="text-sm text-gray-600">Usually responds within 24 hours</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Global variables
+let selectedQuickDate = null;
+let selectedQuickTime = null;
+let selectedQuickService = null;
+let selectedQuickPrice = 0;
+
+// Function to select date
+function selectDate(element, date) {
+    // Update UI
+    document.querySelectorAll('.date-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    
+    selectedQuickDate = date;
+    document.getElementById('selected-date').value = date;
+    
+    // Update date display
+    const dateObj = new Date(date);
+    const options = { weekday: 'short', month: 'short', day: 'numeric' };
+    document.getElementById('selected-date-display').textContent = dateObj.toLocaleDateString('en-US', options);
+    
+    // Load time slots for selected date
+    loadTimeSlots(date);
+}
+
+// Function to load time slots
+async function loadTimeSlots(date) {
+    const container = document.getElementById('time-slots-container');
+    container.innerHTML = `
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin text-gray-400 text-xl"></i>
+            <p class="text-sm text-gray-500 mt-2">Loading time slots...</p>
+        </div>
+    `;
+    
+    try {
+        const mentorId = {{ mentor.id }};
+        if (!mentorId) {
+            throw new Error('Invalid mentor ID');
+        }
+        
+        const response = await fetch('/api/time-slots/' + mentorId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ date: date })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.slots && data.slots.length > 0) {
+            container.innerHTML = `
+                <div class="time-slots-grid">
+                    ${data.slots.map(slot => `
+                        <button type="button" onclick="selectTime('${slot}', this)" 
+                                class="time-slot-btn">
+                            ${slot}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="text-center p-4 bg-red-50 rounded-lg">
+                    <p class="text-sm text-red-600">No available time slots for this date</p>
+                </div>
+            `;
+            selectedQuickTime = null;
+            document.getElementById('selected-time-display').textContent = 'Not selected';
+        }
+    } catch (error) {
+        console.error('Error loading time slots:', error);
+        container.innerHTML = `
+            <div class="text-center p-4 bg-red-50 rounded-lg">
+                <p class="text-sm text-red-600">Error loading time slots</p>
+            </div>
+        `;
+    }
+    
+    checkBookingReady();
+}
+
+// Function to select time
+function selectTime(time, element) {
+    // Update UI
+    document.querySelectorAll('.time-slot-btn').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    
+    selectedQuickTime = time;
+    document.getElementById('selected-time-display').textContent = time;
+    checkBookingReady();
+}
+
+// Function to check if booking is ready
+function checkBookingReady() {
+    const bookButton = document.getElementById('book-button');
+    const isReady = selectedQuickService && selectedQuickDate && selectedQuickTime;
+    
+    bookButton.disabled = !isReady;
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Set first date as selected
+    const firstDate = document.querySelector('.date-item');
+    if (firstDate) {
+        const date = firstDate.dataset.date;
+        selectDate(firstDate, date);
+    }
+    
+    // Service selection handler
+    const serviceSelect = document.getElementById('quick-service');
+    if (serviceSelect) {
+        serviceSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            selectedQuickService = this.value;
+            
+            if (selectedOption.value) {
+                selectedQuickPrice = selectedOption.dataset.price || 0;
+                document.getElementById('selected-price').textContent = '₹' + selectedQuickPrice;
+                document.getElementById('selected-service-name').textContent = selectedOption.text.split(' - ')[0];
+            } else {
+                selectedQuickPrice = 0;
+                selectedQuickService = null;
+                document.getElementById('selected-price').textContent = '₹0';
+                document.getElementById('selected-service-name').textContent = 'Not selected';
+            }
+            checkBookingReady();
+        });
+    }
+    
+    // Share button functionality
+    const shareButton = document.getElementById('shareButton');
+    if (shareButton) {
+        shareButton.addEventListener('click', function() {
+            const shareData = {
+                title: '{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }} - ClearQ Mentor',
+                text: 'Check out this amazing mentor on ClearQ!',
+                url: window.location.href,
+            };
+            
+            if (navigator.share && navigator.canShare(shareData)) {
+                navigator.share(shareData)
+                .catch(console.error);
+            } else {
+                // Fallback: Copy to clipboard
+                navigator.clipboard.writeText(window.location.href)
+                    .then(() => {
+                        showNotification('Profile link copied to clipboard!', 'success');
+                    })
+                    .catch(() => {
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = window.location.href;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        showNotification('Profile link copied to clipboard!', 'success');
+                    });
+            }
+        });
+    }
+});
+
+// Quick booking function
+function quickBook() {
+    if (!selectedQuickService || !selectedQuickDate || !selectedQuickTime) {
+        showNotification('Please select service, date, and time slot', 'error');
+        return;
+    }
+    
+    // Check if user is authenticated
+    {% if not current_user %}
+        window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname);
+        return;
+    {% endif %}
+    
+    // Check if user is a learner
+    {% if current_user.role != 'learner' %}
+        showNotification('Only learners can book sessions', 'error');
+        return;
+    {% endif %}
+    
+    // Create booking via API
+    createBooking();
+}
+
+async function createBooking() {
+    try {
+        const response = await fetch('/api/create-booking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                service_id: selectedQuickService,
+                date: selectedQuickDate,
+                time: selectedQuickTime,
+                mentor_id: {{ mentor.id }}
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Booking created successfully! Redirecting to payment...', 'success');
+            setTimeout(() => {
+                if (data.booking_id) {
+                    window.location.href = '/payment/' + data.booking_id;
+                } else {
+                    window.location.href = '/dashboard';
+                }
+            }, 1500);
+        } else {
+            showNotification(data.message || 'Failed to create booking', 'error');
+        }
+    } catch (error) {
+        console.error('Error creating booking:', error);
+        showNotification('Failed to create booking. Please try again.', 'error');
+    }
+}
+
+// Scroll to booking function
+function scrollToBooking() {
+    const bookingSection = document.getElementById('quick-booking');
+    if (bookingSection) {
+        bookingSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+</script>
+{% endblock %}
