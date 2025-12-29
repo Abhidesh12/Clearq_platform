@@ -1,0 +1,3 @@
+/* Minimal starting styles. Add Tailwind or custom CSS later. */
+body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color: #1f2937; background: #f8fafc; }
+a { color: #2563eb; }

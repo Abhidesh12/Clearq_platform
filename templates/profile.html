@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Profile</h2>
+<p>Email: {{ current_user.email }}</p>
+<p>Full name: {{ current_user.full_name }}</p>
+{% if current_user.profile_image %}<img src="{{ current_user.profile_image }}" width="100">{% endif %}
+<form action="/profile" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Full name</label><br>
+    <input type="text" name="full_name"><br>
+    <label>Profile image</label><br>
+    <input type="file" name="file"><br><br>
+    <button type="submit">Save</button>
+</form>
+{% endblock %}

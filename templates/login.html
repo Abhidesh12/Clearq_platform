@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Login</h2>
+<p><a href="/auth/google/login" style="display:inline-block;padding:0.5rem 1rem;border:1px solid #ddd;background:#fff;border-radius:6px;text-decoration:none;color:#111;margin-bottom:1rem;">Sign in with Google</a></p>
+<form action="/login" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Email</label><br>
+    <input type="email" name="email" required><br>
+    <label>Password</label><br>
+    <input type="password" name="password" required><br><br>
+    <button type="submit">Login</button>
+</form>
+{% endblock %}

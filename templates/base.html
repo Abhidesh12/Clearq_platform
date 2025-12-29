@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}ClearQ{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <header style="padding:1rem;border-bottom:1px solid #eee;">
+        <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;">
+            <a href="{{ request.url_for('index') }}" style="text-decoration:none;font-weight:700;color:#111;">ClearQ</a>
+            <nav>
+                <a href="{{ request.url_for('index') }}" style="margin-right:1rem;">Home</a>
+                {% if not current_user %}
+                <a href="{{ request.url_for('register_get') }}" style="margin-right:1rem;">Get Started</a>
+                <a href="{{ request.url_for('login_get') }}">Login</a>
+                {% else %}
+                <span style="margin-right:1rem;">Hi, {{ current_user.email }}</span>
+                <a href="{{ request.url_for('logout') }}">Logout</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main style="max-width:1100px;margin:2rem auto;padding:0 1rem;">
+        {% if flashes %}
+            <div style="max-width:700px;margin:0 auto 1rem;">
+            {% for f in flashes %}
+                <div style="padding:0.75rem;border-radius:6px;margin-bottom:0.5rem;color:#fff;{% if f.category == 'success' %}background:#2d9a4a{% elif f.category == 'error' %}background:#d64545{% else %}background:#333{% endif %}">{{ f.message }}</div>
+            {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer style="max-width:1100px;margin:2rem auto;text-align:center;color:#666;padding:2rem 1rem;">
+        &copy; {{ year }} ClearQ
+    </footer>
+</body>
+</html>

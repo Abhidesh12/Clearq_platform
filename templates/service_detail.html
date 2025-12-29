@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ service.name }}</h2>
+<p>{{ service.description }}</p>
+<p>Price: ₹{{ service.price }}</p>
+<p>Duration: {{ service.duration_minutes }} minutes</p>
+{% if service.digital_product_url %}
+<p>Digital product available after purchase: <a href="{{ service.digital_product_url }}" target="_blank">View product</a></p>
+{% endif %}
+
+<h3>Book this service</h3>
+<form id="bookForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="service_id" value="{{ service.id }}">
+    <input type="hidden" name="mentor_id" value="{{ service.mentor_id }}">
+    <label>Date</label><br>
+    <input type="date" name="date" id="book-date" required><br>
+    <label>Time</label><br>
+    <select name="time" id="book-time" required>
+        <option value="">Select time</option>
+    </select><br><br>
+    <button type="submit">Book & Pay</button>
+</form>
+
+<h3>Reviews</h3>
+{% if reviews and reviews|length > 0 %}
+    <ul>
+    {% for r in reviews %}
+        <li><strong>Rating:</strong> {{ r.rating }} — {{ r.comment }} <small>({{ r.created_at.strftime('%Y-%m-%d') }})</small></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No reviews yet.</p>
+{% endif %}
+
+{% if can_review %}
+    <h4>Leave a review</h4>
+    <form action="/booking/{{ completed_booking_id }}/review" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label>Rating (1-5)</label><br>
+        <select name="rating">
+            <option>5</option>
+            <option>4</option>
+            <option>3</option>
+            <option>2</option>
+            <option>1</option>
+        </select><br>
+        <label>Comment</label><br>
+        <textarea name="comment" rows="3"></textarea><br>
+        <button type="submit">Submit Review</button>
+    </form>
+{% endif %}
+
+<script>
+async function loadSlots() {
+    const date = document.getElementById('book-date').value;
+    const serviceId = {{ service.id }};
+    if(!date) return;
+    const res = await fetch('/api/time-slots/' + {{ service.mentor_id }}, {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({date: date, service_id: serviceId})
+    });
+    const data = await res.json();
+    const sel = document.getElementById('book-time'); sel.innerHTML = '<option value="">Select time</option>';
+    if(data.success) {
+        data.slots.forEach(s => {
+            const o = document.createElement('option'); o.value = s; o.text = s; sel.appendChild(o);
+        })
+    }
+}
+
+document.getElementById('book-date').addEventListener('change', loadSlots);
+
+document.getElementById('bookForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const form = new FormData(this);
+    const payload = Object.fromEntries(form.entries());
+    const res = await fetch('/api/create-booking', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const data = await res.json();
+    if(data.success){
+        if(data.order){
+            // For simplicity open Razorpay checkout in new tab for manual testing
+            alert('Order created. Use frontend Razorpay checkout with order id: '+data.order.id);
+            window.location.href = '/';
+        } else {
+            alert('Booking confirmed (no payment in dev mode).');
+            window.location.href = '/dashboard';
+        }
+    } else {
+        alert(data.message || 'Booking failed');
+    }
+});
+</script>
+
+{% endblock %}

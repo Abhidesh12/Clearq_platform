@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<p>Pending mentor approvals: {{ pending_mentors|length }}</p>
+<p>Total bookings: {{ total_bookings }}</p>
+<p><a href="/admin/mentors">Review mentors</a></p>
+{% endblock %}

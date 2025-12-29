@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Home - ClearQ{% endblock %}
+
+{% block content %}
+<div style="display:flex;gap:2rem;align-items:center;">
+    <div style="flex:1">
+        <h1 style="font-size:2rem;margin-bottom:0.5rem;">Accelerate your career with expert mentorship</h1>
+        <p style="color:#555;">Find mentors, book 1:1 sessions, and grow your career.</p>
+        <p style="margin-top:1rem;"><a href="{{ request.url_for('explore') }}" style="padding:0.75rem 1.25rem;background:#2563eb;color:white;border-radius:8px;text-decoration:none;">Find Mentors</a></p>
+    </div>
+    <div style="width:320px;background:#f8fafc;padding:1rem;border-radius:12px;">
+        <h3>Quick actions</h3>
+        <ul>
+            <li><a href="{{ request.url_for('register_get') }}">Become a Mentor</a></li>
+            <li><a href="{{ request.url_for('login_get') }}">Login</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
