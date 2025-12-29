@@ -134,7 +134,19 @@ razorpay_client = None
 if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
     razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
-
+@app.on_event("shutdown")
+async def shutdown_event():
+    # dispose SQLAlchemy engine safely
+    try:
+        engine.dispose()
+    except Exception:
+        pass
+    # close any httpx or other client sessions if present
+    try:
+        if 'razorpay_client' in globals() and getattr(razorpay_client, "session", None):
+            razorpay_client.session.close()
+    except Exception:
+        pass
 @app.on_event('startup')
 def on_startup():
     create_db_and_tables()
