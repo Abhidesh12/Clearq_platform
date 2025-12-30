@@ -3,355 +3,73 @@
 {% block title %}Complete Payment - ClearQ{% endblock %}
 
 {% block content %}
-<style>
-    .payment-container {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    }
+<div style="padding: 50px; text-align: center;">
+    <h1>Payment Page - Simplified</h1>
+    <p>Booking ID: {{ booking.id }}</p>
+    <p>Amount: ₹{{ booking.amount_paid }}</p>
     
-    .payment-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e2e8f0;
-    }
+    <button id="rzp-button" style="padding: 20px; background: blue; color: white; font-size: 20px;">
+        PAY NOW
+    </button>
     
-    .payment-success {
-        animation: successPulse 2s infinite;
-    }
-    
-    @keyframes successPulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-    }
-    
-    .loading {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255,255,255,.3);
-        border-radius: 50%;
-        border-top-color: #fff;
-        animation: spin 1s ease-in-out infinite;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-</style>
-
-<div class="payment-container py-8">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Payment Header -->
-        <div class="payment-card p-8 mb-6">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center payment-success">
-                    <i class="fas fa-lock text-white text-3xl"></i>
-                </div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
-                <p class="text-gray-600 text-lg">Complete your booking with Razorpay</p>
-            </div>
-            
-            <!-- Booking Summary -->
-            <div class="border-2 border-gray-100 rounded-2xl p-6 mb-8 bg-gradient-to-r from-gray-50 to-white">
-                <h2 class="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200">Booking Summary</h2>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Service</span>
-                        <span class="font-semibold text-gray-900 text-lg">{{ service.name }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Mentor</span>
-                        <span class="font-semibold text-gray-900">{{ mentor.user.full_name }}</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Date & Time</span>
-                        <span class="font-semibold text-gray-900">
-                            {{ booking.booking_date.strftime('%b %d, %Y') }} at {{ booking.start_time }}
-                        </span>
-                    </div>
-                    <div class="pt-4 border-t border-gray-200 mt-4">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600 text-lg">Total Amount</span>
-                            <span class="text-3xl font-bold text-primary">₹{{ booking.amount_paid }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Debug Info (Hidden by default) -->
-            <div id="debug-info" class="hidden bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
-                <h3 class="font-semibold text-yellow-800 mb-2">Debug Information</h3>
-                <div class="text-sm text-yellow-700 space-y-1">
-                    <div>Booking ID: <span id="debug-booking-id">{{ booking.id }}</span></div>
-                    <div>Order ID: <span id="debug-order-id">{{ booking.razorpay_order_id or "NOT SET" }}</span></div>
-                    <div>Amount: ₹<span id="debug-amount">{{ booking.amount_paid }}</span></div>
-                    <div>Razorpay Key: <span id="debug-key">{{ razorpay_key_id[:10] if razorpay_key_id else "NOT SET" }}...</span></div>
-                </div>
-            </div>
-            
-            <!-- Payment Button -->
-            <div class="text-center">
-                <button id="rzp-button" 
-                        class="w-full py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i class="fas fa-credit-card mr-3"></i>
-                    Pay Now ₹{{ booking.amount_paid }}
-                </button>
-                
-                <div id="payment-status" class="mt-4 hidden">
-                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg">
-                        <div class="loading"></div>
-                        <span class="font-medium">Processing payment...</span>
-                    </div>
-                </div>
-                
-                <p class="text-sm text-gray-500 mt-6 flex items-center justify-center gap-2">
-                    <i class="fas fa-shield-alt text-green-500"></i>
-                    <span>100% Secure • SSL Encrypted • PCI DSS Compliant</span>
-                </p>
-            </div>
-        </div>
-        
-        <!-- Help Info -->
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
-            <div class="flex items-start">
-                <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mr-4">
-                    <i class="fas fa-question-circle text-blue-600 text-xl"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-blue-900 mb-3">Need Help?</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-white/50 rounded-xl p-4">
-                            <h4 class="font-semibold text-blue-800 mb-2">Payment Issues</h4>
-                            <p class="text-sm text-blue-700">If payment fails, try refreshing the page or contact support at support@clearq.com</p>
-                        </div>
-                        <div class="bg-white/50 rounded-xl p-4">
-                            <h4 class="font-semibold text-blue-800 mb-2">Refund Policy</h4>
-                            <p class="text-sm text-blue-700">Full refund if cancelled 24 hours before session. Contact mentor for rescheduling.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="debug" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
 </div>
 
-<!-- Razorpay Integration -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('=== Payment Page Loaded ===');
+    console.log("=== SIMPLE PAYMENT TEST ===");
     
-    const bookingId = {{ booking.id }};
-    const amount = {{ booking.amount_paid }} * 100; // Convert to paise
-    const orderId = "{{ booking.razorpay_order_id }}";
-    const razorpayKey = "{{ razorpay_key_id }}";
+    const debugDiv = document.getElementById('debug');
     
-    // Debug logging
-    console.log('Booking ID:', bookingId);
-    console.log('Amount (paise):', amount);
-    console.log('Order ID:', orderId);
-    console.log('Razorpay Key Present:', !!razorpayKey);
-    console.log('Current User:', "{{ current_user.full_name or current_user.username }}");
-    
-    const payButton = document.getElementById('rzp-button');
-    const paymentStatus = document.getElementById('payment-status');
-    const debugInfo = document.getElementById('debug-info');
-    
-    // Show debug info on double-click (for troubleshooting)
-    payButton.addEventListener('dblclick', function() {
-        debugInfo.classList.toggle('hidden');
-    });
-    
-    // Check prerequisites
-    if (!razorpayKey || razorpayKey === 'None' || razorpayKey === '') {
-        console.error('❌ Razorpay key is missing!');
-        showError('Payment system configuration error. Please contact support.');
-        payButton.disabled = true;
-        payButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Payment Unavailable';
+    // Check Razorpay
+    if (typeof Razorpay === 'undefined') {
+        debugDiv.innerHTML = "❌ Razorpay script not loaded!";
         return;
     }
     
-    if (!orderId || orderId === 'None' || orderId === '') {
-        console.error('❌ Order ID is missing!');
-        showError('Invalid booking. Please create a new booking.');
-        payButton.disabled = true;
-        payButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Invalid Booking';
+    debugDiv.innerHTML = "✅ Razorpay loaded<br>";
+    
+    // Check key
+    const key = "{{ razorpay_key_id }}";
+    if (!key || key === 'None') {
+        debugDiv.innerHTML += "❌ Razorpay key missing!";
         return;
     }
     
-    if (!amount || amount <= 0) {
-        console.error('❌ Invalid amount:', amount);
-        showError('Invalid payment amount. Please contact support.');
-        payButton.disabled = true;
-        return;
-    }
+    debugDiv.innerHTML += "✅ Key: " + key.substring(0, 10) + "...<br>";
     
-    // Setup Razorpay
+    // Setup payment
     const options = {
-        "key": razorpayKey,
-        "amount": amount,
+        "key": key,
+        "amount": {{ booking.amount_paid }} * 100,
         "currency": "INR",
-        "name": "ClearQ Mentorship",
-        "description": "Booking: {{ service.name }}",
-        "order_id": orderId,
-        "handler": function (response) {
-            console.log('✅ Payment successful:', response);
-            verifyPayment(response);
+        "name": "ClearQ",
+        "description": "Booking #{{ booking.id }}",
+        "order_id": "{{ booking.razorpay_order_id }}",
+        "handler": function(response) {
+            debugDiv.innerHTML += "✅ Payment success! ID: " + response.razorpay_payment_id;
+            alert("Payment successful!");
         },
-        "prefill": {
-            "name": "{{ current_user.full_name or current_user.username }}",
-            "email": "{{ current_user.email }}",
-            "contact": ""
-        },
-        "theme": {
-            "color": "#4F46E5"
-        },
-        "modal": {
-            "ondismiss": function() {
-                console.log('Payment modal closed');
-                resetButton();
-            }
-        },
-        "notes": {
-            "booking_id": bookingId.toString()
-        }
+        "theme": {"color": "#4F46E5"}
     };
     
-    console.log('Razorpay options:', options);
+    console.log("Options:", options);
     
-    let rzp;
-    try {
-        rzp = new Razorpay(options);
-        console.log('✅ Razorpay instance created');
-    } catch (error) {
-        console.error('❌ Error creating Razorpay:', error);
-        showError('Failed to initialize payment. Please refresh and try again.');
-        payButton.disabled = true;
-        return;
-    }
-    
-    // Handle payment button click
-    payButton.addEventListener('click', function(e) {
+    // Button click
+    document.getElementById('rzp-button').onclick = function(e) {
         e.preventDefault();
+        debugDiv.innerHTML += "✅ Button clicked!<br>";
         
-        console.log('Opening Razorpay modal...');
-        
-        // Show loading state
-        payButton.disabled = true;
-        payButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Opening Payment...';
-        paymentStatus.classList.remove('hidden');
-        
-        // Open Razorpay
         try {
+            var rzp = new Razorpay(options);
             rzp.open();
+            debugDiv.innerHTML += "✅ Razorpay opened<br>";
         } catch (error) {
-            console.error('❌ Error opening Razorpay:', error);
-            showError('Failed to open payment gateway. Please try again.');
-            resetButton();
+            debugDiv.innerHTML += "❌ Error: " + error.message;
+            console.error(error);
         }
-        
-        // Reset button if modal doesn't open in 5 seconds
-        setTimeout(() => {
-            if (payButton.disabled) {
-                console.log('Modal timeout - resetting button');
-                resetButton();
-                showError('Payment gateway timed out. Please try again.');
-            }
-        }, 5000);
-    });
-    
-    // Verify payment after success
-    async function verifyPayment(response) {
-        console.log('Verifying payment...');
-        
-        paymentStatus.classList.remove('hidden');
-        payButton.style.display = 'none';
-        
-        try {
-            const verifyResponse = await fetch('/payment/verify', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                    booking_id: bookingId
-                })
-            });
-            
-            const result = await verifyResponse.json();
-            console.log('Verification result:', result);
-            
-            if (result.success) {
-                showSuccess('Payment successful! Redirecting to dashboard...');
-                
-                // Redirect after 2 seconds
-                setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 2000);
-            } else {
-                showError('Payment verification failed: ' + (result.message || 'Unknown error'));
-                resetButton();
-            }
-            
-        } catch (error) {
-            console.error('❌ Verification error:', error);
-            showError('Network error during verification. Please check your dashboard.');
-            resetButton();
-        }
-    }
-    
-    // Helper functions
-    function resetButton() {
-        payButton.disabled = false;
-        payButton.style.display = 'block';
-        payButton.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now ₹{{ booking.amount_paid }}';
-        paymentStatus.classList.add('hidden');
-    }
-    
-    function showSuccess(message) {
-        const notification = createNotification(message, 'success');
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 5000);
-    }
-    
-    function showError(message) {
-        const notification = createNotification(message, 'error');
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 5000);
-    }
-    
-    function createNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
-            type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 'bg-gradient-to-r from-red-500 to-pink-600'
-        } text-white max-w-md`;
-        notification.innerHTML = `
-            <div class="flex items-center gap-3">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} text-xl"></i>
-                <div class="flex-1">
-                    <div class="font-semibold">${type === 'success' ? 'Success!' : 'Error!'}</div>
-                    <div class="text-sm opacity-90">${message}</div>
-                </div>
-                <button onclick="this.parentElement.remove()" class="text-white/70 hover:text-white">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
-        return notification;
-    }
-    
-    // Auto-check if payment was already completed
-    if ("{{ booking.payment_status }}" === "paid") {
-        showSuccess('Payment already completed! Redirecting...');
-        setTimeout(() => {
-            window.location.href = '/dashboard';
-        }, 2000);
-    }
+    };
 });
 </script>
 {% endblock %}
