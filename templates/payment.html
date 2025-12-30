@@ -150,9 +150,9 @@
                                 <span class="text-gray-600">Amount to Pay:</span>
                                 {% if booking.amount_paid %}
                                     {# Display in rupees (divide by 100) #}
-                                    <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(booking.amount_paid / 100) }}</span>
+                                    <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(booking.amount_paid) }}</span>
                                 {% elif service and service.price %}
-                                    <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(service.price / 100) }}</span>
+                                    <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(service.price) }}</span>
                                 {% else %}
                                     <span class="font-bold text-lg ml-2">₹0.00</span>
                                 {% endif %}
@@ -208,7 +208,7 @@
                     {% set payment_amount = booking.amount_paid if booking.amount_paid else (service.price if service and service.price else 0) %}
                     <div class="inline-block bg-gray-50 px-6 py-3 rounded-lg">
                         <p class="text-sm text-gray-600">Total Amount</p>
-                        <p class="text-3xl font-bold text-gray-900">₹{{ "%.2f"|format(payment_amount / 100) }}</p>
+                        <p class="text-3xl font-bold text-gray-900">₹{{ "%.2f"|format(payment_amount) }}</p>
                     </div>
                 </div>
             </div>
@@ -232,7 +232,7 @@
                                transition duration-300 transform hover:scale-105 shadow-lg 
                                flex items-center justify-center mx-auto">
                     <i class="fas fa-lock mr-3"></i>
-                    <span>Pay ₹{{ "%.2f"|format(payment_amount / 100) }} Now</span>
+                    <span>Pay ₹{{ "%.2f"|format(payment_amount) }} Now</span>
                 </button>
                 
                 <p class="text-gray-500 text-sm mt-4">
