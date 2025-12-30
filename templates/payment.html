@@ -4,101 +4,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment</title>
+    <title>Complete Payment - {{ service.title }}</title>
     
-    <!-- Font Awesome CSS -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Tailwind CSS (Development only - consider removing for production) -->
+    <!-- Tailwind CSS (for development) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Suppress Tailwind warning
-        tailwind.config = {
-            corePlugins: {
-                preflight: false,
-            }
+    
+    <!-- Razorpay Checkout integration -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    
+    <style>
+        .razorpay-payment-button {
+            display: none;
         }
-    </script>
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold mb-4">
-            <i class="fas fa-credit-card mr-2"></i>Complete Payment
-        </h1>
-        
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <div class="mb-4">
-                <p><i class="fas fa-ticket-alt mr-2 text-blue-500"></i>Booking ID: <span class="font-bold">{{ booking_id }}</span></p>
-                <p><i class="fas fa-indian-rupee-sign mr-2 text-green-500"></i>Amount: <span class="font-bold">₹{{ amount / 100 }}</span></p>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/dashboard" class="text-xl font-bold text-blue-600">
+                        <i class="fas fa-graduation-cap mr-2"></i>EduMentor
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-gray-700 mr-4">
+                        <i class="fas fa-user mr-1"></i>{{ current_user.full_name }}
+                    </span>
+                    <a href="/logout" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
             </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <!-- Back Button -->
+        <a href="/dashboard" class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+
+        <!-- Page Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-credit-card mr-2"></i>Complete Your Payment
+            </h1>
+            <p class="text-gray-600">Secure payment for your booking with {{ mentor.full_name }}</p>
+        </div>
+
+        <!-- Booking Summary -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 pb-3 border-b">
+                <i class="fas fa-receipt mr-2"></i>Booking Summary
+            </h2>
             
-            <button id="payButton" 
-                    class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300">
-                <i class="fas fa-lock mr-2"></i>Pay Securely with Razorpay
-            </button>
-            
-            <p class="mt-4 text-sm text-gray-600">
-                <i class="fas fa-shield-alt mr-2"></i>Your payment is secured with 256-bit SSL encryption
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Service Details -->
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-3">Service Details</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-book text-blue-500 w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-gray-600">Service:</span>
+                                <span class="font-medium ml-2">{{ service.title }}</span>
+                            </span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-user-tie text-green-500 w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-gray-600">Mentor:</span>
+                                <span class="font-medium ml-2">{{ mentor.full_name }}</span>
+                            </span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-alt text-purple-500 w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-gray-600">Booking ID:</span>
+                                <span class="font-medium ml-2">#{{ booking.id }}</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Details -->
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-3">Payment Details</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-money-bill-wave text-yellow-500 w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-gray-600">Amount:</span>
+                                <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(booking.total_amount / 100) }}</span>
+                            </span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-orange-500 w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-gray-600">Duration:</span>
+                                <span class="font-medium ml-2">{{ service.duration }} minutes</span>
+                            </span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-tag text-red-500 w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-gray-600">Status:</span>
+                                <span class="font-medium ml-2 capitalize px-3 py-1 rounded-full text-sm 
+                                    {% if booking.payment_status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif booking.payment_status == 'paid' %}bg-green-100 text-green-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ booking.payment_status }}
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-gray-800">
+                    <i class="fas fa-lock mr-2"></i>Secure Payment
+                </h2>
+                <div class="flex items-center text-green-600">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    <span class="text-sm">256-bit SSL Secured</span>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="mb-8">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="bg-blue-50 px-4 py-2 rounded-lg">
+                        <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" class="h-8">
+                    </div>
+                </div>
+                
+                <p class="text-gray-600 text-center mb-6">
+                    You'll be redirected to Razorpay's secure payment gateway to complete your transaction.
+                </p>
+            </div>
+
+            <!-- Payment Button -->
+            <div class="text-center">
+                <button id="payButton" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-lg 
+                               transition duration-300 transform hover:scale-105 shadow-lg 
+                               flex items-center justify-center mx-auto">
+                    <i class="fas fa-lock mr-3"></i>
+                    <span>Pay ₹{{ "%.2f"|format(booking.total_amount / 100) }} Now</span>
+                </button>
+                
+                <p class="text-gray-500 text-sm mt-4">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    By proceeding, you agree to our Terms of Service and Privacy Policy
+                </p>
+            </div>
+
+            <!-- Debug Info (remove in production) -->
+            <div class="mt-8 p-4 bg-gray-50 rounded-lg text-xs text-gray-500">
+                <p><strong>Debug Info:</strong></p>
+                <p>Booking ID: {{ booking.id }}</p>
+                <p>Amount (paise): {{ booking.total_amount }}</p>
+                <p>Razorpay Order ID: {{ booking.razorpay_order_id }}</p>
+                <p>Razorpay Key Present: {{ "Yes" if razorpay_key_id else "No" }}</p>
+            </div>
+        </div>
+
+        <!-- Support Info -->
+        <div class="mt-8 text-center">
+            <p class="text-gray-600">
+                <i class="fas fa-question-circle mr-2"></i>
+                Need help? 
+                <a href="mailto:support@example.com" class="text-blue-600 hover:underline">
+                    Contact Support
+                </a>
             </p>
         </div>
     </div>
 
-    <!-- Load Razorpay SDK -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    
+    <!-- JavaScript -->
     <script>
-        // Wait for everything to load
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== Payment Page Loaded ===');
+            console.log('Booking ID:', {{ booking.id }});
+            console.log('Amount (paise):', {{ booking.total_amount }});
+            console.log('Order ID:', "{{ booking.razorpay_order_id }}");
+            console.log('Razorpay Key Present:', "{{ razorpay_key_id }}" ? 'true' : 'false');
+            console.log('Current User:', "{{ current_user.full_name }}");
+            
             const payButton = document.getElementById('payButton');
             
-            payButton.onclick = function() {
-                // Check if Razorpay is loaded
-                if (typeof Razorpay === 'undefined') {
-                    console.error('Razorpay SDK not loaded. Checking CSP...');
-                    alert('Payment system failed to load. Please refresh the page.');
-                    return;
-                }
-                
-                console.log('Razorpay loaded successfully');
-                
-                var options = {
-                    key: "{{ razorpay_key }}",
-                    amount: "{{ amount }}", // in paise
-                    currency: "INR",
-                    name: "Your Company Name",
-                    description: "Payment for Booking #{{ booking_id }}",
-                    order_id: "{{ order_id }}",
-                    handler: function(response) {
-                        // Payment success handler
-                        console.log('Payment success:', response);
-                        alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
-                        // You can redirect or update UI here
-                    },
-                    prefill: {
-                        name: "{{ user_name }}",
-                        email: "{{ user_email }}",
-                        contact: "{{ user_phone }}"
-                    },
-                    theme: {
-                        color: "#3399cc"
-                    },
-                    modal: {
-                        ondismiss: function() {
-                            console.log('Payment modal closed by user');
-                        },
-                        escape: false,
-                        backdropclose: false
-                    }
-                };
+            payButton.addEventListener('click', async function() {
+                // Disable button and show loading
+                payButton.disabled = true;
+                payButton.innerHTML = '<div class="loader"></div> Processing...';
                 
                 try {
-                    var rzp = new Razorpay(options);
+                    // Check if Razorpay is loaded
+                    if (typeof Razorpay === 'undefined') {
+                        throw new Error('Razorpay SDK not loaded. Please check your internet connection.');
+                    }
+                    
+                    // Check if we have an order ID
+                    let orderId = "{{ booking.razorpay_order_id }}";
+                    
+                    // If no order ID, create one via API call
+                    if (!orderId || orderId === 'None') {
+                        console.log('No order ID found, creating one...');
+                        const response = await fetch('/api/create-razorpay-order', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                booking_id: {{ booking.id }},
+                                amount: {{ booking.total_amount }}
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Failed to create payment order');
+                        }
+                        
+                        const data = await response.json();
+                        orderId = data.order_id;
+                        console.log('Created new order ID:', orderId);
+                    }
+                    
+                    const options = {
+                        key: "{{ razorpay_key_id }}",
+                        amount: {{ booking.total_amount }}, // amount in paise
+                        currency: "INR",
+                        name: "EduMentor",
+                        description: "Payment for {{ service.title }} with {{ mentor.full_name }}",
+                        order_id: orderId,
+                        handler: async function(response) {
+                            console.log('Payment successful!', response);
+                            
+                            // Verify payment on server
+                            const verifyResponse = await fetch('/api/verify-payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    booking_id: {{ booking.id }}
+                                })
+                            });
+                            
+                            const result = await verifyResponse.json();
+                            
+                            if (result.success) {
+                                // Show success message
+                                alert('Payment Successful! Your booking is now confirmed.');
+                                // Redirect to dashboard
+                                window.location.href = '/dashboard?payment=success';
+                            } else {
+                                alert('Payment verification failed. Please contact support.');
+                            }
+                        },
+                        prefill: {
+                            name: "{{ current_user.full_name }}",
+                            email: "{{ current_user.email }}",
+                            contact: "{{ current_user.phone_number or '' }}"
+                        },
+                        theme: {
+                            color: "#4F46E5"
+                        },
+                        modal: {
+                            ondismiss: function() {
+                                console.log('Payment modal closed');
+                                // Re-enable button
+                                payButton.disabled = false;
+                                payButton.innerHTML = '<i class="fas fa-lock mr-3"></i><span>Pay ₹{{ "%.2f"|format(booking.total_amount / 100) }} Now</span>';
+                            },
+                            escape: true,
+                            backdropclose: false
+                        }
+                    };
+                    
+                    console.log('Razorpay options:', options);
+                    
+                    const rzp = new Razorpay(options);
                     rzp.open();
+                    
                 } catch (error) {
-                    console.error('Error creating Razorpay instance:', error);
-                    alert('Error initializing payment. Please try again.');
+                    console.error('Payment error:', error);
+                    alert('Error: ' + error.message);
+                    
+                    // Re-enable button
+                    payButton.disabled = false;
+                    payButton.innerHTML = '<i class="fas fa-lock mr-3"></i><span>Pay ₹{{ "%.2f"|format(booking.total_amount / 100) }} Now</span>';
                 }
-            };
+            });
+            
+            // Check if Razorpay loaded
+            setTimeout(() => {
+                if (typeof Razorpay === 'undefined') {
+                    console.error('❌ Razorpay not loaded after 3 seconds');
+                    alert('Warning: Payment system is still loading. Please refresh if payment button doesn\'t work.');
+                } else {
+                    console.log('✅ Razorpay loaded successfully');
+                }
+            }, 3000);
         });
     </script>
 </body>
