@@ -550,7 +550,7 @@
                     {% if services and services|length > 0 %}
                     <div class="services-grid">
                         {% for service in services %}
-                        <a href="#" class="service-card-link">
+                        <a href="/mentor/username/{{ mentor.user.username }}/service/{{ service.id }}" class="service-card-link">
                             <div class="service-card">
                                 <div class="service-card-icon">
                                     {% if 'resume' in service.name.lower() or 'cv' in service.name.lower() %}
@@ -791,12 +791,23 @@ async function loadTimeSlots(date) {
     `;
     
     try {
-        const mentorId = {{ mentor.id }};
-        if (!mentorId) {
-            throw new Error('Invalid mentor ID');
+        // Try to get mentor username from URL or use ID
+        const pathParts = window.location.pathname.split('/');
+        let identifier;
+        
+        if (pathParts[1] === 'mentor' && pathParts[2] === 'username') {
+            // Username-based URL: /mentor/username/{username}
+            identifier = pathParts[3];
+        } else {
+            // ID-based URL: /mentor/{mentor_id}
+            identifier = {{ mentor.id }};
         }
         
-        const response = await fetch('/api/time-slots/' + mentorId, {
+        if (!identifier) {
+            throw new Error('Invalid mentor identifier');
+        }
+        
+        const response = await fetch('/api/time-slots/' + identifier, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
