@@ -20,6 +20,11 @@ import razorpay
 from dotenv import load_dotenv
 import json
 from urllib.parse import urlencode
+from fastapi import File, UploadFile
+from fastapi.responses import JSONResponse
+import shutil
+from starlette.middleware.sessions import SessionMiddleware
+
 
 # Load environment variables
 load_dotenv()
@@ -71,6 +76,14 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
 
 # ============ DATABASE MODELS ============
+
+# Add session middleware for flash messages
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SECRET_KEY,
+    session_cookie="clearq_session",
+    max_age=3600
+)
 
 class User(Base):
     __tablename__ = "users"
@@ -195,7 +208,20 @@ class Review(Base):
     # Relationships
     booking = relationship("Booking", back_populates="review")
     learner = relationship("User", back_populates="reviews")
-
+    
+class EditProfileForm(BaseModel):
+    full_name: Optional[str] = None
+    bio: Optional[str] = None
+    skills: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    github_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    website_url: Optional[str] = None
+    experience_years: Optional[int] = None
+    industry: Optional[str] = None
+    job_title: Optional[str] = None
+    company: Optional[str] = None
+    
 class Payment(Base):
     __tablename__ = "payments"
     
@@ -308,6 +334,12 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
         return None
     
     user = db.query(User).filter(User.id == user_id).first()
+    
+    if user and user.is_active:
+        # Ensure profile_image has correct path
+        if user.profile_image and not user.profile_image.startswith("uploads/"):
+            user.profile_image = f"uploads/{user.profile_image}" if user.profile_image != "default-avatar.png" else "default-avatar.png"
+    
     return user if user and user.is_active else None
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -325,19 +357,26 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def save_profile_image(file, user_id: int) -> str:
+def save_profile_image(file: UploadFile, user_id: int) -> str:
+    """Save uploaded profile image and return filename"""
     if not allowed_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file type")
     
+    # Create uploads/profile_images directory if it doesn't exist
+    profile_images_dir = UPLOAD_DIR / "profile_images"
+    profile_images_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Generate unique filename
     ext = file.filename.rsplit('.', 1)[1].lower()
     filename = f"profile_{user_id}_{uuid.uuid4().hex[:8]}.{ext}"
-    file_path = UPLOAD_DIR / filename
+    file_path = profile_images_dir / filename
     
+    # Save file
     with open(file_path, "wb") as buffer:
-        content = file.file.read()
-        buffer.write(content)
+        shutil.copyfileobj(file.file, buffer)
     
-    return f"uploads/{filename}"
+    # Return relative path for database storage
+    return f"uploads/profile_images/{filename}"
 
 # ============ ROUTES ============
 
@@ -527,7 +566,17 @@ async def mentor_profile(
         "services": services,
         "available_dates": available_dates
     })
-
+    
+@app.get("/static/{path:path}")
+async def serve_static(path: str):
+    """Serve static files including uploaded images"""
+    static_file = Path("static") / path
+    if not static_file.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    from fastapi.responses import FileResponse
+    return FileResponse(static_file)
+    
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
@@ -580,16 +629,86 @@ async def dashboard(
 @app.get("/profile/edit", response_class=HTMLResponse)
 async def edit_profile_page(
     request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    # Get mentor profile if user is mentor
+    mentor_profile = None
+    if current_user.role == "mentor":
+        mentor_profile = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    
+    # Get flash messages
+    flash_messages = []
+    if "flash_message" in request.session:
+        flash_messages.append({
+            "category": request.session.pop("flash_category", "info"),
+            "message": request.session.pop("flash_message")
+        })
+    
+    return templates.TemplateResponse("edit_profile.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor_profile": mentor_profile,
+        "now": datetime.now(),
+        "flash_messages": flash_messages
+    })
+@app.get("/profile/change-password", response_class=HTMLResponse)
+async def change_password_page(
+    request: Request,
     current_user = Depends(get_current_user)
 ):
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
     
-    return templates.TemplateResponse("edit_profile.html", {
+    flash_messages = []
+    if "flash_message" in request.session:
+        flash_messages.append({
+            "category": request.session.pop("flash_category", "info"),
+            "message": request.session.pop("flash_message")
+        })
+    
+    return templates.TemplateResponse("change_password.html", {
         "request": request,
-        "current_user": current_user
+        "current_user": current_user,
+        "flash_messages": flash_messages
     })
 
+@app.post("/profile/change-password")
+async def change_password(
+    request: Request,
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # Verify current password
+    user = db.query(User).filter(User.id == current_user.id).first()
+    if not pwd_context.verify(current_password, user.password_hash):
+        request.session["flash_message"] = "Current password is incorrect"
+        request.session["flash_category"] = "error"
+        return RedirectResponse(url="/profile/change-password", status_code=303)
+    
+    # Check if new passwords match
+    if new_password != confirm_password:
+        request.session["flash_message"] = "New passwords do not match"
+        request.session["flash_category"] = "error"
+        return RedirectResponse(url="/profile/change-password", status_code=303)
+    
+    # Update password
+    user.password_hash = pwd_context.hash(new_password)
+    db.commit()
+    
+    request.session["flash_message"] = "Password changed successfully!"
+    request.session["flash_category"] = "success"
+    return RedirectResponse(url="/profile/change-password", status_code=303)
+    
 @app.post("/profile/edit")
 async def update_profile(
     request: Request,
@@ -598,52 +717,201 @@ async def update_profile(
     skills: str = Form(None),
     linkedin_url: str = Form(None),
     github_url: str = Form(None),
+    twitter_url: str = Form(None),
+    website_url: str = Form(None),
+    experience_years: int = Form(None),
+    industry: str = Form(None),
+    job_title: str = Form(None),
+    company: str = Form(None),
+    profile_photo: UploadFile = File(None),
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     if not current_user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
-    user = db.query(User).filter(User.id == current_user.id).first()
-    if full_name:
-        user.full_name = full_name
-    
-    # Update mentor profile if exists
-    if current_user.role == "mentor":
-        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
-        if mentor:
-            if bio: mentor.bio = bio
-            if skills: mentor.skills = skills
-            if linkedin_url: mentor.linkedin_url = linkedin_url
-            if github_url: mentor.github_url = github_url
-    
-    db.commit()
-    return RedirectResponse(url="/dashboard", status_code=303)
+    try:
+        # Update user info
+        user = db.query(User).filter(User.id == current_user.id).first()
+        
+        if full_name:
+            user.full_name = full_name
+        
+        # Handle profile photo upload
+        if profile_photo:
+            if profile_photo.filename:
+                # Delete old profile image if exists and not default
+                if user.profile_image and user.profile_image != "default-avatar.png":
+                    old_image_path = UPLOAD_DIR / user.profile_image
+                    if old_image_path.exists():
+                        old_image_path.unlink()
+                
+                # Save new profile image
+                filename = save_profile_image(profile_photo, current_user.id)
+                user.profile_image = filename
+        
+        # Update mentor profile if exists
+        if current_user.role == "mentor":
+            mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+            
+            if not mentor:
+                # Create mentor profile if doesn't exist
+                mentor = Mentor(
+                    user_id=current_user.id,
+                    bio=bio if bio else "",
+                    skills=skills if skills else "",
+                    linkedin_url=linkedin_url,
+                    github_url=github_url,
+                    twitter_url=twitter_url,
+                    website_url=website_url,
+                    experience_years=experience_years if experience_years else 0,
+                    industry=industry if industry else "",
+                    job_title=job_title if job_title else "",
+                    company=company if company else "",
+                    created_at=datetime.utcnow()
+                )
+                db.add(mentor)
+            else:
+                # Update existing mentor profile
+                if bio is not None:
+                    mentor.bio = bio
+                if skills is not None:
+                    mentor.skills = skills
+                if linkedin_url is not None:
+                    mentor.linkedin_url = linkedin_url
+                if github_url is not None:
+                    mentor.github_url = github_url
+                if twitter_url is not None:
+                    mentor.twitter_url = twitter_url
+                if website_url is not None:
+                    mentor.website_url = website_url
+                if experience_years is not None:
+                    mentor.experience_years = experience_years
+                if industry is not None:
+                    mentor.industry = industry
+                if job_title is not None:
+                    mentor.job_title = job_title
+                if company is not None:
+                    mentor.company = company
+        
+        db.commit()
+        
+        # Set success flash message
+        from starlette.middleware.sessions import SessionMiddleware
+        request.session["flash_message"] = "Profile updated successfully!"
+        request.session["flash_category"] = "success"
+        
+        return RedirectResponse(url="/profile/edit", status_code=303)
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating profile: {str(e)}")
 
 @app.post("/profile/upload-photo")
-async def upload_profile_photo(
+async def upload_profile_photo_api(
+    request: Request,
+    profile_photo: UploadFile = File(...),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user:
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "message": "Not authenticated"}
+        )
+    
+    try:
+        if not profile_photo.filename:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "message": "No file uploaded"}
+            )
+        
+        # Validate file type
+        if not allowed_file(profile_photo.filename):
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "message": "Invalid file type. Allowed: png, jpg, jpeg, gif"}
+            )
+        
+        # Check file size (max 5MB)
+        file_size = 0
+        content = await profile_photo.read()
+        file_size = len(content)
+        if file_size > 5 * 1024 * 1024:  # 5MB
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "message": "File size must be less than 5MB"}
+            )
+        
+        # Reset file pointer
+        profile_photo.file.seek(0)
+        
+        # Delete old profile image if exists and not default
+        user = db.query(User).filter(User.id == current_user.id).first()
+        if user.profile_image and user.profile_image != "default-avatar.png":
+            old_image_path = UPLOAD_DIR / user.profile_image
+            if old_image_path.exists():
+                old_image_path.unlink()
+        
+        # Save new profile image
+        filename = save_profile_image(profile_photo, current_user.id)
+        user.profile_image = filename
+        db.commit()
+        
+        return JSONResponse({
+            "success": True, 
+            "filename": filename,
+            "message": "Profile photo updated successfully!"
+        })
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Failed to upload photo: {str(e)}"}
+        )
+
+@app.post("/profile/remove-photo")
+async def remove_profile_photo(
     request: Request,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     if not current_user:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
-    form = await request.form()
-    file = form.get("profile_photo")
-    
-    if not file:
-        raise HTTPException(status_code=400, detail="No file uploaded")
+        return JSONResponse(
+            status_code=401,
+            content={"success": False, "message": "Not authenticated"}
+        )
     
     try:
-        filename = save_profile_image(file, current_user.id)
         user = db.query(User).filter(User.id == current_user.id).first()
-        user.profile_image = filename
-        db.commit()
         
-        return JSONResponse({"success": True, "filename": filename})
+        if user.profile_image and user.profile_image != "default-avatar.png":
+            # Delete the file
+            image_path = UPLOAD_DIR / user.profile_image
+            if image_path.exists():
+                image_path.unlink()
+            
+            # Reset to default avatar
+            user.profile_image = "default-avatar.png"
+            db.commit()
+            
+            return JSONResponse({
+                "success": True, 
+                "message": "Profile photo removed successfully!"
+            })
+        else:
+            return JSONResponse({
+                "success": False, 
+                "message": "No profile photo to remove"
+            })
+            
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        db.rollback()
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Failed to remove photo: {str(e)}"}
+        )
 
 # ============ MENTOR ROUTES ============
 @app.get("/payment/{booking_id}", response_class=HTMLResponse)
