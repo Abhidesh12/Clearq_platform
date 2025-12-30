@@ -11,75 +11,161 @@
             <p class="text-gray-600 mt-2">Update your personal information and preferences</p>
         </div>
 
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-6">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} p-4 rounded-lg mb-2 {% if category == 'success' %}bg-green-50 text-green-800 border border-green-200{% elif category == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
                     <h2 class="text-xl font-bold text-gray-900 mb-6">Personal Information</h2>
                     
-                    <form action="/profile/edit" method="POST" class="space-y-6">
-                        <!-- Basic Information -->
+                    <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- CSRF Token -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <!-- Full Name -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="full_name" class="block text-sm font-medium text-gray-700 mb-2">
                                 Full Name
                             </label>
-                            <input type="text" name="full_name" value="{{ current_user.full_name or '' }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            <input type="text" 
+                                   id="full_name" 
+                                   name="full_name" 
+                                   value="{{ form.full_name.data or current_user.full_name or '' }}"
+                                   class="w-full px-4 py-3 border {% if form.full_name.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                                    placeholder="Enter your full name">
+                            {% if form.full_name.errors %}
+                                <p class="mt-1 text-sm text-red-600">
+                                    {{ form.full_name.errors[0] }}
+                                </p>
+                            {% endif %}
                         </div>
 
                         {% if current_user.role == 'mentor' %}
                         <!-- Mentor Specific Fields -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="bio" class="block text-sm font-medium text-gray-700 mb-2">
                                 Bio
                             </label>
-                            <textarea name="bio" rows="4"
-                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                      placeholder="Tell learners about your experience, expertise, and mentoring style...">
-                                {{ mentor.bio if mentor else '' }}
-                            </textarea>
+                            <textarea id="bio" 
+                                      name="bio" 
+                                      rows="4"
+                                      class="w-full px-4 py-3 border {% if form.bio.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                      placeholder="Tell learners about your experience, expertise, and mentoring style...">{{ form.bio.data or mentor_profile.bio if mentor_profile else '' }}</textarea>
+                            {% if form.bio.errors %}
+                                <p class="mt-1 text-sm text-red-600">
+                                    {{ form.bio.errors[0] }}
+                                </p>
+                            {% endif %}
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="skills" class="block text-sm font-medium text-gray-700 mb-2">
                                 Skills (comma separated)
                             </label>
-                            <input type="text" name="skills" value="{{ mentor.skills if mentor else '' }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            <input type="text" 
+                                   id="skills" 
+                                   name="skills" 
+                                   value="{{ form.skills.data or mentor_profile.skills if mentor_profile else '' }}"
+                                   class="w-full px-4 py-3 border {% if form.skills.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                                    placeholder="e.g., Python, React, Product Management, Data Science">
+                            {% if form.skills.errors %}
+                                <p class="mt-1 text-sm text-red-600">
+                                    {{ form.skills.errors[0] }}
+                                </p>
+                            {% endif %}
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="linkedin_url" class="block text-sm font-medium text-gray-700 mb-2">
                                     LinkedIn URL
                                 </label>
-                                <input type="url" name="linkedin_url" value="{{ mentor.linkedin_url if mentor else '' }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                <input type="url" 
+                                       id="linkedin_url" 
+                                       name="linkedin_url" 
+                                       value="{{ form.linkedin_url.data or mentor_profile.linkedin_url if mentor_profile else '' }}"
+                                       class="w-full px-4 py-3 border {% if form.linkedin_url.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                                        placeholder="https://linkedin.com/in/username">
+                                {% if form.linkedin_url.errors %}
+                                    <p class="mt-1 text-sm text-red-600">
+                                        {{ form.linkedin_url.errors[0] }}
+                                    </p>
+                                {% endif %}
                             </div>
 
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="github_url" class="block text-sm font-medium text-gray-700 mb-2">
                                     GitHub URL
                                 </label>
-                                <input type="url" name="github_url" value="{{ mentor.github_url if mentor else '' }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                <input type="url" 
+                                       id="github_url" 
+                                       name="github_url" 
+                                       value="{{ form.github_url.data or mentor_profile.github_url if mentor_profile else '' }}"
+                                       class="w-full px-4 py-3 border {% if form.github_url.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                                        placeholder="https://github.com/username">
+                                {% if form.github_url.errors %}
+                                    <p class="mt-1 text-sm text-red-600">
+                                        {{ form.github_url.errors[0] }}
+                                    </p>
+                                {% endif %}
                             </div>
                         </div>
                         {% endif %}
 
-                        <div class="pt-6 border-t border-gray-200">
-                            <button type="submit"
-                                    class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5">
-                                Save Changes
+                        <!-- Profile Photo Upload -->
+                        <div>
+                            <label for="profile_photo" class="block text-sm font-medium text-gray-700 mb-2">
+                                Profile Photo
+                            </label>
+                            <input type="file" 
+                                   id="profile_photo" 
+                                   name="profile_photo" 
+                                   accept="image/*"
+                                   class="w-full px-3 py-2 border {% if form.profile_photo.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            {% if form.profile_photo.errors %}
+                                <p class="mt-1 text-sm text-red-600">
+                                    {{ form.profile_photo.errors[0] }}
+                                </p>
+                            {% endif %}
+                            <p class="mt-1 text-sm text-gray-500">
+                                Recommended: Square image, at least 400x400 pixels. Max size: 5MB.
+                            </p>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="pt-6 border-t border-gray-200 flex items-center justify-between">
+                            <div class="flex space-x-3">
+                                <button type="submit"
+                                        class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                    Save Changes
+                                </button>
+                                <a href="{{ url_for('dashboard') }}" 
+                                   class="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
+                                    Cancel
+                                </a>
+                            </div>
+                            
+                            {% if current_user.profile_image %}
+                            <button type="button"
+                                    id="remove-photo-btn"
+                                    class="px-4 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-300">
+                                Remove Photo
                             </button>
-                            <a href="/dashboard" 
-                               class="ml-3 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                                Cancel
-                            </a>
+                            {% endif %}
                         </div>
                     </form>
                 </div>
@@ -87,38 +173,44 @@
 
             <!-- Right Column -->
             <div class="space-y-8">
-                <!-- Profile Photo -->
+                <!-- Profile Preview -->
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Profile Photo</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">Profile Preview</h3>
                     
                     <div class="flex flex-col items-center">
-                        <div class="relative mb-6">
+                        <div class="relative mb-4">
                             {% if current_user.profile_image %}
-                            <img src="/static/{{ current_user.profile_image }}" 
+                            <img src="{{ url_for('static', filename='uploads/profile_images/' + current_user.profile_image) if current_user.profile_image.startswith('profile_') else current_user.profile_image }}" 
                                  alt="{{ current_user.full_name or current_user.username }}"
+                                 id="profile-preview"
                                  class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg">
                             {% else %}
-                            <div class="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-4xl font-bold border-4 border-white shadow-lg">
+                            <div id="avatar-preview" 
+                                 class="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-4xl font-bold border-4 border-white shadow-lg">
                                 {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper if current_user.full_name or current_user.username else 'U' }}
                             </div>
                             {% endif %}
-                            <div class="absolute -bottom-2 -right-2">
-                                <label for="profile-photo-upload" 
-                                       class="w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors shadow-lg">
-                                    <i class="fas fa-camera text-gray-600"></i>
-                                </label>
-                                <input type="file" id="profile-photo-upload" class="hidden" accept="image/*">
-                            </div>
                         </div>
                         
-                        <p class="text-sm text-gray-500 text-center mb-4">
-                            Recommended: Square image, at least 400x400 pixels
+                        <h4 class="text-xl font-bold text-gray-900 mb-1">
+                            {{ current_user.full_name or current_user.username }}
+                        </h4>
+                        
+                        <p class="text-gray-600 mb-4">
+                            {{ current_user.role|title }}
                         </p>
                         
-                        <button id="upload-photo-btn"
-                                class="w-full px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                            Upload New Photo
-                        </button>
+                        {% if current_user.role == 'mentor' and mentor_profile and mentor_profile.skills %}
+                        <div class="flex flex-wrap gap-2 justify-center">
+                            {% for skill in mentor_profile.skills.split(',') %}
+                                {% if skill.strip() %}
+                                <span class="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">
+                                    {{ skill.strip() }}
+                                </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -145,9 +237,20 @@
                         <div>
                             <p class="text-sm text-gray-500">Member Since</p>
                             <p class="font-medium text-gray-900">
-                                {{ current_user.created_at.strftime('%B %d, %Y') if current_user.created_at else 'N/A' }}
+                                {% if current_user.created_at %}
+                                    {{ current_user.created_at.strftime('%B %d, %Y') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
                             </p>
                         </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <a href="{{ url_for('change_password') }}" 
+                           class="block w-full text-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
+                            Change Password
+                        </a>
                     </div>
                 </div>
             </div>
@@ -155,46 +258,124 @@
     </div>
 </div>
 
+<!-- Profile Photo Preview Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const uploadBtn = document.getElementById('upload-photo-btn');
-    const fileInput = document.getElementById('profile-photo-upload');
+    // Profile photo preview
+    const profilePhotoInput = document.getElementById('profile_photo');
+    const profilePreview = document.getElementById('profile-preview');
+    const avatarPreview = document.getElementById('avatar-preview');
     
-    uploadBtn.addEventListener('click', function() {
-        fileInput.click();
+    if (profilePhotoInput) {
+        profilePhotoInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    if (profilePreview) {
+                        profilePreview.src = e.target.result;
+                    } else if (avatarPreview) {
+                        avatarPreview.style.display = 'none';
+                        if (!profilePreview) {
+                            const img = document.createElement('img');
+                            img.id = 'profile-preview';
+                            img.src = e.target.result;
+                            img.className = 'w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg';
+                            avatarPreview.parentNode.appendChild(img);
+                        }
+                    }
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    }
+    
+    // Remove photo button
+    const removePhotoBtn = document.getElementById('remove-photo-btn');
+    if (removePhotoBtn) {
+        removePhotoBtn.addEventListener('click', async function() {
+            if (confirm('Are you sure you want to remove your profile photo?')) {
+                try {
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Removing...';
+                    this.disabled = true;
+                    
+                    const response = await fetch('{{ url_for("remove_profile_photo") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token() }}'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Reload page after successful removal
+                        window.location.reload();
+                    } else {
+                        throw new Error(data.message || 'Failed to remove photo');
+                    }
+                } catch (error) {
+                    alert('Failed to remove photo: ' + error.message);
+                    this.innerHTML = 'Remove Photo';
+                    this.disabled = false;
+                }
+            }
+        });
+    }
+    
+    // Form validation
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('profile_photo');
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                
+                if (file.size > maxSize) {
+                    e.preventDefault();
+                    alert('File size must be less than 5MB');
+                    return false;
+                }
+                
+                if (!file.type.match('image.*')) {
+                    e.preventDefault();
+                    alert('Please select an image file');
+                    return false;
+                }
+            }
+            
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+    
+    // Auto-save form data to localStorage to prevent data loss
+    const formInputs = form.querySelectorAll('input, textarea');
+    formInputs.forEach(input => {
+        // Load saved data
+        const savedValue = localStorage.getItem(`profile_${input.name}`);
+        if (savedValue && !input.value) {
+            input.value = savedValue;
+        }
+        
+        // Save on input
+        input.addEventListener('input', function() {
+            localStorage.setItem(`profile_${this.name}`, this.value);
+        });
     });
     
-    fileInput.addEventListener('change', async function() {
-        if (this.files.length > 0) {
-            const file = this.files[0];
-            const formData = new FormData();
-            formData.append('profile_photo', file);
-            
-            try {
-                uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Uploading...';
-                uploadBtn.disabled = true;
-                
-                const response = await fetch('/profile/upload-photo', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Profile photo updated successfully!', 'success');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    throw new Error(data.message || 'Upload failed');
-                }
-            } catch (error) {
-                showNotification('Failed to upload photo: ' + error.message, 'error');
-                uploadBtn.innerHTML = 'Upload New Photo';
-                uploadBtn.disabled = false;
-            }
-        }
+    // Clear localStorage on successful form submission
+    form.addEventListener('submit', function() {
+        formInputs.forEach(input => {
+            localStorage.removeItem(`profile_${input.name}`);
+        });
     });
 });
 </script>
