@@ -523,7 +523,7 @@ async def dashboard(
             earnings = db.query(Booking).filter(
                 Booking.mentor_id == mentor.id,
                 Booking.payment_status == "paid"
-            ).with_entities(db.func.sum(Booking.amount_paid)).scalar() or 0
+            ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
             
             context.update({
                 "mentor": mentor,
