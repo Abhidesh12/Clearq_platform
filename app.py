@@ -35,20 +35,22 @@ load_dotenv()
 # Initialize FastAPI
 app = FastAPI(title="ClearQ Mentorship Platform")
 
+# Updated middleware
 class CSPMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
         response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
             "script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://checkout.razorpay.com 'unsafe-inline'; "
-            "style-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; "
+            "style-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com/ajax/libs/font-awesome/ 'unsafe-inline'; "
+            "font-src 'self' https://cdnjs.cloudflare.com; "
             "connect-src 'self' https://api.razorpay.com; "
             "img-src 'self' data: https:; "
-            "font-src 'self' data:; "
             "frame-src 'self' https://api.razorpay.com;"
         )
         return response
 
-# Add the middleware
+# Add to your app
 app.add_middleware(CSPMiddleware)
 
 # Database configuration
