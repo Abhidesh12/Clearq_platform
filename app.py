@@ -360,7 +360,7 @@ async def register_user(
             "password_hash": hashed_password,
             "full_name": full_name,
             "role": role,
-            "is_verified": is_verified
+            "is_verified": is_verified,
             "is_active": True
         }
     )
