@@ -3,288 +3,978 @@
 {% block title %}Admin Dashboard - ClearQ{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
+<style>
+    :root {
+        --primary: #3B82F6;
+        --primary-dark: #2563EB;
+        --primary-light: #60A5FA;
+        --secondary: #8B5CF6;
+        --accent: #06B6D4;
+        --success: #10B981;
+        --warning: #F59E0B;
+        --danger: #EF4444;
+        --gray-900: #0F172A;
+        --gray-800: #1E293B;
+        --gray-700: #334155;
+        --gray-600: #475569;
+        --gray-500: #64748B;
+        --gray-400: #94A3B8;
+        --gray-300: #CBD5E1;
+        --gray-200: #E2E8F0;
+        --gray-100: #F1F5F9;
+        --gray-50: #F8FAFC;
+        --white: #FFFFFF;
+        --radius-sm: 0.375rem;
+        --radius: 0.5rem;
+        --radius-md: 0.75rem;
+        --radius-lg: 1rem;
+        --radius-xl: 1.5rem;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --transition: all 0.2s ease;
+    }
+
+    .admin-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    /* Admin Header */
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: var(--white);
+        padding: 1rem 1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .admin-header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .admin-title {
+        flex: 1;
+    }
+
+    .admin-title h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.125rem;
+    }
+
+    .admin-title p {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+
+    .admin-header-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-action-btn {
+        padding: 0.5rem 0.875rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        color: var(--white);
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        transition: var(--transition);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        white-space: nowrap;
+    }
+
+    .admin-action-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+    }
+
+    /* Main Content */
+    .admin-main {
+        padding: 1.25rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        padding: 1rem;
+        transition: var(--transition);
+    }
+
+    .stat-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .stat-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+
+    .icon-users {
+        background: #EFF6FF;
+        color: var(--primary);
+    }
+
+    .icon-mentors {
+        background: #F0FDF4;
+        color: var(--success);
+    }
+
+    .icon-bookings {
+        background: #FAF5FF;
+        color: var(--secondary);
+    }
+
+    .icon-revenue {
+        background: #FEF3C7;
+        color: var(--warning);
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-growth {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+    }
+
+    .growth-up {
+        color: var(--success);
+    }
+
+    .growth-text {
+        color: var(--gray-500);
+    }
+
+    /* Admin Cards */
+    .admin-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+
+    .admin-card:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    .admin-card-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .admin-card-header h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+
+    .admin-card-header .badge {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+        background: var(--gray-100);
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-weight: 500;
+    }
+
+    .admin-card-content {
+        padding: 1.25rem;
+    }
+
+    /* Pending Mentor Approvals */
+    .pending-mentors-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .pending-mentor-item {
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: 1rem;
+        transition: var(--transition);
+    }
+
+    .pending-mentor-item:hover {
+        border-color: var(--primary);
+        background: var(--gray-50);
+    }
+
+    .mentor-info-compact {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .mentor-avatar-compact {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .mentor-details-compact {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mentor-details-compact h3 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.125rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mentor-details-compact p {
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mentor-tags-compact {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .mentor-tag-compact {
+        padding: 0.125rem 0.5rem;
+        background: var(--blue-50);
+        color: var(--blue-700);
+        border-radius: 1rem;
+        font-size: 0.75rem;
+    }
+
+    .mentor-actions-compact {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .admin-action-button {
+        padding: 0.5rem 0.75rem;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        flex: 1;
+    }
+
+    .admin-action-button:hover {
+        transform: translateY(-1px);
+    }
+
+    .action-button-approve {
+        background: var(--success);
+        color: var(--white);
+    }
+
+    .action-button-approve:hover {
+        background: #059669;
+    }
+
+    .action-button-reject {
+        background: var(--danger);
+        color: var(--white);
+    }
+
+    .action-button-reject:hover {
+        background: #DC2626;
+    }
+
+    /* Empty State */
+    .admin-empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+
+    .admin-empty-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--success);
+        font-size: 1.5rem;
+    }
+
+    .admin-empty-state h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .admin-empty-state p {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    /* Recent Activity */
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        transition: var(--transition);
+    }
+
+    .activity-item:hover {
+        border-color: var(--primary);
+        background: var(--gray-50);
+    }
+
+    .activity-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+
+    .activity-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .activity-content h4 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.125rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .activity-content p {
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .activity-time {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Platform Health */
+    .health-metrics {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .health-metric {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .metric-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .metric-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    .metric-status {
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 0.125rem 0.5rem;
+        border-radius: 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-operational {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .status-healthy {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .status-active {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .metric-progress {
+        width: 100%;
+        height: 0.375rem;
+        background: var(--gray-200);
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: var(--success);
+        border-radius: 1rem;
+        transition: width 0.3s ease;
+    }
+
+    /* Quick Actions Grid */
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .quick-action-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .quick-action-item:hover {
+        border-color: var(--primary);
+        background: var(--blue-50);
+        transform: translateY(-2px);
+    }
+
+    .quick-action-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .quick-action-users {
+        background: #EFF6FF;
+        color: var(--primary);
+    }
+
+    .quick-action-analytics {
+        background: #F0FDF4;
+        color: var(--success);
+    }
+
+    .quick-action-settings {
+        background: #FAF5FF;
+        color: var(--secondary);
+    }
+
+    .quick-action-reports {
+        background: #FEF3C7;
+        color: var(--warning);
+    }
+
+    .quick-action-label {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--gray-900);
+        text-align: center;
+    }
+
+    /* Responsive Design */
+    @media (min-width: 640px) {
+        .admin-header {
+            padding: 1.5rem 1.75rem;
+        }
+        
+        .admin-header-content {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .admin-title h1 {
+            font-size: 1.5rem;
+        }
+        
+        .admin-main {
+            padding: 1.75rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .admin-card {
+            margin-bottom: 1.25rem;
+        }
+        
+        .quick-actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .pending-mentor-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        
+        .mentor-info-compact {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .mentor-actions-compact {
+            flex: 0 0 auto;
+            width: auto;
+        }
+        
+        .mentor-tags-compact {
+            margin-bottom: 0;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .admin-main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .admin-card {
+            margin-bottom: 0;
+        }
+        
+        .quick-actions-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .pending-mentor-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .mentor-info-compact {
+            margin-bottom: 0.75rem;
+        }
+        
+        .mentor-actions-compact {
+            width: 100%;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .admin-header {
+            padding: 2rem;
+        }
+        
+        .admin-main {
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+        
+        .stats-grid {
+            grid-column: 1 / -1;
+        }
+        
+        .quick-actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .pending-mentor-item {
+            flex-direction: row;
+            align-items: center;
+        }
+        
+        .mentor-info-compact {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .mentor-actions-compact {
+            flex: 0 0 auto;
+            width: auto;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .quick-actions-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+</style>
+
+<div class="admin-container">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-primary to-secondary text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div>
-                    <h1 class="text-2xl font-bold">Admin Dashboard</h1>
-                    <p class="text-white/90 mt-1">Manage platform operations and user accounts</p>
-                </div>
-                
-                <div class="flex items-center gap-3">
-                    <a href="#" 
-                       class="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors">
-                        <i class="fas fa-download mr-2"></i>Export Reports
-                    </a>
-                </div>
+    <div class="admin-header">
+        <div class="admin-header-content">
+            <div class="admin-title">
+                <h1>Admin Dashboard</h1>
+                <p>Manage platform operations and user accounts</p>
+            </div>
+            
+            <div class="admin-header-actions">
+                <a href="#" class="admin-action-btn">
+                    <i class="fas fa-download"></i>
+                    <span>Export Reports</span>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Stats Overview -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Total Users</p>
-                        <p class="text-3xl font-bold text-gray-900">{{ stats.total_users|default('0') }}</p>
-                    </div>
-                    <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <i class="fas fa-users text-blue-600 text-xl"></i>
+    <!-- Main Content -->
+    <div class="admin-main">
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-icon icon-users">
+                        <i class="fas fa-users"></i>
                     </div>
                 </div>
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <div class="flex items-center text-sm">
-                        <i class="fas fa-arrow-up text-green-500 mr-1"></i>
-                        <span class="text-green-600 font-medium">12%</span>
-                        <span class="text-gray-500 ml-2">from last month</span>
-                    </div>
+                <div class="stat-value">{{ stats.total_users|default('0') }}</div>
+                <div class="stat-growth">
+                    <i class="fas fa-arrow-up growth-up"></i>
+                    <span class="growth-up">12%</span>
+                    <span class="growth-text">from last month</span>
                 </div>
             </div>
             
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Active Mentors</p>
-                        <p class="text-3xl font-bold text-gray-900">{{ stats.total_mentors|default('0') }}</p>
-                    </div>
-                    <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
-                        <i class="fas fa-chalkboard-teacher text-green-600 text-xl"></i>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">Active Mentors</div>
+                    <div class="stat-icon icon-mentors">
+                        <i class="fas fa-chalkboard-teacher"></i>
                     </div>
                 </div>
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <div class="flex items-center text-sm">
-                        <i class="fas fa-arrow-up text-green-500 mr-1"></i>
-                        <span class="text-green-600 font-medium">8%</span>
-                        <span class="text-gray-500 ml-2">from last month</span>
-                    </div>
+                <div class="stat-value">{{ stats.total_mentors|default('0') }}</div>
+                <div class="stat-growth">
+                    <i class="fas fa-arrow-up growth-up"></i>
+                    <span class="growth-up">8%</span>
+                    <span class="growth-text">from last month</span>
                 </div>
             </div>
             
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Total Bookings</p>
-                        <p class="text-3xl font-bold text-gray-900">{{ stats.total_bookings|default('0') }}</p>
-                    </div>
-                    <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
-                        <i class="fas fa-calendar-check text-purple-600 text-xl"></i>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-icon icon-bookings">
+                        <i class="fas fa-calendar-check"></i>
                     </div>
                 </div>
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <div class="flex items-center text-sm">
-                        <i class="fas fa-arrow-up text-green-500 mr-1"></i>
-                        <span class="text-green-600 font-medium">24%</span>
-                        <span class="text-gray-500 ml-2">from last month</span>
-                    </div>
+                <div class="stat-value">{{ stats.total_bookings|default('0') }}</div>
+                <div class="stat-growth">
+                    <i class="fas fa-arrow-up growth-up"></i>
+                    <span class="growth-up">24%</span>
+                    <span class="growth-text">from last month</span>
                 </div>
             </div>
             
-            <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-500 mb-1">Total Revenue</p>
-                        <p class="text-3xl font-bold text-gray-900">₹{{ stats.revenue|default('0') }}</p>
-                    </div>
-                    <div class="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center">
-                        <i class="fas fa-rupee-sign text-yellow-600 text-xl"></i>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-icon icon-revenue">
+                        <i class="fas fa-rupee-sign"></i>
                     </div>
                 </div>
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <div class="flex items-center text-sm">
-                        <i class="fas fa-arrow-up text-green-500 mr-1"></i>
-                        <span class="text-green-600 font-medium">18%</span>
-                        <span class="text-gray-500 ml-2">from last month</span>
-                    </div>
+                <div class="stat-value">₹{{ stats.revenue|default('0') }}</div>
+                <div class="stat-growth">
+                    <i class="fas fa-arrow-up growth-up"></i>
+                    <span class="growth-up">18%</span>
+                    <span class="growth-text">from last month</span>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column -->
-            <div class="lg:col-span-2">
-                <!-- Pending Approvals -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-gray-900">Pending Mentor Approvals</h2>
-                        <span class="text-sm text-gray-600">{{ pending_mentors|length if pending_mentors else 0 }} pending</span>
-                    </div>
-                    
+        <!-- Left Column -->
+        <div>
+            <!-- Pending Approvals -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>Pending Mentor Approvals</h2>
+                    <span class="badge">{{ pending_mentors|length if pending_mentors else 0 }} pending</span>
+                </div>
+                
+                <div class="admin-card-content">
                     {% if pending_mentors and pending_mentors|length > 0 %}
-                    <div class="space-y-4">
+                    <div class="pending-mentors-list">
                         {% for mentor in pending_mentors %}
-                        <div class="border border-gray-200 rounded-xl p-4 hover:border-primary transition-colors">
-                            <div class="flex items-start justify-between">
-                                <div class="flex items-center gap-4">
-                                    {% if mentor.user.profile_image %}
-                                    <img src="/static/{{ mentor.user.profile_image }}" 
-                                         alt="{{ mentor.user.full_name }}"
-                                         class="w-14 h-14 rounded-full object-cover">
-                                    {% else %}
-                                    <div class="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
-                                        {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
-                                    </div>
-                                    {% endif %}
-                                    <div>
-                                        <h3 class="font-semibold text-gray-900">{{ mentor.user.full_name or mentor.user.username }}</h3>
-                                        <div class="flex items-center gap-4 mt-2">
-                                            <span class="flex items-center text-sm text-gray-600">
-                                                <i class="fas fa-envelope mr-2"></i>
-                                                {{ mentor.user.email }}
-                                            </span>
-                                            <span class="flex items-center text-sm text-gray-600">
-                                                <i class="fas fa-clock mr-2"></i>
-                                                {{ mentor.created_at.strftime('%b %d, %Y') if mentor.created_at else 'N/A' }}
-                                            </span>
-                                        </div>
-                                        <div class="flex items-center gap-2 mt-2">
-                                            {% if mentor.industry %}
-                                            <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
-                                                {{ mentor.industry }}
-                                            </span>
-                                            {% endif %}
-                                            {% if mentor.experience_years %}
-                                            <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-full">
-                                                {{ mentor.experience_years }} years exp
-                                            </span>
-                                            {% endif %}
-                                        </div>
+                        <div class="pending-mentor-item">
+                            <div class="mentor-info-compact">
+                                {% if mentor.user.profile_image %}
+                                <img src="/static/{{ mentor.user.profile_image }}" 
+                                     alt="{{ mentor.user.full_name }}"
+                                     class="mentor-avatar-compact">
+                                {% else %}
+                                <div class="mentor-avatar-compact">
+                                    {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
+                                </div>
+                                {% endif %}
+                                <div class="mentor-details-compact">
+                                    <h3>{{ mentor.user.full_name or mentor.user.username }}</h3>
+                                    <p>{{ mentor.user.email }}</p>
+                                    <div class="mentor-tags-compact">
+                                        {% if mentor.industry %}
+                                        <span class="mentor-tag-compact">{{ mentor.industry }}</span>
+                                        {% endif %}
+                                        {% if mentor.experience_years %}
+                                        <span class="mentor-tag-compact">{{ mentor.experience_years }} years</span>
+                                        {% endif %}
                                     </div>
                                 </div>
-                                <div class="flex flex-col gap-2">
-                                    <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" class="flex gap-2">
-                                        <button type="submit" name="action" value="approve"
-                                                class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors flex items-center">
-                                            <i class="fas fa-check mr-1"></i> Approve
-                                        </button>
-                                        <button type="submit" name="action" value="reject"
-                                                class="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center">
-                                            <i class="fas fa-times mr-1"></i> Reject
-                                        </button>
-                                    </form>
-                                    <a href="#" class="text-primary text-sm font-medium hover:text-primary-dark">
-                                        View Full Profile →
-                                    </a>
-                                </div>
+                            </div>
+                            
+                            <div class="mentor-actions-compact">
+                                <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" style="display: contents;">
+                                    <button type="submit" name="action" value="approve" class="admin-action-button action-button-approve">
+                                        <i class="fas fa-check"></i>
+                                        <span>Approve</span>
+                                    </button>
+                                    <button type="submit" name="action" value="reject" class="admin-action-button action-button-reject">
+                                        <i class="fas fa-times"></i>
+                                        <span>Reject</span>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-100 to-green-200 flex items-center justify-center">
-                            <i class="fas fa-check text-green-500 text-2xl"></i>
+                    <div class="admin-empty-state">
+                        <div class="admin-empty-icon">
+                            <i class="fas fa-check"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">All Caught Up!</h3>
-                        <p class="text-gray-500">No pending mentor approvals</p>
+                        <h3>All Caught Up!</h3>
+                        <p>No pending mentor approvals</p>
                     </div>
                     {% endif %}
                 </div>
+            </div>
 
-                <!-- Recent Activity -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
-                    
-                    <div class="space-y-4">
+            <!-- Recent Activity -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>Recent Activity</h2>
+                </div>
+                
+                <div class="admin-card-content">
+                    <div class="activity-list">
                         {% for i in range(5) %}
-                        <div class="flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
-                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                                <i class="fas fa-user-plus text-white"></i>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-user-plus"></i>
                             </div>
-                            <div class="flex-1">
-                                <h4 class="font-medium text-gray-900">New User Registration</h4>
-                                <p class="text-sm text-gray-600">John Doe registered as a learner</p>
+                            <div class="activity-content">
+                                <h4>New User Registration</h4>
+                                <p>John Doe registered as a learner</p>
                             </div>
-                            <span class="text-sm text-gray-500">2 hours ago</span>
+                            <div class="activity-time">2 hours ago</div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Right Column -->
-            <div class="space-y-8">
-                <!-- Quick Stats -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Platform Health</h3>
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm text-gray-600">Server Status</span>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    <i class="fas fa-circle mr-1" style="font-size: 6px;"></i> Operational
+        <!-- Right Column -->
+        <div>
+            <!-- Platform Health -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>Platform Health</h2>
+                </div>
+                
+                <div class="admin-card-content">
+                    <div class="health-metrics">
+                        <div class="health-metric">
+                            <div class="metric-header">
+                                <span class="metric-label">Server Status</span>
+                                <span class="metric-status status-operational">
+                                    <i class="fas fa-circle" style="font-size: 6px;"></i>
+                                    Operational
                                 </span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full" style="width: 95%"></div>
+                            <div class="metric-progress">
+                                <div class="progress-bar" style="width: 95%"></div>
                             </div>
                         </div>
                         
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm text-gray-600">Database Status</span>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    <i class="fas fa-circle mr-1" style="font-size: 6px;"></i> Healthy
+                        <div class="health-metric">
+                            <div class="metric-header">
+                                <span class="metric-label">Database Status</span>
+                                <span class="metric-status status-healthy">
+                                    <i class="fas fa-circle" style="font-size: 6px;"></i>
+                                    Healthy
                                 </span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full" style="width: 98%"></div>
+                            <div class="metric-progress">
+                                <div class="progress-bar" style="width: 98%"></div>
                             </div>
                         </div>
                         
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm text-gray-600">Payment Gateway</span>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    <i class="fas fa-circle mr-1" style="font-size: 6px;"></i> Active
+                        <div class="health-metric">
+                            <div class="metric-header">
+                                <span class="metric-label">Payment Gateway</span>
+                                <span class="metric-status status-active">
+                                    <i class="fas fa-circle" style="font-size: 6px;"></i>
+                                    Active
                                 </span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                            <div class="metric-progress">
+                                <div class="progress-bar" style="width: 100%"></div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Quick Actions -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Quick Actions</h3>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <a href="#" 
-                           class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-2">
-                                <i class="fas fa-user-cog text-blue-600"></i>
+            <!-- Quick Actions -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>Quick Actions</h2>
+                </div>
+                
+                <div class="admin-card-content">
+                    <div class="quick-actions-grid">
+                        <a href="#" class="quick-action-item">
+                            <div class="quick-action-icon quick-action-users">
+                                <i class="fas fa-user-cog"></i>
                             </div>
-                            <span class="text-sm font-medium text-gray-900">Manage Users</span>
+                            <span class="quick-action-label">Manage Users</span>
                         </a>
                         
-                        <a href="#" 
-                           class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-2">
-                                <i class="fas fa-chart-line text-green-600"></i>
+                        <a href="#" class="quick-action-item">
+                            <div class="quick-action-icon quick-action-analytics">
+                                <i class="fas fa-chart-line"></i>
                             </div>
-                            <span class="text-sm font-medium text-gray-900">Analytics</span>
+                            <span class="quick-action-label">Analytics</span>
                         </a>
                         
-                        <a href="#" 
-                           class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-2">
-                                <i class="fas fa-cog text-purple-600"></i>
+                        <a href="#" class="quick-action-item">
+                            <div class="quick-action-icon quick-action-settings">
+                                <i class="fas fa-cog"></i>
                             </div>
-                            <span class="text-sm font-medium text-gray-900">Settings</span>
+                            <span class="quick-action-label">Settings</span>
                         </a>
                         
-                        <a href="#" 
-                           class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-xl hover:border-primary hover:bg-blue-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center mb-2">
-                                <i class="fas fa-file-invoice text-yellow-600"></i>
+                        <a href="#" class="quick-action-item">
+                            <div class="quick-action-icon quick-action-reports">
+                                <i class="fas fa-file-invoice"></i>
                             </div>
-                            <span class="text-sm font-medium text-gray-900">Reports</span>
+                            <span class="quick-action-label">Reports</span>
                         </a>
                     </div>
                 </div>
@@ -292,4 +982,89 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add hover effects to interactive elements
+        const interactiveElements = document.querySelectorAll('.stat-card, .admin-card, .pending-mentor-item, .activity-item, .quick-action-item, .admin-action-button');
+        
+        interactiveElements.forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('admin-action-button')) {
+                    this.style.transform = 'translateY(-2px)';
+                }
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('admin-action-button')) {
+                    this.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        
+        // Handle form submissions with confirmation
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const button = e.submitter;
+                if (button && button.name === 'action') {
+                    const action = button.value;
+                    if (action === 'reject') {
+                        if (!confirm('Are you sure you want to reject this mentor? This action cannot be undone.')) {
+                            e.preventDefault();
+                        }
+                    } else if (action === 'approve') {
+                        if (!confirm('Approve this mentor? They will become visible to learners.')) {
+                            e.preventDefault();
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Animate progress bars on scroll
+        const progressBars = document.querySelectorAll('.progress-bar');
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const progressObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const bar = entry.target;
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.transition = 'width 1s ease-in-out';
+                        bar.style.width = width;
+                    }, 100);
+                    progressObserver.unobserve(bar);
+                }
+            });
+        }, observerOptions);
+        
+        progressBars.forEach(bar => {
+            progressObserver.observe(bar);
+        });
+        
+        // Add loading states for buttons
+        const actionButtons = document.querySelectorAll('.admin-action-button');
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.type === 'submit') {
+                    const originalHTML = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                    this.disabled = true;
+                    
+                    // Reset after 3 seconds if still on page (in case of no form submission)
+                    setTimeout(() => {
+                        this.innerHTML = originalHTML;
+                        this.disabled = false;
+                    }, 3000);
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}
