@@ -98,7 +98,7 @@
                             <i class="fas fa-money-bill text-green-500 w-6"></i>
                             <span class="ml-3">
                                 <span class="text-gray-600">Price:</span>
-                                <span class="font-medium ml-2">₹{{ "%.2f"|format(service.price / 100) if service.price else '0.00' }}</span>
+                                <span class="font-medium ml-2">₹{{ "%.2f"|format(service.price) if service.price else '0.00' }}</span>
                             </span>
                         </div>
                         {% endif %}
