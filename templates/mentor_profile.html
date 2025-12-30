@@ -637,27 +637,28 @@
                         </div>
                         
                         <!-- Date Selection -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Select Date</label>
-                            <div class="date-selector" id="dateContainer">
-                                {% if available_dates and available_dates|length > 0 %}
-                                    {% for date_info in available_dates[:7] %}
-                                    <div class="date-item {% if loop.first %}selected{% endif %}" 
-                                         data-date="{{ date_info.full_date if date_info.full_date else '' }}"
-                                         onclick="selectDate(this, '{{ date_info.full_date if date_info.full_date else '' }}')">
-                                        <div class="day">{{ date_info.day_name if date_info.day_name else 'Mon' }}</div>
-                                        <div class="date">{{ date_info.day_num if date_info.day_num else '1' }}</div>
-                                        <div class="month">{{ date_info.month if date_info.month else 'Jan' }}</div>
-                                    </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="text-center w-full py-4 text-gray-500">
-                                        No dates available
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <input type="hidden" id="selected-date" value="{{ available_dates[0].full_date if available_dates and available_dates|length > 0 else '' }}">
-                        </div>
+<!-- Date Selection -->
+<div>
+    <label class="block text-sm font-medium text-gray-700 mb-3">Select Date</label>
+    <div class="date-selector" id="dateContainer">
+        {% if available_dates and available_dates|length > 0 %}
+            {% for date_info in available_dates %}
+            <div class="date-item {% if loop.first %}selected{% endif %}" 
+                 data-date="{{ date_info.full_date }}"
+                 onclick="selectDate(this, '{{ date_info.full_date }}')">
+                <div class="day">{{ date_info.day_name }}</div>
+                <div class="date">{{ date_info.day_num }}</div>
+                <div class="month">{{ date_info.month }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center w-full py-4 text-gray-500">
+                No available dates
+            </div>
+        {% endif %}
+    </div>
+    <input type="hidden" id="selected-date" value="{{ available_dates[0].full_date if available_dates and available_dates|length > 0 else '' }}">
+</div>
                         
                         <!-- Time Slots -->
                         <div>
@@ -779,6 +780,7 @@ function selectDate(element, date) {
 }
 
 // Function to load time slots
+// Function to load time slots
 async function loadTimeSlots(date) {
     const container = document.getElementById('time-slots-container');
     container.innerHTML = `
@@ -808,17 +810,25 @@ async function loadTimeSlots(date) {
             container.innerHTML = `
                 <div class="time-slots-grid">
                     ${data.slots.map(slot => `
-                        <button type="button" onclick="selectTime('${slot}', this)" 
+                        <button type="button" onclick="selectTime(${JSON.stringify(slot)}, this)" 
                                 class="time-slot-btn">
-                            ${slot}
+                            ${slot.display || slot.value}
                         </button>
                     `).join('')}
                 </div>
             `;
+            
+            // Auto-select first time slot if available
+            if (data.slots[0]) {
+                const firstBtn = container.querySelector('.time-slot-btn');
+                if (firstBtn) {
+                    selectTime(data.slots[0], firstBtn);
+                }
+            }
         } else {
             container.innerHTML = `
                 <div class="text-center p-4 bg-red-50 rounded-lg">
-                    <p class="text-sm text-red-600">No available time slots for this date</p>
+                    <p class="text-sm text-red-600">${data.message || 'No available time slots for this date'}</p>
                 </div>
             `;
             selectedQuickTime = null;
@@ -837,15 +847,24 @@ async function loadTimeSlots(date) {
 }
 
 // Function to select time
-function selectTime(time, element) {
+function selectTime(timeData, element) {
+    // timeData could be either a string (for backward compatibility) or an object
+    let timeValue = timeData;
+    let timeDisplay = timeData;
+    
+    if (typeof timeData === 'object') {
+        timeValue = timeData.value;
+        timeDisplay = timeData.display || timeData.value;
+    }
+    
     // Update UI
     document.querySelectorAll('.time-slot-btn').forEach(btn => {
         btn.classList.remove('selected');
     });
     element.classList.add('selected');
     
-    selectedQuickTime = time;
-    document.getElementById('selected-time-display').textContent = time;
+    selectedQuickTime = timeValue;
+    document.getElementById('selected-time-display').textContent = timeDisplay;
     checkBookingReady();
 }
 
