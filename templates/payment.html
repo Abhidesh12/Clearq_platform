@@ -3,69 +3,134 @@
 {% block title %}Complete Payment - ClearQ{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-8">
+<style>
+    .payment-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    
+    .payment-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .payment-success {
+        animation: successPulse 2s infinite;
+    }
+    
+    @keyframes successPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<div class="payment-container py-8">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Payment Header -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-100 to-green-200 flex items-center justify-center">
-                    <i class="fas fa-lock text-green-600 text-2xl"></i>
+        <div class="payment-card p-8 mb-6">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center payment-success">
+                    <i class="fas fa-lock text-white text-3xl"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">Complete Your Payment</h1>
-                <p class="text-gray-600">Secure payment via Razorpay</p>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
+                <p class="text-gray-600 text-lg">Complete your booking with Razorpay</p>
             </div>
             
             <!-- Booking Summary -->
-            <div class="border border-gray-200 rounded-xl p-6 mb-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Booking Summary</h2>
-                <div class="space-y-3">
-                    <div class="flex justify-between">
+            <div class="border-2 border-gray-100 rounded-2xl p-6 mb-8 bg-gradient-to-r from-gray-50 to-white">
+                <h2 class="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200">Booking Summary</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
                         <span class="text-gray-600">Service</span>
-                        <span class="font-medium text-gray-900">{{ service.name }}</span>
+                        <span class="font-semibold text-gray-900 text-lg">{{ service.name }}</span>
                     </div>
-                    <div class="flex justify-between">
+                    <div class="flex justify-between items-center">
                         <span class="text-gray-600">Mentor</span>
-                        <span class="font-medium text-gray-900">{{ mentor.user.full_name }}</span>
+                        <span class="font-semibold text-gray-900">{{ mentor.user.full_name }}</span>
                     </div>
-                    <div class="flex justify-between">
+                    <div class="flex justify-between items-center">
                         <span class="text-gray-600">Date & Time</span>
-                        <span class="font-medium text-gray-900">
+                        <span class="font-semibold text-gray-900">
                             {{ booking.booking_date.strftime('%b %d, %Y') }} at {{ booking.start_time }}
                         </span>
                     </div>
-                    <div class="flex justify-between pt-3 border-t border-gray-200">
-                        <span class="text-gray-600">Amount</span>
-                        <span class="text-xl font-bold text-primary">₹{{ booking.amount_paid }}</span>
+                    <div class="pt-4 border-t border-gray-200 mt-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600 text-lg">Total Amount</span>
+                            <span class="text-3xl font-bold text-primary">₹{{ booking.amount_paid }}</span>
+                        </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Debug Info (Hidden by default) -->
+            <div id="debug-info" class="hidden bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                <h3 class="font-semibold text-yellow-800 mb-2">Debug Information</h3>
+                <div class="text-sm text-yellow-700 space-y-1">
+                    <div>Booking ID: <span id="debug-booking-id">{{ booking.id }}</span></div>
+                    <div>Order ID: <span id="debug-order-id">{{ booking.razorpay_order_id or "NOT SET" }}</span></div>
+                    <div>Amount: ₹<span id="debug-amount">{{ booking.amount_paid }}</span></div>
+                    <div>Razorpay Key: <span id="debug-key">{{ razorpay_key_id[:10] if razorpay_key_id else "NOT SET" }}...</span></div>
                 </div>
             </div>
             
             <!-- Payment Button -->
             <div class="text-center">
                 <button id="rzp-button" 
-                        class="w-full py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl hover:shadow-lg transition-all hover:scale-[1.02]">
-                    <i class="fas fa-credit-card mr-2"></i>
+                        class="w-full py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg rounded-2xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-credit-card mr-3"></i>
                     Pay Now ₹{{ booking.amount_paid }}
                 </button>
-                <p class="text-sm text-gray-500 mt-4">
-                    <i class="fas fa-shield-alt mr-1"></i>
-                    Secure payment powered by Razorpay
+                
+                <div id="payment-status" class="mt-4 hidden">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg">
+                        <div class="loading"></div>
+                        <span class="font-medium">Processing payment...</span>
+                    </div>
+                </div>
+                
+                <p class="text-sm text-gray-500 mt-6 flex items-center justify-center gap-2">
+                    <i class="fas fa-shield-alt text-green-500"></i>
+                    <span>100% Secure • SSL Encrypted • PCI DSS Compliant</span>
                 </p>
             </div>
         </div>
         
         <!-- Help Info -->
-        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6">
             <div class="flex items-start">
-                <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mr-4">
+                    <i class="fas fa-question-circle text-blue-600 text-xl"></i>
+                </div>
                 <div>
-                    <h3 class="font-semibold text-blue-800 mb-2">What happens next?</h3>
-                    <ul class="text-blue-700 space-y-1 text-sm">
-                        <li>• Complete payment to confirm your booking</li>
-                        <li>• You'll receive a confirmation email</li>
-                        <li>• The mentor will be notified of your booking</li>
-                        <li>• Meeting link will be sent 24 hours before the session</li>
-                    </ul>
+                    <h3 class="text-lg font-bold text-blue-900 mb-3">Need Help?</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white/50 rounded-xl p-4">
+                            <h4 class="font-semibold text-blue-800 mb-2">Payment Issues</h4>
+                            <p class="text-sm text-blue-700">If payment fails, try refreshing the page or contact support at support@clearq.com</p>
+                        </div>
+                        <div class="bg-white/50 rounded-xl p-4">
+                            <h4 class="font-semibold text-blue-800 mb-2">Refund Policy</h4>
+                            <p class="text-sm text-blue-700">Full refund if cancelled 24 hours before session. Contact mentor for rescheduling.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -76,34 +141,63 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== Payment Page Loaded ===');
+    
     const bookingId = {{ booking.id }};
     const amount = {{ booking.amount_paid }} * 100; // Convert to paise
     const orderId = "{{ booking.razorpay_order_id }}";
-    
-    // Check if Razorpay key exists
     const razorpayKey = "{{ razorpay_key_id }}";
-    if (!razorpayKey) {
-        console.error("Razorpay key is missing!");
-        alert("Payment system is not configured. Please contact support.");
+    
+    // Debug logging
+    console.log('Booking ID:', bookingId);
+    console.log('Amount (paise):', amount);
+    console.log('Order ID:', orderId);
+    console.log('Razorpay Key Present:', !!razorpayKey);
+    console.log('Current User:', "{{ current_user.full_name or current_user.username }}");
+    
+    const payButton = document.getElementById('rzp-button');
+    const paymentStatus = document.getElementById('payment-status');
+    const debugInfo = document.getElementById('debug-info');
+    
+    // Show debug info on double-click (for troubleshooting)
+    payButton.addEventListener('dblclick', function() {
+        debugInfo.classList.toggle('hidden');
+    });
+    
+    // Check prerequisites
+    if (!razorpayKey || razorpayKey === 'None' || razorpayKey === '') {
+        console.error('❌ Razorpay key is missing!');
+        showError('Payment system configuration error. Please contact support.');
+        payButton.disabled = true;
+        payButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Payment Unavailable';
         return;
     }
     
-    // Check if order ID exists
-    if (!orderId) {
-        console.error("Order ID is missing!");
-        alert("Invalid booking. Please contact support.");
+    if (!orderId || orderId === 'None' || orderId === '') {
+        console.error('❌ Order ID is missing!');
+        showError('Invalid booking. Please create a new booking.');
+        payButton.disabled = true;
+        payButton.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Invalid Booking';
         return;
     }
     
-    var options = {
+    if (!amount || amount <= 0) {
+        console.error('❌ Invalid amount:', amount);
+        showError('Invalid payment amount. Please contact support.');
+        payButton.disabled = true;
+        return;
+    }
+    
+    // Setup Razorpay
+    const options = {
         "key": razorpayKey,
         "amount": amount,
         "currency": "INR",
         "name": "ClearQ Mentorship",
-        "description": "Booking Payment for {{ service.name }}",
+        "description": "Booking: {{ service.name }}",
         "order_id": orderId,
         "handler": function (response) {
-            // Handle successful payment
+            console.log('✅ Payment successful:', response);
             verifyPayment(response);
         },
         "prefill": {
@@ -116,24 +210,66 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         "modal": {
             "ondismiss": function() {
-                console.log("Payment modal closed");
+                console.log('Payment modal closed');
+                resetButton();
             }
+        },
+        "notes": {
+            "booking_id": bookingId.toString()
         }
     };
     
-    var rzp = new Razorpay(options);
+    console.log('Razorpay options:', options);
     
-    // Add click handler
-    document.getElementById('rzp-button').onclick = function(e) {
-        e.preventDefault();
-        console.log("Opening Razorpay modal...");
-        rzp.open();
+    let rzp;
+    try {
+        rzp = new Razorpay(options);
+        console.log('✅ Razorpay instance created');
+    } catch (error) {
+        console.error('❌ Error creating Razorpay:', error);
+        showError('Failed to initialize payment. Please refresh and try again.');
+        payButton.disabled = true;
+        return;
     }
     
-    async function verifyPayment(response) {
+    // Handle payment button click
+    payButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        console.log('Opening Razorpay modal...');
+        
+        // Show loading state
+        payButton.disabled = true;
+        payButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Opening Payment...';
+        paymentStatus.classList.remove('hidden');
+        
+        // Open Razorpay
         try {
-            console.log("Verifying payment...", response);
-            
+            rzp.open();
+        } catch (error) {
+            console.error('❌ Error opening Razorpay:', error);
+            showError('Failed to open payment gateway. Please try again.');
+            resetButton();
+        }
+        
+        // Reset button if modal doesn't open in 5 seconds
+        setTimeout(() => {
+            if (payButton.disabled) {
+                console.log('Modal timeout - resetting button');
+                resetButton();
+                showError('Payment gateway timed out. Please try again.');
+            }
+        }, 5000);
+    });
+    
+    // Verify payment after success
+    async function verifyPayment(response) {
+        console.log('Verifying payment...');
+        
+        paymentStatus.classList.remove('hidden');
+        payButton.style.display = 'none';
+        
+        try {
             const verifyResponse = await fetch('/payment/verify', {
                 method: 'POST',
                 headers: {
@@ -148,63 +284,74 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             const result = await verifyResponse.json();
-            console.log("Verification result:", result);
+            console.log('Verification result:', result);
             
             if (result.success) {
-                // Show success message and redirect
-                showNotification('✅ Payment successful! Your booking is confirmed.', 'success');
+                showSuccess('Payment successful! Redirecting to dashboard...');
+                
+                // Redirect after 2 seconds
                 setTimeout(() => {
                     window.location.href = '/dashboard';
                 }, 2000);
             } else {
-                showNotification('❌ Payment verification failed. Please contact support.', 'error');
+                showError('Payment verification failed: ' + (result.message || 'Unknown error'));
+                resetButton();
             }
+            
         } catch (error) {
-            console.error('Error:', error);
-            showNotification('⚠️ An error occurred. Please check your payment status in dashboard.', 'warning');
+            console.error('❌ Verification error:', error);
+            showError('Network error during verification. Please check your dashboard.');
+            resetButton();
         }
     }
     
-    function showNotification(message, type) {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 ${
-            type === 'success' ? 'bg-green-500' : 
-            type === 'error' ? 'bg-red-500' : 'bg-yellow-500'
-        } text-white max-w-sm`;
-        notification.innerHTML = `
-            <div class="flex items-center gap-2">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Remove after 5 seconds
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                document.body.removeChild(notification);
-            }, 300);
-        }, 5000);
+    // Helper functions
+    function resetButton() {
+        payButton.disabled = false;
+        payButton.style.display = 'block';
+        payButton.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now ₹{{ booking.amount_paid }}';
+        paymentStatus.classList.add('hidden');
     }
     
-    // Add loading state to button
-    const payButton = document.getElementById('rzp-button');
-    payButton.addEventListener('click', function() {
-        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
-        this.disabled = true;
-        
-        // Reset button after 3 seconds if modal doesn't open
+    function showSuccess(message) {
+        const notification = createNotification(message, 'success');
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 5000);
+    }
+    
+    function showError(message) {
+        const notification = createNotification(message, 'error');
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 5000);
+    }
+    
+    function createNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
+            type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 'bg-gradient-to-r from-red-500 to-pink-600'
+        } text-white max-w-md`;
+        notification.innerHTML = `
+            <div class="flex items-center gap-3">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} text-xl"></i>
+                <div class="flex-1">
+                    <div class="font-semibold">${type === 'success' ? 'Success!' : 'Error!'}</div>
+                    <div class="text-sm opacity-90">${message}</div>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-white/70 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        return notification;
+    }
+    
+    // Auto-check if payment was already completed
+    if ("{{ booking.payment_status }}" === "paid") {
+        showSuccess('Payment already completed! Redirecting...');
         setTimeout(() => {
-            if (this.disabled) {
-                this.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now ₹{{ booking.amount_paid }}';
-                this.disabled = false;
-            }
-        }, 3000);
-    });
+            window.location.href = '/dashboard';
+        }, 2000);
+    }
 });
 </script>
 {% endblock %}
