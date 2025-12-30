@@ -1959,7 +1959,57 @@ async def user_service_page(
     })
 
 # ============ API ENDPOINTS ============
+# In your FastAPI app
+@app.post("/api/create-razorpay-order")
+async def create_razorpay_order(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    booking_id = data.get("booking_id")
+    amount = data.get("amount")
+    
+    # Create Razorpay order
+    order_data = {
+        "amount": amount,
+        "currency": "INR",
+        "receipt": f"booking_{booking_id}",
+        "notes": {
+            "booking_id": str(booking_id)
+        }
+    }
+    
+    order = razorpay_client.order.create(data=order_data)
+    
+    # Update booking with order ID
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+    if booking:
+        booking.razorpay_order_id = order["id"]
+        db.commit()
+    
+    return {"order_id": order["id"]}
 
+@app.post("/api/verify-payment")
+async def verify_payment(request: Request, db: Session = Depends(get_db)):
+    data = await request.json()
+    
+    # Verify payment signature
+    params_dict = {
+        'razorpay_order_id': data['razorpay_order_id'],
+        'razorpay_payment_id': data['razorpay_payment_id'],
+        'razorpay_signature': data['razorpay_signature']
+    }
+    
+    try:
+        # Verify signature
+        razorpay_client.utility.verify_payment_signature(params_dict)
+        
+        # Update booking status
+        booking = db.query(Booking).filter(Booking.id == data['booking_id']).first()
+        if booking:
+            booking.payment_status = "paid"
+            db.commit()
+        
+        return {"success": True, "message": "Payment verified"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 # Update the time-slots API to support both ID and username
 @app.post("/api/time-slots/{identifier}")
 async def get_time_slots(
