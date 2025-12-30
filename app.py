@@ -300,7 +300,24 @@ def create_admin_user(db: Session):
     
     return admin_user
 
-# Add this at the end of your imports/before routes
+
+
+def cleanup_past_availabilities(db: Session):
+    """Remove availability slots from past dates"""
+    today = datetime.now().date()
+    try:
+        # Delete availabilities from past dates
+        db.query(Availability).filter(
+            Availability.date < today
+        ).delete(synchronize_session=False)
+        db.commit()
+        print(f"Cleaned up past availabilities")
+    except Exception as e:
+        db.rollback()
+        print(f"Error cleaning up past availabilities: {e}")
+
+
+        
 @app.on_event("startup")
 async def startup_event():
     db = SessionLocal()
