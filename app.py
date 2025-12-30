@@ -1,7 +1,8 @@
 import os
+import re
 from sqlalchemy import or_
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import List, Optional
 from pathlib import Path
 from fastapi import Query
@@ -1148,22 +1149,72 @@ async def mentor_availability(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """Mentor availability management page"""
     if not current_user or current_user.role != "mentor":
         raise HTTPException(status_code=403, detail="Access denied")
     
+    # Get or create mentor profile
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        # Create a mentor profile if it doesn't exist
+        mentor = Mentor(
+            user_id=current_user.id,
+            verification_status="pending",
+            created_at=datetime.utcnow()
+        )
+        db.add(mentor)
+        db.commit()
+        db.refresh(mentor)
+    
+    # Get today's date
+    today = datetime.now().date()
+    
+    # Get availabilities (current and future dates only)
+    # Handle both Date and DateTime types safely
     availabilities = db.query(Availability).filter(
-        Availability.mentor_id == mentor.id,
-        Availability.date >= datetime.now().date()
+        Availability.mentor_id == mentor.id
     ).order_by(Availability.date, Availability.start_time).all()
     
+    # Filter for future dates in Python to handle any date format issues
+    future_availabilities = []
+    for avail in availabilities:
+        # Extract date safely
+        avail_date = None
+        if isinstance(avail.date, datetime):
+            avail_date = avail.date.date()
+        elif isinstance(avail.date, date):
+            avail_date = avail.date
+        elif hasattr(avail.date, 'date'):  # Handle other date-like objects
+            avail_date = avail.date.date()
+        
+        # Only include future dates
+        if avail_date and avail_date >= today:
+            # Add display properties for template
+            avail.display_date = avail_date.strftime("%Y-%m-%d")
+            avail.display_day = avail_date.strftime("%A")
+            future_availabilities.append(avail)
+    
+    # Get services for dropdown
     services = db.query(Service).filter(Service.mentor_id == mentor.id).all()
+    
+    # Get success/error messages from query params
+    flash_messages = []
+    success = request.query_params.get("success")
+    error = request.query_params.get("error")
+    
+    if success:
+        flash_messages.append({"category": "success", "message": success})
+    if error:
+        flash_messages.append({"category": "error", "message": error})
     
     return templates.TemplateResponse("mentor_availability.html", {
         "request": request,
         "current_user": current_user,
-        "availabilities": availabilities,
-        "services": services
+        "mentor": mentor,
+        "availabilities": future_availabilities,
+        "services": services,
+        "today": today.strftime("%Y-%m-%d"),
+        "flash_messages": flash_messages
     })
 
 @app.post("/mentor/availability/create")
@@ -1172,37 +1223,125 @@ async def create_availability(
     date: str = Form(...),
     start_time: str = Form(...),
     end_time: str = Form(...),
-    service_id: int = Form(None),
+    service_id: Optional[int] = Form(None),
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """Create a new availability slot"""
     if not current_user or current_user.role != "mentor":
         raise HTTPException(status_code=403, detail="Access denied")
     
-    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
-    
-    # Check if time slot is available
-    existing = db.query(Availability).filter(
-        Availability.mentor_id == mentor.id,
-        Availability.date == datetime.strptime(date, "%Y-%m-%d").date(),
-        Availability.start_time == start_time
-    ).first()
-    
-    if existing:
-        raise HTTPException(status_code=400, detail="Time slot already exists")
-    
-    availability = Availability(
-        mentor_id=mentor.id,
-        service_id=service_id,
-        date=datetime.strptime(date, "%Y-%m-%d").date(),
-        start_time=start_time,
-        end_time=end_time
-    )
-    
-    db.add(availability)
-    db.commit()
-    
-    return RedirectResponse(url="/mentor/availability", status_code=303)
+    try:
+        # Get or create mentor profile
+        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+        if not mentor:
+            mentor = Mentor(
+                user_id=current_user.id,
+                verification_status="pending",
+                created_at=datetime.utcnow()
+            )
+            db.add(mentor)
+            db.commit()
+            db.refresh(mentor)
+        
+        # Validate date format
+        try:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            return RedirectResponse(
+                url="/mentor/availability?error=Invalid%20date%20format.%20Use%20YYYY-MM-DD",
+                status_code=303
+            )
+        
+        # Validate time format
+        time_pattern = re.compile(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$')
+        if not time_pattern.match(start_time) or not time_pattern.match(end_time):
+            return RedirectResponse(
+                url="/mentor/availability?error=Invalid%20time%20format.%20Use%20HH:MM%20(24-hour)",
+                status_code=303
+            )
+        
+        # Validate start time is before end time
+        start_dt = datetime.strptime(start_time, "%H:%M")
+        end_dt = datetime.strptime(end_time, "%H:%M")
+        if start_dt >= end_dt:
+            return RedirectResponse(
+                url="/mentor/availability?error=Start%20time%20must%20be%20before%20end%20time",
+                status_code=303
+            )
+        
+        # Validate date is not in the past
+        today = datetime.now().date()
+        if parsed_date < today:
+            return RedirectResponse(
+                url="/mentor/availability?error=Cannot%20add%20availability%20for%20past%20dates",
+                status_code=303
+            )
+        
+        # Check if time slot overlaps with existing availability
+        existing = db.query(Availability).filter(
+            Availability.mentor_id == mentor.id,
+            Availability.date == parsed_date,
+            Availability.start_time == start_time
+        ).first()
+        
+        if existing:
+            return RedirectResponse(
+                url="/mentor/availability?error=Time%20slot%20already%20exists",
+                status_code=303
+            )
+        
+        # Check for overlapping time slots
+        overlapping = db.query(Availability).filter(
+            Availability.mentor_id == mentor.id,
+            Availability.date == parsed_date,
+            Availability.start_time < end_time,
+            Availability.end_time > start_time
+        ).first()
+        
+        if overlapping:
+            return RedirectResponse(
+                url="/mentor/availability?error=Time%20slot%20overlaps%20with%20existing%20availability",
+                status_code=303
+            )
+        
+        # Validate service_id if provided
+        if service_id:
+            service = db.query(Service).filter(
+                Service.id == service_id,
+                Service.mentor_id == mentor.id
+            ).first()
+            if not service:
+                return RedirectResponse(
+                    url="/mentor/availability?error=Invalid%20service%20selected",
+                    status_code=303
+                )
+        
+        # Create new availability
+        availability = Availability(
+            mentor_id=mentor.id,
+            service_id=service_id,
+            date=parsed_date,
+            start_time=start_time,
+            end_time=end_time,
+            is_booked=False,
+            created_at=datetime.utcnow()
+        )
+        
+        db.add(availability)
+        db.commit()
+        
+        return RedirectResponse(
+            url="/mentor/availability?success=Availability%20added%20successfully",
+            status_code=303
+        )
+        
+    except Exception as e:
+        db.rollback()
+        return RedirectResponse(
+            url=f"/mentor/availability?error=Error%20creating%20availability:%20{str(e)}",
+            status_code=303
+        )
 
 # ============ BOOKING & PAYMENT ROUTES ============
 
