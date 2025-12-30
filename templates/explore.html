@@ -3,45 +3,734 @@
 {% block title %}Find Mentors - ClearQ{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
+<style>
+    :root {
+        --primary: #3B82F6;
+        --primary-dark: #2563EB;
+        --primary-light: #60A5FA;
+        --secondary: #8B5CF6;
+        --accent: #06B6D4;
+        --success: #10B981;
+        --warning: #F59E0B;
+        --danger: #EF4444;
+        --gray-900: #0F172A;
+        --gray-800: #1E293B;
+        --gray-700: #334155;
+        --gray-600: #475569;
+        --gray-500: #64748B;
+        --gray-400: #94A3B8;
+        --gray-300: #CBD5E1;
+        --gray-200: #E2E8F0;
+        --gray-100: #F1F5F9;
+        --gray-50: #F8FAFC;
+        --white: #FFFFFF;
+        --radius-sm: 0.375rem;
+        --radius: 0.5rem;
+        --radius-md: 0.75rem;
+        --radius-lg: 1rem;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --transition: all 0.2s ease;
+    }
+
+    .explore-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    /* Hero Section */
+    .explore-hero {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: var(--white);
+        padding: 2rem 1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .hero-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Search Bar */
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .search-form {
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-400);
+        z-index: 10;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.875rem 1rem 0.875rem 3rem;
+        border: none;
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        color: var(--white);
+        font-size: 0.9375rem;
+        transition: var(--transition);
+    }
+
+    .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .search-input:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Filters Section */
+    .filters-section {
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 1rem 1.25rem;
+    }
+
+    .filters-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .filters-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .filter-select {
+        padding: 0.625rem 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        color: var(--gray-700);
+        background: var(--white);
+        cursor: pointer;
+        transition: var(--transition);
+        min-width: 140px;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .clear-filters-btn {
+        padding: 0.625rem 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        color: var(--gray-700);
+        background: transparent;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        transition: var(--transition);
+    }
+
+    .clear-filters-btn:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-400);
+    }
+
+    /* Main Content */
+    .explore-main {
+        padding: 1.25rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Results Header */
+    .results-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .results-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+    }
+
+    .results-count {
+        color: var(--primary);
+        font-weight: 700;
+    }
+
+    .filters-info {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    .results-count-display {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    /* Mentors Grid */
+    .mentors-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Mentor Card */
+    .mentor-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .mentor-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .card-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
+    }
+
+    .mentor-info {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .mentor-avatar {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: var(--radius);
+        overflow: hidden;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    .avatar-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-initials {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        font-weight: 600;
+        font-size: 1.125rem;
+    }
+
+    .mentor-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mentor-name-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.25rem;
+    }
+
+    .mentor-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: var(--success);
+        color: var(--white);
+        padding: 0.125rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        flex-shrink: 0;
+    }
+
+    .mentor-title {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mentor-company {
+        font-size: 0.8125rem;
+        color: var(--gray-500);
+        margin-bottom: 0.5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Rating */
+    .mentor-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        margin-top: 0.25rem;
+    }
+
+    .rating-stars {
+        display: flex;
+        gap: 0.125rem;
+    }
+
+    .star-filled {
+        color: #FFD166;
+        font-size: 0.875rem;
+    }
+
+    .star-empty {
+        color: var(--gray-300);
+        font-size: 0.875rem;
+    }
+
+    .rating-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--gray-700);
+    }
+
+    .rating-count {
+        font-size: 0.8125rem;
+        color: var(--gray-500);
+    }
+
+    /* Card Body */
+    .card-body {
+        padding: 1rem;
+    }
+
+    /* Skills */
+    .skills-section {
+        margin-bottom: 1rem;
+    }
+
+    .skills-label {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+
+    .skills-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+    }
+
+    .skill-tag {
+        padding: 0.25rem 0.5rem;
+        background: var(--blue-50);
+        color: var(--primary-dark);
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .skill-more {
+        padding: 0.25rem 0.5rem;
+        background: var(--gray-100);
+        color: var(--gray-600);
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    /* Stats */
+    .mentor-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 0.5rem;
+        background: var(--gray-50);
+        border-radius: var(--radius);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-bottom: 0.125rem;
+    }
+
+    .stat-value {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--gray-900);
+    }
+
+    .stat-price {
+        color: var(--primary);
+    }
+
+    /* Bio */
+    .bio-section {
+        margin-bottom: 1rem;
+    }
+
+    .bio-text {
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin: 0;
+    }
+
+    /* Card Footer */
+    .card-footer {
+        padding: 1rem;
+        border-top: 1px solid var(--gray-200);
+        background: var(--gray-50);
+    }
+
+    .card-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .view-profile-btn {
+        font-size: 0.875rem;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .view-profile-btn:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+
+    .book-btn {
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: var(--white);
+        border: none;
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .book-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .empty-icon {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray-400);
+        font-size: 1.5rem;
+    }
+
+    .empty-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-description {
+        font-size: 0.9375rem;
+        color: var(--gray-600);
+        max-width: 400px;
+        margin: 0 auto 1.5rem;
+    }
+
+    .empty-action-btn {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: var(--white);
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .empty-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Pagination */
+    .pagination {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .page-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        color: var(--gray-600);
+        text-decoration: none;
+        transition: var(--transition);
+        font-size: 0.875rem;
+    }
+
+    .page-btn:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-400);
+    }
+
+    .page-btn.active {
+        background: var(--primary);
+        color: var(--white);
+        border-color: var(--primary);
+    }
+
+    .page-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: var(--gray-100);
+    }
+
+    /* Responsive Design */
+    @media (min-width: 640px) {
+        .explore-hero {
+            padding: 3rem 1.75rem;
+        }
+        
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-description {
+            font-size: 1.125rem;
+        }
+        
+        .search-input {
+            padding: 1rem 1.25rem 1rem 3.5rem;
+            font-size: 1rem;
+        }
+        
+        .search-icon {
+            left: 1.25rem;
+        }
+        
+        .filters-section {
+            padding: 1.25rem 1.75rem;
+        }
+        
+        .filters-form {
+            gap: 0.75rem;
+        }
+        
+        .explore-main {
+            padding: 1.75rem;
+        }
+        
+        .mentors-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .hero-title {
+            font-size: 2.25rem;
+        }
+        
+        .filters-form {
+            flex-wrap: nowrap;
+        }
+        
+        .filter-select {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .clear-filters-btn {
+            flex: 0 0 auto;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .explore-hero {
+            padding: 4rem 2rem;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .explore-main {
+            padding: 2rem;
+        }
+        
+        .mentors-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .mentor-card {
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .bio-section {
+            flex: 1;
+        }
+        
+        .bio-text {
+            -webkit-line-clamp: 3;
+        }
+    }
+</style>
+
+<div class="explore-container">
     <!-- Hero Section -->
-    <div class="bg-gradient-to-r from-primary to-secondary text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="text-center">
-                <h1 class="text-4xl md:text-5xl font-bold mb-6">Find Your Perfect Mentor</h1>
-                <p class="text-xl text-white/90 max-w-3xl mx-auto mb-8">
-                    Connect with industry experts who can help you achieve your career goals
-                </p>
-                
-                <!-- Search Bar -->
-                <div class="max-w-2xl mx-auto">
-                    <form method="GET" action="/explore" id="searchForm" class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
-                        <input type="text" 
-                               name="q"
-                               id="searchInput"
-                               value="{{ search_query or '' }}"
-                               class="block w-full pl-10 pr-3 py-4 border border-transparent rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-                               placeholder="Search mentors by skill, industry, or name..."
-                               onkeypress="if(event.keyCode === 13) { event.preventDefault(); document.getElementById('searchForm').submit(); }">
-                        <!-- Hidden submit button for accessibility -->
-                        <button type="submit" class="hidden">Search</button>
-                    </form>
-                </div>
+    <div class="explore-hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Find Your Perfect Mentor</h1>
+            <p class="hero-description">
+                Connect with industry experts who can help you achieve your career goals
+            </p>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <form method="GET" action="/explore" class="search-form">
+                    <div class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input type="text" 
+                           name="q"
+                           value="{{ search_query or '' }}"
+                           class="search-input"
+                           placeholder="Search mentors by skill, industry, or name..."
+                           onkeypress="if(event.key === 'Enter') { event.preventDefault(); this.form.submit(); }">
+                    <button type="submit" class="hidden">Search</button>
+                </form>
             </div>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <form method="GET" action="/explore" id="filterForm" class="flex flex-wrap gap-4">
+    <div class="filters-section">
+        <div class="filters-container">
+            <form method="GET" action="/explore" class="filters-form">
                 <!-- Hidden search field to preserve search -->
                 <input type="hidden" name="q" value="{{ search_query or '' }}">
                 
-                <select name="industry" onchange="this.form.submit()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                <!-- Industry Filter -->
+                <select name="industry" onchange="this.form.submit()" class="filter-select">
                     <option value="">All Industries</option>
                     <option value="Technology" {% if selected_industry == 'Technology' %}selected{% endif %}>Technology</option>
                     <option value="Finance" {% if selected_industry == 'Finance' %}selected{% endif %}>Finance</option>
@@ -53,183 +742,183 @@
                     <option value="E-commerce" {% if selected_industry == 'E-commerce' %}selected{% endif %}>E-commerce</option>
                 </select>
                 
-                <select name="experience" onchange="this.form.submit()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option value="">All Experience Levels</option>
+                <!-- Experience Filter -->
+                <select name="experience" onchange="this.form.submit()" class="filter-select">
+                    <option value="">All Experience</option>
                     <option value="1-3" {% if selected_experience == '1-3' %}selected{% endif %}>1-3 years</option>
                     <option value="3-5" {% if selected_experience == '3-5' %}selected{% endif %}>3-5 years</option>
                     <option value="5-10" {% if selected_experience == '5-10' %}selected{% endif %}>5-10 years</option>
                     <option value="10+" {% if selected_experience == '10+' %}selected{% endif %}>10+ years</option>
                 </select>
                 
-                <select name="sort" onchange="this.form.submit()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option value="recommended" {% if selected_sort == 'recommended' %}selected{% endif %}>Sort by: Recommended</option>
-                    <option value="rating" {% if selected_sort == 'rating' %}selected{% endif %}>Sort by: Rating</option>
-                    <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Sort by: Price: Low to High</option>
-                    <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Sort by: Price: High to Low</option>
-                    <option value="experience" {% if selected_sort == 'experience' %}selected{% endif %}>Sort by: Experience</option>
-                    <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Sort by: Name</option>
+                <!-- Sort Filter -->
+                <select name="sort" onchange="this.form.submit()" class="filter-select">
+                    <option value="recommended" {% if selected_sort == 'recommended' %}selected{% endif %}>Recommended</option>
+                    <option value="rating" {% if selected_sort == 'rating' %}selected{% endif %}>Top Rated</option>
+                    <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="experience" {% if selected_sort == 'experience' %}selected{% endif %}>Most Experienced</option>
                 </select>
                 
                 <!-- Clear Filters Button -->
                 {% if search_query or selected_industry or selected_experience or selected_sort != 'recommended' %}
-                <a href="/explore" class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center">
-                    <i class="fas fa-times mr-2"></i> Clear Filters
+                <a href="/explore" class="clear-filters-btn">
+                    <i class="fas fa-times"></i> Clear
                 </a>
                 {% endif %}
             </form>
         </div>
     </div>
 
-    <!-- Mentors Grid -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Main Content -->
+    <div class="explore-main">
         {% if mentors %}
-        <div class="mb-6 flex justify-between items-center">
+        <!-- Results Header -->
+        <div class="results-header">
             <div>
-                <h2 class="text-lg font-semibold text-gray-900">
-                    Found <span class="text-primary">{{ mentors|length }}</span> mentor{% if mentors|length != 1 %}s{% endif %}
+                <h2 class="results-title">
+                    Found <span class="results-count">{{ mentors|length }}</span> mentor{% if mentors|length != 1 %}s{% endif %}
                     {% if search_query %}
                     for "{{ search_query }}"
                     {% endif %}
                 </h2>
                 {% if selected_industry or selected_experience %}
-                <p class="text-sm text-gray-600 mt-1">
+                <p class="filters-info">
                     {% if selected_industry %}Industry: {{ selected_industry }} {% endif %}
                     {% if selected_experience %}{% if selected_industry %}| {% endif %}Experience: {{ selected_experience }} years{% endif %}
                 </p>
                 {% endif %}
             </div>
             
-            {% if mentors|length > 0 %}
-            <div class="text-sm text-gray-600">
+            <div class="results-count-display">
                 Showing {{ mentors|length }} of {{ total_mentors|default(mentors|length) }} mentors
             </div>
-            {% endif %}
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Mentors Grid -->
+        <div class="mentors-grid">
             {% for mentor in mentors %}
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div class="p-6">
-                    <!-- Mentor Header -->
-                    <div class="flex items-start space-x-4">
-                        {% if mentor.user.profile_image %}
-                        <img src="/static/{{ mentor.user.profile_image }}" 
-                             alt="{{ mentor.user.full_name }}"
-                             class="w-16 h-16 rounded-xl object-cover">
-                        {% else %}
-                        <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xl font-bold">
-                            {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
+            <div class="mentor-card">
+                <!-- Card Header -->
+                <div class="card-header">
+                    <div class="mentor-info">
+                        <!-- Avatar -->
+                        <div class="mentor-avatar">
+                            {% if mentor.user.profile_image %}
+                            <img src="/static/{{ mentor.user.profile_image }}" 
+                                 alt="{{ mentor.user.full_name }}"
+                                 class="avatar-image">
+                            {% else %}
+                            <div class="avatar-initials">
+                                {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
+                            </div>
+                            {% endif %}
                         </div>
-                        {% endif %}
                         
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="font-bold text-lg text-gray-900">{{ mentor.user.full_name or mentor.user.username }}</h3>
-                                    <p class="text-sm text-gray-600">{{ mentor.job_title or 'Expert Mentor' }}</p>
-                                    {% if mentor.company %}
-                                    <p class="text-sm text-gray-500">{{ mentor.company }}</p>
-                                    {% endif %}
-                                </div>
+                        <!-- Details -->
+                        <div class="mentor-details">
+                            <div class="mentor-name-row">
+                                <h3 class="mentor-name">{{ mentor.user.full_name or mentor.user.username }}</h3>
                                 {% if mentor.is_verified_by_admin %}
-                                <div class="flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
-                                    <i class="fas fa-check-circle mr-1"></i>
-                                    Verified
-                                </div>
+                                <span class="verified-badge">
+                                    <i class="fas fa-check-circle"></i> Verified
+                                </span>
                                 {% endif %}
                             </div>
                             
+                            <p class="mentor-title">{{ mentor.job_title or 'Expert Mentor' }}</p>
+                            {% if mentor.company %}
+                            <p class="mentor-company">{{ mentor.company }}</p>
+                            {% endif %}
+                            
                             <!-- Rating -->
-                            <div class="flex items-center mt-2">
-                                <div class="flex text-yellow-400">
+                            <div class="mentor-rating">
+                                <div class="rating-stars">
                                     {% set rating = mentor.rating or 0 %}
                                     {% for i in range(5) %}
                                     {% if i < rating|int %}
-                                    <i class="fas fa-star text-sm"></i>
+                                    <i class="fas fa-star star-filled"></i>
                                     {% elif i < rating %}
-                                    <i class="fas fa-star-half-alt text-sm"></i>
+                                    <i class="fas fa-star-half-alt star-filled"></i>
                                     {% else %}
-                                    <i class="far fa-star text-sm"></i>
+                                    <i class="far fa-star star-empty"></i>
                                     {% endif %}
                                     {% endfor %}
                                 </div>
-                                <span class="ml-2 text-sm text-gray-600">{{ "%.1f"|format(rating) }} ({{ mentor.review_count|default('0') }} reviews)</span>
+                                <span class="rating-value">{{ "%.1f"|format(rating) }}</span>
+                                <span class="rating-count">({{ mentor.review_count|default('0') }})</span>
                             </div>
                         </div>
                     </div>
-                    
+                </div>
+                
+                <!-- Card Body -->
+                <div class="card-body">
                     <!-- Skills -->
-                    <div class="mt-4">
-                        <div class="flex flex-wrap gap-2">
-                            {% if mentor.skills %}
-                                {% set skills_list = mentor.skills.split(',')[:3] %}
-                                {% for skill in skills_list %}
-                                <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
-                                    {{ skill.strip() }}
-                                </span>
-                                {% endfor %}
-                                {% if mentor.skills.split(',')|length > 3 %}
-                                <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                                    +{{ mentor.skills.split(',')|length - 3 }} more
-                                </span>
-                                {% endif %}
-                            {% else %}
-                            <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                                Expert Mentor
-                            </span>
+                    {% if mentor.skills %}
+                    <div class="skills-section">
+                        <div class="skills-label">Expertise</div>
+                        <div class="skills-list">
+                            {% set skills_list = mentor.skills.split(',')[:3] %}
+                            {% for skill in skills_list %}
+                            <span class="skill-tag">{{ skill.strip() }}</span>
+                            {% endfor %}
+                            {% if mentor.skills.split(',')|length > 3 %}
+                            <span class="skill-more">+{{ mentor.skills.split(',')|length - 3 }}</span>
                             {% endif %}
                         </div>
                     </div>
+                    {% endif %}
                     
-                    <!-- Experience & Price -->
-                    <div class="mt-6 grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-sm text-gray-500">Experience</p>
-                            <p class="font-semibold text-gray-900">{{ mentor.experience_years|default('5+') }} years</p>
+                    <!-- Stats -->
+                    <div class="mentor-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Experience</div>
+                            <div class="stat-value">{{ mentor.experience_years|default('5+') }} yrs</div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-500">Starting from</p>
-                            <p class="font-bold text-primary text-lg">₹{{ mentor.services[0].price|default('999') if mentor.services else '999' }}</p>
+                        <div class="stat-item">
+                            <div class="stat-label">Starting from</div>
+                            <div class="stat-value stat-price">₹{{ mentor.services[0].price|default('999') if mentor.services else '999' }}</div>
                         </div>
                     </div>
                     
-                    <!-- Bio Excerpt -->
-                    <div class="mt-4">
-                        <p class="text-sm text-gray-600 line-clamp-2">
-                            {{ mentor.bio[:100] if mentor.bio else 'Experienced professional with a passion for mentoring and helping others grow in their careers.' }}...
+                    <!-- Bio -->
+                    <div class="bio-section">
+                        <p class="bio-text">
+                            {{ mentor.bio[:120] if mentor.bio else 'Experienced professional with a passion for mentoring and helping others grow in their careers.' }}
                         </p>
                     </div>
                 </div>
                 
-                <!-- Footer -->
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
-    <div class="flex justify-between items-center">
-        <a href="/mentor/username/{{ mentor.user.username }}" 
-           class="text-primary hover:text-primary-dark font-medium text-sm">
-            View Profile →
-        </a>
-        <a href="/mentor/username/{{ mentor.user.username }}" 
-           class="px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all">
-            Book Session
-        </a>
-    </div>
-</div>
+                <!-- Card Footer -->
+                <div class="card-footer">
+                    <div class="card-actions">
+                        <a href="/mentor/username/{{ mentor.user.username }}" class="view-profile-btn">
+                            View Profile <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="/mentor/username/{{ mentor.user.username }}" class="book-btn">
+                            <i class="fas fa-calendar-check"></i> Book Session
+                        </a>
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
+        
         {% else %}
-        <div class="text-center py-16">
-            <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
-                <i class="fas fa-users text-gray-400 text-3xl"></i>
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-users"></i>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">
+            <h3 class="empty-title">
                 {% if search_query or selected_industry or selected_experience %}
                 No mentors found matching your criteria
                 {% else %}
                 No Verified Mentors Yet
                 {% endif %}
             </h3>
-            <p class="text-gray-600 max-w-md mx-auto mb-8">
+            <p class="empty-description">
                 {% if search_query %}
                 No mentors found for "{{ search_query }}". Try a different search term or browse all mentors.
                 {% elif selected_industry or selected_experience %}
@@ -239,14 +928,12 @@
                 {% endif %}
             </p>
             {% if search_query or selected_industry or selected_experience %}
-            <a href="/explore" 
-               class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
-                Clear Filters & View All Mentors
+            <a href="/explore" class="empty-action-btn">
+                <i class="fas fa-times"></i> Clear Filters
             </a>
             {% elif current_user and current_user.role == 'mentor' %}
-            <a href="/dashboard" 
-               class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
-                Go to Dashboard
+            <a href="/dashboard" class="empty-action-btn">
+                <i class="fas fa-tachometer-alt"></i> Go to Dashboard
             </a>
             {% endif %}
         </div>
@@ -254,35 +941,38 @@
         
         <!-- Pagination -->
         {% if mentors and total_pages > 1 %}
-        <div class="mt-12 flex justify-center">
-            <nav class="flex items-center space-x-2">
+        <div class="pagination">
+            <nav class="pagination-nav">
+                <!-- Previous Button -->
                 {% if page > 1 %}
                 <a href="/explore?page={{ page-1 }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}{% if selected_experience %}&experience={{ selected_experience }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" 
-                   class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                   class="page-btn">
                     <i class="fas fa-chevron-left"></i>
                 </a>
                 {% else %}
-                <span class="px-3 py-2 border border-gray-300 rounded-lg text-gray-300 cursor-not-allowed">
+                <span class="page-btn disabled">
                     <i class="fas fa-chevron-left"></i>
                 </span>
                 {% endif %}
                 
+                <!-- Page Numbers -->
                 {% for p in range(1, total_pages + 1) %}
                     {% if p == page %}
-                    <span class="px-4 py-2 bg-primary text-white rounded-lg font-medium">{{ p }}</span>
+                    <span class="page-btn active">{{ p }}</span>
                     {% elif p >= page-2 and p <= page+2 %}
                     <a href="/explore?page={{ p }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}{% if selected_experience %}&experience={{ selected_experience }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" 
-                       class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">{{ p }}</a>
+                       class="page-btn">{{ p }}</a>
                     {% endif %}
                 {% endfor %}
                 
+                <!-- Next Button -->
                 {% if page < total_pages %}
                 <a href="/explore?page={{ page+1 }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}{% if selected_experience %}&experience={{ selected_experience }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" 
-                   class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                   class="page-btn">
                     <i class="fas fa-chevron-right"></i>
                 </a>
                 {% else %}
-                <span class="px-3 py-2 border border-gray-300 rounded-lg text-gray-300 cursor-not-allowed">
+                <span class="page-btn disabled">
                     <i class="fas fa-chevron-right"></i>
                 </span>
                 {% endif %}
@@ -292,46 +982,54 @@
     </div>
 </div>
 
-<style>
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-</style>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit search on Enter key
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('searchForm').submit();
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit search on Enter key
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.form.submit();
+                }
+            });
+        }
+        
+        // Add hover effects to mentor cards
+        const mentorCards = document.querySelectorAll('.mentor-card');
+        mentorCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
         });
-    }
-    
-    // Debounced search for real-time suggestions (optional)
-    let searchTimeout;
-    searchInput?.addEventListener('input', function(e) {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            // Optional: Add AJAX search suggestions here
-            // console.log('Searching for:', e.target.value);
-        }, 500);
+        
+        // Add click effects to buttons
+        const bookButtons = document.querySelectorAll('.book-btn');
+        const viewProfileButtons = document.querySelectorAll('.view-profile-btn');
+        
+        bookButtons.forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-1px)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        viewProfileButtons.forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.textDecoration = 'underline';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.textDecoration = 'none';
+            });
+        });
     });
-    
-    // Clear search button
-    const clearSearch = document.getElementById('clearSearch');
-    if (clearSearch) {
-        clearSearch.addEventListener('click', function() {
-            searchInput.value = '';
-            document.getElementById('searchForm').submit();
-        });
-    }
-});
 </script>
 {% endblock %}
