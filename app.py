@@ -1374,112 +1374,131 @@ async def create_availability(
             url=f"/mentor/availability?error={error_msg}",
             status_code=303
         )
-# Add this route for mentor profile by username
-@app.get("/mentor/username/{username}", response_class=HTMLResponse)
-async def mentor_profile_by_username(
+@app.get("/{username}", response_class=HTMLResponse)
+async def user_profile(
     request: Request,
     username: str,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """User profile page - works for both mentors and learners"""
     # Find user by username
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Mentor not found")
+        raise HTTPException(status_code=404, detail="User not found")
     
-    # Get mentor profile
-    mentor = db.query(Mentor).filter(Mentor.user_id == user.id).first()
-    if not mentor:
-        raise HTTPException(status_code=404, detail="Mentor not found")
-    
-    # Clean up past availabilities for this mentor
-    today = datetime.now().date()
-    try:
-        db.query(Availability).filter(
-            Availability.mentor_id == mentor.id,
-            Availability.date < today
-        ).delete(synchronize_session=False)
-        db.commit()
-    except Exception as e:
-        print(f"Error cleaning up past availabilities for mentor {mentor.id}: {e}")
-        db.rollback()
-    
-    services = db.query(Service).filter(
-        Service.mentor_id == mentor.id,
-        Service.is_active == True
-    ).all()
-    
-    # Get actual availabilities from database (future dates only)
-    availabilities = db.query(Availability).filter(
-        Availability.mentor_id == mentor.id,
-        Availability.is_booked == False,
-        Availability.date >= today
-    ).order_by(Availability.date).all()
-    
-    # Group availabilities by date for the frontend
-    from collections import defaultdict
-    date_slots = defaultdict(list)
-    
-    for avail in availabilities:
-        if isinstance(avail.date, datetime):
-            date_str = avail.date.strftime("%Y-%m-%d")
-        elif isinstance(avail.date, date):
-            date_str = avail.date.strftime("%Y-%m-%d")
-        else:
-            try:
-                date_str = datetime.strptime(str(avail.date), "%Y-%m-%d").strftime("%Y-%m-%d")
-            except:
-                continue
+    # If user is a mentor, show mentor profile
+    if user.role == "mentor":
+        mentor = db.query(Mentor).filter(Mentor.user_id == user.id).first()
+        if not mentor:
+            raise HTTPException(status_code=404, detail="Mentor profile not found")
         
-        date_slots[date_str].append({
-            "start_time": avail.start_time,
-            "end_time": avail.end_time
+        # Clean up past availabilities for this mentor
+        today = datetime.now().date()
+        try:
+            db.query(Availability).filter(
+                Availability.mentor_id == mentor.id,
+                Availability.date < today
+            ).delete(synchronize_session=False)
+            db.commit()
+        except Exception as e:
+            print(f"Error cleaning up past availabilities for mentor {mentor.id}: {e}")
+            db.rollback()
+        
+        services = db.query(Service).filter(
+            Service.mentor_id == mentor.id,
+            Service.is_active == True
+        ).all()
+        
+        # Get actual availabilities from database (future dates only)
+        availabilities = db.query(Availability).filter(
+            Availability.mentor_id == mentor.id,
+            Availability.is_booked == False,
+            Availability.date >= today
+        ).order_by(Availability.date).all()
+        
+        # Group availabilities by date for the frontend
+        from collections import defaultdict
+        date_slots = defaultdict(list)
+        
+        for avail in availabilities:
+            if isinstance(avail.date, datetime):
+                date_str = avail.date.strftime("%Y-%m-%d")
+            elif isinstance(avail.date, date):
+                date_str = avail.date.strftime("%Y-%m-%d")
+            else:
+                try:
+                    date_str = datetime.strptime(str(avail.date), "%Y-%m-%d").strftime("%Y-%m-%d")
+                except:
+                    continue
+            
+            date_slots[date_str].append({
+                "start_time": avail.start_time,
+                "end_time": avail.end_time
+            })
+        
+        # Prepare available dates for display (next 7 days with slots)
+        available_dates = []
+        for i in range(7):
+            target_date = today + timedelta(days=i)
+            date_str = target_date.strftime("%Y-%m-%d")
+            
+            if date_str in date_slots:
+                time_slots = date_slots[date_str]
+                # Only show dates that have available time slots
+                if time_slots:
+                    available_dates.append({
+                        "day_name": target_date.strftime("%a"),
+                        "day_num": target_date.day,
+                        "month": target_date.strftime("%b"),
+                        "full_date": date_str,
+                        "time_slots": time_slots
+                    })
+        
+        return templates.TemplateResponse("mentor_profile.html", {
+            "request": request,
+            "current_user": current_user,
+            "mentor": mentor,
+            "services": services,
+            "available_dates": available_dates[:7]
         })
     
-    # Prepare available dates for display (next 7 days with slots)
-    available_dates = []
-    for i in range(7):
-        target_date = today + timedelta(days=i)
-        date_str = target_date.strftime("%Y-%m-%d")
-        
-        if date_str in date_slots:
-            time_slots = date_slots[date_str]
-            # Only show dates that have available time slots
-            if time_slots:
-                available_dates.append({
-                    "day_name": target_date.strftime("%a"),
-                    "day_num": target_date.day,
-                    "month": target_date.strftime("%b"),
-                    "full_date": date_str,
-                    "time_slots": time_slots
-                })
+    # If user is a learner, show simple learner profile
+    elif user.role == "learner":
+        # You can create a learner_profile.html template if needed
+        # For now, redirect to dashboard or show basic info
+        return templates.TemplateResponse("learner_profile.html", {
+            "request": request,
+            "current_user": current_user,
+            "profile_user": user
+        })
     
-    return templates.TemplateResponse("mentor_profile.html", {
-        "request": request,
-        "current_user": current_user,
-        "mentor": mentor,
-        "services": services,
-        "available_dates": available_dates[:7]
-    })
+    else:
+        raise HTTPException(status_code=404, detail="Profile not found")
 
 # Service page by username and service ID
-@app.get("/mentor/username/{username}/service/{service_id}", response_class=HTMLResponse)
-async def mentor_service_page(
+@app.get("/{username}/service/{service_id}", response_class=HTMLResponse)
+async def user_service_page(
     request: Request,
     username: str,
     service_id: int,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """Service page for a mentor's service"""
     # Find user by username
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Mentor not found")
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if user is a mentor
+    if user.role != "mentor":
+        raise HTTPException(status_code=404, detail="Service not found")
     
     # Get mentor profile
     mentor = db.query(Mentor).filter(Mentor.user_id == user.id).first()
     if not mentor:
-        raise HTTPException(status_code=404, detail="Mentor not found")
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
     
     # Get the specific service
     service = db.query(Service).filter(
@@ -1715,7 +1734,7 @@ async def verify_mentor(
 # ============ API ENDPOINTS ============
 
 # Update the time-slots API to support both ID and username
-@app.post("/api/time-slots/{identifier}")
+@app.post("/api/time-slots/user/{identifier}")
 async def get_time_slots(
     identifier: str,
     data: dict,
