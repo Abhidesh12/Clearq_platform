@@ -1,4 +1,5 @@
 import os
+from sqlalchemy import or_
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional
@@ -508,22 +509,122 @@ async def google_auth_callback(request: Request, code: str, db: Session = Depend
     # For simplicity, we'll redirect to register with Google info
     return RedirectResponse(url="/register")
 
+
 @app.get("/explore", response_class=HTMLResponse)
 async def explore_mentors(
     request: Request,
     current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    q: Optional[str] = None,  # Search query
+    industry: Optional[str] = None,
+    experience: Optional[str] = None,
+    sort: Optional[str] = "recommended",
+    page: int = 1,
+    limit: int = 9
 ):
-    mentors = db.query(Mentor).filter(
-        Mentor.is_verified_by_admin == True
-    ).all()
+    # Build base query for verified mentors
+    query = db.query(Mentor).join(User).filter(
+        Mentor.is_verified_by_admin == True,
+        User.is_active == True
+    )
+    
+    # Apply search filter if provided
+    if q and q.strip():
+        search_term = f"%{q.strip()}%"
+        query = query.filter(
+            or_(
+                User.full_name.ilike(search_term),
+                User.username.ilike(search_term),
+                Mentor.bio.ilike(search_term),
+                Mentor.skills.ilike(search_term),
+                Mentor.industry.ilike(search_term),
+                Mentor.job_title.ilike(search_term),
+                Mentor.company.ilike(search_term)
+            )
+        )
+    
+    # Apply industry filter if provided
+    if industry and industry.strip():
+        query = query.filter(Mentor.industry.ilike(f"%{industry.strip()}%"))
+    
+    # Apply experience filter if provided
+    if experience and experience.strip():
+        if experience == "1-3":
+            query = query.filter(Mentor.experience_years.between(1, 3))
+        elif experience == "3-5":
+            query = query.filter(Mentor.experience_years.between(3, 5))
+        elif experience == "5-10":
+            query = query.filter(Mentor.experience_years.between(5, 10))
+        elif experience == "10+":
+            query = query.filter(Mentor.experience_years >= 10)
+    
+    # Apply sorting
+    if sort == "rating":
+        query = query.order_by(Mentor.rating.desc().nulls_last(), Mentor.review_count.desc())
+    elif sort == "price_low":
+        # Get mentors with their minimum service price
+        from sqlalchemy import func
+        subquery = db.query(
+            Service.mentor_id,
+            func.min(Service.price).label('min_price')
+        ).filter(Service.is_active == True).group_by(Service.mentor_id).subquery()
+        
+        query = query.outerjoin(
+            subquery, Mentor.id == subquery.c.mentor_id
+        ).order_by(subquery.c.min_price.asc().nulls_last())
+    elif sort == "price_high":
+        # Get mentors with their maximum service price
+        from sqlalchemy import func
+        subquery = db.query(
+            Service.mentor_id,
+            func.max(Service.price).label('max_price')
+        ).filter(Service.is_active == True).group_by(Service.mentor_id).subquery()
+        
+        query = query.outerjoin(
+            subquery, Mentor.id == subquery.c.mentor_id
+        ).order_by(subquery.c.max_price.desc().nulls_last())
+    elif sort == "experience":
+        query = query.order_by(Mentor.experience_years.desc().nulls_last())
+    elif sort == "name":
+        query = query.order_by(User.full_name.asc().nulls_last())
+    else:  # recommended/default
+        query = query.order_by(
+            Mentor.rating.desc().nulls_last(), 
+            Mentor.review_count.desc(),
+            Mentor.experience_years.desc()
+        )
+    
+    # Get total count for pagination
+    total_mentors = query.count()
+    total_pages = (total_mentors + limit - 1) // limit if limit > 0 else 1
+    
+    # Apply pagination
+    offset = (page - 1) * limit
+    mentors = query.offset(offset).limit(limit).all()
+    
+    # Load services for each mentor to get pricing info
+    for mentor in mentors:
+        mentor.services = db.query(Service).filter(
+            Service.mentor_id == mentor.id,
+            Service.is_active == True
+        ).order_by(Service.price.asc()).all()
+        
+        # Also ensure user data is loaded
+        if not mentor.user:
+            mentor.user = db.query(User).filter(User.id == mentor.user_id).first()
     
     return templates.TemplateResponse("explore.html", {
         "request": request,
         "current_user": current_user,
-        "mentors": mentors
+        "mentors": mentors,
+        "search_query": q,
+        "selected_industry": industry,
+        "selected_experience": experience,
+        "selected_sort": sort,
+        "page": page,
+        "total_pages": total_pages,
+        "total_mentors": total_mentors
     })
-
 @app.get("/mentor/{mentor_id}", response_class=HTMLResponse)
 async def mentor_profile(
     request: Request,
