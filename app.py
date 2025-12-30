@@ -1527,33 +1527,52 @@ async def get_time_slots(
     if not date_str:
         return JSONResponse({"success": False, "message": "Date required"})
     
-    target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    try:
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return JSONResponse({"success": False, "message": "Invalid date format"})
     
-    # Get booked time slots
-    booked_slots = db.query(Availability).filter(
-        Availability.mentor_id == mentor_id,
-        Availability.date == target_date,
-        Availability.is_booked == True
-    ).all()
-    
-    # Get all available time slots
+    # Get available time slots for this date
     available_slots = db.query(Availability).filter(
         Availability.mentor_id == mentor_id,
         Availability.date == target_date,
         Availability.is_booked == False
-    ).all()
+    ).order_by(Availability.start_time).all()
     
-    booked_times = [slot.start_time for slot in booked_slots]
-    available_times = [slot.start_time for slot in available_slots]
+    # Format time slots for display
+    formatted_slots = []
+    for slot in available_slots:
+        try:
+            start_time_obj = datetime.strptime(slot.start_time, "%H:%M")
+            end_time_obj = datetime.strptime(slot.end_time, "%H:%M")
+            
+            # Format time in 12-hour format with AM/PM
+            formatted_start = start_time_obj.strftime("%I:%M %p").lstrip("0")
+            formatted_end = end_time_obj.strftime("%I:%M %p").lstrip("0")
+            
+            formatted_slots.append({
+                "value": slot.start_time,  # Store in 24-hour format for database
+                "display": f"{formatted_start} - {formatted_end}",
+                "duration": slot.end_time
+            })
+        except:
+            # Fallback to raw time
+            formatted_slots.append({
+                "value": slot.start_time,
+                "display": f"{slot.start_time} - {slot.end_time}",
+                "duration": slot.end_time
+            })
     
-    # Generate time slots (simplified - in real app, use mentor's availability)
-    all_slots = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"]
-    free_slots = [slot for slot in all_slots if slot not in booked_times]
-    
-    return JSONResponse({
-        "success": True,
-        "slots": free_slots[:4]  # Return first 4 available slots
-    })
+    if formatted_slots:
+        return JSONResponse({
+            "success": True,
+            "slots": formatted_slots
+        })
+    else:
+        return JSONResponse({
+            "success": False,
+            "message": "No available time slots for this date"
+        })
 
 # ============ STATIC PAGES ============
 
@@ -1594,28 +1613,59 @@ async def mentor_profile(
         Service.is_active == True
     ).all()
     
-    # Generate sample availability dates (in real app, query from database)
-    import random
+    # Get actual availabilities from database (future dates only)
+    today = datetime.now().date()
+    availabilities = db.query(Availability).filter(
+        Availability.mentor_id == mentor_id,
+        Availability.is_booked == False,
+        Availability.date >= today
+    ).order_by(Availability.date).all()
+    
+    # Group availabilities by date for the frontend
+    from collections import defaultdict
+    date_slots = defaultdict(list)
+    
+    for avail in availabilities:
+        if isinstance(avail.date, datetime):
+            date_str = avail.date.strftime("%Y-%m-%d")
+        elif isinstance(avail.date, date):
+            date_str = avail.date.strftime("%Y-%m-%d")
+        else:
+            try:
+                date_str = datetime.strptime(str(avail.date), "%Y-%m-%d").strftime("%Y-%m-%d")
+            except:
+                continue
+        
+        date_slots[date_str].append({
+            "start_time": avail.start_time,
+            "end_time": avail.end_time
+        })
+    
+    # Prepare available dates for display (next 7 days with slots)
     available_dates = []
     for i in range(7):
-        date = datetime.now() + timedelta(days=i)
-        if random.choice([True, False]):  # Simulate availability
-            available_dates.append({
-                "day_name": date.strftime("%a"),
-                "day_num": date.day,
-                "month": date.strftime("%b"),
-                "full_date": date.strftime("%Y-%m-%d")
-            })
+        target_date = today + timedelta(days=i)
+        date_str = target_date.strftime("%Y-%m-%d")
+        
+        if date_str in date_slots:
+            time_slots = date_slots[date_str]
+            # Only show dates that have available time slots
+            if time_slots:
+                available_dates.append({
+                    "day_name": target_date.strftime("%a"),
+                    "day_num": target_date.day,
+                    "month": target_date.strftime("%b"),
+                    "full_date": date_str,
+                    "time_slots": time_slots  # Include time slots for reference
+                })
     
     return templates.TemplateResponse("mentor_profile.html", {
         "request": request,
         "current_user": current_user,
         "mentor": mentor,
         "services": services,
-        "available_dates": available_dates
+        "available_dates": available_dates[:7]  # Show up to 7 dates
     })
-    
-
 # ============ ERROR HANDLERS ============
 
 @app.exception_handler(404)
