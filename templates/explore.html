@@ -891,19 +891,18 @@
                 </div>
                 
                 <!-- Card Footer -->
-                <div class="card-footer">
-                    <div class="card-actions">
-                        <a href="/mentor/username/{{ mentor.user.username }}" class="view-profile-btn">
-                            View Profile <i class="fas fa-arrow-right"></i>
-                        </a>
-                        <a href="/mentor/username/{{ mentor.user.username }}" class="book-btn">
-                            <i class="fas fa-calendar-check"></i> Book Session
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+    <div class="flex justify-between items-center">
+        <a href="/{{ mentor.user.username }}" 
+           class="text-primary hover:text-primary-dark font-medium text-sm">
+            View Profile →
+        </a>
+        <a href="/{{ mentor.user.username }}" 
+           class="px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all">
+            Book Session
+        </a>
+    </div>
+</div>
         
         {% else %}
         <!-- Empty State -->
