@@ -23,7 +23,6 @@ from urllib.parse import urlencode
 from fastapi import File, UploadFile
 from fastapi.responses import JSONResponse
 import shutil
-from starlette.middleware.sessions import SessionMiddleware
 
 
 # Load environment variables
@@ -78,12 +77,7 @@ GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/au
 # ============ DATABASE MODELS ============
 
 # Add session middleware for flash messages
-app.add_middleware(
-    SessionMiddleware,
-    secret_key=SECRET_KEY,
-    session_cookie="clearq_session",
-    max_age=3600
-)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -630,7 +624,9 @@ async def dashboard(
 async def edit_profile_page(
     request: Request,
     current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    success: Optional[str] = None,
+    error: Optional[str] = None
 ):
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
@@ -640,12 +636,26 @@ async def edit_profile_page(
     if current_user.role == "mentor":
         mentor_profile = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
     
-    # Get flash messages
+    # Get flash messages from query parameters
     flash_messages = []
-    if "flash_message" in request.session:
+    if success:
         flash_messages.append({
-            "category": request.session.pop("flash_category", "info"),
-            "message": request.session.pop("flash_message")
+            "category": "success",
+            "message": success
+        })
+    if error:
+        flash_messages.append({
+            "category": "error", 
+            "message": error
+        })
+    
+    # Also check for flash messages in response cookies (alternative approach)
+    flash_msg = request.cookies.get("flash_message")
+    flash_cat = request.cookies.get("flash_category")
+    if flash_msg:
+        flash_messages.append({
+            "category": flash_cat or "info",
+            "message": flash_msg
         })
     
     return templates.TemplateResponse("edit_profile.html", {
@@ -655,19 +665,36 @@ async def edit_profile_page(
         "now": datetime.now(),
         "flash_messages": flash_messages
     })
+
 @app.get("/profile/change-password", response_class=HTMLResponse)
 async def change_password_page(
     request: Request,
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user),
+    success: Optional[str] = None,
+    error: Optional[str] = None
 ):
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
     
     flash_messages = []
-    if "flash_message" in request.session:
+    if success:
         flash_messages.append({
-            "category": request.session.pop("flash_category", "info"),
-            "message": request.session.pop("flash_message")
+            "category": "success",
+            "message": success
+        })
+    if error:
+        flash_messages.append({
+            "category": "error",
+            "message": error
+        })
+    
+    # Also check for flash messages in response cookies
+    flash_msg = request.cookies.get("flash_message")
+    flash_cat = request.cookies.get("flash_category")
+    if flash_msg:
+        flash_messages.append({
+            "category": flash_cat or "info",
+            "message": flash_msg
         })
     
     return templates.TemplateResponse("change_password.html", {
@@ -691,24 +718,30 @@ async def change_password(
     # Verify current password
     user = db.query(User).filter(User.id == current_user.id).first()
     if not pwd_context.verify(current_password, user.password_hash):
-        request.session["flash_message"] = "Current password is incorrect"
-        request.session["flash_category"] = "error"
-        return RedirectResponse(url="/profile/change-password", status_code=303)
+        # Redirect with error in query parameter
+        return RedirectResponse(
+            url="/profile/change-password?error=Current%20password%20is%20incorrect",
+            status_code=303
+        )
     
     # Check if new passwords match
     if new_password != confirm_password:
-        request.session["flash_message"] = "New passwords do not match"
-        request.session["flash_category"] = "error"
-        return RedirectResponse(url="/profile/change-password", status_code=303)
+        # Redirect with error in query parameter
+        return RedirectResponse(
+            url="/profile/change-password?error=New%20passwords%20do%20not%20match",
+            status_code=303
+        )
     
     # Update password
     user.password_hash = pwd_context.hash(new_password)
     db.commit()
     
-    request.session["flash_message"] = "Password changed successfully!"
-    request.session["flash_category"] = "success"
-    return RedirectResponse(url="/profile/change-password", status_code=303)
-    
+    # Redirect with success in query parameter
+    return RedirectResponse(
+        url="/profile/change-password?success=Password%20changed%20successfully!",
+        status_code=303
+    )
+
 @app.post("/profile/edit")
 async def update_profile(
     request: Request,
@@ -738,17 +771,16 @@ async def update_profile(
             user.full_name = full_name
         
         # Handle profile photo upload
-        if profile_photo:
-            if profile_photo.filename:
-                # Delete old profile image if exists and not default
-                if user.profile_image and user.profile_image != "default-avatar.png":
-                    old_image_path = UPLOAD_DIR / user.profile_image
-                    if old_image_path.exists():
-                        old_image_path.unlink()
-                
-                # Save new profile image
-                filename = save_profile_image(profile_photo, current_user.id)
-                user.profile_image = filename
+        if profile_photo and profile_photo.filename:
+            # Delete old profile image if exists and not default
+            if user.profile_image and user.profile_image != "default-avatar.png":
+                old_image_path = UPLOAD_DIR / user.profile_image
+                if old_image_path.exists():
+                    old_image_path.unlink()
+            
+            # Save new profile image
+            filename = save_profile_image(profile_photo, current_user.id)
+            user.profile_image = filename
         
         # Update mentor profile if exists
         if current_user.role == "mentor":
@@ -796,16 +828,23 @@ async def update_profile(
         
         db.commit()
         
-        # Set success flash message
-        from starlette.middleware.sessions import SessionMiddleware
-        request.session["flash_message"] = "Profile updated successfully!"
-        request.session["flash_category"] = "success"
+        # Redirect with success in query parameter
+        response = RedirectResponse(
+            url="/profile/edit?success=Profile%20updated%20successfully!",
+            status_code=303
+        )
         
-        return RedirectResponse(url="/profile/edit", status_code=303)
+        return response
         
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error updating profile: {str(e)}")
+        # Redirect with error in query parameter
+        error_message = f"Error updating profile: {str(e)}"
+        encoded_error = error_message.replace(" ", "%20").replace(":", "%3A")
+        return RedirectResponse(
+            url=f"/profile/edit?error={encoded_error}",
+            status_code=303
+        )
 
 @app.post("/profile/upload-photo")
 async def upload_profile_photo_api(
@@ -835,7 +874,6 @@ async def upload_profile_photo_api(
             )
         
         # Check file size (max 5MB)
-        file_size = 0
         content = await profile_photo.read()
         file_size = len(content)
         if file_size > 5 * 1024 * 1024:  # 5MB
@@ -862,7 +900,8 @@ async def upload_profile_photo_api(
         return JSONResponse({
             "success": True, 
             "filename": filename,
-            "message": "Profile photo updated successfully!"
+            "message": "Profile photo updated successfully!",
+            "redirect_url": "/profile/edit?success=Profile%20photo%20updated%20successfully!"
         })
         
     except Exception as e:
@@ -898,7 +937,8 @@ async def remove_profile_photo(
             
             return JSONResponse({
                 "success": True, 
-                "message": "Profile photo removed successfully!"
+                "message": "Profile photo removed successfully!",
+                "redirect_url": "/profile/edit?success=Profile%20photo%20removed%20successfully!"
             })
         else:
             return JSONResponse({
@@ -912,7 +952,6 @@ async def remove_profile_photo(
             status_code=500,
             content={"success": False, "message": f"Failed to remove photo: {str(e)}"}
         )
-
 # ============ MENTOR ROUTES ============
 @app.get("/payment/{booking_id}", response_class=HTMLResponse)
 async def payment_page(
