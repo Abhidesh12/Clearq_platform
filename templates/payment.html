@@ -149,11 +149,12 @@
                             <span class="ml-3">
                                 <span class="text-gray-600">Amount to Pay:</span>
                                 {% if booking.amount_paid %}
-                                <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(booking.amount_paid / 100) }}</span>
+                                    {# Display in rupees (divide by 100) #}
+                                    <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(booking.amount_paid / 100) }}</span>
                                 {% elif service and service.price %}
-                                <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(service.price / 100) }}</span>
+                                    <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(service.price / 100) }}</span>
                                 {% else %}
-                                <span class="font-bold text-lg ml-2">₹0.00</span>
+                                    <span class="font-bold text-lg ml-2">₹0.00</span>
                                 {% endif %}
                             </span>
                         </div>
@@ -275,6 +276,10 @@
             console.log('Payment Status:', "{{ booking.payment_status }}");
             console.log('Razorpay Key Present:', "{{ razorpay_key_id }}" ? 'true' : 'false');
             
+            // Debug: Show actual values
+            console.log('Booking amount_paid:', {% if booking.amount_paid %}{{ booking.amount_paid }}{% else %}null{% endif %});
+            console.log('Service price:', {% if service and service.price %}{{ service.price }}{% else %}null{% endif %});
+            
             // Only initialize payment button if payment is pending
             {% if booking.payment_status != 'paid' %}
             const payButton = document.getElementById('payButton');
@@ -293,18 +298,24 @@
                         }
                         
                         // Calculate the amount (in paise)
-                        // Use booking.amount_paid if available, otherwise use service.price
-                        const amount = {% if booking.amount_paid %} 
-                                        {{ booking.amount_paid }}
-                                      {% elif service and service.price %}
-                                        {{ service.price }}
-                                      {% else %}
-                                        0
-                                      {% endif %};
+                        // Get the amount in rupees first, then convert to paise for Razorpay
+                        let amountInRupees = {% if booking.amount_paid %} 
+                                            {{ booking.amount_paid / 100 }}
+                                          {% elif service and service.price %}
+                                            {{ service.price / 100 }}
+                                          {% else %}
+                                            0
+                                          {% endif %};
                         
-                        if (amount <= 0) {
+                        // Convert rupees to paise for Razorpay (₹100 → 10000 paise)
+                        const amountInPaise = Math.round(amountInRupees * 100);
+                        
+                        if (amountInPaise <= 0) {
                             throw new Error('Invalid amount. Please contact support.');
                         }
+                        
+                        console.log('Amount in rupees:', amountInRupees);
+                        console.log('Amount in paise for Razorpay:', amountInPaise);
                         
                         // Get or create Razorpay order ID
                         let orderId = "{{ booking.razorpay_order_id }}";
@@ -314,7 +325,7 @@
                             console.log('Creating new Razorpay order...');
                             needsNewOrder = true;
                             
-                            // Call backend to create order
+                            // Call backend to create order (pass amount in paise)
                             const response = await fetch('/api/create-razorpay-order', {
                                 method: 'POST',
                                 headers: {
@@ -323,7 +334,7 @@
                                 },
                                 body: JSON.stringify({
                                     booking_id: {{ booking.id }},
-                                    amount: amount
+                                    amount: amountInPaise  // Send amount in paise
                                 })
                             });
                             
@@ -337,10 +348,10 @@
                             console.log('Created new order ID:', orderId);
                         }
                         
-                        // Razorpay options
+                        // Razorpay options (amount must be in paise)
                         const options = {
                             key: "{{ razorpay_key_id }}",
-                            amount: amount, // amount in paise
+                            amount: amountInPaise, // amount in paise
                             currency: "INR",
                             name: "EduMentor",
                             description: "Payment for {{ service.title if service else 'Booking' }} #{{ booking.id }}",
