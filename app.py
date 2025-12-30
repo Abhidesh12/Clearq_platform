@@ -349,11 +349,14 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     
     if user and user.is_active:
+        return user
+    
+    return None
         # Ensure profile_image has correct path
        # if user.profile_image and not user.profile_image.startswith("uploads/"):
             #user.profile_image = f"uploads/{user.profile_image}" if user.profile_image != "default-avatar.png" else "default-avatar.png"
     
-    return user #if user and user.is_active else None
+    #return user if user and user.is_active else None
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
