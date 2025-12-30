@@ -1007,6 +1007,7 @@ async def remove_profile_photo(
             content={"success": False, "message": f"Failed to remove photo: {str(e)}"}
         )
 # ============ MENTOR ROUTES ============
+
 @app.get("/payment/{booking_id}", response_class=HTMLResponse)
 async def payment_page(
     request: Request,
@@ -1032,6 +1033,9 @@ async def payment_page(
     service = db.query(Service).filter(Service.id == booking.service_id).first()
     mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
     
+    # Debug print
+    print(f"Payment page - Booking ID: {booking.id}, Razorpay Order ID: {booking.razorpay_order_id}")
+    
     return templates.TemplateResponse("payment.html", {
         "request": request,
         "current_user": current_user,
@@ -1040,6 +1044,7 @@ async def payment_page(
         "mentor": mentor,
         "razorpay_key_id": RAZORPAY_KEY_ID
     })
+    
 @app.get("/mentor/dashboard/services", response_class=HTMLResponse)
 async def mentor_services(
     request: Request,
@@ -1412,7 +1417,9 @@ async def create_booking(
             }
         }
         
+        print(f"Creating Razorpay order with amount: {order_amount}")
         razorpay_order = razorpay_client.order.create(order_data)
+        print(f"Razorpay order created: {razorpay_order['id']}")
         
         # Create booking record
         booking = Booking(
@@ -1423,24 +1430,27 @@ async def create_booking(
             start_time=time_slot,
             end_time=(datetime.strptime(time_slot, "%H:%M") + timedelta(minutes=service.duration_minutes)).strftime("%H:%M"),
             razorpay_order_id=razorpay_order["id"],
-            amount_paid=service.price
+            amount_paid=service.price,
+            status="pending",
+            payment_status="pending"
         )
         
         db.add(booking)
         db.commit()
+        db.refresh(booking)
         
-        # Return booking ID for redirection
+        print(f"Booking created with ID: {booking.id}")
+        
         return JSONResponse({
             "success": True,
             "booking_id": booking.id,
             "redirect_url": f"/payment/{booking.id}"
         })
         
-
-        
     except Exception as e:
+        print(f"Error creating booking: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
+        
 @app.post("/payment/verify")
 async def verify_payment(
     request: Request,
