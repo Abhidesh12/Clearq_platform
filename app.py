@@ -1374,7 +1374,187 @@ async def create_availability(
             url=f"/mentor/availability?error={error_msg}",
             status_code=303
         )
+# Add this route for mentor profile by username
+@app.get("/mentor/username/{username}", response_class=HTMLResponse)
+async def mentor_profile_by_username(
+    request: Request,
+    username: str,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Find user by username
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+    
+    # Get mentor profile
+    mentor = db.query(Mentor).filter(Mentor.user_id == user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+    
+    # Clean up past availabilities for this mentor
+    today = datetime.now().date()
+    try:
+        db.query(Availability).filter(
+            Availability.mentor_id == mentor.id,
+            Availability.date < today
+        ).delete(synchronize_session=False)
+        db.commit()
+    except Exception as e:
+        print(f"Error cleaning up past availabilities for mentor {mentor.id}: {e}")
+        db.rollback()
+    
+    services = db.query(Service).filter(
+        Service.mentor_id == mentor.id,
+        Service.is_active == True
+    ).all()
+    
+    # Get actual availabilities from database (future dates only)
+    availabilities = db.query(Availability).filter(
+        Availability.mentor_id == mentor.id,
+        Availability.is_booked == False,
+        Availability.date >= today
+    ).order_by(Availability.date).all()
+    
+    # Group availabilities by date for the frontend
+    from collections import defaultdict
+    date_slots = defaultdict(list)
+    
+    for avail in availabilities:
+        if isinstance(avail.date, datetime):
+            date_str = avail.date.strftime("%Y-%m-%d")
+        elif isinstance(avail.date, date):
+            date_str = avail.date.strftime("%Y-%m-%d")
+        else:
+            try:
+                date_str = datetime.strptime(str(avail.date), "%Y-%m-%d").strftime("%Y-%m-%d")
+            except:
+                continue
+        
+        date_slots[date_str].append({
+            "start_time": avail.start_time,
+            "end_time": avail.end_time
+        })
+    
+    # Prepare available dates for display (next 7 days with slots)
+    available_dates = []
+    for i in range(7):
+        target_date = today + timedelta(days=i)
+        date_str = target_date.strftime("%Y-%m-%d")
+        
+        if date_str in date_slots:
+            time_slots = date_slots[date_str]
+            # Only show dates that have available time slots
+            if time_slots:
+                available_dates.append({
+                    "day_name": target_date.strftime("%a"),
+                    "day_num": target_date.day,
+                    "month": target_date.strftime("%b"),
+                    "full_date": date_str,
+                    "time_slots": time_slots
+                })
+    
+    return templates.TemplateResponse("mentor_profile.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor": mentor,
+        "services": services,
+        "available_dates": available_dates[:7]
+    })
 
+# Service page by username and service ID
+@app.get("/mentor/username/{username}/service/{service_id}", response_class=HTMLResponse)
+async def mentor_service_page(
+    request: Request,
+    username: str,
+    service_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Find user by username
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+    
+    # Get mentor profile
+    mentor = db.query(Mentor).filter(Mentor.user_id == user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+    
+    # Get the specific service
+    service = db.query(Service).filter(
+        Service.id == service_id,
+        Service.mentor_id == mentor.id,
+        Service.is_active == True
+    ).first()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Get other services by the same mentor (for related services)
+    other_services = db.query(Service).filter(
+        Service.mentor_id == mentor.id,
+        Service.id != service_id,
+        Service.is_active == True
+    ).limit(4).all()
+    
+    # Get availabilities for this service
+    today = datetime.now().date()
+    availabilities = db.query(Availability).filter(
+        Availability.mentor_id == mentor.id,
+        Availability.is_booked == False,
+        Availability.date >= today,
+        or_(
+            Availability.service_id == service_id,
+            Availability.service_id == None
+        )
+    ).order_by(Availability.date).all()
+    
+    # Group availabilities by date
+    from collections import defaultdict
+    date_slots = defaultdict(list)
+    
+    for avail in availabilities:
+        if isinstance(avail.date, datetime):
+            date_str = avail.date.strftime("%Y-%m-%d")
+        elif isinstance(avail.date, date):
+            date_str = avail.date.strftime("%Y-%m-%d")
+        else:
+            try:
+                date_str = datetime.strptime(str(avail.date), "%Y-%m-%d").strftime("%Y-%m-%d")
+            except:
+                continue
+        
+        date_slots[date_str].append({
+            "start_time": avail.start_time,
+            "end_time": avail.end_time
+        })
+    
+    # Prepare available dates for display
+    available_dates = []
+    for i in range(14):  # Show 2 weeks
+        target_date = today + timedelta(days=i)
+        date_str = target_date.strftime("%Y-%m-%d")
+        
+        if date_str in date_slots:
+            time_slots = date_slots[date_str]
+            if time_slots:
+                available_dates.append({
+                    "day_name": target_date.strftime("%a"),
+                    "day_num": target_date.day,
+                    "month": target_date.strftime("%b"),
+                    "full_date": date_str,
+                    "time_slots": time_slots
+                })
+    
+    return templates.TemplateResponse("service_page.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor": mentor,
+        "service": service,
+        "other_services": other_services,
+        "available_dates": available_dates[:7]
+    })
 # ============ BOOKING & PAYMENT ROUTES ============
 
 @app.post("/api/create-booking")
@@ -1534,9 +1714,10 @@ async def verify_mentor(
 
 # ============ API ENDPOINTS ============
 
-@app.post("/api/time-slots/{mentor_id}")
+# Update the time-slots API to support both ID and username
+@app.post("/api/time-slots/{identifier}")
 async def get_time_slots(
-    mentor_id: int,
+    identifier: str,
     data: dict,
     db: Session = Depends(get_db)
 ):
@@ -1545,6 +1726,24 @@ async def get_time_slots(
         return JSONResponse({"success": False, "message": "Date required"})
     
     try:
+        # Check if identifier is a number (ID) or string (username)
+        mentor_id = None
+        if identifier.isdigit():
+            # It's an ID
+            mentor_id = int(identifier)
+            mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
+        else:
+            # It's a username
+            user = db.query(User).filter(User.username == identifier).first()
+            if not user:
+                return JSONResponse({"success": False, "message": "Mentor not found"})
+            mentor = db.query(Mentor).filter(Mentor.user_id == user.id).first()
+            if mentor:
+                mentor_id = mentor.id
+        
+        if not mentor or not mentor_id:
+            return JSONResponse({"success": False, "message": "Mentor not found"})
+        
         target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
     except ValueError:
         return JSONResponse({"success": False, "message": "Invalid date format"})
@@ -1568,12 +1767,11 @@ async def get_time_slots(
             formatted_end = end_time_obj.strftime("%I:%M %p").lstrip("0")
             
             formatted_slots.append({
-                "value": slot.start_time,  # Store in 24-hour format for database
+                "value": slot.start_time,
                 "display": f"{formatted_start} - {formatted_end}",
                 "duration": slot.end_time
             })
         except:
-            # Fallback to raw time
             formatted_slots.append({
                 "value": slot.start_time,
                 "display": f"{slot.start_time} - {slot.end_time}",
