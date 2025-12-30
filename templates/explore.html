@@ -15,14 +15,20 @@
                 
                 <!-- Search Bar -->
                 <div class="max-w-2xl mx-auto">
-                    <div class="relative">
+                    <form method="GET" action="/explore" id="searchForm" class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
                         <input type="text" 
+                               name="q"
+                               id="searchInput"
+                               value="{{ search_query or '' }}"
                                class="block w-full pl-10 pr-3 py-4 border border-transparent rounded-lg bg-white/10 backdrop-blur-sm text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-                               placeholder="Search mentors by skill, industry, or name...">
-                    </div>
+                               placeholder="Search mentors by skill, industry, or name..."
+                               onkeypress="if(event.keyCode === 13) { event.preventDefault(); document.getElementById('searchForm').submit(); }">
+                        <!-- Hidden submit button for accessibility -->
+                        <button type="submit" class="hidden">Search</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -31,36 +37,75 @@
     <!-- Filters -->
     <div class="bg-white border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div class="flex flex-wrap gap-4">
-                <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option>All Industries</option>
-                    <option>Technology</option>
-                    <option>Finance</option>
-                    <option>Healthcare</option>
-                    <option>Marketing</option>
+            <form method="GET" action="/explore" id="filterForm" class="flex flex-wrap gap-4">
+                <!-- Hidden search field to preserve search -->
+                <input type="hidden" name="q" value="{{ search_query or '' }}">
+                
+                <select name="industry" onchange="this.form.submit()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="">All Industries</option>
+                    <option value="Technology" {% if selected_industry == 'Technology' %}selected{% endif %}>Technology</option>
+                    <option value="Finance" {% if selected_industry == 'Finance' %}selected{% endif %}>Finance</option>
+                    <option value="Healthcare" {% if selected_industry == 'Healthcare' %}selected{% endif %}>Healthcare</option>
+                    <option value="Marketing" {% if selected_industry == 'Marketing' %}selected{% endif %}>Marketing</option>
+                    <option value="Education" {% if selected_industry == 'Education' %}selected{% endif %}>Education</option>
+                    <option value="Consulting" {% if selected_industry == 'Consulting' %}selected{% endif %}>Consulting</option>
+                    <option value="Startups" {% if selected_industry == 'Startups' %}selected{% endif %}>Startups</option>
+                    <option value="E-commerce" {% if selected_industry == 'E-commerce' %}selected{% endif %}>E-commerce</option>
                 </select>
                 
-                <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option>All Experience Levels</option>
-                    <option>1-3 years</option>
-                    <option>3-5 years</option>
-                    <option>5-10 years</option>
-                    <option>10+ years</option>
+                <select name="experience" onchange="this.form.submit()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="">All Experience Levels</option>
+                    <option value="1-3" {% if selected_experience == '1-3' %}selected{% endif %}>1-3 years</option>
+                    <option value="3-5" {% if selected_experience == '3-5' %}selected{% endif %}>3-5 years</option>
+                    <option value="5-10" {% if selected_experience == '5-10' %}selected{% endif %}>5-10 years</option>
+                    <option value="10+" {% if selected_experience == '10+' %}selected{% endif %}>10+ years</option>
                 </select>
                 
-                <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                    <option>Sort by: Recommended</option>
-                    <option>Sort by: Rating</option>
-                    <option>Sort by: Price: Low to High</option>
-                    <option>Sort by: Price: High to Low</option>
+                <select name="sort" onchange="this.form.submit()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <option value="recommended" {% if selected_sort == 'recommended' %}selected{% endif %}>Sort by: Recommended</option>
+                    <option value="rating" {% if selected_sort == 'rating' %}selected{% endif %}>Sort by: Rating</option>
+                    <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Sort by: Price: Low to High</option>
+                    <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Sort by: Price: High to Low</option>
+                    <option value="experience" {% if selected_sort == 'experience' %}selected{% endif %}>Sort by: Experience</option>
+                    <option value="name" {% if selected_sort == 'name' %}selected{% endif %}>Sort by: Name</option>
                 </select>
-            </div>
+                
+                <!-- Clear Filters Button -->
+                {% if search_query or selected_industry or selected_experience or selected_sort != 'recommended' %}
+                <a href="/explore" class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center">
+                    <i class="fas fa-times mr-2"></i> Clear Filters
+                </a>
+                {% endif %}
+            </form>
         </div>
     </div>
 
     <!-- Mentors Grid -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {% if mentors %}
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Found <span class="text-primary">{{ mentors|length }}</span> mentor{% if mentors|length != 1 %}s{% endif %}
+                    {% if search_query %}
+                    for "{{ search_query }}"
+                    {% endif %}
+                </h2>
+                {% if selected_industry or selected_experience %}
+                <p class="text-sm text-gray-600 mt-1">
+                    {% if selected_industry %}Industry: {{ selected_industry }} {% endif %}
+                    {% if selected_experience %}{% if selected_industry %}| {% endif %}Experience: {{ selected_experience }} years{% endif %}
+                </p>
+                {% endif %}
+            </div>
+            
+            {% if mentors|length > 0 %}
+            <div class="text-sm text-gray-600">
+                Showing {{ mentors|length }} of {{ total_mentors|default(mentors|length) }} mentors
+            </div>
+            {% endif %}
+        </div>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for mentor in mentors %}
             <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -86,20 +131,29 @@
                                     <p class="text-sm text-gray-500">{{ mentor.company }}</p>
                                     {% endif %}
                                 </div>
+                                {% if mentor.is_verified_by_admin %}
                                 <div class="flex items-center bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold">
                                     <i class="fas fa-check-circle mr-1"></i>
                                     Verified
                                 </div>
+                                {% endif %}
                             </div>
                             
                             <!-- Rating -->
                             <div class="flex items-center mt-2">
                                 <div class="flex text-yellow-400">
+                                    {% set rating = mentor.rating or 0 %}
                                     {% for i in range(5) %}
+                                    {% if i < rating|int %}
                                     <i class="fas fa-star text-sm"></i>
+                                    {% elif i < rating %}
+                                    <i class="fas fa-star-half-alt text-sm"></i>
+                                    {% else %}
+                                    <i class="far fa-star text-sm"></i>
+                                    {% endif %}
                                     {% endfor %}
                                 </div>
-                                <span class="ml-2 text-sm text-gray-600">{{ mentor.rating|default('4.9') }} ({{ mentor.review_count|default('24') }} reviews)</span>
+                                <span class="ml-2 text-sm text-gray-600">{{ "%.1f"|format(rating) }} ({{ mentor.review_count|default('0') }} reviews)</span>
                             </div>
                         </div>
                     </div>
@@ -111,12 +165,12 @@
                                 {% set skills_list = mentor.skills.split(',')[:3] %}
                                 {% for skill in skills_list %}
                                 <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
-                                    {{ skill }}
+                                    {{ skill.strip() }}
                                 </span>
                                 {% endfor %}
-                                {% if skills_list|length > 3 %}
+                                {% if mentor.skills.split(',')|length > 3 %}
                                 <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
-                                    +{{ skills_list|length - 3 }} more
+                                    +{{ mentor.skills.split(',')|length - 3 }} more
                                 </span>
                                 {% endif %}
                             {% else %}
@@ -135,7 +189,7 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Starting from</p>
-                            <p class="font-bold text-primary text-lg">₹999</p>
+                            <p class="font-bold text-primary text-lg">₹{{ mentor.services[0].price|default('999') if mentor.services else '999' }}</p>
                         </div>
                     </div>
                     
@@ -168,11 +222,28 @@
             <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
                 <i class="fas fa-users text-gray-400 text-3xl"></i>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">No Verified Mentors Yet</h3>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                {% if search_query or selected_industry or selected_experience %}
+                No mentors found matching your criteria
+                {% else %}
+                No Verified Mentors Yet
+                {% endif %}
+            </h3>
             <p class="text-gray-600 max-w-md mx-auto mb-8">
+                {% if search_query %}
+                No mentors found for "{{ search_query }}". Try a different search term or browse all mentors.
+                {% elif selected_industry or selected_experience %}
+                No mentors found with the selected filters. Try different filters or clear all filters to see all mentors.
+                {% else %}
                 We're in the process of verifying our expert mentors. Check back soon!
+                {% endif %}
             </p>
-            {% if current_user and current_user.role == 'mentor' %}
+            {% if search_query or selected_industry or selected_experience %}
+            <a href="/explore" 
+               class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
+                Clear Filters & View All Mentors
+            </a>
+            {% elif current_user and current_user.role == 'mentor' %}
             <a href="/dashboard" 
                class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
                 Go to Dashboard
@@ -182,18 +253,39 @@
         {% endif %}
         
         <!-- Pagination -->
-        {% if mentors %}
+        {% if mentors and total_pages > 1 %}
         <div class="mt-12 flex justify-center">
             <nav class="flex items-center space-x-2">
-                <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                {% if page > 1 %}
+                <a href="/explore?page={{ page-1 }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}{% if selected_experience %}&experience={{ selected_experience }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" 
+                   class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
                     <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="px-4 py-2 bg-primary text-white rounded-lg font-medium">1</button>
-                <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">2</button>
-                <button class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">3</button>
-                <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                </a>
+                {% else %}
+                <span class="px-3 py-2 border border-gray-300 rounded-lg text-gray-300 cursor-not-allowed">
+                    <i class="fas fa-chevron-left"></i>
+                </span>
+                {% endif %}
+                
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                    <span class="px-4 py-2 bg-primary text-white rounded-lg font-medium">{{ p }}</span>
+                    {% elif p >= page-2 and p <= page+2 %}
+                    <a href="/explore?page={{ p }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}{% if selected_experience %}&experience={{ selected_experience }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" 
+                       class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page < total_pages %}
+                <a href="/explore?page={{ page+1 }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}{% if selected_experience %}&experience={{ selected_experience }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" 
+                   class="px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
                     <i class="fas fa-chevron-right"></i>
-                </button>
+                </a>
+                {% else %}
+                <span class="px-3 py-2 border border-gray-300 rounded-lg text-gray-300 cursor-not-allowed">
+                    <i class="fas fa-chevron-right"></i>
+                </span>
+                {% endif %}
             </nav>
         </div>
         {% endif %}
@@ -208,4 +300,38 @@
         overflow: hidden;
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit search on Enter key
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('searchForm').submit();
+            }
+        });
+    }
+    
+    // Debounced search for real-time suggestions (optional)
+    let searchTimeout;
+    searchInput?.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+            // Optional: Add AJAX search suggestions here
+            // console.log('Searching for:', e.target.value);
+        }, 500);
+    });
+    
+    // Clear search button
+    const clearSearch = document.getElementById('clearSearch');
+    if (clearSearch) {
+        clearSearch.addEventListener('click', function() {
+            searchInput.value = '';
+            document.getElementById('searchForm').submit();
+        });
+    }
+});
+</script>
 {% endblock %}
