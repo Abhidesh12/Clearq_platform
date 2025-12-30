@@ -1,75 +1,105 @@
-{% extends "base.html" %}
-
-{% block title %}Complete Payment - ClearQ{% endblock %}
-
-{% block content %}
-<div style="padding: 50px; text-align: center;">
-    <h1>Payment Page - Simplified</h1>
-    <p>Booking ID: {{ booking.id }}</p>
-    <p>Amount: ₹{{ booking.amount_paid }}</p>
+<!-- templates/payment.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
     
-    <button id="rzp-button" style="padding: 20px; background: blue; color: white; font-size: 20px;">
-        PAY NOW
-    </button>
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <div id="debug" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></div>
-</div>
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("=== SIMPLE PAYMENT TEST ===");
-    
-    const debugDiv = document.getElementById('debug');
-    
-    // Check Razorpay
-    if (typeof Razorpay === 'undefined') {
-        debugDiv.innerHTML = "❌ Razorpay script not loaded!";
-        return;
-    }
-    
-    debugDiv.innerHTML = "✅ Razorpay loaded<br>";
-    
-    // Check key
-    const key = "{{ razorpay_key_id }}";
-    if (!key || key === 'None') {
-        debugDiv.innerHTML += "❌ Razorpay key missing!";
-        return;
-    }
-    
-    debugDiv.innerHTML += "✅ Key: " + key.substring(0, 10) + "...<br>";
-    
-    // Setup payment
-    const options = {
-        "key": key,
-        "amount": {{ booking.amount_paid }} * 100,
-        "currency": "INR",
-        "name": "ClearQ",
-        "description": "Booking #{{ booking.id }}",
-        "order_id": "{{ booking.razorpay_order_id }}",
-        "handler": function(response) {
-            debugDiv.innerHTML += "✅ Payment success! ID: " + response.razorpay_payment_id;
-            alert("Payment successful!");
-        },
-        "theme": {"color": "#4F46E5"}
-    };
-    
-    console.log("Options:", options);
-    
-    // Button click
-    document.getElementById('rzp-button').onclick = function(e) {
-        e.preventDefault();
-        debugDiv.innerHTML += "✅ Button clicked!<br>";
-        
-        try {
-            var rzp = new Razorpay(options);
-            rzp.open();
-            debugDiv.innerHTML += "✅ Razorpay opened<br>";
-        } catch (error) {
-            debugDiv.innerHTML += "❌ Error: " + error.message;
-            console.error(error);
+    <!-- Tailwind CSS (Development only - consider removing for production) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Suppress Tailwind warning
+        tailwind.config = {
+            corePlugins: {
+                preflight: false,
+            }
         }
-    };
-});
-</script>
-{% endblock %}
+    </script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">
+            <i class="fas fa-credit-card mr-2"></i>Complete Payment
+        </h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="mb-4">
+                <p><i class="fas fa-ticket-alt mr-2 text-blue-500"></i>Booking ID: <span class="font-bold">{{ booking_id }}</span></p>
+                <p><i class="fas fa-indian-rupee-sign mr-2 text-green-500"></i>Amount: <span class="font-bold">₹{{ amount / 100 }}</span></p>
+            </div>
+            
+            <button id="payButton" 
+                    class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300">
+                <i class="fas fa-lock mr-2"></i>Pay Securely with Razorpay
+            </button>
+            
+            <p class="mt-4 text-sm text-gray-600">
+                <i class="fas fa-shield-alt mr-2"></i>Your payment is secured with 256-bit SSL encryption
+            </p>
+        </div>
+    </div>
+
+    <!-- Load Razorpay SDK -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    
+    <script>
+        // Wait for everything to load
+        document.addEventListener('DOMContentLoaded', function() {
+            const payButton = document.getElementById('payButton');
+            
+            payButton.onclick = function() {
+                // Check if Razorpay is loaded
+                if (typeof Razorpay === 'undefined') {
+                    console.error('Razorpay SDK not loaded. Checking CSP...');
+                    alert('Payment system failed to load. Please refresh the page.');
+                    return;
+                }
+                
+                console.log('Razorpay loaded successfully');
+                
+                var options = {
+                    key: "{{ razorpay_key }}",
+                    amount: "{{ amount }}", // in paise
+                    currency: "INR",
+                    name: "Your Company Name",
+                    description: "Payment for Booking #{{ booking_id }}",
+                    order_id: "{{ order_id }}",
+                    handler: function(response) {
+                        // Payment success handler
+                        console.log('Payment success:', response);
+                        alert('Payment successful! Payment ID: ' + response.razorpay_payment_id);
+                        // You can redirect or update UI here
+                    },
+                    prefill: {
+                        name: "{{ user_name }}",
+                        email: "{{ user_email }}",
+                        contact: "{{ user_phone }}"
+                    },
+                    theme: {
+                        color: "#3399cc"
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            console.log('Payment modal closed by user');
+                        },
+                        escape: false,
+                        backdropclose: false
+                    }
+                };
+                
+                try {
+                    var rzp = new Razorpay(options);
+                    rzp.open();
+                } catch (error) {
+                    console.error('Error creating Razorpay instance:', error);
+                    alert('Error initializing payment. Please try again.');
+                }
+            };
+        });
+    </script>
+</body>
+</html>
