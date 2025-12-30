@@ -63,185 +63,239 @@
     }
     
     /* Service Cards - Fixed Layout */
+    /* Service Cards Grid Layout */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+@media (max-width: 1024px) {
     .services-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
-    
-    @media (max-width: 640px) {
-        .services-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
+}
+
+@media (max-width: 640px) {
+    .services-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
-    
-    .service-card {
-        position: relative;
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border: 1px solid #f1f5f9;
-        display: flex;
-        flex-direction: column;
-        min-height: 420px; /* Fixed minimum height */
-        max-width: 100%; /* Ensure it doesn't overflow */
-    }
-    
-    .service-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
-        border-color: rgba(102, 126, 234, 0.3);
-    }
-    
-    .service-card-badge {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        z-index: 2;
-    }
-    
-    .service-card-header {
-        padding: 24px 24px 16px;
-        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .service-card-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: var(--primary-gradient);
-    }
-    
-    .service-card-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 14px;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 16px;
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
-    }
-    
-    .service-card-icon i {
-        font-size: 1.5rem;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
+}
+
+/* Service Card Container */
+.service-card {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+}
+
+.service-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* Badge */
+.service-card-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* Card Header */
+.service-card-header {
+    padding: 24px 24px 16px;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    position: relative;
+    overflow: hidden;
+}
+
+.service-card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Icon */
+.service-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+}
+
+.service-card-icon i {
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Card Body */
+.service-card-body {
+    padding: 0 24px 20px;
+    flex: 1;
+    min-height: 200px;
+}
+
+.service-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.service-card-price {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+    line-height: 1;
+}
+
+.service-card-description {
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    min-height: 60px;
+    word-break: break-word;
+}
+
+/* Features */
+.service-card-features {
+    margin-bottom: 20px;
+}
+
+.service-card-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    color: #475569;
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+.service-card-feature i {
+    color: #10b981;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* Card Footer */
+.service-card-footer {
+    padding: 16px 24px 24px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    flex-shrink: 0;
+}
+
+.service-duration {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.service-book-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    white-space: nowrap;
+}
+
+.service-book-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+/* Link Wrapper */
+.service-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
     .service-card-body {
-        padding: 0 24px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        min-height: 200px; /* Fixed body height */
-    }
-    
-    .service-card-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 8px;
-        line-height: 1.4;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
-    
-    .service-card-price {
-        font-size: 2rem;
-        font-weight: 800;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 12px;
-    }
-    
-    .service-card-description {
-        color: #64748b;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        margin-bottom: 20px;
-        flex: 1;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
-    
-    .service-card-features {
-        margin-bottom: 20px;
-    }
-    
-    .service-card-feature {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 8px;
-        color: #475569;
-        font-size: 0.9rem;
-    }
-    
-    .service-card-feature i {
-        color: #10b981;
-        font-size: 0.85rem;
+        min-height: auto;
+        padding: 0 20px 16px;
     }
     
     .service-card-footer {
-        padding: 16px 24px 24px;
-        border-top: 1px solid #f1f5f9;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #f8fafc;
-        flex-shrink: 0; /* Prevent footer from shrinking */
+        padding: 16px 20px 20px;
     }
     
-    .service-duration {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.9rem;
-        color: #64748b;
-        font-weight: 500;
+    .service-card-title {
+        font-size: 1.1rem;
     }
     
-    .service-book-btn {
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 10px 20px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        text-decoration: none;
-        white-space: nowrap;
+    .service-card-price {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .service-card-title {
+        font-size: 1rem;
     }
     
-    .service-book-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    .service-card-price {
+        font-size: 1.5rem;
     }
+    
+    .service-card-description {
+        font-size: 0.875rem;
+    }
+}
     
     /* Quick Booking Styles */
     .quick-booking-card {
@@ -418,52 +472,42 @@
     }
     
     /* Share Link Button */
+    /* Share Link Button Styles */
+.share-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    margin-left: 12px;
+}
+
+.share-link-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.share-link-btn i {
+    font-size: 0.75rem;
+    opacity: 0.9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
     .share-link-btn {
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: white;
-        padding: 8px 12px;
-        border-radius: 10px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        text-decoration: none;
-        backdrop-filter: blur(10px);
+        padding: 4px 8px;
+        font-size: 0.75rem;
     }
-    
-    .share-link-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-        border-color: rgba(255, 255, 255, 0.4);
-        transform: translateY(-1px);
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .profile-header-content {
-            padding: 20px;
-        }
-        
-        .profile-avatar {
-            width: 80px;
-            height: 80px;
-        }
-        
-        .service-card-title {
-            font-size: 1.1rem;
-        }
-        
-        .service-card-price {
-            font-size: 1.75rem;
-        }
-        
-        .services-grid {
-            grid-template-columns: 1fr;
-        }
-    }
+}
     
     /* Glass Effect */
     .glass-effect {
@@ -572,13 +616,12 @@
                                 </div>
                                 
                                 <!-- Share Link Button -->
-                                <a href="{{ url_for('share_mentor_profile', mentor_id=mentor.id) if 'share_mentor_profile' in get_flashed_messages else '#' }}" 
-                                   target="_blank"
-                                   class="share-link-btn"
-                                   onclick="if(!this.getAttribute('href').includes('share_mentor_profile')) { event.preventDefault(); shareProfile(); }">
-                                    <i class="fas fa-external-link-alt"></i>
-                                    Share Profile
-                                </a>
+                               <!-- Share Link Button (placed next to mentor name) -->
+<a href="{{ request.url }}" target="_blank" class="share-link-btn" title="Open profile in new tab">
+    <i class="fas fa-external-link-alt"></i>
+    <span class="hidden sm:inline">Share Profile</span>
+    <span class="inline sm:hidden">Share</span>
+</a>
                             </div>
                         </div>
                         
@@ -667,78 +710,85 @@
                             <span class="font-semibold text-blue-700">{{ services|length if services else 0 }} Premium Services</span>
                         </span>
                     </div>
-                    
-                    {% if services and services|length > 0 %}
-                    <div class="services-grid">
-                        {% for service in services %}
-                        <a href="/mentor/username/{{ mentor.user.username }}/service/{{ service.id }}" 
-                           class="block hover:no-underline service-card-link">
-                            <div class="service-card">
-                                {% if service.is_popular %}
-                                <div class="service-card-badge">Most Popular</div>
-                                {% endif %}
-                                
-                                <div class="service-card-header">
-                                    <div class="service-card-icon">
-                                        {% if 'resume' in service.name.lower() or 'cv' in service.name.lower() %}
-                                        <i class="fas fa-file-alt"></i>
-                                        {% elif 'interview' in service.name.lower() or 'mock' in service.name.lower() %}
-                                        <i class="fas fa-comments"></i>
-                                        {% elif 'career' in service.name.lower() or 'guidance' in service.name.lower() %}
-                                        <i class="fas fa-briefcase"></i>
-                                        {% elif 'coding' in service.name.lower() or 'technical' in service.name.lower() %}
-                                        <i class="fas fa-code"></i>
-                                        {% else %}
-                                        <i class="fas fa-graduation-cap"></i>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <div class="service-card-body">
-                                    <h3 class="service-card-title text-ellipsis">{{ service.name }}</h3>
-                                    <div class="service-card-price">₹{{ service.price if service.price else 0 }}</div>
-                                    
-                                    <p class="service-card-description description-ellipsis">
-                                        {{ service.description if service.description else 'Personalized 1-on-1 mentoring session tailored to your needs.' }}
-                                    </p>
-                                    
-                                    <div class="service-card-features">
-                                        <div class="service-card-feature">
-                                            <i class="fas fa-check-circle"></i>
-                                            <span>1-on-1 Personalized Session</span>
-                                        </div>
-                                        <div class="service-card-feature">
-                                            <i class="fas fa-check-circle"></i>
-                                            <span>Expert Feedback & Guidance</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="service-card-footer">
-                                    <div class="service-duration">
-                                        <i class="fas fa-clock"></i>
-                                        {{ service.duration_minutes if service.duration_minutes else '60' }} minutes
-                                    </div>
-                                    <span class="service-book-btn">
-                                        Book Now
-                                        <i class="fas fa-arrow-right"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </a>
-                        {% endfor %}
-                    </div>
+                  {% if services and services|length > 0 %}
+<div class="services-grid">
+    {% for service in services %}
+    <a href="/mentor/username/{{ mentor.user.username }}/service/{{ service.id }}" 
+       class="service-card-link">
+        <div class="service-card">
+            <!-- Optional Badge -->
+            {% if service.is_popular %}
+            <div class="service-card-badge">Most Popular</div>
+            {% endif %}
+            
+            <!-- Card Header with Icon -->
+            <div class="service-card-header">
+                <div class="service-card-icon">
+                    {% if 'resume' in service.name.lower() or 'cv' in service.name.lower() %}
+                    <i class="fas fa-file-alt"></i>
+                    {% elif 'interview' in service.name.lower() or 'mock' in service.name.lower() %}
+                    <i class="fas fa-comments"></i>
+                    {% elif 'career' in service.name.lower() or 'guidance' in service.name.lower() %}
+                    <i class="fas fa-briefcase"></i>
+                    {% elif 'coding' in service.name.lower() or 'technical' in service.name.lower() %}
+                    <i class="fas fa-code"></i>
                     {% else %}
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
-                            <i class="fas fa-gem text-gray-400 text-2xl"></i>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Services Available</h3>
-                        <p class="text-gray-500 max-w-md mx-auto">This mentor is currently setting up their services. Check back soon!</p>
-                    </div>
+                    <i class="fas fa-graduation-cap"></i>
                     {% endif %}
                 </div>
             </div>
+            
+            <!-- Card Body with Content -->
+            <div class="service-card-body">
+                <h3 class="service-card-title">{{ service.name }}</h3>
+                <div class="service-card-price">₹{{ service.price if service.price else 0 }}</div>
+                
+                <p class="service-card-description">
+                    {{ service.description if service.description else 'Personalized 1-on-1 mentoring session tailored to your needs.' }}
+                </p>
+                
+                <!-- Features List -->
+                <div class="service-card-features">
+                    <div class="service-card-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>1-on-1 Personalized Session</span>
+                    </div>
+                    <div class="service-card-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Expert Feedback & Guidance</span>
+                    </div>
+                    <div class="service-card-feature">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Actionable Insights</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card Footer -->
+            <div class="service-card-footer">
+                <div class="service-duration">
+                    <i class="fas fa-clock"></i>
+                    {{ service.duration_minutes if service.duration_minutes else '60' }} minutes
+                </div>
+                <button class="service-book-btn">
+                    Book Now
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-12">
+    <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
+        <i class="fas fa-gem text-gray-400 text-2xl"></i>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">No Services Available</h3>
+    <p class="text-gray-500 max-w-md mx-auto">This mentor is currently setting up their services. Check back soon!</p>
+</div>
+{% endif %}
 
             <!-- Right Column - Quick Booking -->
             <div class="space-y-6">
