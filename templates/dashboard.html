@@ -33,7 +33,10 @@
         --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         --transition: all 0.2s ease;
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
     }
 
     .dashboard-container {
@@ -42,13 +45,33 @@
         padding: 0;
     }
 
-    /* Dashboard Header */
+    /* Dashboard Header - Enhanced */
     .dashboard-header {
         background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
         color: var(--white);
         padding: 1rem 1.25rem;
         position: relative;
         overflow: hidden;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, 
+            transparent 0%, 
+            rgba(255, 255, 255, 0.1) 50%, 
+            transparent 100%);
+        animation: shimmer 3s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
     }
 
     .header-content {
@@ -57,6 +80,8 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
+        position: relative;
+        z-index: 2;
     }
 
     .user-info {
@@ -76,6 +101,13 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+    }
+
+    .user-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-lg);
     }
 
     .user-avatar-img {
@@ -102,6 +134,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .user-details p {
@@ -110,6 +143,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     .header-actions {
@@ -132,11 +166,71 @@
         gap: 0.375rem;
         transition: var(--transition);
         border: 1px solid rgba(255, 255, 255, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header-action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.2), 
+            transparent);
+        transition: left 0.5s;
+    }
+
+    .header-action-btn:hover::before {
+        left: 100%;
     }
 
     .header-action-btn:hover {
         background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* New Tab and Copy Link Buttons */
+    .profile-share-buttons {
+        display: flex;
+        gap: 0.375rem;
+        align-items: center;
+    }
+
+    .share-btn {
+        padding: 0.5rem 0.875rem;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        color: var(--white);
+        border-radius: var(--radius);
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: var(--transition);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        cursor: pointer;
+    }
+
+    .share-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .share-btn i {
+        font-size: 0.65rem;
+    }
+
+    .share-btn.copied {
+        background: rgba(34, 197, 94, 0.3);
+        border-color: rgba(34, 197, 94, 0.5);
     }
 
     /* Main Content */
@@ -144,9 +238,10 @@
         padding: 1.25rem;
         max-width: 1200px;
         margin: 0 auto;
+        position: relative;
     }
 
-    /* Dashboard Cards */
+    /* Dashboard Cards - Enhanced */
     .dashboard-card {
         background: var(--white);
         border-radius: var(--radius-lg);
@@ -155,10 +250,28 @@
         margin-bottom: 1rem;
         overflow: hidden;
         transition: var(--transition);
+        position: relative;
     }
 
     .dashboard-card:hover {
-        box-shadow: var(--shadow-lg);
+        box-shadow: var(--shadow-xl);
+        transform: translateY(-4px);
+    }
+
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .dashboard-card:hover::before {
+        opacity: 1;
     }
 
     .card-header {
@@ -167,6 +280,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        background: var(--gray-50);
     }
 
     .card-header h2 {
@@ -174,6 +288,14 @@
         font-weight: 600;
         color: var(--gray-900);
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-header h2 i {
+        color: var(--primary);
+        font-size: 1rem;
     }
 
     .card-header a {
@@ -184,37 +306,46 @@
         display: inline-flex;
         align-items: center;
         gap: 0.25rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: var(--radius);
+        transition: var(--transition);
     }
 
     .card-header a:hover {
         color: var(--primary-dark);
+        background: var(--gray-100);
+        transform: translateX(2px);
     }
 
     .card-content {
         padding: 1.25rem;
     }
 
-    /* Empty State */
+    /* Empty State - Enhanced */
     .empty-state {
         text-align: center;
-        padding: 2rem 1rem;
+        padding: 2.5rem 1rem;
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
+        border-radius: var(--radius-lg);
+        border: 2px dashed var(--gray-300);
     }
 
     .empty-state-icon {
-        width: 3.5rem;
-        height: 3.5rem;
-        margin: 0 auto 1rem;
-        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1.25rem;
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--gray-400);
+        color: var(--white);
         font-size: 1.5rem;
+        box-shadow: var(--shadow-md);
     }
 
     .empty-state h3 {
-        font-size: 1rem;
+        font-size: 1.125rem;
         font-weight: 600;
         color: var(--gray-900);
         margin-bottom: 0.5rem;
@@ -224,9 +355,13 @@
         font-size: 0.875rem;
         color: var(--gray-600);
         margin-bottom: 1.5rem;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.5;
     }
 
-    /* Sessions List */
+    /* Sessions List - Enhanced */
     .sessions-list {
         display: flex;
         flex-direction: column;
@@ -238,11 +373,32 @@
         border-radius: var(--radius);
         padding: 1rem;
         transition: var(--transition);
+        background: var(--white);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .session-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, var(--primary), var(--secondary));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .session-item:hover::before {
+        opacity: 1;
     }
 
     .session-item:hover {
-        border-color: var(--primary);
+        border-color: var(--primary-light);
         background: var(--gray-50);
+        transform: translateX(4px);
+        box-shadow: var(--shadow-md);
     }
 
     .session-header {
@@ -263,6 +419,9 @@
         font-size: 1rem;
         font-weight: 700;
         color: var(--primary);
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .session-details {
@@ -278,11 +437,14 @@
         gap: 0.375rem;
         font-size: 0.8125rem;
         color: var(--gray-600);
+        padding: 0.25rem 0.5rem;
+        background: var(--gray-100);
+        border-radius: var(--radius-sm);
     }
 
     .session-detail i {
         font-size: 0.75rem;
-        opacity: 0.7;
+        color: var(--primary);
     }
 
     .session-status {
@@ -292,41 +454,52 @@
     }
 
     .status-badge {
-        padding: 0.25rem 0.75rem;
+        padding: 0.375rem 0.75rem;
         border-radius: 1rem;
         font-size: 0.75rem;
         font-weight: 500;
         display: inline-flex;
         align-items: center;
         gap: 0.25rem;
+        transition: var(--transition);
+    }
+
+    .status-badge:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
     }
 
     .status-confirmed {
-        background: #D1FAE5;
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
         color: #065F46;
+        border: 1px solid #A7F3D0;
     }
 
     .status-pending {
-        background: #FEF3C7;
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
         color: #92400E;
+        border: 1px solid #FDE68A;
     }
 
     .status-completed {
-        background: #DBEAFE;
+        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
         color: #1E40AF;
+        border: 1px solid #BFDBFE;
     }
 
     .status-paid {
-        background: #D1FAE5;
+        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
         color: #065F46;
+        border: 1px solid #A7F3D0;
     }
 
     .status-unpaid {
-        background: #FEE2E2;
+        background: linear-gradient(135deg, #FEE2E2, #FECACA);
         color: #991B1B;
+        border: 1px solid #FECACA;
     }
 
-    /* Stats Grid */
+    /* Stats Grid - Enhanced */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -335,9 +508,35 @@
 
     .stat-item {
         text-align: center;
-        padding: 1rem;
-        background: var(--gray-50);
+        padding: 1.25rem 1rem;
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
         border-radius: var(--radius);
+        border: 1px solid var(--gray-200);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-light);
+    }
+
+    .stat-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-item:hover::before {
+        opacity: 1;
     }
 
     .stat-value {
@@ -346,6 +545,9 @@
         color: var(--gray-900);
         line-height: 1;
         margin-bottom: 0.25rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .stat-label {
@@ -355,7 +557,7 @@
         letter-spacing: 0.05em;
     }
 
-    /* Quick Actions */
+    /* Quick Actions - Enhanced */
     .quick-actions {
         display: flex;
         flex-direction: column;
@@ -366,16 +568,39 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        padding: 0.875rem;
+        padding: 1rem;
         border: 1px solid var(--gray-200);
         border-radius: var(--radius);
         text-decoration: none;
         transition: var(--transition);
+        background: var(--white);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .quick-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(59, 130, 246, 0.1), 
+            transparent);
+        transition: left 0.5s;
+    }
+
+    .quick-action:hover::before {
+        left: 100%;
     }
 
     .quick-action:hover {
         border-color: var(--primary);
-        background: var(--blue-50);
+        background: var(--gray-50);
+        transform: translateX(8px);
+        box-shadow: var(--shadow-md);
     }
 
     .action-icon {
@@ -386,20 +611,25 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        transition: var(--transition);
+    }
+
+    .quick-action:hover .action-icon {
+        transform: scale(1.1);
     }
 
     .icon-search {
-        background: #EFF6FF;
+        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
         color: var(--primary);
     }
 
     .icon-edit {
-        background: #DCFCE7;
+        background: linear-gradient(135deg, #DCFCE7, #BBF7D0);
         color: var(--success);
     }
 
     .icon-trophy {
-        background: #FEF3C7;
+        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
         color: var(--warning);
     }
 
@@ -410,7 +640,7 @@
         color: var(--gray-900);
     }
 
-    /* Mentor Dashboard */
+    /* Mentor Dashboard - Enhanced */
     .mentor-services-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -419,16 +649,34 @@
     }
 
     .service-card {
-        padding: 1.25rem;
+        padding: 1.5rem;
         border-radius: var(--radius);
         border: 1px solid;
         text-decoration: none;
         transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .service-card:hover::before {
+        opacity: 1;
     }
 
     .service-blue {
-        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
-        border-color: #BFDBFE;
+        background: linear-gradient(135deg, #F8FAFC, #EFF6FF);
+        border-color: #DBEAFE;
     }
 
     .service-green {
@@ -442,8 +690,8 @@
     }
 
     .service-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-lg);
     }
 
     .service-icon {
@@ -455,6 +703,11 @@
         align-items: center;
         justify-content: center;
         font-size: 1.25rem;
+        transition: var(--transition);
+    }
+
+    .service-card:hover .service-icon {
+        transform: rotate(10deg) scale(1.1);
     }
 
     .service-card h3 {
@@ -467,8 +720,10 @@
     .service-card p {
         font-size: 0.8125rem;
         color: var(--gray-600);
+        line-height: 1.4;
     }
 
+    /* Alert - Enhanced */
     .alert {
         padding: 1rem;
         border-radius: var(--radius);
@@ -476,11 +731,25 @@
         display: flex;
         align-items: flex-start;
         gap: 0.75rem;
+        border-left: 4px solid;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
 
     .alert-warning {
         background: #FFFBEB;
         border: 1px solid #FDE68A;
+        border-left-color: #F59E0B;
     }
 
     .alert-icon {
@@ -500,9 +769,10 @@
         font-size: 0.8125rem;
         color: #92400E;
         opacity: 0.9;
+        line-height: 1.4;
     }
 
-    /* Earnings Summary */
+    /* Earnings Summary - Enhanced */
     .earnings-summary {
         display: flex;
         flex-direction: column;
@@ -512,20 +782,25 @@
     .earnings-total {
         text-align: center;
         padding-bottom: 1.5rem;
-        border-bottom: 2px solid var(--gray-200);
+        border-bottom: 2px dashed var(--gray-200);
     }
 
     .total-label {
         font-size: 0.875rem;
         color: var(--gray-600);
         margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .total-amount {
         font-size: 2.5rem;
-        font-weight: 700;
+        font-weight: 800;
         color: var(--gray-900);
         line-height: 1;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .earnings-stats {
@@ -536,6 +811,15 @@
 
     .earning-stat-item {
         text-align: center;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: var(--radius);
+        transition: var(--transition);
+    }
+
+    .earning-stat-item:hover {
+        background: var(--gray-100);
+        transform: translateY(-2px);
     }
 
     .earning-stat-value {
@@ -548,11 +832,13 @@
     .earning-stat-label {
         font-size: 0.75rem;
         color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .payout-info {
         padding-top: 1.5rem;
-        border-top: 2px solid var(--gray-200);
+        border-top: 2px dashed var(--gray-200);
     }
 
     .payout-row {
@@ -560,9 +846,15 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 0.5rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--gray-200);
     }
 
-    /* Quick Stats */
+    .payout-row:last-child {
+        border-bottom: none;
+    }
+
+    /* Quick Stats - Enhanced */
     .quick-stats-list {
         display: flex;
         flex-direction: column;
@@ -573,8 +865,15 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-bottom: 1rem;
+        padding: 0.75rem 0;
         border-bottom: 1px solid var(--gray-200);
+        transition: var(--transition);
+    }
+
+    .quick-stat-item:hover {
+        padding-left: 0.5rem;
+        background: var(--gray-50);
+        border-radius: var(--radius);
     }
 
     .quick-stat-item:last-child {
@@ -585,6 +884,14 @@
     .stat-label-text {
         font-size: 0.875rem;
         color: var(--gray-600);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stat-label-text i {
+        font-size: 0.75rem;
+        color: var(--primary);
     }
 
     .stat-value-text {
@@ -593,12 +900,38 @@
         color: var(--gray-900);
     }
 
-    /* Admin Dashboard */
+    /* Admin Dashboard - Enhanced */
     .pending-mentor {
         border: 1px solid var(--gray-200);
         border-radius: var(--radius);
-        padding: 1rem;
+        padding: 1.25rem;
         margin-bottom: 0.75rem;
+        background: var(--white);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pending-mentor:hover {
+        border-color: var(--primary);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .pending-mentor::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, var(--warning), var(--danger));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .pending-mentor:hover::before {
+        opacity: 1;
     }
 
     .mentor-info {
@@ -620,6 +953,7 @@
         justify-content: center;
         color: var(--white);
         font-weight: 600;
+        box-shadow: var(--shadow-sm);
     }
 
     .mentor-details {
@@ -654,10 +988,11 @@
 
     .mentor-tag {
         padding: 0.125rem 0.5rem;
-        background: var(--blue-50);
-        color: var(--blue-700);
+        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+        color: var(--gray-700);
         border-radius: 1rem;
         font-size: 0.75rem;
+        border: 1px solid var(--gray-300);
     }
 
     .mentor-actions {
@@ -674,31 +1009,61 @@
         cursor: pointer;
         transition: var(--transition);
         flex: 1;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .action-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.2), 
+            transparent);
+        transition: left 0.5s;
+    }
+
+    .action-button:hover::before {
+        left: 100%;
     }
 
     .action-approve {
-        background: var(--success);
+        background: linear-gradient(135deg, var(--success), #059669);
         color: var(--white);
+        box-shadow: var(--shadow-sm);
     }
 
     .action-approve:hover {
-        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
     }
 
     .action-reject {
-        background: var(--danger);
+        background: linear-gradient(135deg, var(--danger), #DC2626);
         color: var(--white);
+        box-shadow: var(--shadow-sm);
     }
 
     .action-reject:hover {
-        background: #DC2626;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
     }
 
-    /* Bookings Table */
+    /* Bookings Table - Enhanced */
     .bookings-table {
         width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        border-radius: var(--radius);
+        border: 1px solid var(--gray-200);
     }
 
     table {
@@ -716,9 +1081,12 @@
         color: var(--gray-600);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        background: var(--gray-50);
+        background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
         border-bottom: 1px solid var(--gray-200);
         white-space: nowrap;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
 
     td {
@@ -727,17 +1095,18 @@
         color: var(--gray-700);
         border-bottom: 1px solid var(--gray-200);
         vertical-align: middle;
+        transition: var(--transition);
     }
 
     tr:last-child td {
         border-bottom: none;
     }
 
-    tr:hover {
+    tr:hover td {
         background: var(--gray-50);
     }
 
-    /* Responsive Design */
+    /* Responsive Design - Enhanced */
     @media (min-width: 640px) {
         .dashboard-header {
             padding: 1.5rem 1.75rem;
@@ -788,7 +1157,7 @@
         .quick-action {
             flex-direction: column;
             text-align: center;
-            padding: 1rem;
+            padding: 1.25rem;
         }
         
         .action-text {
@@ -848,6 +1217,21 @@
         .quick-actions {
             grid-template-columns: 1fr;
         }
+        
+        .share-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+        
+        .share-btn i {
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .dashboard-main {
+            gap: 2.5rem;
+        }
     }
 </style>
 
@@ -873,7 +1257,28 @@
                 </div>
             </div>
             
-            <div class="header-actions">
+            <div class="profile-share-buttons">
+                <!-- New Tab Button -->
+                {% if current_user.role == 'mentor' %}
+                <a href="/mentor/{{ current_user.username }}" 
+                   target="_blank" 
+                   class="share-btn"
+                   title="Open profile in new tab">
+                    <i class="fas fa-external-link-alt"></i>
+                    <span class="hidden sm:inline">New Tab</span>
+                </a>
+                {% endif %}
+                
+                <!-- Copy Link Button -->
+                <button onclick="copyDashboardUrl()" 
+                        class="share-btn" 
+                        id="copyLinkBtn"
+                        title="Copy profile link to clipboard">
+                    <i class="fas fa-copy"></i>
+                    <span class="hidden sm:inline">Copy Link</span>
+                </button>
+                
+                <!-- Edit Profile Button -->
                 <a href="/profile/edit" class="header-action-btn">
                     <i class="fas fa-user-edit"></i>
                     <span>Edit Profile</span>
@@ -890,7 +1295,7 @@
             <!-- Upcoming Sessions -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Upcoming Sessions</h2>
+                    <h2><i class="fas fa-calendar-check"></i> Upcoming Sessions</h2>
                     <a href="/explore">
                         Book More <i class="fas fa-arrow-right"></i>
                     </a>
@@ -917,6 +1322,14 @@
                                     <i class="fas fa-clock"></i>
                                     {{ booking.start_time if booking.start_time else 'TBD' }}
                                 </span>
+                                <span class="session-detail">
+                                    <i class="fas fa-user-tie"></i>
+                                    {% if booking.mentor and booking.mentor.user %}
+                                        {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+                                    {% else %}
+                                        Mentor
+                                    {% endif %}
+                                </span>
                             </div>
                             
                             <div class="session-status">
@@ -938,8 +1351,8 @@
                             <i class="fas fa-calendar-plus"></i>
                         </div>
                         <h3>No Upcoming Sessions</h3>
-                        <p>Book your first session with an expert mentor</p>
-                        <a href="/explore" class="header-action-btn">
+                        <p>Book your first session with an expert mentor to start your learning journey</p>
+                        <a href="/explore" class="header-action-btn" style="margin-top: 1rem;">
                             <i class="fas fa-search"></i>
                             Find Mentors
                         </a>
@@ -951,7 +1364,7 @@
             <!-- Recommended Mentors -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Recommended For You</h2>
+                    <h2><i class="fas fa-user-graduate"></i> Recommended For You</h2>
                 </div>
                 
                 <div class="card-content">
@@ -967,11 +1380,14 @@
                                         <p style="font-size: 0.8125rem;">Senior Engineer at Google</p>
                                     </div>
                                 </div>
-                                <a href="#" style="font-size: 0.8125rem;">View →</a>
+                                <a href="#" style="font-size: 0.8125rem;">View <i class="fas fa-arrow-right"></i></a>
                             </div>
                             <div class="session-details">
                                 <span class="session-detail">
                                     <i class="fas fa-star text-yellow-400"></i> 4.9 (42 reviews)
+                                </span>
+                                <span class="session-detail">
+                                    <i class="fas fa-briefcase"></i> Career Coaching
                                 </span>
                             </div>
                         </div>
@@ -987,11 +1403,14 @@
                                         <p style="font-size: 0.8125rem;">Product Manager at Meta</p>
                                     </div>
                                 </div>
-                                <a href="#" style="font-size: 0.8125rem;">View →</a>
+                                <a href="#" style="font-size: 0.8125rem;">View <i class="fas fa-arrow-right"></i></a>
                             </div>
                             <div class="session-details">
                                 <span class="session-detail">
                                     <i class="fas fa-star text-yellow-400"></i> 4.8 (37 reviews)
+                                </span>
+                                <span class="session-detail">
+                                    <i class="fas fa-code"></i> Technical Interview
                                 </span>
                             </div>
                         </div>
@@ -1004,7 +1423,7 @@
             <!-- Stats -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Your Learning Stats</h2>
+                    <h2><i class="fas fa-chart-line"></i> Your Learning Stats</h2>
                 </div>
                 
                 <div class="card-content">
@@ -1032,7 +1451,7 @@
             <!-- Quick Actions -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Quick Actions</h2>
+                    <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
                 </div>
                 
                 <div class="card-content">
@@ -1069,7 +1488,7 @@
             <div class="dashboard-card">
                 <div class="card-header">
                     <div>
-                        <h2>Mentor Profile</h2>
+                        <h2><i class="fas fa-user-tie"></i> Mentor Profile</h2>
                         <p style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.25rem;">Manage your services and availability</p>
                     </div>
                     <span class="status-badge {% if mentor.verification_status == 'approved' %}status-confirmed{% elif mentor.verification_status == 'pending' %}status-pending{% else %}status-unpaid{% endif %}">
@@ -1091,27 +1510,27 @@
                     
                     <div class="mentor-services-grid">
                         <a href="/mentor/dashboard/services" class="service-card service-blue">
-                            <div class="service-icon" style="background: #EFF6FF; color: var(--primary);">
+                            <div class="service-icon" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
                                 <i class="fas fa-list-alt"></i>
                             </div>
                             <h3>Services</h3>
-                            <p>Create and manage your services</p>
+                            <p>Create and manage your mentoring services</p>
                         </a>
                         
                         <a href="/mentor/availability" class="service-card service-green">
-                            <div class="service-icon" style="background: #F0FDF4; color: var(--success);">
+                            <div class="service-icon" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
                                 <i class="fas fa-calendar-alt"></i>
                             </div>
                             <h3>Availability</h3>
-                            <p>Set your available time slots</p>
+                            <p>Set your available time slots for sessions</p>
                         </a>
                         
                         <a href="/profile/edit" class="service-card service-purple">
-                            <div class="service-icon" style="background: #FAF5FF; color: var(--secondary);">
+                            <div class="service-icon" style="background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: var(--secondary);">
                                 <i class="fas fa-user-edit"></i>
                             </div>
                             <h3>Profile</h3>
-                            <p>Edit your public profile</p>
+                            <p>Edit your public mentor profile</p>
                         </a>
                     </div>
                 </div>
@@ -1120,8 +1539,9 @@
             <!-- Upcoming Sessions -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Upcoming Sessions</h2>
-                    <span style="font-size: 0.875rem; color: var(--gray-600);">
+                    <h2><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
+                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                        <i class="fas fa-hashtag"></i>
                         {{ bookings|length if bookings else 0 }} total
                     </span>
                 </div>
@@ -1140,7 +1560,7 @@
                             
                             <div class="session-details">
                                 <span class="session-detail">
-                                    <i class="fas fa-user"></i>
+                                    <i class="fas fa-user-graduate"></i>
                                     {{ booking.learner.full_name if booking.learner else 'Learner' }}
                                 </span>
                                 <span class="session-detail">
@@ -1168,13 +1588,13 @@
                             <i class="fas fa-calendar"></i>
                         </div>
                         <h3>No Upcoming Sessions</h3>
-                        <p>Set up your services and availability to get started</p>
-                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
+                        <p>Set up your services and availability to start receiving bookings</p>
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
                             <a href="/mentor/dashboard/services" class="header-action-btn" style="background: var(--primary); color: white;">
-                                Add Services
+                                <i class="fas fa-plus"></i> Add Services
                             </a>
                             <a href="/mentor/availability" class="header-action-btn" style="background: transparent; border-color: var(--primary); color: var(--primary);">
-                                Set Availability
+                                <i class="fas fa-calendar-alt"></i> Set Availability
                             </a>
                         </div>
                     </div>
@@ -1187,7 +1607,7 @@
             <!-- Earnings Summary -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Earnings Summary</h2>
+                    <h2><i class="fas fa-wallet"></i> Earnings Summary</h2>
                 </div>
                 
                 <div class="card-content">
@@ -1215,13 +1635,19 @@
                         
                         <div class="payout-info">
                             <div class="payout-row">
-                                <span style="font-size: 0.875rem; color: var(--gray-600);">Next Payout</span>
+                                <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    Next Payout
+                                </span>
                                 <span style="font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);">
                                     ₹{{ (earnings|default(0) * 0.8)|int }}
                                 </span>
                             </div>
                             <div class="payout-row">
-                                <span style="font-size: 0.75rem; color: var(--gray-500);">in 3 days</span>
+                                <span style="font-size: 0.75rem; color: var(--gray-500); display: flex; align-items: center; gap: 0.25rem;">
+                                    <i class="fas fa-clock"></i>
+                                    in 3 days
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -1231,25 +1657,37 @@
             <!-- Quick Stats -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Quick Stats</h2>
+                    <h2><i class="fas fa-chart-bar"></i> Quick Stats</h2>
                 </div>
                 
                 <div class="card-content">
                     <div class="quick-stats-list">
                         <div class="quick-stat-item">
-                            <span class="stat-label-text">Rating</span>
+                            <span class="stat-label-text">
+                                <i class="fas fa-star"></i>
+                                Rating
+                            </span>
                             <span class="stat-value-text">{{ mentor.rating|default('4.9') }}/5</span>
                         </div>
                         <div class="quick-stat-item">
-                            <span class="stat-label-text">Reviews</span>
+                            <span class="stat-label-text">
+                                <i class="fas fa-comment"></i>
+                                Reviews
+                            </span>
                             <span class="stat-value-text">{{ mentor.review_count|default('0') }}</span>
                         </div>
                         <div class="quick-stat-item">
-                            <span class="stat-label-text">Total Sessions</span>
+                            <span class="stat-label-text">
+                                <i class="fas fa-chart-line"></i>
+                                Total Sessions
+                            </span>
                             <span class="stat-value-text">{{ mentor.total_sessions|default('0') }}</span>
                         </div>
                         <div class="quick-stat-item">
-                            <span class="stat-label-text">Response Time</span>
+                            <span class="stat-label-text">
+                                <i class="fas fa-clock"></i>
+                                Response Time
+                            </span>
                             <span class="stat-value-text">24h</span>
                         </div>
                     </div>
@@ -1263,8 +1701,9 @@
             <!-- Pending Mentor Approvals -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Pending Mentor Approvals</h2>
-                    <span style="font-size: 0.875rem; color: var(--gray-600);">
+                    <h2><i class="fas fa-user-clock"></i> Pending Mentor Approvals</h2>
+                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                        <i class="fas fa-hashtag"></i>
                         {{ pending_mentors|length if pending_mentors else 0 }} pending
                     </span>
                 </div>
@@ -1294,15 +1733,20 @@
                                         {% if mentor.experience_years %}
                                         <span class="mentor-tag">{{ mentor.experience_years }} years exp</span>
                                         {% endif %}
+                                        {% if mentor.job_title %}
+                                        <span class="mentor-tag">{{ mentor.job_title }}</span>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
                             
                             <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" class="mentor-actions">
                                 <button type="submit" name="action" value="approve" class="action-button action-approve">
+                                    <i class="fas fa-check"></i>
                                     Approve
                                 </button>
                                 <button type="submit" name="action" value="reject" class="action-button action-reject">
+                                    <i class="fas fa-times"></i>
                                     Reject
                                 </button>
                             </form>
@@ -1311,11 +1755,11 @@
                     </div>
                     {% else %}
                     <div class="empty-state">
-                        <div class="empty-state-icon" style="background: linear-gradient(135deg, #DCFCE7, #BBF7D0); color: var(--success);">
+                        <div class="empty-state-icon" style="background: linear-gradient(135deg, #D1FAE5, #A7F3D0); color: var(--success);">
                             <i class="fas fa-check"></i>
                         </div>
                         <h3>All Caught Up!</h3>
-                        <p>No pending mentor approvals</p>
+                        <p>No pending mentor approvals at the moment</p>
                     </div>
                     {% endif %}
                 </div>
@@ -1324,7 +1768,10 @@
             <!-- Recent Bookings -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2>Recent Bookings</h2>
+                    <h2><i class="fas fa-receipt"></i> Recent Bookings</h2>
+                    <a href="/admin/bookings" style="font-size: 0.75rem;">
+                        View All <i class="fas fa-external-link-alt"></i>
+                    </a>
                 </div>
                 
                 <div class="card-content">
@@ -1344,29 +1791,41 @@
                             <tbody>
                                 {% for booking in recent_bookings[:5] %}
                                 <tr>
-                                    <td>#{{ booking.id }}</td>
+                                    <td><strong>#{{ booking.id }}</strong></td>
                                     <td>
                                         {% if booking.mentor and booking.mentor.user %}
-                                        {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="width: 1.5rem; height: 1.5rem; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.625rem; font-weight: 600;">
+                                                {{ (booking.mentor.user.full_name[0] if booking.mentor.user.full_name else booking.mentor.user.username[0])|upper }}
+                                            </div>
+                                            {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+                                        </div>
                                         {% else %}
-                                        N/A
+                                        <span style="color: var(--gray-400);">N/A</span>
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% if booking.learner %}
-                                        {{ booking.learner.full_name or booking.learner.username }}
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--gray-300); display: flex; align-items: center; justify-content: center; color: var(--gray-700); font-size: 0.625rem; font-weight: 600;">
+                                                {{ (booking.learner.full_name[0] if booking.learner.full_name else booking.learner.username[0])|upper }}
+                                            </div>
+                                            {{ booking.learner.full_name or booking.learner.username }}
+                                        </div>
                                         {% else %}
-                                        N/A
+                                        <span style="color: var(--gray-400);">N/A</span>
                                         {% endif %}
                                     </td>
-                                    <td>₹{{ booking.amount_paid or 0 }}</td>
+                                    <td><strong>₹{{ booking.amount_paid or 0 }}</strong></td>
                                     <td>
                                         <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}" style="display: inline-flex;">
                                             {{ booking.status|title }}
                                         </span>
                                     </td>
                                     <td>
-                                        {{ booking.created_at.strftime('%Y-%m-%d') if booking.created_at else '' }}
+                                        <span style="font-size: 0.75rem; color: var(--gray-500);">
+                                            {{ booking.created_at.strftime('%Y-%m-%d') if booking.created_at else '' }}
+                                        </span>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -1378,7 +1837,8 @@
                         <div class="empty-state-icon">
                             <i class="fas fa-calendar"></i>
                         </div>
-                        <p>No recent bookings</p>
+                        <h3>No Recent Bookings</h3>
+                        <p>There are no recent bookings to display</p>
                     </div>
                     {% endif %}
                 </div>
@@ -1391,11 +1851,11 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Add hover effects to all interactive elements
-        const interactiveElements = document.querySelectorAll('.session-item, .quick-action, .service-card, .action-button');
+        const interactiveElements = document.querySelectorAll('.session-item, .quick-action, .service-card, .action-button, .stat-item');
         
         interactiveElements.forEach(element => {
             element.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px)';
+                this.style.transform = 'translateY(-4px)';
             });
             
             element.addEventListener('mouseleave', function() {
@@ -1424,13 +1884,23 @@
         tables.forEach(table => {
             const wrapper = table.parentElement;
             if (wrapper && wrapper.classList.contains('bookings-table')) {
-                // Add horizontal scroll indicators on mobile
+                // Add horizontal scroll indicators
                 const checkScroll = () => {
                     const hasScroll = wrapper.scrollWidth > wrapper.clientWidth;
                     if (hasScroll) {
                         wrapper.style.position = 'relative';
-                        // Add gradient overlay for scroll indication
-                        wrapper.style.background = 'linear-gradient(to right, transparent 90%, rgba(0,0,0,0.05))';
+                        wrapper.style.background = `
+                            linear-gradient(to right, 
+                                transparent 90%, 
+                                rgba(0,0,0,0.03) 95%, 
+                                rgba(0,0,0,0.05)
+                            ),
+                            linear-gradient(to left, 
+                                transparent 90%, 
+                                rgba(0,0,0,0.03) 95%, 
+                                rgba(0,0,0,0.05)
+                            )
+                        `;
                     }
                 };
                 
@@ -1439,5 +1909,127 @@
             }
         });
     });
+
+    // Copy Dashboard URL Function
+    function copyDashboardUrl() {
+        const url = window.location.href;
+        const copyBtn = document.getElementById('copyLinkBtn');
+        const originalIcon = copyBtn.querySelector('i');
+        const originalText = copyBtn.querySelector('span').textContent;
+        
+        // Try using the modern Clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url)
+                .then(() => {
+                    // Show success feedback
+                    copyBtn.classList.add('copied');
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        copyBtn.classList.remove('copied');
+                        copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
+                    }, 2000);
+                    
+                    // Show notification
+                    showNotification('Dashboard link copied to clipboard! 📋', 'success');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    fallbackCopy(url, copyBtn, originalIcon, originalText);
+                });
+        } else {
+            // Fallback for older browsers
+            fallbackCopy(url, copyBtn, originalIcon, originalText);
+        }
+    }
+
+    // Fallback copy method
+    function fallbackCopy(url, copyBtn, originalIcon, originalText) {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                // Show success feedback
+                copyBtn.classList.add('copied');
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
+                }, 2000);
+                
+                // Show notification
+                showNotification('Dashboard link copied to clipboard! 📋', 'success');
+            } else {
+                showNotification('Failed to copy link. Please try again.', 'error');
+            }
+        } catch (err) {
+            console.error('Fallback copy failed: ', err);
+            showNotification('Failed to copy link. Please copy manually.', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    // Notification system
+    function showNotification(message, type) {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.custom-notification');
+        existingNotifications.forEach(notification => notification.remove());
+        
+        const notification = document.createElement('div');
+        notification.className = `custom-notification fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
+            type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 'bg-gradient-to-r from-red-500 to-pink-600'
+        } text-white max-w-sm`;
+        notification.innerHTML = `
+            <div class="flex items-center gap-3">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} text-xl"></i>
+                <span class="font-medium">${message}</span>
+            </div>
+        `;
+        
+        notification.style.animation = 'slideInRight 0.3s ease-out';
+        
+        document.body.appendChild(notification);
+        
+        // Add animation styles if not present
+        if (!document.querySelector('#notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Remove after 4 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 4000);
+    }
 </script>
 {% endblock %}
