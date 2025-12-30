@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy import func
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float, DateTime, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
@@ -847,7 +848,7 @@ async def admin_dashboard(
     total_bookings = db.query(Booking).count()
     revenue = db.query(Booking).filter(
         Booking.payment_status == "paid"
-    ).with_entities(db.func.sum(Booking.amount_paid)).scalar() or 0
+    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
     
     return templates.TemplateResponse("admin_dashboard.html", {
         "request": request,
