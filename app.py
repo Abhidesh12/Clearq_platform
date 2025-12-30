@@ -1030,7 +1030,92 @@ async def remove_profile_photo(
             content={"success": False, "message": f"Failed to remove photo: {str(e)}"}
         )
 # ============ MENTOR ROUTES ============
+import razorpay
+import os
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from .database import get_db
+from .models import Booking
 
+router = APIRouter()
+
+# Initialize Razorpay
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+@router.post("/api/create-razorpay-order")
+async def create_razorpay_order(
+    booking_id: int,
+    amount: int,
+    db: Session = Depends(get_db)
+):
+    """Create a Razorpay order for a booking"""
+    try:
+        # Check if booking exists
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if not booking:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        
+        # Create Razorpay order
+        order_data = {
+            "amount": amount,
+            "currency": "INR",
+            "receipt": f"booking_{booking_id}",
+            "notes": {
+                "booking_id": str(booking_id)
+            }
+        }
+        
+        order = razorpay_client.order.create(data=order_data)
+        
+        # Update booking with order ID
+        booking.razorpay_order_id = order["id"]
+        booking.amount_paid = amount
+        db.commit()
+        
+        return {"order_id": order["id"], "amount": amount}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/verify-payment")
+async def verify_payment(
+    razorpay_payment_id: str,
+    razorpay_order_id: str,
+    razorpay_signature: str,
+    booking_id: int,
+    db: Session = Depends(get_db)
+):
+    """Verify Razorpay payment signature and update booking"""
+    try:
+        # Verify payment signature
+        params_dict = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        }
+        
+        razorpay_client.utility.verify_payment_signature(params_dict)
+        
+        # Update booking
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if booking:
+            booking.payment_status = "paid"
+            booking.razorpay_payment_id = razorpay_payment_id
+            booking.status = "confirmed"  # Update booking status too
+            db.commit()
+        
+        return {"success": True, "message": "Payment verified successfully"}
+        
+    except Exception as e:
+        # Update booking as failed
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if booking:
+            booking.payment_status = "failed"
+            db.commit()
+        
+        return {"success": False, "error": str(e)}
 @app.get("/payment/{booking_id}", response_class=HTMLResponse)
 async def payment_page(
     request: Request,
