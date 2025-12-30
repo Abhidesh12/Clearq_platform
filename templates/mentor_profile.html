@@ -964,7 +964,11 @@ async function createBooking() {
         if (data.success) {
             showNotification('Booking created successfully! Redirecting to payment...', 'success');
             setTimeout(() => {
-                if (data.booking_id) {
+                // Use the redirect_url from the API response
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else if (data.booking_id) {
+                    // Fallback for backward compatibility
                     window.location.href = '/payment/' + data.booking_id;
                 } else {
                     window.location.href = '/dashboard';
