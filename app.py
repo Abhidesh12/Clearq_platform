@@ -1450,6 +1450,7 @@ async def verify_payment(
     data = await request.json()
     
     try:
+        # Verify payment signature
         razorpay_client.utility.verify_payment_signature({
             'razorpay_order_id': data['razorpay_order_id'],
             'razorpay_payment_id': data['razorpay_payment_id'],
@@ -1457,8 +1458,10 @@ async def verify_payment(
         })
         
         # Update booking status
+        booking_id = data.get('booking_id')
         booking = db.query(Booking).filter(
-            Booking.razorpay_order_id == data['razorpay_order_id']
+            Booking.id == booking_id,
+            Booking.learner_id == current_user.id
         ).first()
         
         if booking:
@@ -1466,10 +1469,16 @@ async def verify_payment(
             booking.razorpay_payment_id = data['razorpay_payment_id']
             booking.status = "confirmed"
             db.commit()
+            
+            # Optionally: Send confirmation email here
+            
+            return JSONResponse({"success": True, "message": "Payment verified successfully"})
+        else:
+            return JSONResponse({"success": False, "message": "Booking not found"})
         
-        return JSONResponse({"success": True})
-    except:
-        raise HTTPException(status_code=400, detail="Payment verification failed")
+    except Exception as e:
+        print(f"Payment verification error: {e}")
+        return JSONResponse({"success": False, "message": "Payment verification failed"})
 
 # ============ ADMIN ROUTES ============
 
