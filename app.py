@@ -255,7 +255,38 @@ class BookingCreate(BaseModel):
     time_slot: str
 
 # ============ DEPENDENCIES ============
+# Add this function after your database models
+def create_admin_user(db: Session):
+    """Create an admin user if not exists"""
+    admin_email = "admin@clearq.com"
+    admin_user = db.query(User).filter(User.email == admin_email).first()
+    
+    if not admin_user:
+        hashed_password = pwd_context.hash("admin123")  # Change this password
+        admin_user = User(
+            email=admin_email,
+            username="admin",
+            password_hash=hashed_password,
+            full_name="Admin User",
+            role="admin",
+            is_verified=True,
+            is_active=True
+        )
+        db.add(admin_user)
+        db.commit()
+        print("Admin user created: admin@clearq.com / admin123")
+    
+    return admin_user
 
+# Add this at the end of your imports/before routes
+@app.on_event("startup")
+async def startup_event():
+    db = SessionLocal()
+    try:
+        create_admin_user(db)
+    finally:
+        db.close()
+        
 def get_db():
     db = SessionLocal()
     try:
