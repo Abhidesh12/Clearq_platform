@@ -351,8 +351,8 @@ async def register_user(
     # Insert user directly
     db.execute(
         text("""
-            INSERT INTO users (email, username, password_hash, full_name, role, is_verified, created_at)
-            VALUES (:email, :username, :password_hash, :full_name, :role, :is_verified, NOW())
+            INSERT INTO users (email, username, password_hash, full_name, role, is_verified, is_active, created_at)
+            VALUES (:email, :username, :password_hash, :full_name, :role, :is_verified, :is_active, NOW())
         """),
         {
             "email": email,
@@ -361,7 +361,7 @@ async def register_user(
             "full_name": full_name,
             "role": role,
             "is_verified": is_verified,
-            "is_active": True
+            "is_active": True  
         }
     )
     db.commit()
