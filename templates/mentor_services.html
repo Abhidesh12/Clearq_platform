@@ -3,61 +3,675 @@
 {% block title %}Manage Services - ClearQ{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Manage Services</h1>
-            <p class="text-gray-600 mt-2">Create and manage your mentoring services</p>
-        </div>
+<style>
+    :root {
+        --primary: #3B82F6;
+        --primary-dark: #2563EB;
+        --primary-light: #60A5FA;
+        --secondary: #8B5CF6;
+        --accent: #06B6D4;
+        --success: #10B981;
+        --warning: #F59E0B;
+        --danger: #EF4444;
+        --gray-900: #0F172A;
+        --gray-800: #1E293B;
+        --gray-700: #334155;
+        --gray-600: #475569;
+        --gray-500: #64748B;
+        --gray-400: #94A3B8;
+        --gray-300: #CBD5E1;
+        --gray-200: #E2E8F0;
+        --gray-100: #F1F5F9;
+        --gray-50: #F8FAFC;
+        --white: #FFFFFF;
+        --radius-sm: 0.375rem;
+        --radius: 0.5rem;
+        --radius-md: 0.75rem;
+        --radius-lg: 1rem;
+        --radius-xl: 1.5rem;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --transition: all 0.2s ease;
+    }
 
-        <!-- Service Statistics -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow border border-gray-100 p-5">
-                <p class="text-sm text-gray-500 mb-1">Total Services</p>
-                <p class="text-2xl font-bold text-gray-900">{{ services|length }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow border border-gray-100 p-5">
-                <p class="text-sm text-gray-500 mb-1">Active Services</p>
-                <p class="text-2xl font-bold text-gray-900">
-                    {{ services|selectattr('is_active', 'equalto', true)|list|length }}
-                </p>
-            </div>
-            <div class="bg-white rounded-xl shadow border border-gray-100 p-5">
-                <p class="text-sm text-gray-500 mb-1">Total Bookings</p>
-                <p class="text-2xl font-bold text-gray-900">{{ mentor.total_sessions|default('0') }}</p>
-            </div>
-            <div class="bg-white rounded-xl shadow border border-gray-100 p-5">
-                <p class="text-sm text-gray-500 mb-1">Avg. Price</p>
-                <p class="text-2xl font-bold text-gray-900">
-                    ₹{{ (services|map(attribute='price')|sum / services|length if services and services|length > 0 else 0)|int }}
-                </p>
-            </div>
-        </div>
+    .services-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+    }
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column - Create Service -->
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Create New Service</h2>
-                    
-                    <form action="/mentor/services/create" method="POST" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Service Name *
+    /* Header */
+    .services-header {
+        padding: 1.25rem;
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .services-header h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+    }
+
+    .services-header p {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    /* Main Content */
+    .services-main {
+        padding: 1.25rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        padding: 1rem;
+        transition: var(--transition);
+    }
+
+    .stat-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        line-height: 1;
+    }
+
+    /* Create Service Form */
+    .create-service-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+
+    .create-service-card:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    .form-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .form-header h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+
+    .form-content {
+        padding: 1.25rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.25rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-required {
+        color: var(--danger);
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        font-size: 0.9375rem;
+        color: var(--gray-900);
+        transition: var(--transition);
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: var(--gray-400);
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        font-size: 0.9375rem;
+        color: var(--gray-900);
+        background: var(--white);
+        cursor: pointer;
+        transition: var(--transition);
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        font-size: 0.9375rem;
+        color: var(--gray-900);
+        resize: vertical;
+        transition: var(--transition);
+        font-family: inherit;
+    }
+
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-textarea::placeholder {
+        color: var(--gray-400);
+    }
+
+    .price-input {
+        position: relative;
+    }
+
+    .price-prefix {
+        position: absolute;
+        left: 0.75rem;
+        top: 0.75rem;
+        color: var(--gray-500);
+        font-size: 0.9375rem;
+    }
+
+    .price-input .form-input {
+        padding-left: 2rem;
+    }
+
+    .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .radio-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid var(--gray-300);
+        border-radius: 50%;
+        appearance: none;
+        position: relative;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .radio-input:checked {
+        border-color: var(--primary);
+        background: var(--primary);
+    }
+
+    .radio-input:checked::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 0.5rem;
+        height: 0.5rem;
+        background: var(--white);
+        border-radius: 50%;
+    }
+
+    .radio-label {
+        font-size: 0.9375rem;
+        color: var(--gray-700);
+        cursor: pointer;
+    }
+
+    .digital-fields {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: var(--radius);
+        border: 1px solid var(--gray-200);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .digital-fields.hidden {
+        display: none;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-help {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+    }
+
+    .form-actions {
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+        margin-top: 1rem;
+    }
+
+    .submit-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.875rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: var(--white);
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: var(--transition);
+        gap: 0.5rem;
+    }
+
+    .submit-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Services List */
+    .services-list-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+    }
+
+    .services-list-card:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    .list-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .list-header h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+
+    .list-content {
+        padding: 1.25rem;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .services-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .service-item {
+        padding: 1rem;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .service-item:hover {
+        border-color: var(--primary);
+        background: var(--blue-50);
+        transform: translateY(-1px);
+    }
+
+    .service-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+
+    .service-name {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+    }
+
+    .service-category {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+        text-transform: capitalize;
+    }
+
+    .service-status {
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 0.125rem 0.5rem;
+        border-radius: 1rem;
+        white-space: nowrap;
+    }
+
+    .status-active {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .status-inactive {
+        background: var(--gray-100);
+        color: var(--gray-700);
+    }
+
+    .service-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .service-price {
+        display: flex;
+        align-items: baseline;
+        gap: 0.25rem;
+    }
+
+    .price-amount {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .price-duration {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+    }
+
+    .service-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-button {
+        width: 2rem;
+        height: 2rem;
+        border: none;
+        border-radius: var(--radius);
+        background: transparent;
+        color: var(--gray-400);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .action-button:hover {
+        background: var(--gray-100);
+    }
+
+    .edit-button:hover {
+        color: var(--primary);
+    }
+
+    .delete-button:hover {
+        color: var(--danger);
+    }
+
+    /* Empty State */
+    .empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray-400);
+        font-size: 1.5rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    /* Responsive Design */
+    @media (min-width: 640px) {
+        .services-header {
+            padding: 1.5rem 1.75rem;
+        }
+        
+        .services-header h1 {
+            font-size: 1.75rem;
+        }
+        
+        .services-main {
+            padding: 1.75rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .form-grid .form-group:nth-child(1),
+        .form-grid .form-group:nth-child(2) {
+            grid-column: span 1;
+        }
+        
+        .form-grid .form-group:nth-child(3) {
+            grid-column: span 2;
+        }
+        
+        .form-grid .form-group:nth-child(4) {
+            grid-column: span 2;
+        }
+        
+        .form-grid .form-group:nth-child(4) {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        
+        .radio-group {
+            flex-direction: row;
+            gap: 1.5rem;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .services-main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .create-service-card,
+        .services-list-card {
+            margin-bottom: 0;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .services-main {
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+        
+        .services-list-card {
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .form-grid .form-group:nth-child(4) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .form-group:nth-child(5) {
+            grid-column: span 1;
+        }
+        
+        .form-group:nth-child(6) {
+            grid-column: span 1;
+        }
+    }
+</style>
+
+<div class="services-container">
+    <!-- Header -->
+    <div class="services-header">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h1>Manage Services</h1>
+            <p>Create and manage your mentoring services</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="services-main">
+        <!-- Left Column - Create Service -->
+        <div>
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Services</div>
+                    <div class="stat-value">{{ services|length }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Services</div>
+                    <div class="stat-value">
+                        {{ services|selectattr('is_active', 'equalto', true)|list|length }}
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-value">{{ mentor.total_sessions|default('0') }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg. Price</div>
+                    <div class="stat-value">
+                        ₹{{ (services|map(attribute='price')|sum / services|length if services and services|length > 0 else 0)|int }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Service Form -->
+            <div class="create-service-card">
+                <div class="form-header">
+                    <h2>Create New Service</h2>
+                </div>
+                
+                <div class="form-content">
+                    <form action="/mentor/services/create" method="POST">
+                        <div class="form-grid">
+                            <!-- Service Name -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Service Name <span class="form-required">*</span>
                                 </label>
-                                <input type="text" name="name" required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                <input type="text" name="name" required 
+                                       class="form-input"
                                        placeholder="e.g., Mock Interview, Resume Review">
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Category *
+                            <!-- Category -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Category <span class="form-required">*</span>
                                 </label>
-                                <select name="category" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <select name="category" required class="form-select">
                                     <option value="">Select Category</option>
                                     <option value="mock-interview">Mock Interview</option>
                                     <option value="resume-review">Resume Review</option>
@@ -68,109 +682,123 @@
                                     <option value="other">Other</option>
                                 </select>
                             </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Description *
-                            </label>
-                            <textarea name="description" rows="3" required
-                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                      placeholder="Describe what learners will get from this service..."></textarea>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Price (INR) *
+                            
+                            <!-- Description -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Description <span class="form-required">*</span>
                                 </label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-3 text-gray-500">₹</span>
-                                    <input type="number" name="price" required min="0"
-                                           class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                           placeholder="999">
-                                </div>
+                                <textarea name="description" rows="3" required 
+                                          class="form-textarea"
+                                          placeholder="Describe what learners will get from this service..."></textarea>
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Duration (minutes) *
-                                </label>
-                                <input type="number" name="duration_minutes" value="60" required min="15" step="15"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Service Type
-                                </label>
-                                <div class="space-y-3">
-                                    <label class="flex items-center">
-                                        <input type="radio" name="is_digital" value="false" checked
-                                               class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
-                                        <span class="ml-2 text-sm text-gray-700">Live Session</span>
+                            <!-- Price, Duration, Type -->
+                            <div class="form-group">
+                                <!-- Price -->
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label class="form-label">
+                                        Price (INR) <span class="form-required">*</span>
                                     </label>
-                                    <label class="flex items-center">
-                                        <input type="radio" name="is_digital" value="true"
-                                               class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
-                                        <span class="ml-2 text-sm text-gray-700">Digital Product</span>
+                                    <div class="price-input">
+                                        <span class="price-prefix">₹</span>
+                                        <input type="number" name="price" required min="0"
+                                               class="form-input"
+                                               placeholder="999">
+                                    </div>
+                                </div>
+                                
+                                <!-- Duration -->
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label class="form-label">
+                                        Duration (minutes) <span class="form-required">*</span>
                                     </label>
+                                    <input type="number" name="duration_minutes" value="60" required min="15" step="15"
+                                           class="form-input">
+                                </div>
+                                
+                                <!-- Service Type -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        Service Type
+                                    </label>
+                                    <div class="radio-group">
+                                        <label class="radio-option">
+                                            <input type="radio" name="is_digital" value="false" checked 
+                                                   class="radio-input">
+                                            <span class="radio-label">Live Session</span>
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="is_digital" value="true" 
+                                                   class="radio-input">
+                                            <span class="radio-label">Digital Product</span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div id="digital-product-fields" class="hidden">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Digital Product URL
-                            </label>
-                            <input type="url" name="digital_product_url"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                   placeholder="https://drive.google.com/file/...">
-                            <p class="mt-1 text-sm text-gray-500">
-                                Learners will get access to this URL after purchase
-                            </p>
+                        <!-- Digital Product Fields -->
+                        <div id="digital-product-fields" class="digital-fields hidden">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Digital Product URL
+                                </label>
+                                <input type="url" name="digital_product_url"
+                                       class="form-input"
+                                       placeholder="https://drive.google.com/file/...">
+                                <p class="form-help">
+                                    Learners will get access to this URL after purchase
+                                </p>
+                            </div>
                         </div>
                         
-                        <div class="pt-4 border-t border-gray-200">
-                            <button type="submit"
-                                    class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5">
-                                <i class="fas fa-plus mr-2"></i> Create Service
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="submit" class="submit-button">
+                                <i class="fas fa-plus"></i>
+                                <span>Create Service</span>
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
+        </div>
 
-            <!-- Right Column - Existing Services -->
-            <div>
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Your Services</h2>
-                    
+        <!-- Right Column - Services List -->
+        <div>
+            <div class="services-list-card">
+                <div class="list-header">
+                    <h2>Your Services</h2>
+                </div>
+                
+                <div class="list-content">
                     {% if services and services|length > 0 %}
-                    <div class="space-y-4">
+                    <div class="services-list">
                         {% for service in services %}
-                        <div class="border border-gray-200 rounded-xl p-4 hover:border-primary transition-colors">
-                            <div class="flex items-start justify-between mb-3">
+                        <div class="service-item">
+                            <div class="service-header">
                                 <div>
-                                    <h3 class="font-semibold text-gray-900">{{ service.name }}</h3>
-                                    <p class="text-sm text-gray-600 mt-1">{{ service.category|replace('-', ' ')|title }}</p>
+                                    <div class="service-name">{{ service.name }}</div>
+                                    <div class="service-category">
+                                        {{ service.category|replace('-', ' ')|title }}
+                                    </div>
                                 </div>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                    {% if service.is_active %}bg-green-100 text-green-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                <span class="service-status {% if service.is_active %}status-active{% else %}status-inactive{% endif %}">
                                     {{ 'Active' if service.is_active else 'Inactive' }}
                                 </span>
                             </div>
                             
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <span class="text-lg font-bold text-primary">₹{{ service.price }}</span>
-                                    <span class="text-sm text-gray-500 ml-2">{{ service.duration_minutes }} mins</span>
+                            <div class="service-footer">
+                                <div class="service-price">
+                                    <span class="price-amount">₹{{ service.price }}</span>
+                                    <span class="price-duration">{{ service.duration_minutes }} min</span>
                                 </div>
-                                <div class="flex gap-2">
-                                    <button class="text-gray-400 hover:text-primary">
+                                <div class="service-actions">
+                                    <button class="action-button edit-button" title="Edit Service">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="text-gray-400 hover:text-red-500">
+                                    <button class="action-button delete-button" title="Delete Service">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -179,12 +807,12 @@
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
-                            <i class="fas fa-list-alt text-gray-400 text-2xl"></i>
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-list-alt"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Services Yet</h3>
-                        <p class="text-gray-500">Create your first service to start accepting bookings</p>
+                        <h3>No Services Yet</h3>
+                        <p>Create your first service to start accepting bookings</p>
                     </div>
                     {% endif %}
                 </div>
@@ -194,24 +822,78 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const digitalProductFields = document.getElementById('digital-product-fields');
-    const digitalRadio = document.querySelector('input[name="is_digital"][value="true"]');
-    const liveRadio = document.querySelector('input[name="is_digital"][value="false"]');
-    
-    function toggleDigitalFields() {
-        if (digitalRadio.checked) {
-            digitalProductFields.classList.remove('hidden');
-        } else {
-            digitalProductFields.classList.add('hidden');
+    document.addEventListener('DOMContentLoaded', function() {
+        const digitalProductFields = document.getElementById('digital-product-fields');
+        const digitalRadio = document.querySelector('input[name="is_digital"][value="true"]');
+        const liveRadio = document.querySelector('input[name="is_digital"][value="false"]');
+        
+        function toggleDigitalFields() {
+            if (digitalRadio.checked) {
+                digitalProductFields.classList.remove('hidden');
+            } else {
+                digitalProductFields.classList.add('hidden');
+            }
         }
-    }
-    
-    digitalRadio.addEventListener('change', toggleDigitalFields);
-    liveRadio.addEventListener('change', toggleDigitalFields);
-    
-    // Initialize
-    toggleDigitalFields();
-});
+        
+        // Add event listeners
+        digitalRadio.addEventListener('change', toggleDigitalFields);
+        liveRadio.addEventListener('change', toggleDigitalFields);
+        
+        // Initialize
+        toggleDigitalFields();
+        
+        // Form submission handling
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            // Show loading state
+            const submitButton = this.querySelector('.submit-button');
+            const originalHTML = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Creating...</span>';
+            submitButton.disabled = true;
+            
+            // Re-enable after 5 seconds if still on page
+            setTimeout(() => {
+                submitButton.innerHTML = originalHTML;
+                submitButton.disabled = false;
+            }, 5000);
+        });
+        
+        // Service action buttons
+        const editButtons = document.querySelectorAll('.edit-button');
+        const deleteButtons = document.querySelectorAll('.delete-button');
+        
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // In a real app, this would open an edit modal
+                alert('Edit functionality coming soon!');
+            });
+        });
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+                    // In a real app, this would send a delete request
+                    this.closest('.service-item').style.opacity = '0.5';
+                    setTimeout(() => {
+                        alert('Delete functionality coming soon!');
+                    }, 300);
+                }
+            });
+        });
+        
+        // Input validation
+        const priceInput = document.querySelector('input[name="price"]');
+        const durationInput = document.querySelector('input[name="duration_minutes"]');
+        
+        priceInput.addEventListener('input', function() {
+            if (this.value < 0) this.value = 0;
+        });
+        
+        durationInput.addEventListener('input', function() {
+            if (this.value < 15) this.value = 15;
+            // Round to nearest 15
+            this.value = Math.round(this.value / 15) * 15;
+        });
+    });
 </script>
 {% endblock %}
