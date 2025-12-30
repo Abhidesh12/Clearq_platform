@@ -4,21 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete Payment - {{ service.title }}</title>
+    <title>Complete Payment - {{ service.title if service else 'Booking' }}</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Tailwind CSS (for development) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Razorpay Checkout integration -->
+    <!-- Razorpay -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     
     <style>
-        .razorpay-payment-button {
-            display: none;
-        }
         .loader {
             border: 3px solid #f3f3f3;
             border-top: 3px solid #3498db;
@@ -47,7 +44,7 @@
                 </div>
                 <div class="flex items-center">
                     <span class="text-gray-700 mr-4">
-                        <i class="fas fa-user mr-1"></i>{{ current_user.full_name }}
+                        <i class="fas fa-user mr-1"></i>{{ current_user.full_name if current_user else 'Guest' }}
                     </span>
                     <a href="/logout" class="text-red-500 hover:text-red-700">
                         <i class="fas fa-sign-out-alt"></i>
@@ -69,7 +66,13 @@
             <h1 class="text-3xl font-bold text-gray-900 mb-2">
                 <i class="fas fa-credit-card mr-2"></i>Complete Your Payment
             </h1>
-            <p class="text-gray-600">Secure payment for your booking with {{ mentor.full_name }}</p>
+            <p class="text-gray-600">
+                {% if mentor %}
+                    Secure payment for your booking with {{ mentor.full_name }}
+                {% else %}
+                    Secure payment for your booking
+                {% endif %}
+            </p>
         </div>
 
         <!-- Booking Summary -->
@@ -83,6 +86,7 @@
                 <div>
                     <h3 class="font-medium text-gray-700 mb-3">Service Details</h3>
                     <div class="space-y-3">
+                        {% if service %}
                         <div class="flex items-center">
                             <i class="fas fa-book text-blue-500 w-6"></i>
                             <span class="ml-3">
@@ -91,40 +95,70 @@
                             </span>
                         </div>
                         <div class="flex items-center">
-                            <i class="fas fa-user-tie text-green-500 w-6"></i>
+                            <i class="fas fa-money-bill text-green-500 w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-gray-600">Price:</span>
+                                <span class="font-medium ml-2">₹{{ "%.2f"|format(service.price / 100) if service.price else '0.00' }}</span>
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if mentor %}
+                        <div class="flex items-center">
+                            <i class="fas fa-user-tie text-purple-500 w-6"></i>
                             <span class="ml-3">
                                 <span class="text-gray-600">Mentor:</span>
                                 <span class="font-medium ml-2">{{ mentor.full_name }}</span>
                             </span>
                         </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Booking & Payment Details -->
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-3">Booking & Payment Details</h3>
+                    <div class="space-y-3">
                         <div class="flex items-center">
-                            <i class="fas fa-calendar-alt text-purple-500 w-6"></i>
+                            <i class="fas fa-calendar-alt text-orange-500 w-6"></i>
                             <span class="ml-3">
                                 <span class="text-gray-600">Booking ID:</span>
                                 <span class="font-medium ml-2">#{{ booking.id }}</span>
                             </span>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Payment Details -->
-                <div>
-                    <h3 class="font-medium text-gray-700 mb-3">Payment Details</h3>
-                    <div class="space-y-3">
+                        
                         <div class="flex items-center">
-                            <i class="fas fa-money-bill-wave text-yellow-500 w-6"></i>
+                            <i class="fas fa-calendar-day text-blue-500 w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Amount:</span>
-                                <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(booking.total_amount / 100) }}</span>
+                                <span class="text-gray-600">Date:</span>
+                                <span class="font-medium ml-2">{{ booking.booking_date.strftime('%d %b %Y') if booking.booking_date else 'Not set' }}</span>
                             </span>
                         </div>
+                        
                         <div class="flex items-center">
-                            <i class="fas fa-clock text-orange-500 w-6"></i>
+                            <i class="fas fa-clock text-green-500 w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Duration:</span>
-                                <span class="font-medium ml-2">{{ service.duration }} minutes</span>
+                                <span class="text-gray-600">Time:</span>
+                                <span class="font-medium ml-2">{{ booking.start_time }} - {{ booking.end_time }}</span>
                             </span>
                         </div>
+                        
+                        <!-- Amount to Pay -->
+                        <div class="flex items-center pt-3 border-t">
+                            <i class="fas fa-money-check-alt text-yellow-500 w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-gray-600">Amount to Pay:</span>
+                                {% if booking.amount_paid %}
+                                <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(booking.amount_paid / 100) }}</span>
+                                {% elif service and service.price %}
+                                <span class="font-bold text-lg ml-2">₹{{ "%.2f"|format(service.price / 100) }}</span>
+                                {% else %}
+                                <span class="font-bold text-lg ml-2">₹0.00</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <!-- Payment Status -->
                         <div class="flex items-center">
                             <i class="fas fa-tag text-red-500 w-6"></i>
                             <span class="ml-3">
@@ -132,8 +166,10 @@
                                 <span class="font-medium ml-2 capitalize px-3 py-1 rounded-full text-sm 
                                     {% if booking.payment_status == 'pending' %}bg-yellow-100 text-yellow-800
                                     {% elif booking.payment_status == 'paid' %}bg-green-100 text-green-800
+                                    {% elif booking.payment_status == 'failed' %}bg-red-100 text-red-800
+                                    {% elif booking.payment_status == 'refunded' %}bg-blue-100 text-blue-800
                                     {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                    {{ booking.payment_status }}
+                                    {{ booking.payment_status if booking.payment_status else 'pending' }}
                                 </span>
                             </span>
                         </div>
@@ -165,31 +201,57 @@
                 <p class="text-gray-600 text-center mb-6">
                     You'll be redirected to Razorpay's secure payment gateway to complete your transaction.
                 </p>
+                
+                <!-- Display the amount -->
+                <div class="text-center mb-6">
+                    {% set payment_amount = booking.amount_paid if booking.amount_paid else (service.price if service and service.price else 0) %}
+                    <div class="inline-block bg-gray-50 px-6 py-3 rounded-lg">
+                        <p class="text-sm text-gray-600">Total Amount</p>
+                        <p class="text-3xl font-bold text-gray-900">₹{{ "%.2f"|format(payment_amount / 100) }}</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Payment Button -->
             <div class="text-center">
+                {% set payment_amount = booking.amount_paid if booking.amount_paid else (service.price if service and service.price else 0) %}
+                
+                {% if booking.payment_status == 'paid' %}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                    <i class="fas fa-check-circle text-green-500 text-2xl mb-2"></i>
+                    <p class="text-green-700 font-medium">Payment Already Completed</p>
+                    <p class="text-green-600 text-sm">Your booking is confirmed and paid.</p>
+                </div>
+                <a href="/dashboard" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300">
+                    Go to Dashboard
+                </a>
+                {% else %}
                 <button id="payButton" 
                         class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-lg 
                                transition duration-300 transform hover:scale-105 shadow-lg 
                                flex items-center justify-center mx-auto">
                     <i class="fas fa-lock mr-3"></i>
-                    <span>Pay ₹{{ "%.2f"|format(booking.total_amount / 100) }} Now</span>
+                    <span>Pay ₹{{ "%.2f"|format(payment_amount / 100) }} Now</span>
                 </button>
                 
                 <p class="text-gray-500 text-sm mt-4">
                     <i class="fas fa-info-circle mr-1"></i>
                     By proceeding, you agree to our Terms of Service and Privacy Policy
                 </p>
+                {% endif %}
             </div>
 
-            <!-- Debug Info (remove in production) -->
-            <div class="mt-8 p-4 bg-gray-50 rounded-lg text-xs text-gray-500">
-                <p><strong>Debug Info:</strong></p>
-                <p>Booking ID: {{ booking.id }}</p>
-                <p>Amount (paise): {{ booking.total_amount }}</p>
-                <p>Razorpay Order ID: {{ booking.razorpay_order_id }}</p>
-                <p>Razorpay Key Present: {{ "Yes" if razorpay_key_id else "No" }}</p>
+            <!-- Important Notes -->
+            <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h3 class="font-medium text-yellow-800 mb-2">
+                    <i class="fas fa-exclamation-circle mr-2"></i>Important Notes
+                </h3>
+                <ul class="text-sm text-yellow-700 space-y-1">
+                    <li>• Your booking will be confirmed only after successful payment</li>
+                    <li>• The meeting link will be shared after payment confirmation</li>
+                    <li>• You can cancel and get a refund up to 24 hours before the session</li>
+                    <li>• All payments are processed securely via Razorpay</li>
+                </ul>
             </div>
         </div>
 
@@ -200,7 +262,7 @@
                 Need help? 
                 <a href="mailto:support@example.com" class="text-blue-600 hover:underline">
                     Contact Support
-                </a>
+                </a> or call +91-XXXXXXXXXX
             </p>
         </div>
     </div>
@@ -210,125 +272,159 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('=== Payment Page Loaded ===');
             console.log('Booking ID:', {{ booking.id }});
-            console.log('Amount (paise):', {{ booking.total_amount }});
-            console.log('Order ID:', "{{ booking.razorpay_order_id }}");
+            console.log('Payment Status:', "{{ booking.payment_status }}");
             console.log('Razorpay Key Present:', "{{ razorpay_key_id }}" ? 'true' : 'false');
-            console.log('Current User:', "{{ current_user.full_name }}");
             
+            // Only initialize payment button if payment is pending
+            {% if booking.payment_status != 'paid' %}
             const payButton = document.getElementById('payButton');
             
-            payButton.addEventListener('click', async function() {
-                // Disable button and show loading
-                payButton.disabled = true;
-                payButton.innerHTML = '<div class="loader"></div> Processing...';
-                
-                try {
-                    // Check if Razorpay is loaded
-                    if (typeof Razorpay === 'undefined') {
-                        throw new Error('Razorpay SDK not loaded. Please check your internet connection.');
-                    }
+            if (payButton) {
+                payButton.addEventListener('click', async function() {
+                    // Disable button and show loading
+                    payButton.disabled = true;
+                    const originalText = payButton.innerHTML;
+                    payButton.innerHTML = '<div class="loader"></div> Processing...';
                     
-                    // Check if we have an order ID
-                    let orderId = "{{ booking.razorpay_order_id }}";
-                    
-                    // If no order ID, create one via API call
-                    if (!orderId || orderId === 'None') {
-                        console.log('No order ID found, creating one...');
-                        const response = await fetch('/api/create-razorpay-order', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                booking_id: {{ booking.id }},
-                                amount: {{ booking.total_amount }}
-                            })
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error('Failed to create payment order');
+                    try {
+                        // Check if Razorpay is loaded
+                        if (typeof Razorpay === 'undefined') {
+                            throw new Error('Razorpay SDK not loaded. Please check your internet connection.');
                         }
                         
-                        const data = await response.json();
-                        orderId = data.order_id;
-                        console.log('Created new order ID:', orderId);
-                    }
-                    
-                    const options = {
-                        key: "{{ razorpay_key_id }}",
-                        amount: {{ booking.total_amount }}, // amount in paise
-                        currency: "INR",
-                        name: "EduMentor",
-                        description: "Payment for {{ service.title }} with {{ mentor.full_name }}",
-                        order_id: orderId,
-                        handler: async function(response) {
-                            console.log('Payment successful!', response);
+                        // Calculate the amount (in paise)
+                        // Use booking.amount_paid if available, otherwise use service.price
+                        const amount = {% if booking.amount_paid %} 
+                                        {{ booking.amount_paid }}
+                                      {% elif service and service.price %}
+                                        {{ service.price }}
+                                      {% else %}
+                                        0
+                                      {% endif %};
+                        
+                        if (amount <= 0) {
+                            throw new Error('Invalid amount. Please contact support.');
+                        }
+                        
+                        // Get or create Razorpay order ID
+                        let orderId = "{{ booking.razorpay_order_id }}";
+                        let needsNewOrder = false;
+                        
+                        if (!orderId || orderId === 'None' || orderId === '') {
+                            console.log('Creating new Razorpay order...');
+                            needsNewOrder = true;
                             
-                            // Verify payment on server
-                            const verifyResponse = await fetch('/api/verify-payment', {
+                            // Call backend to create order
+                            const response = await fetch('/api/create-razorpay-order', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'X-CSRF-Token': '{{ csrf_token if csrf_token else "" }}'
                                 },
                                 body: JSON.stringify({
-                                    razorpay_payment_id: response.razorpay_payment_id,
-                                    razorpay_order_id: response.razorpay_order_id,
-                                    razorpay_signature: response.razorpay_signature,
-                                    booking_id: {{ booking.id }}
+                                    booking_id: {{ booking.id }},
+                                    amount: amount
                                 })
                             });
                             
-                            const result = await verifyResponse.json();
-                            
-                            if (result.success) {
-                                // Show success message
-                                alert('Payment Successful! Your booking is now confirmed.');
-                                // Redirect to dashboard
-                                window.location.href = '/dashboard?payment=success';
-                            } else {
-                                alert('Payment verification failed. Please contact support.');
+                            if (!response.ok) {
+                                const error = await response.text();
+                                throw new Error('Failed to create payment order: ' + error);
                             }
-                        },
-                        prefill: {
-                            name: "{{ current_user.full_name }}",
-                            email: "{{ current_user.email }}",
-                            contact: "{{ current_user.phone_number or '' }}"
-                        },
-                        theme: {
-                            color: "#4F46E5"
-                        },
-                        modal: {
-                            ondismiss: function() {
-                                console.log('Payment modal closed');
-                                // Re-enable button
-                                payButton.disabled = false;
-                                payButton.innerHTML = '<i class="fas fa-lock mr-3"></i><span>Pay ₹{{ "%.2f"|format(booking.total_amount / 100) }} Now</span>';
-                            },
-                            escape: true,
-                            backdropclose: false
+                            
+                            const data = await response.json();
+                            orderId = data.order_id;
+                            console.log('Created new order ID:', orderId);
                         }
-                    };
-                    
-                    console.log('Razorpay options:', options);
-                    
-                    const rzp = new Razorpay(options);
-                    rzp.open();
-                    
-                } catch (error) {
-                    console.error('Payment error:', error);
-                    alert('Error: ' + error.message);
-                    
-                    // Re-enable button
-                    payButton.disabled = false;
-                    payButton.innerHTML = '<i class="fas fa-lock mr-3"></i><span>Pay ₹{{ "%.2f"|format(booking.total_amount / 100) }} Now</span>';
-                }
-            });
+                        
+                        // Razorpay options
+                        const options = {
+                            key: "{{ razorpay_key_id }}",
+                            amount: amount, // amount in paise
+                            currency: "INR",
+                            name: "EduMentor",
+                            description: "Payment for {{ service.title if service else 'Booking' }} #{{ booking.id }}",
+                            order_id: orderId,
+                            handler: async function(response) {
+                                console.log('Payment successful!', response);
+                                
+                                // Verify payment on server
+                                const verifyResponse = await fetch('/api/verify-payment', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                        booking_id: {{ booking.id }}
+                                    })
+                                });
+                                
+                                const result = await verifyResponse.json();
+                                
+                                if (result.success) {
+                                    // Show success message
+                                    alert('🎉 Payment Successful! Your booking is now confirmed.');
+                                    // Redirect to dashboard
+                                    window.location.href = '/dashboard?payment=success&booking_id={{ booking.id }}';
+                                } else {
+                                    alert('❌ Payment verification failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
+                                    // Re-enable button
+                                    payButton.disabled = false;
+                                    payButton.innerHTML = originalText;
+                                }
+                            },
+                            prefill: {
+                                name: "{{ current_user.full_name if current_user else '' }}",
+                                email: "{{ current_user.email if current_user else '' }}",
+                                contact: "{{ current_user.phone_number if current_user and current_user.phone_number else '' }}"
+                            },
+                            theme: {
+                                color: "#4F46E5"
+                            },
+                            modal: {
+                                ondismiss: function() {
+                                    console.log('Payment modal closed by user');
+                                    // Re-enable button
+                                    payButton.disabled = false;
+                                    payButton.innerHTML = originalText;
+                                },
+                                escape: true,
+                                backdropclose: false
+                            }
+                        };
+                        
+                        console.log('Razorpay options:', options);
+                        
+                        // Open Razorpay checkout
+                        const rzp = new Razorpay(options);
+                        rzp.open();
+                        
+                    } catch (error) {
+                        console.error('Payment error:', error);
+                        alert('❌ Error: ' + error.message);
+                        
+                        // Re-enable button
+                        payButton.disabled = false;
+                        payButton.innerHTML = originalText;
+                    }
+                });
+            }
+            {% endif %}
             
             // Check if Razorpay loaded
             setTimeout(() => {
                 if (typeof Razorpay === 'undefined') {
                     console.error('❌ Razorpay not loaded after 3 seconds');
-                    alert('Warning: Payment system is still loading. Please refresh if payment button doesn\'t work.');
+                    const paymentBtn = document.getElementById('payButton');
+                    if (paymentBtn && !paymentBtn.disabled) {
+                        paymentBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Reload Page';
+                        paymentBtn.onclick = function() {
+                            window.location.reload();
+                        };
+                    }
                 } else {
                     console.log('✅ Razorpay loaded successfully');
                 }
