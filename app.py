@@ -89,7 +89,7 @@ class User(Base):
     # Relationships
     mentor_profile = relationship("Mentor", back_populates="user", uselist=False)
     bookings_as_learner = relationship("Booking", foreign_keys="[Booking.learner_id]", back_populates="learner")
-    bookings_as_mentor = relationship("Booking", foreign_keys="[Booking.mentor_id]", back_populates="mentor")
+    #bookings_as_mentor = relationship("Booking", foreign_keys="[Booking.mentor_id]", back_populates="mentor")
     reviews = relationship("Review", back_populates="learner")
 
 class Mentor(Base):
@@ -115,6 +115,7 @@ class Mentor(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
+    bookings_as_mentor = relationship("Booking", foreign_keys="[Booking.mentor_id]", back_populates="mentor")
     user = relationship("User", back_populates="mentor_profile")
     services = relationship("Service", back_populates="mentor")
     availabilities = relationship("Availability", back_populates="mentor")
