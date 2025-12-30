@@ -25,6 +25,8 @@ from urllib.parse import urlencode
 from fastapi import File, UploadFile
 from fastapi.responses import JSONResponse
 import shutil
+from starlette.middleware.base import BaseHTTPMiddleware
+
 
 
 # Load environment variables
@@ -32,6 +34,22 @@ load_dotenv()
 
 # Initialize FastAPI
 app = FastAPI(title="ClearQ Mentorship Platform")
+
+class CSPMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Content-Security-Policy"] = (
+            "script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://checkout.razorpay.com 'unsafe-inline'; "
+            "style-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; "
+            "connect-src 'self' https://api.razorpay.com; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' data:; "
+            "frame-src 'self' https://api.razorpay.com;"
+        )
+        return response
+
+# Add the middleware
+app.add_middleware(CSPMiddleware)
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/clearq")
