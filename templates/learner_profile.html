@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.full_name if profile_user.full_name else profile_user.username }} - ClearQ{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+            <div class="flex flex-col items-center text-center">
+                <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold mb-6">
+                    {% if profile_user.profile_image %}
+                        <img src="/static/{{ profile_user.profile_image }}" 
+                             alt="{{ profile_user.full_name if profile_user.full_name else profile_user.username }}" 
+                             class="w-full h-full object-cover rounded-full">
+                    {% else %}
+                        {{ (profile_user.full_name[0] if profile_user.full_name else profile_user.username[0])|upper if profile_user.full_name or profile_user.username else 'U' }}
+                    {% endif %}
+                </div>
+                
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    {{ profile_user.full_name if profile_user.full_name else profile_user.username }}
+                </h1>
+                
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-medium mb-6">
+                    <i class="fas fa-user-graduate mr-2"></i>
+                    Learner
+                </div>
+                
+                <p class="text-gray-600 mb-8 max-w-2xl">
+                    This user is a learner on ClearQ. They're here to learn and grow with expert mentors.
+                </p>
+                
+                <a href="/explore" 
+                   class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
+                    <i class="fas fa-search mr-2"></i> Explore Mentors
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
