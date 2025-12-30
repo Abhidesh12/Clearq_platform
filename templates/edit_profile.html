@@ -3,294 +3,402 @@
 {% block title %}Edit Profile - ClearQ{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Edit Profile</h1>
-            <p class="text-gray-600 mt-2">Update your personal information and preferences</p>
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+    <!-- Mobile Header -->
+    <div class="lg:hidden bg-white shadow-sm border-b">
+        <div class="px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="/dashboard" class="p-2 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-arrow-left text-gray-600"></i>
+                </a>
+                <div>
+                    <h1 class="font-bold text-gray-900">Edit Profile</h1>
+                    <p class="text-xs text-gray-500">Update your information</p>
+                </div>
+            </div>
+            <button type="submit" form="profile-form" 
+                    class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:shadow-md transition-shadow">
+                Save
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8">
+        <!-- Desktop Header -->
+        <div class="hidden lg:block mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Edit Profile</h1>
+                    <p class="text-gray-600 mt-2">Update your personal information and preferences</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard" 
+                       class="px-5 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit" form="profile-form"
+                            class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:shadow-lg transition-all hover:-translate-y-0.5">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- Flash Messages - Updated for FastAPI -->
+        <!-- Flash Messages -->
         {% if flash_messages %}
-            <div class="mb-6">
+            <div class="mb-6 max-w-3xl">
                 {% for flash in flash_messages %}
-                    <div class="p-4 rounded-lg mb-2 {% if flash.category == 'success' %}bg-green-50 text-green-800 border border-green-200{% elif flash.category == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
-                        {{ flash.message }}
+                    <div class="p-4 rounded-xl mb-3 shadow-sm {% if flash.category == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200{% elif flash.category == 'error' %}bg-rose-50 text-rose-800 border border-rose-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                        <div class="flex items-center">
+                            <i class="fas {% if flash.category == 'success' %}fa-check-circle{% elif flash.category == 'error' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %} mr-3"></i>
+                            <span>{{ flash.message }}</span>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column -->
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Personal Information</h2>
-                    
-                    <form action="/profile/edit" method="POST" enctype="multipart/form-data" class="space-y-6">
-                        <!-- CSRF Token (optional - remove if not using) -->
-                        <!-- <input type="hidden" name="csrf_token" value=""> -->
-                        
-                        <!-- Full Name -->
-                        <div>
-                            <label for="full_name" class="block text-sm font-medium text-gray-700 mb-2">
-                                Full Name
-                            </label>
-                            <input type="text" 
-                                   id="full_name" 
-                                   name="full_name" 
-                                   value="{{ current_user.full_name or '' }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                   placeholder="Enter your full name">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Column - Main Form -->
+            <div class="lg:col-span-8 space-y-6">
+                <!-- Profile Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-center mb-6">
+                            <div class="p-3 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 mr-4">
+                                <i class="fas fa-user text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-900">Personal Information</h2>
+                                <p class="text-gray-500 text-sm">Update your basic details</p>
+                            </div>
                         </div>
 
-                        {% if current_user.role == 'mentor' %}
-                        <!-- Mentor Specific Fields -->
-                        <div>
-                            <label for="bio" class="block text-sm font-medium text-gray-700 mb-2">
-                                Bio
-                            </label>
-                            <textarea id="bio" 
-                                      name="bio" 
-                                      rows="4"
-                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                      placeholder="Tell learners about your experience, expertise, and mentoring style...">{{ mentor_profile.bio if mentor_profile else '' }}</textarea>
-                        </div>
-
-                        <div>
-                            <label for="skills" class="block text-sm font-medium text-gray-700 mb-2">
-                                Skills (comma separated)
-                            </label>
-                            <input type="text" 
-                                   id="skills" 
-                                   name="skills" 
-                                   value="{{ mentor_profile.skills if mentor_profile else '' }}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                   placeholder="e.g., Python, React, Product Management, Data Science">
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="linkedin_url" class="block text-sm font-medium text-gray-700 mb-2">
-                                    LinkedIn URL
-                                </label>
-                                <input type="url" 
-                                       id="linkedin_url" 
-                                       name="linkedin_url" 
-                                       value="{{ mentor_profile.linkedin_url if mentor_profile else '' }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       placeholder="https://linkedin.com/in/username">
+                        <form id="profile-form" action="/profile/edit" method="POST" enctype="multipart/form-data" class="space-y-6">
+                            <!-- Profile Photo Section -->
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-4 bg-gray-50 rounded-xl">
+                                <div class="relative">
+                                    {% if current_user.profile_image and current_user.profile_image != 'default-avatar.png' %}
+                                    <img src="/static/{{ current_user.profile_image }}" 
+                                         alt="{{ current_user.full_name or current_user.username }}"
+                                         id="profile-preview"
+                                         class="w-20 h-20 rounded-xl object-cover border-2 border-white shadow-md">
+                                    {% else %}
+                                    <div id="avatar-preview" 
+                                         class="w-20 h-20 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold border-2 border-white shadow-md">
+                                        {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper if current_user.full_name or current_user.username else 'U' }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="flex-1">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Profile Photo
+                                    </label>
+                                    <div class="flex flex-col sm:flex-row gap-3">
+                                        <label class="cursor-pointer">
+                                            <input type="file" 
+                                                   id="profile_photo" 
+                                                   name="profile_photo" 
+                                                   accept="image/*"
+                                                   class="hidden">
+                                            <span class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors">
+                                                <i class="fas fa-upload mr-2"></i>
+                                                Upload Photo
+                                            </span>
+                                        </label>
+                                        {% if current_user.profile_image and current_user.profile_image != 'default-avatar.png' %}
+                                        <button type="button"
+                                                id="remove-photo-btn"
+                                                class="px-4 py-2.5 text-sm text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors">
+                                            <i class="fas fa-trash mr-2"></i>
+                                            Remove
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mt-2 text-xs text-gray-500">
+                                        JPG, PNG or GIF. Max 5MB. Recommended: 400×400px
+                                    </p>
+                                </div>
                             </div>
 
-                            <div>
-                                <label for="github_url" class="block text-sm font-medium text-gray-700 mb-2">
-                                    GitHub URL
-                                </label>
-                                <input type="url" 
-                                       id="github_url" 
-                                       name="github_url" 
-                                       value="{{ mentor_profile.github_url if mentor_profile else '' }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       placeholder="https://github.com/username">
-                            </div>
-                            
-                            <div>
-                                <label for="twitter_url" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Twitter URL
-                                </label>
-                                <input type="url" 
-                                       id="twitter_url" 
-                                       name="twitter_url" 
-                                       value="{{ mentor_profile.twitter_url if mentor_profile else '' }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       placeholder="https://twitter.com/username">
-                            </div>
-                            
-                            <div>
-                                <label for="website_url" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Website URL
-                                </label>
-                                <input type="url" 
-                                       id="website_url" 
-                                       name="website_url" 
-                                       value="{{ mentor_profile.website_url if mentor_profile else '' }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       placeholder="https://yourwebsite.com">
-                            </div>
-                            
-                            <div>
-                                <label for="experience_years" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Years of Experience
-                                </label>
-                                <input type="number" 
-                                       id="experience_years" 
-                                       name="experience_years" 
-                                       value="{{ mentor_profile.experience_years if mentor_profile else 0 }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       placeholder="5">
-                            </div>
-                            
-                            <div>
-                                <label for="industry" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Industry
-                                </label>
-                                <input type="text" 
-                                       id="industry" 
-                                       name="industry" 
-                                       value="{{ mentor_profile.industry if mentor_profile else '' }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       placeholder="e.g., Technology, Finance, Healthcare">
-                            </div>
-                            
-                            <div>
-                                <label for="job_title" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Job Title
-                                </label>
-                                <input type="text" 
-                                       id="job_title" 
-                                       name="job_title" 
-                                       value="{{ mentor_profile.job_title if mentor_profile else '' }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       placeholder="e.g., Senior Software Engineer">
-                            </div>
-                            
-                            <div>
-                                <label for="company" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Company
-                                </label>
-                                <input type="text" 
-                                       id="company" 
-                                       name="company" 
-                                       value="{{ mentor_profile.company if mentor_profile else '' }}"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       placeholder="e.g., Google, Microsoft">
-                            </div>
-                        </div>
-                        {% endif %}
+                            <!-- Basic Info Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="full_name" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-user-circle mr-2 text-blue-500"></i>
+                                        Full Name
+                                    </label>
+                                    <input type="text" 
+                                           id="full_name" 
+                                           name="full_name" 
+                                           value="{{ current_user.full_name or '' }}"
+                                           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                           placeholder="Enter your full name">
+                                </div>
 
-                        <!-- Profile Photo Upload -->
-                        <div>
-                            <label for="profile_photo" class="block text-sm font-medium text-gray-700 mb-2">
-                                Profile Photo
-                            </label>
-                            <input type="file" 
-                                   id="profile_photo" 
-                                   name="profile_photo" 
-                                   accept="image/*"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            <p class="mt-1 text-sm text-gray-500">
-                                Recommended: Square image, at least 400x400 pixels. Max size: 5MB.
-                            </p>
-                        </div>
-
-                        <!-- Submit Buttons -->
-                        <div class="pt-6 border-t border-gray-200 flex items-center justify-between">
-                            <div class="flex space-x-3">
-                                <button type="submit"
-                                        class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                                    Save Changes
-                                </button>
-                                <a href="/dashboard" 
-                                   class="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
-                                    Cancel
-                                </a>
+                                {% if current_user.role == 'mentor' %}
+                                <div>
+                                    <label for="job_title" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-briefcase mr-2 text-blue-500"></i>
+                                        Job Title
+                                    </label>
+                                    <input type="text" 
+                                           id="job_title" 
+                                           name="job_title" 
+                                           value="{{ mentor_profile.job_title if mentor_profile else '' }}"
+                                           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                           placeholder="Senior Software Engineer">
+                                </div>
+                                {% endif %}
                             </div>
-                            
-                            {% if current_user.profile_image and current_user.profile_image != 'default-avatar.png' %}
-                            <button type="button"
-                                    id="remove-photo-btn"
-                                    class="px-4 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-300">
-                                Remove Photo
-                            </button>
+
+                            {% if current_user.role == 'mentor' %}
+                            <!-- Mentor Specific Fields -->
+                            <div class="space-y-6 pt-6 border-t border-gray-100">
+                                <div class="flex items-center mb-4">
+                                    <div class="p-2 rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 mr-3">
+                                        <i class="fas fa-graduation-cap text-amber-600"></i>
+                                    </div>
+                                    <h3 class="font-bold text-gray-900">Mentor Information</h3>
+                                </div>
+
+                                <div>
+                                    <label for="bio" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Bio
+                                    </label>
+                                    <textarea id="bio" 
+                                              name="bio" 
+                                              rows="4"
+                                              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                              placeholder="Tell learners about your experience, expertise, and mentoring style...">{{ mentor_profile.bio if mentor_profile else '' }}</textarea>
+                                </div>
+
+                                <div>
+                                    <label for="skills" class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i class="fas fa-code mr-2 text-blue-500"></i>
+                                        Skills (comma separated)
+                                    </label>
+                                    <input type="text" 
+                                           id="skills" 
+                                           name="skills" 
+                                           value="{{ mentor_profile.skills if mentor_profile else '' }}"
+                                           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                           placeholder="Python, React, Product Management, Data Science">
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="experience_years" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
+                                            Years of Experience
+                                        </label>
+                                        <div class="relative">
+                                            <input type="number" 
+                                                   id="experience_years" 
+                                                   name="experience_years" 
+                                                   value="{{ mentor_profile.experience_years if mentor_profile else 0 }}"
+                                                   min="0"
+                                                   class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                                   placeholder="5">
+                                            <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                                years
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label for="industry" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fas fa-industry mr-2 text-blue-500"></i>
+                                            Industry
+                                        </label>
+                                        <input type="text" 
+                                               id="industry" 
+                                               name="industry" 
+                                               value="{{ mentor_profile.industry if mentor_profile else '' }}"
+                                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                               placeholder="Technology, Finance, Healthcare">
+                                    </div>
+                                </div>
+
+                                <!-- Social Links Grid -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="linkedin_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fab fa-linkedin mr-2 text-blue-700"></i>
+                                            LinkedIn
+                                        </label>
+                                        <input type="url" 
+                                               id="linkedin_url" 
+                                               name="linkedin_url" 
+                                               value="{{ mentor_profile.linkedin_url if mentor_profile else '' }}"
+                                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                               placeholder="https://linkedin.com/in/username">
+                                    </div>
+
+                                    <div>
+                                        <label for="github_url" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fab fa-github mr-2 text-gray-800"></i>
+                                            GitHub
+                                        </label>
+                                        <input type="url" 
+                                               id="github_url" 
+                                               name="github_url" 
+                                               value="{{ mentor_profile.github_url if mentor_profile else '' }}"
+                                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                               placeholder="https://github.com/username">
+                                    </div>
+                                </div>
+                            </div>
                             {% endif %}
-                        </div>
-                    </form>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Mobile Action Buttons -->
+                <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 z-50">
+                    <div class="flex justify-between space-x-3">
+                        <a href="/dashboard" 
+                           class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors text-center">
+                            Cancel
+                        </a>
+                        <button type="submit" form="profile-form"
+                                class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-xl hover:shadow-md transition-shadow">
+                            Save Changes
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Right Column -->
-            <div class="space-y-8">
-                <!-- Profile Preview -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Profile Preview</h3>
-                    
-                    <div class="flex flex-col items-center">
-                        <div class="relative mb-4">
-                            {% if current_user.profile_image and current_user.profile_image != 'default-avatar.png' %}
-                            <img src="/static/{{ current_user.profile_image }}" 
-                                 alt="{{ current_user.full_name or current_user.username }}"
-                                 id="profile-preview"
-                                 class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg">
-                            {% else %}
-                            <div id="avatar-preview" 
-                                 class="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-4xl font-bold border-4 border-white shadow-lg">
-                                {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper if current_user.full_name or current_user.username else 'U' }}
+            <div class="lg:col-span-4 space-y-6">
+                <!-- Account Info Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-center mb-6">
+                            <div class="p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 mr-4">
+                                <i class="fas fa-user-shield text-emerald-600"></i>
                             </div>
-                            {% endif %}
+                            <div>
+                                <h3 class="font-bold text-gray-900">Account Information</h3>
+                                <p class="text-gray-500 text-sm">Your account details</p>
+                            </div>
                         </div>
-                        
-                        <h4 class="text-xl font-bold text-gray-900 mb-1">
-                            {{ current_user.full_name or current_user.username }}
-                        </h4>
-                        
-                        <p class="text-gray-600 mb-4">
-                            {{ current_user.role|title }}
-                        </p>
-                        
-                        {% if current_user.role == 'mentor' and mentor_profile and mentor_profile.skills %}
-                        <div class="flex flex-wrap gap-2 justify-center">
-                            {% if mentor_profile.skills %}
-                                {% for skill in mentor_profile.skills.split(',') %}
-                                    {% if skill.strip() %}
-                                    <span class="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full">
-                                        {{ skill.strip() }}
-                                    </span>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
+
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="text-xs text-gray-500">Email</p>
+                                    <p class="font-medium text-gray-900 text-sm truncate">{{ current_user.email }}</p>
+                                </div>
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="text-xs text-gray-500">Username</p>
+                                    <p class="font-medium text-gray-900 text-sm">{{ current_user.username }}</p>
+                                </div>
+                                <i class="fas fa-at text-gray-400"></i>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="text-xs text-gray-500">Role</p>
+                                    <p class="font-medium text-gray-900 text-sm capitalize">{{ current_user.role }}</p>
+                                </div>
+                                <i class="fas fa-user-tag text-gray-400"></i>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div>
+                                    <p class="text-xs text-gray-500">Member Since</p>
+                                    <p class="font-medium text-gray-900 text-sm">
+                                        {% if current_user.created_at %}
+                                            {{ current_user.created_at.strftime('%b %d, %Y') }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <i class="fas fa-calendar text-gray-400"></i>
+                            </div>
                         </div>
-                        {% endif %}
+
+                        <div class="mt-6 pt-6 border-t border-gray-100">
+                            <a href="/profile/change-password" 
+                               class="flex items-center justify-center px-4 py-3 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors group">
+                                <i class="fas fa-key mr-3 text-gray-400 group-hover:text-gray-600"></i>
+                                Change Password
+                            </a>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Account Information -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Account Information</h3>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-sm text-gray-500">Email</p>
-                            <p class="font-medium text-gray-900">{{ current_user.email }}</p>
+                <!-- Profile Preview Card -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-center mb-6">
+                            <div class="p-3 rounded-xl bg-white/50 mr-4">
+                                <i class="fas fa-eye text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900">Preview</h3>
+                                <p class="text-gray-600 text-sm">How others see you</p>
+                            </div>
                         </div>
-                        
-                        <div>
-                            <p class="text-sm text-gray-500">Username</p>
-                            <p class="font-medium text-gray-900">{{ current_user.username }}</p>
-                        </div>
-                        
-                        <div>
-                            <p class="text-sm text-gray-500">Account Type</p>
-                            <p class="font-medium text-gray-900">{{ current_user.role|title }}</p>
-                        </div>
-                        
-                        <div>
-                            <p class="text-sm text-gray-500">Member Since</p>
-                            <p class="font-medium text-gray-900">
-                                {% if current_user.created_at %}
-                                    {{ current_user.created_at.strftime('%B %d, %Y') }}
+
+                        <div class="bg-white rounded-xl p-4 shadow-sm">
+                            <div class="flex items-center space-x-4 mb-4">
+                                {% if current_user.profile_image and current_user.profile_image != 'default-avatar.png' %}
+                                <img src="/static/{{ current_user.profile_image }}" 
+                                     alt="{{ current_user.full_name or current_user.username }}"
+                                     class="w-14 h-14 rounded-xl object-cover border-2 border-white shadow">
                                 {% else %}
-                                    N/A
+                                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow">
+                                    {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper if current_user.full_name or current_user.username else 'U' }}
+                                </div>
                                 {% endif %}
-                            </p>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 text-sm">
+                                        {{ current_user.full_name or current_user.username }}
+                                    </h4>
+                                    <div class="flex items-center mt-1">
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full capitalize">
+                                            {{ current_user.role }}
+                                        </span>
+                                        {% if current_user.role == 'mentor' and mentor_profile and mentor_profile.experience_years %}
+                                        <span class="ml-2 text-xs text-gray-500">
+                                            <i class="fas fa-star text-amber-500 mr-1"></i>
+                                            {{ mentor_profile.experience_years }}y exp
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if current_user.role == 'mentor' and mentor_profile and mentor_profile.skills %}
+                            <div class="mt-4">
+                                <p class="text-xs text-gray-500 mb-2 font-medium">Skills</p>
+                                <div class="flex flex-wrap gap-2">
+                                    {% if mentor_profile.skills %}
+                                        {% for skill in mentor_profile.skills.split(',') %}
+                                            {% if skill.strip() and loop.index <= 3 %}
+                                            <span class="px-2.5 py-1 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 text-xs font-medium rounded-lg border border-blue-200">
+                                                {{ skill.strip() }}
+                                            </span>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if mentor_profile.skills.split(',')|length > 3 %}
+                                        <span class="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg">
+                                            +{{ mentor_profile.skills.split(',')|length - 3 }} more
+                                        </span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
-                    </div>
-                    
-                    <div class="mt-6 pt-6 border-t border-gray-200">
-                        <a href="/profile/change-password" 
-                           class="block w-full text-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
-                            Change Password
-                        </a>
                     </div>
                 </div>
             </div>
@@ -320,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const img = document.createElement('img');
                             img.id = 'profile-preview';
                             img.src = e.target.result;
-                            img.className = 'w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg';
+                            img.className = 'w-20 h-20 rounded-xl object-cover border-2 border-white shadow-md';
                             avatarPreview.parentNode.appendChild(img);
                         }
                     }
@@ -337,6 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
         removePhotoBtn.addEventListener('click', async function() {
             if (confirm('Are you sure you want to remove your profile photo?')) {
                 try {
+                    const originalText = this.innerHTML;
                     this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Removing...';
                     this.disabled = true;
                     
@@ -350,7 +459,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const data = await response.json();
                     
                     if (data.success) {
-                        // Show success message and reload
                         showNotification('Profile photo removed successfully!', 'success');
                         setTimeout(() => {
                             window.location.reload();
@@ -360,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } catch (error) {
                     showNotification('Failed to remove photo: ' + error.message, 'error');
-                    this.innerHTML = 'Remove Photo';
+                    this.innerHTML = originalText;
                     this.disabled = false;
                 }
             }
@@ -368,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Form validation
-    const form = document.querySelector('form');
+    const form = document.getElementById('profile-form');
     if (form) {
         form.addEventListener('submit', function(e) {
             const fileInput = document.getElementById('profile_photo');
@@ -390,11 +498,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Show loading state
-            const submitBtn = form.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
-                submitBtn.disabled = true;
-            }
+            const submitBtns = document.querySelectorAll('button[type="submit"]');
+            submitBtns.forEach(btn => {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+                btn.disabled = true;
+            });
         });
     }
     
@@ -429,15 +537,15 @@ function showNotification(message, type = 'info') {
     
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = `notification-toast fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-0 ${
-        type === 'success' ? 'bg-green-500 text-white' :
-        type === 'error' ? 'bg-red-500 text-white' :
+    notification.className = `notification-toast fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 ${
+        type === 'success' ? 'bg-emerald-500 text-white' :
+        type === 'error' ? 'bg-rose-500 text-white' :
         'bg-blue-500 text-white'
     }`;
     
     notification.innerHTML = `
         <div class="flex items-center">
-            <span class="mr-2">${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</span>
+            <span class="mr-3">${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</span>
             <span>${message}</span>
         </div>
     `;
@@ -450,5 +558,58 @@ function showNotification(message, type = 'info') {
         setTimeout(() => notification.remove(), 300);
     }, 5000);
 }
+
+// Enhance form inputs with focus effects
+document.querySelectorAll('input, textarea').forEach(input => {
+    input.addEventListener('focus', function() {
+        this.parentElement.classList.add('ring-2', 'ring-blue-200', 'rounded-xl');
+    });
+    
+    input.addEventListener('blur', function() {
+        this.parentElement.classList.remove('ring-2', 'ring-blue-200', 'rounded-xl');
+    });
+});
 </script>
+
+<style>
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .notification-toast {
+        top: auto;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        min-width: 300px;
+    }
+}
+
+/* Form input animations */
+input, textarea, select {
+    transition: all 0.2s ease-in-out;
+}
+
+input:focus, textarea:focus, select:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Custom scrollbar for textareas */
+textarea::-webkit-scrollbar {
+    width: 6px;
+}
+
+textarea::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+</style>
 {% endblock %}
