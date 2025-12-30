@@ -646,7 +646,39 @@ async def upload_profile_photo(
         raise HTTPException(status_code=500, detail=str(e))
 
 # ============ MENTOR ROUTES ============
-
+@app.get("/payment/{booking_id}", response_class=HTMLResponse)
+async def payment_page(
+    request: Request,
+    booking_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Payment page for a booking"""
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    booking = db.query(Booking).filter(
+        Booking.id == booking_id,
+        Booking.learner_id == current_user.id
+    ).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    if booking.payment_status == "paid":
+        return RedirectResponse(url="/dashboard", status_code=303)
+    
+    service = db.query(Service).filter(Service.id == booking.service_id).first()
+    mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
+    
+    return templates.TemplateResponse("payment.html", {
+        "request": request,
+        "current_user": current_user,
+        "booking": booking,
+        "service": service,
+        "mentor": mentor,
+        "razorpay_key_id": RAZORPAY_KEY_ID
+    })
 @app.get("/mentor/dashboard/services", response_class=HTMLResponse)
 async def mentor_services(
     request: Request,
@@ -818,14 +850,15 @@ async def create_booking(
         db.add(booking)
         db.commit()
         
+        # Return booking ID for redirection
         return JSONResponse({
             "success": True,
             "booking_id": booking.id,
-            "razorpay_order_id": razorpay_order["id"],
-            "amount": service.price,
-            "currency": order_currency,
-            "key_id": RAZORPAY_KEY_ID
+            "redirect_url": f"/payment/{booking.id}"
         })
+        
+
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
