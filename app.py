@@ -606,43 +606,6 @@ async def explore_mentors(
         "total_pages": total_pages,
         "total_mentors": total_mentors
     })
-@app.get("/mentor/{mentor_id}", response_class=HTMLResponse)
-async def mentor_profile(
-    request: Request,
-    mentor_id: int,
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
-    if not mentor:
-        raise HTTPException(status_code=404, detail="Mentor not found")
-    
-    services = db.query(Service).filter(
-        Service.mentor_id == mentor_id,
-        Service.is_active == True
-    ).all()
-    
-    # Generate sample availability dates (in real app, query from database)
-    import random
-    available_dates = []
-    for i in range(7):
-        date = datetime.now() + timedelta(days=i)
-        if random.choice([True, False]):  # Simulate availability
-            available_dates.append({
-                "day_name": date.strftime("%a"),
-                "day_num": date.day,
-                "month": date.strftime("%b"),
-                "full_date": date.strftime("%Y-%m-%d")
-            })
-    
-    return templates.TemplateResponse("mentor_profile.html", {
-        "request": request,
-        "current_user": current_user,
-        "mentor": mentor,
-        "services": services,
-        "available_dates": available_dates
-    })
-    
 
     
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -1614,6 +1577,44 @@ async def logout():
     response = RedirectResponse(url="/", status_code=303)
     response.delete_cookie("access_token")
     return response
+    
+@app.get("/mentor/{mentor_id}", response_class=HTMLResponse)
+async def mentor_profile(
+    request: Request,
+    mentor_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+    
+    services = db.query(Service).filter(
+        Service.mentor_id == mentor_id,
+        Service.is_active == True
+    ).all()
+    
+    # Generate sample availability dates (in real app, query from database)
+    import random
+    available_dates = []
+    for i in range(7):
+        date = datetime.now() + timedelta(days=i)
+        if random.choice([True, False]):  # Simulate availability
+            available_dates.append({
+                "day_name": date.strftime("%a"),
+                "day_num": date.day,
+                "month": date.strftime("%b"),
+                "full_date": date.strftime("%Y-%m-%d")
+            })
+    
+    return templates.TemplateResponse("mentor_profile.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor": mentor,
+        "services": services,
+        "available_dates": available_dates
+    })
+    
 
 # ============ ERROR HANDLERS ============
 
