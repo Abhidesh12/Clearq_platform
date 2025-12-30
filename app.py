@@ -1713,12 +1713,7 @@ async def redirect_old_service_url(username: str, service_id: int):
     return RedirectResponse(url=f"/{username}/service/{service_id}", status_code=301)
 
 # Then your API endpoint
-@app.post("/api/time-slots/{identifier}")
-async def get_time_slots(
-    identifier: str,
-    data: dict,
-    db: Session = Depends(get_db)
-):
+
     
 @app.get("/{username}", response_class=HTMLResponse)
 async def user_profile(
