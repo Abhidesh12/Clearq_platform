@@ -1702,6 +1702,24 @@ async def mentor_profile(
         "available_dates": available_dates[:7]  # Show up to 7 dates
     })
 # ============ ERROR HANDLERS ============
+@app.get("/mentor/username/{username}")
+async def redirect_old_mentor_url(username: str):
+    """Redirect old /mentor/username/{username} URLs to new /{username} format"""
+    return RedirectResponse(url=f"/{username}", status_code=301)
+
+@app.get("/mentor/username/{username}/service/{service_id}")
+async def redirect_old_service_url(username: str, service_id: int):
+    """Redirect old service URLs to new format"""
+    return RedirectResponse(url=f"/{username}/service/{service_id}", status_code=301)
+
+# Then your API endpoint
+@app.post("/api/time-slots/{identifier}")
+async def get_time_slots(
+    identifier: str,
+    data: dict,
+    db: Session = Depends(get_db)
+):
+    
 @app.get("/{username}", response_class=HTMLResponse)
 async def user_profile(
     request: Request,
@@ -1902,7 +1920,84 @@ async def user_service_page(
         "other_services": other_services,
         "available_dates": available_dates[:7]
     })
+
+# ============ API ENDPOINTS ============
+
+# Update the time-slots API to support both ID and username
+@app.post("/api/time-slots/{identifier}")
+async def get_time_slots(
+    identifier: str,
+    data: dict,
+    db: Session = Depends(get_db)
+):
+    date_str = data.get("date")
+    if not date_str:
+        return JSONResponse({"success": False, "message": "Date required"})
     
+    try:
+        # Check if identifier is a number (ID) or string (username)
+        mentor_id = None
+        if identifier.isdigit():
+            # It's an ID
+            mentor_id = int(identifier)
+            mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
+        else:
+            # It's a username
+            user = db.query(User).filter(User.username == identifier).first()
+            if not user:
+                return JSONResponse({"success": False, "message": "Mentor not found"})
+            mentor = db.query(Mentor).filter(Mentor.user_id == user.id).first()
+            if mentor:
+                mentor_id = mentor.id
+        
+        if not mentor or not mentor_id:
+            return JSONResponse({"success": False, "message": "Mentor not found"})
+        
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return JSONResponse({"success": False, "message": "Invalid date format"})
+    
+    # Get available time slots for this date
+    available_slots = db.query(Availability).filter(
+        Availability.mentor_id == mentor_id,
+        Availability.date == target_date,
+        Availability.is_booked == False
+    ).order_by(Availability.start_time).all()
+    
+    # Format time slots for display
+    formatted_slots = []
+    for slot in available_slots:
+        try:
+            start_time_obj = datetime.strptime(slot.start_time, "%H:%M")
+            end_time_obj = datetime.strptime(slot.end_time, "%H:%M")
+            
+            # Format time in 12-hour format with AM/PM
+            formatted_start = start_time_obj.strftime("%I:%M %p").lstrip("0")
+            formatted_end = end_time_obj.strftime("%I:%M %p").lstrip("0")
+            
+            formatted_slots.append({
+                "value": slot.start_time,
+                "display": f"{formatted_start} - {formatted_end}",
+                "duration": slot.end_time
+            })
+        except:
+            formatted_slots.append({
+                "value": slot.start_time,
+                "display": f"{slot.start_time} - {slot.end_time}",
+                "duration": slot.end_time
+            })
+    
+    if formatted_slots:
+        return JSONResponse({
+            "success": True,
+            "slots": formatted_slots
+        })
+    else:
+        return JSONResponse({
+            "success": False,
+            "message": "No available time slots for this date"
+        })
+        
 @app.exception_handler(404)
 async def not_found_exception_handler(request: Request, exc: HTTPException):
     return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
