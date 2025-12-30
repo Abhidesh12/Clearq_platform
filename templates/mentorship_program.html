@@ -3,749 +3,265 @@
 {% block title %}Mentorship Program - ClearQ{% endblock %}
 
 {% block content %}
-<style>
-    :root {
-        --primary: #3B82F6;
-        --primary-dark: #2563EB;
-        --primary-light: #60A5FA;
-        --secondary: #8B5CF6;
-        --accent: #06B6D4;
-        --success: #10B981;
-        --warning: #F59E0B;
-        --dark-bg: #0F172A;
-        --dark-section: #1E293B;
-        --light-section: #F8FAFC;
-        --gray-900: #0F172A;
-        --gray-800: #1E293B;
-        --gray-700: #334155;
-        --gray-600: #475569;
-        --gray-500: #64748B;
-        --gray-400: #94A3B8;
-        --gray-300: #CBD5E1;
-        --gray-200: #E2E8F0;
-        --gray-100: #F1F5F9;
-        --gray-50: #F8FAFC;
-        --white: #FFFFFF;
-        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        --radius-sm: 0.375rem;
-        --radius: 0.5rem;
-        --radius-md: 0.75rem;
-        --radius-lg: 1rem;
-        --radius-xl: 1.5rem;
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .mentorship-hero {
-        padding-top: 8rem;
-        padding-bottom: 5rem;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .mentorship-hero-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
-        z-index: 1;
-        text-align: center;
-    }
-
-    .mentorship-hero-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background-color: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        color: var(--white);
-        padding: 0.5rem 1.25rem;
-        border-radius: 2rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        margin-bottom: 1.5rem;
-    }
-
-    .mentorship-hero-badge i {
-        color: #FFD166;
-    }
-
-    .mentorship-hero h1 {
-        margin-bottom: 1.5rem;
-        line-height: 1.2;
-        color: var(--white);
-        font-size: 2.75rem;
-        letter-spacing: -0.025em;
-    }
-
-    .mentorship-hero-description {
-        font-size: 1.125rem;
-        line-height: 1.7;
-        margin-bottom: 2rem;
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 48rem;
-    }
-
-    .mentorship-hero-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .mentorship-hero-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem 2rem;
-        font-family: 'Inter', sans-serif;
-        font-weight: 700;
-        font-size: 1rem;
-        border-radius: 2rem;
-        text-decoration: none;
-        transition: var(--transition);
-        gap: 0.5rem;
-    }
-
-    .mentorship-btn-primary {
-        background-color: var(--white);
-        color: var(--primary);
-    }
-
-    .mentorship-btn-primary:hover {
-        background-color: var(--gray-100);
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    .mentorship-btn-secondary {
-        background-color: transparent;
-        border: 2px solid var(--white);
-        color: var(--white);
-    }
-
-    .mentorship-btn-secondary:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        transform: translateY(-3px);
-    }
-
-    .mentorship-section {
-        padding: 5rem 0;
-    }
-
-    .mentorship-section-header {
-        text-align: center;
-        max-width: 48rem;
-        margin: 0 auto 4rem;
-    }
-
-    .mentorship-section-header h2 {
-        margin-bottom: 1rem;
-        position: relative;
-        display: inline-block;
-        font-size: 2.25rem;
-        letter-spacing: -0.02em;
-    }
-
-    .mentorship-section-header h2:after {
-        content: '';
-        position: absolute;
-        bottom: -0.75rem;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 4rem;
-        height: 0.25rem;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-        border-radius: 2rem;
-    }
-
-    .mentorship-benefits-section {
-        background: linear-gradient(135deg, var(--gray-50) 0%, var(--white) 100%);
-    }
-
-    .mentorship-benefits-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-    }
-
-    .mentorship-benefit-card {
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        padding: 2.5rem 2rem;
-        text-align: center;
-        transition: var(--transition);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
-    }
-
-    .mentorship-benefit-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-xl);
-    }
-
-    .mentorship-benefit-icon {
-        width: 4rem;
-        height: 4rem;
-        border-radius: var(--radius-lg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        color: var(--white);
-        font-size: 1.5rem;
-    }
-
-    .mentorship-icon-blue {
-        background: linear-gradient(135deg, #3B82F6, #1D4ED8);
-    }
-
-    .mentorship-icon-green {
-        background: linear-gradient(135deg, #10B981, #059669);
-    }
-
-    .mentorship-icon-purple {
-        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
-    }
-
-    .mentorship-benefit-list {
-        list-style: none;
-        margin-top: 1.5rem;
-    }
-
-    .mentorship-benefit-list li {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
-        color: var(--gray-600);
-        text-align: left;
-    }
-
-    .mentorship-benefit-list i {
-        color: var(--success);
-        flex-shrink: 0;
-    }
-
-    .mentorship-curriculum-section {
-        background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
-    }
-
-    .mentorship-timeline {
-        position: relative;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .mentorship-timeline:before {
-        content: '';
-        position: absolute;
-        left: 30px;
-        width: 2px;
-        height: 100%;
-        background: linear-gradient(to bottom, var(--primary), var(--secondary));
-    }
-
-    .mentorship-timeline-item {
-        display: flex;
-        margin-bottom: 3rem;
-        position: relative;
-    }
-
-    .mentorship-timeline-marker {
-        position: absolute;
-        left: 30px;
-        transform: translateX(-50%);
-        width: 3rem;
-        height: 3rem;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--white);
-        font-weight: 700;
-        font-size: 1.125rem;
-        z-index: 2;
-        box-shadow: 0 0 0 6px var(--white);
-    }
-
-    .mentorship-timeline-content {
-        margin-left: 4rem;
-        padding: 2rem;
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
-        border: 1px solid var(--gray-200);
-        width: 100%;
-    }
-
-    .mentorship-month-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .mentorship-month-number {
-        width: 2.5rem;
-        height: 2.5rem;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--white);
-        font-weight: 700;
-        font-size: 1rem;
-    }
-
-    .mentorship-week-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-        margin-top: 1rem;
-    }
-
-    .mentorship-week-item {
-        background: var(--gray-50);
-        padding: 1.5rem;
-        border-radius: var(--radius);
-        border-left: 4px solid var(--primary);
-    }
-
-    .mentorship-week-item h4 {
-        font-size: 1rem;
-        margin-bottom: 0.75rem;
-        color: var(--gray-900);
-    }
-
-    .mentorship-week-item ul {
-        list-style: none;
-        padding-left: 0;
-    }
-
-    .mentorship-week-item li {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-        font-size: 0.875rem;
-        color: var(--gray-600);
-    }
-
-    .mentorship-week-item i {
-        color: var(--primary);
-        font-size: 0.75rem;
-        margin-top: 0.25rem;
-        flex-shrink: 0;
-    }
-
-    .mentorship-pricing-section {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        color: var(--white);
-    }
-
-    .mentorship-pricing-section .mentorship-section-header h2,
-    .mentorship-pricing-section .mentorship-section-header p {
-        color: var(--white);
-    }
-
-    .mentorship-pricing-section .mentorship-section-header h2:after {
-        background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.8));
-    }
-
-    .mentorship-pricing-card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: var(--radius-xl);
-        padding: 3rem;
-        max-width: 48rem;
-        margin: 0 auto;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        text-align: center;
-    }
-
-    .mentorship-price-display {
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-        gap: 1rem;
-        margin: 2rem 0 3rem;
-    }
-
-    .mentorship-price-main {
-        font-family: 'Poppins', sans-serif;
-        font-size: 3.5rem;
-        font-weight: 700;
-        color: #FFD166;
-        line-height: 1;
-    }
-
-    .mentorship-price-period {
-        font-size: 1.125rem;
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    .mentorship-pricing-features {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-        margin: 2rem 0;
-        text-align: left;
-    }
-
-    .mentorship-feature-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: rgba(255, 255, 255, 0.9);
-    }
-
-    .mentorship-feature-item i {
-        color: #FFD166;
-        flex-shrink: 0;
-    }
-
-    .mentorship-pricing-divider {
-        margin: 2.5rem 0;
-        padding-top: 2.5rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .mentorship-faq-section {
-        background: var(--light-section);
-    }
-
-    .mentorship-faq-container {
-        max-width: 48rem;
-        margin: 0 auto;
-    }
-
-    .mentorship-faq-item {
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        margin-bottom: 1rem;
-        overflow: hidden;
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--gray-200);
-    }
-
-    .mentorship-faq-question {
-        padding: 1.5rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        cursor: pointer;
-        font-weight: 600;
-        color: var(--gray-900);
-        font-size: 1.0625rem;
-        transition: var(--transition);
-    }
-
-    .mentorship-faq-question:hover {
-        background-color: var(--gray-50);
-    }
-
-    .mentorship-faq-question i {
-        color: var(--gray-500);
-        transition: transform 0.3s ease;
-    }
-
-    .mentorship-faq-item.active .mentorship-faq-question i {
-        transform: rotate(180deg);
-        color: var(--primary);
-    }
-
-    .mentorship-faq-answer {
-        padding: 0 2rem;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease, padding 0.3s ease;
-        color: var(--gray-600);
-        line-height: 1.7;
-    }
-
-    .mentorship-faq-item.active .mentorship-faq-answer {
-        padding-bottom: 2rem;
-        max-height: 500px;
-    }
-
-    .mentorship-fade-in {
-        opacity: 0;
-        transform: translateY(20px);
-        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    }
-
-    .mentorship-fade-in.visible {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    @media (max-width: 1024px) {
-        .mentorship-benefits-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .mentorship-week-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .mentorship-pricing-features {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .mentorship-section {
-            padding: 4rem 0;
-        }
-        
-        .mentorship-hero h1 {
-            font-size: 2.25rem;
-        }
-        
-        .mentorship-section-header h2 {
-            font-size: 1.875rem;
-        }
-        
-        .mentorship-hero-actions {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .mentorship-hero-btn {
-            width: 100%;
-            max-width: 300px;
-        }
-        
-        .mentorship-benefits-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .mentorship-timeline:before {
-            left: 20px;
-        }
-        
-        .mentorship-timeline-marker {
-            left: 20px;
-        }
-        
-        .mentorship-timeline-content {
-            margin-left: 3.5rem;
-            padding: 1.5rem;
-        }
-        
-        .mentorship-pricing-card {
-            padding: 2rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .mentorship-section {
-            padding: 3rem 0;
-        }
-        
-        .mentorship-hero {
-            padding-top: 6rem;
-        }
-        
-        .mentorship-hero h1 {
-            font-size: 2rem;
-        }
-        
-        .mentorship-price-display {
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
-    }
-</style>
-
 <div class="min-h-screen bg-gray-50">
     <!-- Hero Section -->
-    <section class="mentorship-hero" id="program">
-        <div class="container mentorship-hero-container">
-            <span class="mentorship-hero-badge mentorship-fade-in">
-                <i class="fas fa-bolt"></i>
-                🎯 Structured Program
-            </span>
-            
-            <h1 class="mentorship-fade-in">3-Month Career Acceleration Program</h1>
-            
-            <p class="mentorship-hero-description mentorship-fade-in">
-                Transform your career with our intensive mentorship program. Get personalized guidance, 
-                weekly sessions, and guaranteed outcomes.
+    <div class="bg-gradient-to-r from-primary to-secondary text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div class="text-center">
+                <span class="inline-block px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm mb-6">
+                    🎯 Structured Program
+                </span>
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">3-Month Career Acceleration Program</h1>
+                <p class="text-xl text-white/90 max-w-3xl mx-auto mb-8">
+                    Transform your career with our intensive mentorship program. Get personalized guidance, 
+                    weekly sessions, and guaranteed outcomes.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="#enroll" 
+                       class="px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
+                        Enroll Now
+                    </a>
+                    <a href="#curriculum" 
+                       class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-bold text-lg hover:bg-white/10 transition-all">
+                        View Curriculum
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Program Benefits -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What You'll Get</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Our comprehensive program includes everything you need for career success
             </p>
-            
-            <div class="mentorship-hero-actions">
-                <a href="#enroll" class="mentorship-hero-btn mentorship-btn-primary mentorship-fade-in">
-                    Enroll Now
-                </a>
-                <a href="#curriculum" class="mentorship-hero-btn mentorship-btn-secondary mentorship-fade-in">
-                    View Curriculum
-                </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow">
+                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-6 mx-auto">
+                    <i class="fas fa-users text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Weekly 1:1 Sessions</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>12 personalized sessions</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Flexible scheduling</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Session recordings</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow">
+                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-6 mx-auto">
+                    <i class="fas fa-road text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Personalized Roadmap</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Custom career plan</span>
+                    </li>
+                    <li class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Skill assessment</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Progress tracking</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow">
+                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-6 mx-auto">
+                    <i class="fas fa-briefcase text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Job Support</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Resume optimization</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Mock interviews</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        <span>Job referrals</span>
+                    </li>
+                </ul>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Benefits Section -->
-    <section class="mentorship-section mentorship-benefits-section" id="benefits">
-        <div class="container">
-            <div class="mentorship-section-header">
-                <h2 class="mentorship-fade-in">What You'll Get</h2>
-                <p class="mentorship-fade-in">Our comprehensive program includes everything you need for career success</p>
+    <!-- Curriculum -->
+    <div id="curriculum" class="bg-gradient-to-b from-white to-gray-50 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Program Curriculum</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    A structured 3-month journey to career transformation
+                </p>
             </div>
-            
-            <div class="mentorship-benefits-grid">
-                <div class="mentorship-benefit-card mentorship-fade-in">
-                    <div class="mentorship-benefit-icon mentorship-icon-blue">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Weekly 1:1 Sessions</h3>
-                    <p>Personalized guidance with industry experts</p>
-                    <ul class="mentorship-benefit-list">
-                        <li><i class="fas fa-check"></i> 12 personalized sessions</li>
-                        <li><i class="fas fa-check"></i> Flexible scheduling</li>
-                        <li><i class="fas fa-check"></i> Session recordings</li>
-                    </ul>
-                </div>
-                
-                <div class="mentorship-benefit-card mentorship-fade-in">
-                    <div class="mentorship-benefit-icon mentorship-icon-green">
-                        <i class="fas fa-road"></i>
-                    </div>
-                    <h3>Personalized Roadmap</h3>
-                    <p>Custom career plan with skill assessment</p>
-                    <ul class="mentorship-benefit-list">
-                        <li><i class="fas fa-check"></i> Custom career plan</li>
-                        <li><i class="fas fa-check"></i> Skill assessment</li>
-                        <li><i class="fas fa-check"></i> Progress tracking</li>
-                    </ul>
-                </div>
-                
-                <div class="mentorship-benefit-card mentorship-fade-in">
-                    <div class="mentorship-benefit-icon mentorship-icon-purple">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <h3>Job Support</h3>
-                    <p>End-to-end placement assistance</p>
-                    <ul class="mentorship-benefit-list">
-                        <li><i class="fas fa-check"></i> Resume optimization</li>
-                        <li><i class="fas fa-check"></i> Mock interviews</li>
-                        <li><i class="fas fa-check"></i> Job referrals</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Curriculum Section -->
-    <section class="mentorship-section mentorship-curriculum-section" id="curriculum">
-        <div class="container">
-            <div class="mentorship-section-header">
-                <h2 class="mentorship-fade-in">Program Curriculum</h2>
-                <p class="mentorship-fade-in">A structured 3-month journey to career transformation</p>
-            </div>
-            
-            <div class="mentorship-timeline">
+            <div class="max-w-4xl mx-auto">
                 <!-- Month 1 -->
-                <div class="mentorship-timeline-item mentorship-fade-in">
-                    <div class="mentorship-timeline-marker">1</div>
-                    <div class="mentorship-timeline-content">
-                        <div class="mentorship-month-header">
-                            <div class="mentorship-month-number">1</div>
-                            <div>
-                                <h3>Month 1: Foundation & Assessment</h3>
-                                <p class="text-gray-600">Building your career foundation</p>
-                            </div>
+                <div class="mb-12">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">
+                            1
                         </div>
-                        
-                        <div class="mentorship-week-grid">
-                            <div class="mentorship-week-item">
-                                <h4>Week 1-2</h4>
-                                <ul>
-                                    <li><i class="fas fa-circle"></i> Initial assessment & goal setting</li>
-                                    <li><i class="fas fa-circle"></i> Skill gap analysis</li>
-                                    <li><i class="fas fa-circle"></i> Industry research & target companies</li>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">Month 1: Foundation & Assessment</h3>
+                            <p class="text-gray-600">Building your career foundation</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 1-2</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Initial assessment & goal setting</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Skill gap analysis</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Industry research & target companies</span>
+                                    </li>
                                 </ul>
                             </div>
-                            <div class="mentorship-week-item">
-                                <h4>Week 3-4</h4>
-                                <ul>
-                                    <li><i class="fas fa-circle"></i> Resume & LinkedIn optimization</li>
-                                    <li><i class="fas fa-circle"></i> Personal branding workshop</li>
-                                    <li><i class="fas fa-circle"></i> Network building strategies</li>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 3-4</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Resume & LinkedIn optimization</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Personal branding workshop</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-1 mr-2"></i>
+                                        <span>Network building strategies</span>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Month 2 -->
-                <div class="mentorship-timeline-item mentorship-fade-in">
-                    <div class="mentorship-timeline-marker">2</div>
-                    <div class="mentorship-timeline-content">
-                        <div class="mentorship-month-header">
-                            <div class="mentorship-month-number">2</div>
-                            <div>
-                                <h3>Month 2: Skill Development</h3>
-                                <p class="text-gray-600">Enhancing your professional skills</p>
-                            </div>
+                <div class="mb-12">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center text-white font-bold text-xl">
+                            2
                         </div>
-                        
-                        <div class="mentorship-week-grid">
-                            <div class="mentorship-week-item">
-                                <h4>Week 5-8</h4>
-                                <ul>
-                                    <li><i class="fas fa-circle"></i> Technical skill workshops</li>
-                                    <li><i class="fas fa-circle"></i> Mock interviews (technical & behavioral)</li>
-                                    <li><i class="fas fa-circle"></i> Project portfolio development</li>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">Month 2: Skill Development</h3>
+                            <p class="text-gray-600">Enhancing your professional skills</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 5-8</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Technical skill workshops</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Mock interviews (technical & behavioral)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Project portfolio development</span>
+                                    </li>
                                 </ul>
                             </div>
-                            <div class="mentorship-week-item">
-                                <h4>Week 9-10</h4>
-                                <ul>
-                                    <li><i class="fas fa-circle"></i> Communication & presentation skills</li>
-                                    <li><i class="fas fa-circle"></i> Leadership & teamwork exercises</li>
-                                    <li><i class="fas fa-circle"></i> Industry-specific training</li>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 9-10</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Communication & presentation skills</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Leadership & teamwork exercises</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-green-500 text-xs mt-1 mr-2"></i>
+                                        <span>Industry-specific training</span>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Month 3 -->
-                <div class="mentorship-timeline-item mentorship-fade-in">
-                    <div class="mentorship-timeline-marker">3</div>
-                    <div class="mentorship-timeline-content">
-                        <div class="mentorship-month-header">
-                            <div class="mentorship-month-number">3</div>
+                <div>
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
+                            3
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">Month 3: Job Search & Placement</h3>
+                            <p class="text-gray-600">Securing your dream role</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <h3>Month 3: Job Search & Placement</h3>
-                                <p class="text-gray-600">Securing your dream role</p>
-                            </div>
-                        </div>
-                        
-                        <div class="mentorship-week-grid">
-                            <div class="mentorship-week-item">
-                                <h4>Week 11-12</h4>
-                                <ul>
-                                    <li><i class="fas fa-circle"></i> Job application strategy</li>
-                                    <li><i class="fas fa-circle"></i> Interview preparation intensives</li>
-                                    <li><i class="fas fa-circle"></i> Salary negotiation training</li>
+                                <h4 class="font-bold text-gray-900 mb-3">Week 11-12</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Job application strategy</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Interview preparation intensives</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Salary negotiation training</span>
+                                    </li>
                                 </ul>
                             </div>
-                            <div class="mentorship-week-item">
-                                <h4>Ongoing Support</h4>
-                                <ul>
-                                    <li><i class="fas fa-circle"></i> 3-month alumni support</li>
-                                    <li><i class="fas fa-circle"></i> Career transition assistance</li>
-                                    <li><i class="fas fa-circle"></i> Network access</li>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-3">Ongoing Support</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>3-month alumni support</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Career transition assistance</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-purple-500 text-xs mt-1 mr-2"></i>
+                                        <span>Network access</span>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -753,232 +269,144 @@
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Pricing Section -->
-    <section class="mentorship-section mentorship-pricing-section" id="pricing">
-        <div class="container">
-            <div class="mentorship-section-header">
-                <h2 class="mentorship-fade-in">Enroll in the Program</h2>
-                <p class="mentorship-fade-in">Invest in your career transformation with our comprehensive mentorship program</p>
+    <!-- Pricing & Enrollment -->
+    <div id="enroll" class="bg-gradient-to-r from-primary to-secondary text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Enroll in the Program</h2>
+                <p class="text-xl text-white/90 max-w-2xl mx-auto">
+                    Invest in your career transformation with our comprehensive mentorship program
+                </p>
             </div>
-            
-            <div class="mentorship-pricing-card mentorship-fade-in">
-                <div class="mentorship-price-display">
-                    <span class="mentorship-price-main">₹9,999</span>
-                    <span class="mentorship-price-period">/ 3 months</span>
-                </div>
-                <p>One-time payment for complete 3-month program</p>
-                
-                <div class="mentorship-pricing-features">
-                    <div class="mentorship-feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>12 weekly 1:1 sessions</span>
+
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-8">
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-baseline mb-4">
+                            <span class="text-5xl font-bold">₹9,999</span>
+                            <span class="ml-2 text-white/70">/ 3 months</span>
+                        </div>
+                        <p class="text-white/90">One-time payment for complete 3-month program</p>
                     </div>
-                    <div class="mentorship-feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Personalized career roadmap</span>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-xl font-bold mb-4">What's Included</h4>
+                            <ul class="space-y-3">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>12 weekly 1:1 sessions</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Personalized career roadmap</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Resume & LinkedIn optimization</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Mock interviews (6 sessions)</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold mb-4">Bonus Features</h4>
+                            <ul class="space-y-3">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Job referral network access</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>3-month alumni support</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Certificate of completion</span>
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check mr-3"></i>
+                                    <span>Priority customer support</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="mentorship-feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Resume & LinkedIn optimization</span>
-                    </div>
-                    <div class="mentorship-feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Mock interviews (6 sessions)</span>
-                    </div>
-                    <div class="mentorship-feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Job referral network access</span>
-                    </div>
-                    <div class="mentorship-feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>3-month alumni support</span>
-                    </div>
-                    <div class="mentorship-feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Certificate of completion</span>
-                    </div>
-                    <div class="mentorship-feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Priority customer support</span>
-                    </div>
-                </div>
-                
-                <div class="mentorship-pricing-divider">
-                    <div class="text-center">
-                        {% if current_user %}
-                        <a href="#" class="btn btn-success" style="padding: 1rem 3rem;">
-                            <i class="fas fa-rocket"></i> Enroll Now
-                        </a>
-                        {% else %}
-                        <a href="/register?next=/mentorship-program" class="btn btn-success" style="padding: 1rem 3rem;">
-                            <i class="fas fa-user-plus"></i> Sign Up to Enroll
-                        </a>
-                        {% endif %}
-                        <p style="margin-top: 1.5rem; font-size: 0.875rem; opacity: 0.9;">
-                            <i class="fas fa-shield-alt"></i> 30-Day Money Back Guarantee
-                        </p>
+
+                    <div class="mt-8 pt-8 border-t border-white/20">
+                        <div class="text-center">
+                            {% if current_user %}
+                            <a href="#" 
+                               class="inline-flex items-center px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
+                                <i class="fas fa-rocket mr-2"></i>
+                                Enroll Now
+                            </a>
+                            {% else %}
+                            <a href="/register?next=/mentorship-program" 
+                               class="inline-flex items-center px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
+                                <i class="fas fa-user-plus mr-2"></i>
+                                Sign Up to Enroll
+                            </a>
+                            {% endif %}
+                            <p class="text-white/70 mt-4 text-sm">
+                                <i class="fas fa-shield-alt mr-1"></i>
+                                30-Day Money Back Guarantee
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- FAQ Section -->
-    <section class="mentorship-section mentorship-faq-section" id="faq">
-        <div class="container">
-            <div class="mentorship-section-header">
-                <h2 class="mentorship-fade-in">Frequently Asked Questions</h2>
-                <p class="mentorship-fade-in">Everything you need to know about our mentorship program</p>
-            </div>
-            
-            <div class="mentorship-faq-container">
-                <div class="mentorship-faq-item mentorship-fade-in">
-                    <div class="mentorship-faq-question">
-                        <span>How is this different from regular mentorship?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="mentorship-faq-answer">
-                        <p>Our program provides structured, goal-oriented mentorship with a defined curriculum, 
+    <!-- FAQ -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Everything you need to know about our mentorship program
+            </p>
+        </div>
+
+        <div class="max-w-3xl mx-auto">
+            <div class="space-y-6">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-3">How is this different from regular mentorship?</h4>
+                    <p class="text-gray-600">
+                        Our program provides structured, goal-oriented mentorship with a defined curriculum, 
                         weekly progress tracking, and guaranteed outcomes. Unlike regular mentorship, you get 
-                        a comprehensive career transformation plan with multiple support systems.</p>
-                    </div>
+                        a comprehensive career transformation plan with multiple support systems.
+                    </p>
                 </div>
-                
-                <div class="mentorship-faq-item mentorship-fade-in">
-                    <div class="mentorship-faq-question">
-                        <span>Can I choose my mentor?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="mentorship-faq-answer">
-                        <p>Yes! We match you with a mentor based on your career goals, industry, and personality. 
-                        You can review mentor profiles and request a different mentor if needed.</p>
-                    </div>
+
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-3">Can I choose my mentor?</h4>
+                    <p class="text-gray-600">
+                        Yes! We match you with a mentor based on your career goals, industry, and personality. 
+                        You can review mentor profiles and request a different mentor if needed.
+                    </p>
                 </div>
-                
-                <div class="mentorship-faq-item mentorship-fade-in">
-                    <div class="mentorship-faq-question">
-                        <span>What if I'm not satisfied with the program?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="mentorship-faq-answer">
-                        <p>We offer a 30-day money-back guarantee. If you're not satisfied with the program within 
-                        the first 30 days, you can request a full refund.</p>
-                    </div>
+
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-3">What if I'm not satisfied with the program?</h4>
+                    <p class="text-gray-600">
+                        We offer a 30-day money-back guarantee. If you're not satisfied with the program within 
+                        the first 30 days, you can request a full refund.
+                    </p>
                 </div>
-                
-                <div class="mentorship-faq-item mentorship-fade-in">
-                    <div class="mentorship-faq-question">
-                        <span>Is financing available?</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="mentorship-faq-answer">
-                        <p>Yes! We offer flexible payment plans. You can choose to pay in 3 monthly installments 
-                        of ₹3,999 each instead of the one-time payment.</p>
-                    </div>
+
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h4 class="text-lg font-bold text-gray-900 mb-3">Is financing available?</h4>
+                    <p class="text-gray-600">
+                        Yes! We offer flexible payment plans. You can choose to pay in 3 monthly installments 
+                        of ₹3,999 each instead of the one-time payment.
+                    </p>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 </div>
-
-<script>
-    // Initialize animations on scroll
-    document.addEventListener('DOMContentLoaded', function() {
-        // Fade in animations
-        const fadeElements = document.querySelectorAll('.mentorship-fade-in');
-        
-        const fadeObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    fadeObserver.unobserve(entry.target);
-                }
-            });
-        }, {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        });
-        
-        fadeElements.forEach(el => {
-            fadeObserver.observe(el);
-        });
-        
-        // FAQ Accordion
-        document.querySelectorAll('.mentorship-faq-question').forEach(question => {
-            question.addEventListener('click', () => {
-                const item = question.parentElement;
-                const isActive = item.classList.contains('active');
-                
-                // Close all other FAQ items
-                document.querySelectorAll('.mentorship-faq-item').forEach(faqItem => {
-                    faqItem.classList.remove('active');
-                });
-                
-                // Open current item if it wasn't active
-                if (!isActive) {
-                    item.classList.add('active');
-                }
-            });
-        });
-        
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                
-                if (href === '#' || href.startsWith('#!')) return;
-                
-                e.preventDefault();
-                
-                const targetId = href;
-                const targetElement = document.querySelector(targetId);
-                
-                if (targetElement) {
-                    const headerHeight = document.querySelector('header').offsetHeight || 80;
-                    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
-                    
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
-        
-        // Enhanced enroll button hover effect
-        const enrollButtons = document.querySelectorAll('.btn-success');
-        enrollButtons.forEach(button => {
-            button.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-3px) scale(1.05)';
-                this.style.boxShadow = '0 10px 25px rgba(16, 185, 129, 0.4)';
-            });
-            
-            button.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(-2px)';
-                this.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
-            });
-        });
-        
-        // Hero button hover effects
-        const heroButtons = document.querySelectorAll('.mentorship-hero-btn');
-        heroButtons.forEach(button => {
-            button.addEventListener('mouseenter', function() {
-                if (this.classList.contains('mentorship-btn-primary')) {
-                    this.style.transform = 'translateY(-3px)';
-                    this.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.2)';
-                } else {
-                    this.style.transform = 'translateY(-3px)';
-                    this.style.boxShadow = '0 10px 25px rgba(255, 255, 255, 0.1)';
-                }
-            });
-            
-            button.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = 'none';
-            });
-        });
-    });
-</script>
 {% endblock %}
