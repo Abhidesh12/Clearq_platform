@@ -98,8 +98,8 @@ class User(Base):
     
     # Relationships
     mentor_profile = relationship("Mentor", back_populates="user", uselist=False)
-    bookings_as_learner = relationship("Booking", foreign_keys="[Booking.learner_id]", back_populates="learner")
-    #bookings_as_mentor = relationship("Booking", foreign_keys="[Booking.mentor_id]", back_populates="mentor")
+    bookings_as_learner = relationship("Booking", foreign_keys="Booking.learner_id", back_populates="learner")
+    #bookings_as_mentor = relationship("Booking", foreign_keys="Booking.mentor_id", back_populates="mentor")
     reviews = relationship("Review", back_populates="learner")
 
 class Mentor(Base):
@@ -402,58 +402,38 @@ async def register_user(
     role: str = Form("learner"),
     db: Session = Depends(get_db)
 ):
-    # Check if user exists using RAW SQL
-    result = db.execute(
-        text("SELECT * FROM users WHERE email = :email OR username = :username"),
-        {"email": email, "username": username}
-    ).fetchone()
+    # Check if user exists using ORM
+    existing_user = db.query(User).filter(or_(User.email == email, User.username == username)).first()
     
-    if result:
+    if existing_user:
         raise HTTPException(status_code=400, detail="Email or username already registered")
     
-    # Create user using RAW SQL
+    # Create user object
     hashed_password = pwd_context.hash(password)
     is_verified = role != "mentor"
     
-    # Insert user directly
-    db.execute(
-        text("""
-            INSERT INTO users (email, username, password_hash, full_name, role, is_verified, is_active, created_at)
-            VALUES (:email, :username, :password_hash, :full_name, :role, :is_verified, :is_active, NOW())
-        """),
-        {
-            "email": email,
-            "username": username,
-            "password_hash": hashed_password,
-            "full_name": full_name,
-            "role": role,
-            "is_verified": is_verified,
-            "is_active": True  
-        }
+    new_user = User(
+        email=email,
+        username=username,
+        password_hash=hashed_password,
+        full_name=full_name,
+        role=role,
+        is_verified=is_verified,
+        is_active=True
     )
+    
+    db.add(new_user)
     db.commit()
+    db.refresh(new_user) # get the ID
     
-    # Get the newly created user ID
-    user_result = db.execute(
-        text("SELECT id FROM users WHERE email = :email"),
-        {"email": email}
-    ).fetchone()
-    
-    user_id = user_result[0] if user_result else None
-    
-    if not user_id:
-        raise HTTPException(status_code=500, detail="Failed to create user")
-    
-    # If mentor, create mentor profile using RAW SQL
+    # Create mentor profile if needed
     if role == "mentor":
-        db.execute(
-            text("INSERT INTO mentors (user_id, verification_status) VALUES (:user_id, 'pending')"),
-            {"user_id": user_id}
-        )
+        mentor = Mentor(user_id=new_user.id, verification_status='pending')
+        db.add(mentor)
         db.commit()
     
     # Create access token
-    access_token = create_access_token(data={"sub": str(user_id)})
+    access_token = create_access_token(data={"sub": str(new_user.id)})
     
     response = RedirectResponse(url="/dashboard", status_code=303)
     response.set_cookie(key="access_token", value=access_token, httponly=True)
@@ -663,15 +643,7 @@ async def mentor_profile(
         "available_dates": available_dates
     })
     
-@app.get("/static/{path:path}")
-async def serve_static(path: str):
-    """Serve static files including uploaded images"""
-    static_file = Path("static") / path
-    if not static_file.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    from fastapi.responses import FileResponse
-    return FileResponse(static_file)
+
     
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(
@@ -1146,6 +1118,7 @@ async def create_service(
 @app.get("/mentor/availability", response_class=HTMLResponse)
 async def mentor_availability_page(
     request: Request,
+    current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Mentor availability management page"""
