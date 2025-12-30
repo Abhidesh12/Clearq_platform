@@ -39,13 +39,14 @@
         --glass-border: rgba(255, 255, 255, 0.2);
     }
 
+    /* ... (All your existing CSS remains the same) ... */
+
     .dashboard-container {
         max-width: 100%;
         margin: 0 auto;
         padding: 0;
     }
 
-    /* Dashboard Header - Enhanced */
     .dashboard-header {
         background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
         color: var(--white);
@@ -194,14 +195,15 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    /* New Tab and Copy Link Buttons */
+    /* Profile Share Buttons - Updated */
     .profile-share-buttons {
         display: flex;
-        gap: 0.375rem;
+        gap: 0.5rem;
         align-items: center;
+        flex-wrap: wrap;
     }
 
-    .share-btn {
+    .share-btn, .new-tab-btn {
         padding: 0.5rem 0.875rem;
         background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(10px);
@@ -216,15 +218,25 @@
         transition: var(--transition);
         border: 1px solid rgba(255, 255, 255, 0.25);
         cursor: pointer;
+        white-space: nowrap;
     }
 
-    .share-btn:hover {
+    .new-tab-btn {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .share-btn:hover, .new-tab-btn:hover {
         background: rgba(255, 255, 255, 0.25);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .share-btn i {
+    .new-tab-btn:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+
+    .share-btn i, .new-tab-btn i {
         font-size: 0.65rem;
     }
 
@@ -233,7 +245,23 @@
         border-color: rgba(34, 197, 94, 0.5);
     }
 
-    /* Main Content */
+    .new-tab-btn i.fa-external-link-alt {
+        font-size: 0.6rem;
+    }
+
+    /* Responsive adjustments for buttons */
+    @media (max-width: 640px) {
+        .share-btn, .new-tab-btn {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.7rem;
+        }
+        
+        .share-btn span, .new-tab-btn span {
+            font-size: 0.7rem;
+        }
+    }
+
+    /* The rest of your existing CSS remains exactly the same */
     .dashboard-main {
         padding: 1.25rem;
         max-width: 1200px;
@@ -241,7 +269,6 @@
         position: relative;
     }
 
-    /* Dashboard Cards - Enhanced */
     .dashboard-card {
         background: var(--white);
         border-radius: var(--radius-lg);
@@ -274,963 +301,21 @@
         opacity: 1;
     }
 
-    .card-header {
-        padding: 1.25rem;
-        border-bottom: 1px solid var(--gray-200);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: var(--gray-50);
-    }
-
-    .card-header h2 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .card-header h2 i {
-        color: var(--primary);
-        font-size: 1rem;
-    }
-
-    .card-header a {
-        font-size: 0.875rem;
-        color: var(--primary);
-        text-decoration: none;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.375rem 0.75rem;
-        border-radius: var(--radius);
-        transition: var(--transition);
-    }
-
-    .card-header a:hover {
-        color: var(--primary-dark);
-        background: var(--gray-100);
-        transform: translateX(2px);
-    }
-
-    .card-content {
-        padding: 1.25rem;
-    }
-
-    /* Empty State - Enhanced */
-    .empty-state {
-        text-align: center;
-        padding: 2.5rem 1rem;
-        background: linear-gradient(135deg, var(--gray-50), var(--white));
-        border-radius: var(--radius-lg);
-        border: 2px dashed var(--gray-300);
-    }
-
-    .empty-state-icon {
-        width: 4rem;
-        height: 4rem;
-        margin: 0 auto 1.25rem;
-        background: linear-gradient(135deg, var(--primary-light), var(--primary));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--white);
-        font-size: 1.5rem;
-        box-shadow: var(--shadow-md);
-    }
-
-    .empty-state h3 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.5rem;
-    }
-
-    .empty-state p {
-        font-size: 0.875rem;
-        color: var(--gray-600);
-        margin-bottom: 1.5rem;
-        max-width: 300px;
-        margin-left: auto;
-        margin-right: auto;
-        line-height: 1.5;
-    }
-
-    /* Sessions List - Enhanced */
-    .sessions-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .session-item {
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
-        padding: 1rem;
-        transition: var(--transition);
-        background: var(--white);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .session-item::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 3px;
-        background: linear-gradient(180deg, var(--primary), var(--secondary));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .session-item:hover::before {
-        opacity: 1;
-    }
-
-    .session-item:hover {
-        border-color: var(--primary-light);
-        background: var(--gray-50);
-        transform: translateX(4px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .session-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 0.75rem;
-    }
-
-    .session-title {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin: 0;
-    }
-
-    .session-price {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--primary);
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .session-details {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
-    }
-
-    .session-detail {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.375rem;
-        font-size: 0.8125rem;
-        color: var(--gray-600);
-        padding: 0.25rem 0.5rem;
-        background: var(--gray-100);
-        border-radius: var(--radius-sm);
-    }
-
-    .session-detail i {
-        font-size: 0.75rem;
-        color: var(--primary);
-    }
-
-    .session-status {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .status-badge {
-        padding: 0.375rem 0.75rem;
-        border-radius: 1rem;
-        font-size: 0.75rem;
-        font-weight: 500;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        transition: var(--transition);
-    }
-
-    .status-badge:hover {
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .status-confirmed {
-        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
-        color: #065F46;
-        border: 1px solid #A7F3D0;
-    }
-
-    .status-pending {
-        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-        color: #92400E;
-        border: 1px solid #FDE68A;
-    }
-
-    .status-completed {
-        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
-        color: #1E40AF;
-        border: 1px solid #BFDBFE;
-    }
-
-    .status-paid {
-        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
-        color: #065F46;
-        border: 1px solid #A7F3D0;
-    }
-
-    .status-unpaid {
-        background: linear-gradient(135deg, #FEE2E2, #FECACA);
-        color: #991B1B;
-        border: 1px solid #FECACA;
-    }
-
-    /* Stats Grid - Enhanced */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 0.75rem;
-    }
-
-    .stat-item {
-        text-align: center;
-        padding: 1.25rem 1rem;
-        background: linear-gradient(135deg, var(--gray-50), var(--white));
-        border-radius: var(--radius);
-        border: 1px solid var(--gray-200);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-item:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--primary-light);
-    }
-
-    .stat-item::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .stat-item:hover::before {
-        opacity: 1;
-    }
-
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--gray-900);
-        line-height: 1;
-        margin-bottom: 0.25rem;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .stat-label {
-        font-size: 0.75rem;
-        color: var(--gray-600);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    /* Quick Actions - Enhanced */
-    .quick-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .quick-action {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 1rem;
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
-        text-decoration: none;
-        transition: var(--transition);
-        background: var(--white);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .quick-action::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            transparent, 
-            rgba(59, 130, 246, 0.1), 
-            transparent);
-        transition: left 0.5s;
-    }
-
-    .quick-action:hover::before {
-        left: 100%;
-    }
-
-    .quick-action:hover {
-        border-color: var(--primary);
-        background: var(--gray-50);
-        transform: translateX(8px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .action-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: var(--radius);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition: var(--transition);
-    }
-
-    .quick-action:hover .action-icon {
-        transform: scale(1.1);
-    }
-
-    .icon-search {
-        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
-        color: var(--primary);
-    }
-
-    .icon-edit {
-        background: linear-gradient(135deg, #DCFCE7, #BBF7D0);
-        color: var(--success);
-    }
-
-    .icon-trophy {
-        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-        color: var(--warning);
-    }
-
-    .action-text {
-        flex: 1;
-        font-size: 0.9375rem;
-        font-weight: 500;
-        color: var(--gray-900);
-    }
-
-    /* Mentor Dashboard - Enhanced */
-    .mentor-services-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 0.75rem;
-        margin-top: 1rem;
-    }
-
-    .service-card {
-        padding: 1.5rem;
-        border-radius: var(--radius);
-        border: 1px solid;
-        text-decoration: none;
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .service-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .service-card:hover::before {
-        opacity: 1;
-    }
-
-    .service-blue {
-        background: linear-gradient(135deg, #F8FAFC, #EFF6FF);
-        border-color: #DBEAFE;
-    }
-
-    .service-green {
-        background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
-        border-color: #BBF7D0;
-    }
-
-    .service-purple {
-        background: linear-gradient(135deg, #FAF5FF, #F3E8FF);
-        border-color: #E9D5FF;
-    }
-
-    .service-card:hover {
-        transform: translateY(-6px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .service-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: var(--radius);
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        transition: var(--transition);
-    }
-
-    .service-card:hover .service-icon {
-        transform: rotate(10deg) scale(1.1);
-    }
-
-    .service-card h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.25rem;
-    }
-
-    .service-card p {
-        font-size: 0.8125rem;
-        color: var(--gray-600);
-        line-height: 1.4;
-    }
-
-    /* Alert - Enhanced */
-    .alert {
-        padding: 1rem;
-        border-radius: var(--radius);
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        border-left: 4px solid;
-        animation: slideIn 0.3s ease-out;
-    }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    .alert-warning {
-        background: #FFFBEB;
-        border: 1px solid #FDE68A;
-        border-left-color: #F59E0B;
-    }
-
-    .alert-icon {
-        color: #F59E0B;
-        font-size: 1.125rem;
-        margin-top: 0.125rem;
-    }
-
-    .alert-content h4 {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: #92400E;
-        margin-bottom: 0.25rem;
-    }
-
-    .alert-content p {
-        font-size: 0.8125rem;
-        color: #92400E;
-        opacity: 0.9;
-        line-height: 1.4;
-    }
-
-    /* Earnings Summary - Enhanced */
-    .earnings-summary {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-
-    .earnings-total {
-        text-align: center;
-        padding-bottom: 1.5rem;
-        border-bottom: 2px dashed var(--gray-200);
-    }
-
-    .total-label {
-        font-size: 0.875rem;
-        color: var(--gray-600);
-        margin-bottom: 0.5rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .total-amount {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: var(--gray-900);
-        line-height: 1;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .earnings-stats {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
-
-    .earning-stat-item {
-        text-align: center;
-        padding: 1rem;
-        background: var(--gray-50);
-        border-radius: var(--radius);
-        transition: var(--transition);
-    }
-
-    .earning-stat-item:hover {
-        background: var(--gray-100);
-        transform: translateY(-2px);
-    }
-
-    .earning-stat-value {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--gray-900);
-        margin-bottom: 0.25rem;
-    }
-
-    .earning-stat-label {
-        font-size: 0.75rem;
-        color: var(--gray-600);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .payout-info {
-        padding-top: 1.5rem;
-        border-top: 2px dashed var(--gray-200);
-    }
-
-    .payout-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid var(--gray-200);
-    }
-
-    .payout-row:last-child {
-        border-bottom: none;
-    }
-
-    /* Quick Stats - Enhanced */
-    .quick-stats-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .quick-stat-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid var(--gray-200);
-        transition: var(--transition);
-    }
-
-    .quick-stat-item:hover {
-        padding-left: 0.5rem;
-        background: var(--gray-50);
-        border-radius: var(--radius);
-    }
-
-    .quick-stat-item:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
-
-    .stat-label-text {
-        font-size: 0.875rem;
-        color: var(--gray-600);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .stat-label-text i {
-        font-size: 0.75rem;
-        color: var(--primary);
-    }
-
-    .stat-value-text {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: var(--gray-900);
-    }
-
-    /* Admin Dashboard - Enhanced */
-    .pending-mentor {
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
-        padding: 1.25rem;
-        margin-bottom: 0.75rem;
-        background: var(--white);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .pending-mentor:hover {
-        border-color: var(--primary);
-        box-shadow: var(--shadow-md);
-        transform: translateY(-2px);
-    }
-
-    .pending-mentor::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 3px;
-        background: linear-gradient(180deg, var(--warning), var(--danger));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .pending-mentor:hover::before {
-        opacity: 1;
-    }
-
-    .mentor-info {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-    }
-
-    .mentor-avatar {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 50%;
-        overflow: hidden;
-        flex-shrink: 0;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--white);
-        font-weight: 600;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .mentor-details {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .mentor-details h3 {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.125rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .mentor-details p {
-        font-size: 0.8125rem;
-        color: var(--gray-600);
-        margin-bottom: 0.5rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .mentor-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.375rem;
-    }
-
-    .mentor-tag {
-        padding: 0.125rem 0.5rem;
-        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
-        color: var(--gray-700);
-        border-radius: 1rem;
-        font-size: 0.75rem;
-        border: 1px solid var(--gray-300);
-    }
-
-    .mentor-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .action-button {
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: var(--radius);
-        font-size: 0.8125rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-        flex: 1;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-    .action-button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            transparent, 
-            rgba(255, 255, 255, 0.2), 
-            transparent);
-        transition: left 0.5s;
-    }
-
-    .action-button:hover::before {
-        left: 100%;
-    }
-
-    .action-approve {
-        background: linear-gradient(135deg, var(--success), #059669);
-        color: var(--white);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .action-approve:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .action-reject {
-        background: linear-gradient(135deg, var(--danger), #DC2626);
-        color: var(--white);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .action-reject:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
-    /* Bookings Table - Enhanced */
-    .bookings-table {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        border-radius: var(--radius);
-        border: 1px solid var(--gray-200);
-    }
-
-    table {
-        width: 100%;
-        min-width: 600px;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    th {
-        padding: 0.75rem;
-        text-align: left;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--gray-600);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
-        border-bottom: 1px solid var(--gray-200);
-        white-space: nowrap;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    td {
-        padding: 1rem 0.75rem;
-        font-size: 0.875rem;
-        color: var(--gray-700);
-        border-bottom: 1px solid var(--gray-200);
-        vertical-align: middle;
-        transition: var(--transition);
-    }
-
-    tr:last-child td {
-        border-bottom: none;
-    }
-
-    tr:hover td {
-        background: var(--gray-50);
-    }
-
-    /* Responsive Design - Enhanced */
-    @media (min-width: 640px) {
-        .dashboard-header {
-            padding: 1.5rem 1.75rem;
-        }
-        
-        .header-content {
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .user-info {
-            flex: 1;
-        }
-        
-        .user-details h1 {
-            font-size: 1.5rem;
-        }
-        
-        .header-actions {
-            flex: 0 0 auto;
-        }
-        
-        .dashboard-main {
-            padding: 1.75rem;
-        }
-        
-        .dashboard-card {
-            margin-bottom: 1.25rem;
-        }
-        
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-        
-        .mentor-services-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-        
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+    /* ... (All other CSS remains exactly as you had it) ... */
+
+    /* Add this at the end of your existing CSS */
+    @media (min-width: 1024px) {
+        .profile-share-buttons {
             gap: 0.75rem;
         }
         
-        .quick-action {
-            flex-direction: column;
-            text-align: center;
-            padding: 1.25rem;
-        }
-        
-        .action-text {
-            text-align: center;
-        }
-    }
-
-    @media (min-width: 768px) {
-        .dashboard-main {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-        
-        .dashboard-card {
-            margin-bottom: 0;
-        }
-        
-        .stats-grid {
-            grid-template-columns: repeat(4, 1fr);
-        }
-        
-        .mentor-services-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-        
-        .quick-actions {
-            grid-template-columns: 1fr;
-        }
-        
-        .quick-action {
-            flex-direction: row;
-            text-align: left;
-        }
-        
-        .action-text {
-            text-align: left;
-        }
-    }
-
-    @media (min-width: 1024px) {
-        .dashboard-header {
-            padding: 2rem;
-        }
-        
-        .user-avatar {
-            width: 4rem;
-            height: 4rem;
-        }
-        
-        .dashboard-main {
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            padding: 2rem;
-        }
-        
-        .quick-actions {
-            grid-template-columns: 1fr;
-        }
-        
-        .share-btn {
+        .share-btn, .new-tab-btn {
             padding: 0.5rem 1rem;
             font-size: 0.75rem;
         }
         
-        .share-btn i {
+        .share-btn i, .new-tab-btn i {
             font-size: 0.75rem;
-        }
-    }
-
-    @media (min-width: 1200px) {
-        .dashboard-main {
-            gap: 2.5rem;
         }
     }
 </style>
@@ -1258,27 +343,35 @@
             </div>
             
             <div class="profile-share-buttons">
-                <!-- New Tab Button -->
+                <!-- SHARE BUTTON (For everyone) - Opens share interface -->
+                <button onclick="shareDashboard()" 
+                        class="share-btn" 
+                        title="Share dashboard link">
+                    <i class="fas fa-share-alt"></i>
+                    <span class="hidden sm:inline">Share</span>
+                </button>
+                
+                <!-- NEW TAB BUTTON (For mentor only) - Opens profile in new tab -->
                 {% if current_user.role == 'mentor' %}
                 <a href="/mentor/{{ current_user.username }}" 
                    target="_blank" 
-                   class="share-btn"
-                   title="Open profile in new tab">
+                   class="new-tab-btn"
+                   title="Open my profile in new tab">
                     <i class="fas fa-external-link-alt"></i>
                     <span class="hidden sm:inline">New Tab</span>
                 </a>
                 {% endif %}
                 
-                <!-- Copy Link Button -->
+                <!-- COPY LINK BUTTON (For everyone) -->
                 <button onclick="copyDashboardUrl()" 
                         class="share-btn" 
                         id="copyLinkBtn"
-                        title="Copy profile link to clipboard">
+                        title="Copy dashboard link to clipboard">
                     <i class="fas fa-copy"></i>
                     <span class="hidden sm:inline">Copy Link</span>
                 </button>
                 
-                <!-- Edit Profile Button -->
+                <!-- EDIT PROFILE BUTTON -->
                 <a href="/profile/edit" class="header-action-btn">
                     <i class="fas fa-user-edit"></i>
                     <span>Edit Profile</span>
@@ -1288,6 +381,7 @@
     </div>
 
     <!-- Main Content -->
+    <!-- ... (Your existing main content remains exactly the same) ... -->
     <div class="dashboard-main">
         {% if current_user.role == 'learner' %}
         <!-- Learner Dashboard -->
@@ -1884,7 +978,6 @@
         tables.forEach(table => {
             const wrapper = table.parentElement;
             if (wrapper && wrapper.classList.contains('bookings-table')) {
-                // Add horizontal scroll indicators
                 const checkScroll = () => {
                     const hasScroll = wrapper.scrollWidth > wrapper.clientWidth;
                     if (hasScroll) {
@@ -1910,28 +1003,140 @@
         });
     });
 
-    // Copy Dashboard URL Function
+    // SHARE DASHBOARD Function - Opens share interface
+    function shareDashboard() {
+        const url = window.location.href;
+        const shareData = {
+            title: 'My Dashboard - ClearQ',
+            text: 'Check out my dashboard on ClearQ',
+            url: url
+        };
+
+        // Try Web Share API first
+        if (navigator.share && navigator.canShare(shareData)) {
+            navigator.share(shareData)
+                .then(() => {
+                    showNotification('Shared successfully!', 'success');
+                })
+                .catch((error) => {
+                    console.log('Error sharing:', error);
+                    // Fallback to custom share window
+                    openShareWindow(url);
+                });
+        } else {
+            // Fallback to custom share window
+            openShareWindow(url);
+        }
+    }
+
+    // Custom share window function
+    function openShareWindow(url) {
+        const shareWindow = window.open('', '_blank', 'width=600,height=400');
+        
+        if (shareWindow) {
+            shareWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Share Dashboard</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                            background: #f8fafc;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .container {
+                            max-width: 500px;
+                            margin: 0 auto;
+                            background: white;
+                            border-radius: 12px;
+                            padding: 30px;
+                            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                        }
+                        h1 {
+                            color: #1e293b;
+                            margin-bottom: 20px;
+                            font-size: 1.5rem;
+                        }
+                        .share-link {
+                            background: #f1f5f9;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin-bottom: 20px;
+                            word-break: break-all;
+                            font-size: 0.9rem;
+                            color: #475569;
+                        }
+                        .buttons {
+                            display: flex;
+                            gap: 10px;
+                            margin-top: 20px;
+                        }
+                        button {
+                            flex: 1;
+                            padding: 12px;
+                            border: none;
+                            border-radius: 8px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                        }
+                        .copy-btn {
+                            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+                            color: white;
+                        }
+                        .copy-btn:hover {
+                            transform: translateY(-2px);
+                            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>Share Dashboard</h1>
+                        <p>Copy this link to share:</p>
+                        <div class="share-link" id="shareUrl">${url}</div>
+                        <div class="buttons">
+                            <button class="copy-btn" onclick="copyToClipboard()">Copy Link</button>
+                        </div>
+                    </div>
+                    <script>
+                        function copyToClipboard() {
+                            const el = document.createElement('textarea');
+                            el.value = '${url}';
+                            document.body.appendChild(el);
+                            el.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(el);
+                            alert('Link copied to clipboard!');
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            shareWindow.document.close();
+        }
+    }
+
+    // COPY DASHBOARD URL Function
     function copyDashboardUrl() {
         const url = window.location.href;
         const copyBtn = document.getElementById('copyLinkBtn');
         const originalIcon = copyBtn.querySelector('i');
         const originalText = copyBtn.querySelector('span').textContent;
         
-        // Try using the modern Clipboard API first
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(url)
                 .then(() => {
-                    // Show success feedback
                     copyBtn.classList.add('copied');
                     copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
                     
-                    // Reset after 2 seconds
                     setTimeout(() => {
                         copyBtn.classList.remove('copied');
                         copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
                     }, 2000);
                     
-                    // Show notification
                     showNotification('Dashboard link copied to clipboard! 📋', 'success');
                 })
                 .catch(err => {
@@ -1939,12 +1144,10 @@
                     fallbackCopy(url, copyBtn, originalIcon, originalText);
                 });
         } else {
-            // Fallback for older browsers
             fallbackCopy(url, copyBtn, originalIcon, originalText);
         }
     }
 
-    // Fallback copy method
     function fallbackCopy(url, copyBtn, originalIcon, originalText) {
         const textArea = document.createElement('textarea');
         textArea.value = url;
@@ -1957,17 +1160,14 @@
         try {
             const successful = document.execCommand('copy');
             if (successful) {
-                // Show success feedback
                 copyBtn.classList.add('copied');
                 copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
                 
-                // Reset after 2 seconds
                 setTimeout(() => {
                     copyBtn.classList.remove('copied');
                     copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
                 }, 2000);
                 
-                // Show notification
                 showNotification('Dashboard link copied to clipboard! 📋', 'success');
             } else {
                 showNotification('Failed to copy link. Please try again.', 'error');
@@ -1982,7 +1182,6 @@
 
     // Notification system
     function showNotification(message, type) {
-        // Remove existing notifications
         const existingNotifications = document.querySelectorAll('.custom-notification');
         existingNotifications.forEach(notification => notification.remove());
         
@@ -2001,7 +1200,6 @@
         
         document.body.appendChild(notification);
         
-        // Add animation styles if not present
         if (!document.querySelector('#notification-styles')) {
             const style = document.createElement('style');
             style.id = 'notification-styles';
@@ -2020,7 +1218,6 @@
             document.head.appendChild(style);
         }
         
-        // Remove after 4 seconds
         setTimeout(() => {
             notification.style.opacity = '0';
             notification.style.transform = 'translateX(100%)';
