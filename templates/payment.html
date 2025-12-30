@@ -43,7 +43,8 @@
             <!-- Payment Button -->
             <div class="text-center">
                 <button id="rzp-button" 
-                        class="w-full py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl hover:shadow-lg transition-all">
+                        class="w-full py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-xl hover:shadow-lg transition-all hover:scale-[1.02]">
+                    <i class="fas fa-credit-card mr-2"></i>
                     Pay Now ₹{{ booking.amount_paid }}
                 </button>
                 <p class="text-sm text-gray-500 mt-4">
@@ -74,16 +75,32 @@
 <!-- Razorpay Integration -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     const bookingId = {{ booking.id }};
     const amount = {{ booking.amount_paid }} * 100; // Convert to paise
     const orderId = "{{ booking.razorpay_order_id }}";
     
+    // Check if Razorpay key exists
+    const razorpayKey = "{{ razorpay_key_id }}";
+    if (!razorpayKey) {
+        console.error("Razorpay key is missing!");
+        alert("Payment system is not configured. Please contact support.");
+        return;
+    }
+    
+    // Check if order ID exists
+    if (!orderId) {
+        console.error("Order ID is missing!");
+        alert("Invalid booking. Please contact support.");
+        return;
+    }
+    
     var options = {
-        "key": "{{ razorpay_key_id }}",
+        "key": razorpayKey,
         "amount": amount,
         "currency": "INR",
         "name": "ClearQ Mentorship",
-        "description": "Booking Payment",
+        "description": "Booking Payment for {{ service.name }}",
         "order_id": orderId,
         "handler": function (response) {
             // Handle successful payment
@@ -91,22 +108,32 @@
         },
         "prefill": {
             "name": "{{ current_user.full_name or current_user.username }}",
-            "email": "{{ current_user.email }}"
+            "email": "{{ current_user.email }}",
+            "contact": ""
         },
         "theme": {
             "color": "#4F46E5"
+        },
+        "modal": {
+            "ondismiss": function() {
+                console.log("Payment modal closed");
+            }
         }
     };
     
     var rzp = new Razorpay(options);
     
+    // Add click handler
     document.getElementById('rzp-button').onclick = function(e) {
-        rzp.open();
         e.preventDefault();
+        console.log("Opening Razorpay modal...");
+        rzp.open();
     }
     
     async function verifyPayment(response) {
         try {
+            console.log("Verifying payment...", response);
+            
             const verifyResponse = await fetch('/payment/verify', {
                 method: 'POST',
                 headers: {
@@ -115,23 +142,69 @@
                 body: JSON.stringify({
                     razorpay_order_id: response.razorpay_order_id,
                     razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature
+                    razorpay_signature: response.razorpay_signature,
+                    booking_id: bookingId
                 })
             });
             
             const result = await verifyResponse.json();
+            console.log("Verification result:", result);
             
             if (result.success) {
                 // Show success message and redirect
-                alert('Payment successful! Your booking is confirmed.');
-                window.location.href = '/dashboard';
+                showNotification('✅ Payment successful! Your booking is confirmed.', 'success');
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
             } else {
-                alert('Payment verification failed. Please contact support.');
+                showNotification('❌ Payment verification failed. Please contact support.', 'error');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred. Please check your payment status in dashboard.');
+            showNotification('⚠️ An error occurred. Please check your payment status in dashboard.', 'warning');
         }
     }
+    
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 ${
+            type === 'success' ? 'bg-green-500' : 
+            type === 'error' ? 'bg-red-500' : 'bg-yellow-500'
+        } text-white max-w-sm`;
+        notification.innerHTML = `
+            <div class="flex items-center gap-2">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'exclamation-triangle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 5000);
+    }
+    
+    // Add loading state to button
+    const payButton = document.getElementById('rzp-button');
+    payButton.addEventListener('click', function() {
+        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+        this.disabled = true;
+        
+        // Reset button after 3 seconds if modal doesn't open
+        setTimeout(() => {
+            if (this.disabled) {
+                this.innerHTML = '<i class="fas fa-credit-card mr-2"></i> Pay Now ₹{{ booking.amount_paid }}';
+                this.disabled = false;
+            }
+        }, 3000);
+    });
+});
 </script>
 {% endblock %}
