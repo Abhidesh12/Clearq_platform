@@ -3,203 +3,1059 @@
 {% block title %}Dashboard - ClearQ{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
+<style>
+    :root {
+        --primary: #3B82F6;
+        --primary-dark: #2563EB;
+        --primary-light: #60A5FA;
+        --secondary: #8B5CF6;
+        --accent: #06B6D4;
+        --success: #10B981;
+        --warning: #F59E0B;
+        --danger: #EF4444;
+        --gray-900: #0F172A;
+        --gray-800: #1E293B;
+        --gray-700: #334155;
+        --gray-600: #475569;
+        --gray-500: #64748B;
+        --gray-400: #94A3B8;
+        --gray-300: #CBD5E1;
+        --gray-200: #E2E8F0;
+        --gray-100: #F1F5F9;
+        --gray-50: #F8FAFC;
+        --white: #FFFFFF;
+        --radius-sm: 0.375rem;
+        --radius: 0.5rem;
+        --radius-md: 0.75rem;
+        --radius-lg: 1rem;
+        --radius-xl: 1.5rem;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --transition: all 0.2s ease;
+    }
+
+    .dashboard-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    /* Dashboard Header */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: var(--white);
+        padding: 1rem 1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .user-avatar {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: var(--radius-lg);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+        background: linear-gradient(135deg, var(--white), var(--gray-100));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .user-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .user-avatar-initial {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .user-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .user-details h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.125rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .user-details p {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .header-action-btn {
+        padding: 0.5rem 0.875rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        color: var(--white);
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        transition: var(--transition);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .header-action-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+    }
+
+    /* Main Content */
+    .dashboard-main {
+        padding: 1.25rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .dashboard-card:hover {
+        box-shadow: var(--shadow-lg);
+    }
+
+    .card-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-header h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+
+    .card-header a {
+        font-size: 0.875rem;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .card-header a:hover {
+        color: var(--primary-dark);
+    }
+
+    .card-content {
+        padding: 1.25rem;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+
+    .empty-state-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gray-400);
+        font-size: 1.5rem;
+    }
+
+    .empty-state h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Sessions List */
+    .sessions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .session-item {
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: 1rem;
+        transition: var(--transition);
+    }
+
+    .session-item:hover {
+        border-color: var(--primary);
+        background: var(--gray-50);
+    }
+
+    .session-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+
+    .session-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+
+    .session-price {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .session-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .session-detail {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+    }
+
+    .session-detail i {
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
+    .session-status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .status-confirmed {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .status-pending {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .status-completed {
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+
+    .status-paid {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .status-unpaid {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: var(--radius);
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .quick-action {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .quick-action:hover {
+        border-color: var(--primary);
+        background: var(--blue-50);
+    }
+
+    .action-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .icon-search {
+        background: #EFF6FF;
+        color: var(--primary);
+    }
+
+    .icon-edit {
+        background: #DCFCE7;
+        color: var(--success);
+    }
+
+    .icon-trophy {
+        background: #FEF3C7;
+        color: var(--warning);
+    }
+
+    .action-text {
+        flex: 1;
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: var(--gray-900);
+    }
+
+    /* Mentor Dashboard */
+    .mentor-services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .service-card {
+        padding: 1.25rem;
+        border-radius: var(--radius);
+        border: 1px solid;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .service-blue {
+        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+        border-color: #BFDBFE;
+    }
+
+    .service-green {
+        background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+        border-color: #BBF7D0;
+    }
+
+    .service-purple {
+        background: linear-gradient(135deg, #FAF5FF, #F3E8FF);
+        border-color: #E9D5FF;
+    }
+
+    .service-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .service-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .service-card h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+    }
+
+    .service-card p {
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: var(--radius);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .alert-warning {
+        background: #FFFBEB;
+        border: 1px solid #FDE68A;
+    }
+
+    .alert-icon {
+        color: #F59E0B;
+        font-size: 1.125rem;
+        margin-top: 0.125rem;
+    }
+
+    .alert-content h4 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: #92400E;
+        margin-bottom: 0.25rem;
+    }
+
+    .alert-content p {
+        font-size: 0.8125rem;
+        color: #92400E;
+        opacity: 0.9;
+    }
+
+    /* Earnings Summary */
+    .earnings-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .earnings-total {
+        text-align: center;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid var(--gray-200);
+    }
+
+    .total-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-bottom: 0.5rem;
+    }
+
+    .total-amount {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        line-height: 1;
+    }
+
+    .earnings-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .earning-stat-item {
+        text-align: center;
+    }
+
+    .earning-stat-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+    }
+
+    .earning-stat-label {
+        font-size: 0.75rem;
+        color: var(--gray-600);
+    }
+
+    .payout-info {
+        padding-top: 1.5rem;
+        border-top: 2px solid var(--gray-200);
+    }
+
+    .payout-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Quick Stats */
+    .quick-stats-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .quick-stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .quick-stat-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .stat-label-text {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    .stat-value-text {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--gray-900);
+    }
+
+    /* Admin Dashboard */
+    .pending-mentor {
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .mentor-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .mentor-avatar {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-weight: 600;
+    }
+
+    .mentor-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mentor-details h3 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 0.125rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mentor-details p {
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+        margin-bottom: 0.5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mentor-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.375rem;
+    }
+
+    .mentor-tag {
+        padding: 0.125rem 0.5rem;
+        background: var(--blue-50);
+        color: var(--blue-700);
+        border-radius: 1rem;
+        font-size: 0.75rem;
+    }
+
+    .mentor-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        flex: 1;
+    }
+
+    .action-approve {
+        background: var(--success);
+        color: var(--white);
+    }
+
+    .action-approve:hover {
+        background: #059669;
+    }
+
+    .action-reject {
+        background: var(--danger);
+        color: var(--white);
+    }
+
+    .action-reject:hover {
+        background: #DC2626;
+    }
+
+    /* Bookings Table */
+    .bookings-table {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        width: 100%;
+        min-width: 600px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    th {
+        padding: 0.75rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 1rem 0.75rem;
+        font-size: 0.875rem;
+        color: var(--gray-700);
+        border-bottom: 1px solid var(--gray-200);
+        vertical-align: middle;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Responsive Design */
+    @media (min-width: 640px) {
+        .dashboard-header {
+            padding: 1.5rem 1.75rem;
+        }
+        
+        .header-content {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-details h1 {
+            font-size: 1.5rem;
+        }
+        
+        .header-actions {
+            flex: 0 0 auto;
+        }
+        
+        .dashboard-main {
+            padding: 1.75rem;
+        }
+        
+        .dashboard-card {
+            margin-bottom: 1.25rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .mentor-services-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .quick-action {
+            flex-direction: column;
+            text-align: center;
+            padding: 1rem;
+        }
+        
+        .action-text {
+            text-align: center;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .dashboard-main {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .dashboard-card {
+            margin-bottom: 0;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .mentor-services-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+        
+        .quick-action {
+            flex-direction: row;
+            text-align: left;
+        }
+        
+        .action-text {
+            text-align: left;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .dashboard-header {
+            padding: 2rem;
+        }
+        
+        .user-avatar {
+            width: 4rem;
+            height: 4rem;
+        }
+        
+        .dashboard-main {
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            padding: 2rem;
+        }
+        
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-primary to-secondary text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div class="flex items-center gap-4">
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="user-info">
+                <div class="user-avatar">
                     {% if current_user.profile_image %}
                     <img src="/static/{{ current_user.profile_image }}" 
                          alt="{{ current_user.full_name or current_user.username }}"
-                         class="w-16 h-16 rounded-full object-cover border-4 border-white/20">
+                         class="user-avatar-img">
                     {% else %}
-                    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-white to-gray-100 flex items-center justify-center text-primary text-2xl font-bold border-4 border-white/20">
+                    <div class="user-avatar-initial">
                         {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper }}
                     </div>
                     {% endif %}
-                    <div>
-                        <h1 class="text-2xl font-bold">Welcome back, {{ current_user.full_name or current_user.username }}</h1>
-                        <p class="text-white/90 mt-1">{{ current_user.role|title }} Dashboard</p>
-                    </div>
                 </div>
-                
-                <div class="flex items-center gap-3">
-                    <a href="/profile/edit" 
-                       class="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors">
-                        <i class="fas fa-user-edit mr-2"></i>Edit Profile
-                    </a>
+                <div class="user-details">
+                    <h1>Welcome back, {{ current_user.full_name or current_user.username }}</h1>
+                    <p>{{ current_user.role|title }} Dashboard</p>
                 </div>
+            </div>
+            
+            <div class="header-actions">
+                <a href="/profile/edit" class="header-action-btn">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Edit Profile</span>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Dashboard Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Main Content -->
+    <div class="dashboard-main">
         {% if current_user.role == 'learner' %}
         <!-- Learner Dashboard -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column -->
-            <div class="lg:col-span-2 space-y-8">
-                <!-- Upcoming Sessions -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-gray-900">Upcoming Sessions</h2>
-                        <a href="/explore" class="text-primary hover:text-primary-dark font-medium">
-                            Book More <i class="fas fa-arrow-right ml-1"></i>
-                        </a>
-                    </div>
-                    
+        <div>
+            <!-- Upcoming Sessions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Upcoming Sessions</h2>
+                    <a href="/explore">
+                        Book More <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="card-content">
                     {% if bookings and bookings|length > 0 %}
-                    <div class="space-y-4">
+                    <div class="sessions-list">
                         {% for booking in bookings %}
-                        <div class="border border-gray-200 rounded-xl p-4 hover:border-primary transition-colors">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">
-                                        {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
-                                    </h3>
-                                    <div class="flex items-center gap-4 mt-2">
-                                        <span class="flex items-center text-sm text-gray-600">
-                                            <i class="fas fa-calendar-alt mr-2"></i>
-                                            {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
-                                        </span>
-                                        <span class="flex items-center text-sm text-gray-600">
-                                            <i class="fas fa-clock mr-2"></i>
-                                            {{ booking.start_time if booking.start_time else 'TBD' }}
-                                        </span>
-                                    </div>
-                                    <div class="mt-3">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
-                                            {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
-                                            {% elif booking.status == 'pending' %}bg-yellow-100 text-yellow-800
-                                            {% elif booking.status == 'completed' %}bg-blue-100 text-blue-800
-                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                            {{ booking.status|title }}
-                                        </span>
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ml-2 
-                                            {% if booking.payment_status == 'paid' %}bg-green-100 text-green-800
-                                            {% else %}bg-red-100 text-red-800{% endif %}">
-                                            {{ booking.payment_status|title }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-lg font-bold text-primary">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
-                                    <button class="mt-2 text-sm text-primary hover:text-primary-dark font-medium">
-                                        View Details
-                                    </button>
-                                </div>
+                        <div class="session-item">
+                            <div class="session-header">
+                                <h3 class="session-title">
+                                    {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                </h3>
+                                <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                            </div>
+                            
+                            <div class="session-details">
+                                <span class="session-detail">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                </span>
+                                <span class="session-detail">
+                                    <i class="fas fa-clock"></i>
+                                    {{ booking.start_time if booking.start_time else 'TBD' }}
+                                </span>
+                            </div>
+                            
+                            <div class="session-status">
+                                <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
+                                    <i class="fas {% if booking.status == 'confirmed' %}fa-check-circle{% elif booking.status == 'pending' %}fa-clock{% else %}fa-check{% endif %}"></i>
+                                    {{ booking.status|title }}
+                                </span>
+                                <span class="status-badge {% if booking.payment_status == 'paid' %}status-paid{% else %}status-unpaid{% endif %}">
+                                    <i class="fas {% if booking.payment_status == 'paid' %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                                    {{ booking.payment_status|title }}
+                                </span>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
-                            <i class="fas fa-calendar-plus text-gray-400 text-2xl"></i>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-calendar-plus"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Upcoming Sessions</h3>
-                        <p class="text-gray-500 mb-6">Book your first session with an expert mentor</p>
-                        <a href="/explore" 
-                           class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
-                            <i class="fas fa-search mr-2"></i>Find Mentors
+                        <h3>No Upcoming Sessions</h3>
+                        <p>Book your first session with an expert mentor</p>
+                        <a href="/explore" class="header-action-btn">
+                            <i class="fas fa-search"></i>
+                            Find Mentors
                         </a>
                     </div>
                     {% endif %}
                 </div>
+            </div>
 
-                <!-- Recommended Mentors -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Recommended For You</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Sample mentor cards -->
-                        <div class="border border-gray-200 rounded-xl p-4 hover:border-primary transition-colors">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-                                    JD
+            <!-- Recommended Mentors -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Recommended For You</h2>
+                </div>
+                
+                <div class="card-content">
+                    <div class="sessions-list">
+                        <div class="session-item">
+                            <div class="session-header">
+                                <div class="user-info" style="border: none; padding: 0;">
+                                    <div class="user-avatar" style="width: 2.5rem; height: 2.5rem; border-width: 2px;">
+                                        <div class="user-avatar-initial" style="font-size: 1rem;">JD</div>
+                                    </div>
+                                    <div class="user-details">
+                                        <h3 style="font-size: 0.9375rem;">John Doe</h3>
+                                        <p style="font-size: 0.8125rem;">Senior Engineer at Google</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 class="font-semibold text-gray-900">John Doe</h4>
-                                    <p class="text-sm text-gray-600">Senior Engineer at Google</p>
-                                </div>
+                                <a href="#" style="font-size: 0.8125rem;">View →</a>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <div class="text-sm text-gray-600">
-                                    <i class="fas fa-star text-yellow-400 mr-1"></i> 4.9 (42 reviews)
-                                </div>
-                                <a href="#" class="text-primary text-sm font-medium">View Profile →</a>
+                            <div class="session-details">
+                                <span class="session-detail">
+                                    <i class="fas fa-star text-yellow-400"></i> 4.9 (42 reviews)
+                                </span>
                             </div>
                         </div>
                         
-                        <div class="border border-gray-200 rounded-xl p-4 hover:border-primary transition-colors">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-secondary to-purple-500 flex items-center justify-center text-white font-bold">
-                                    SJ
+                        <div class="session-item">
+                            <div class="session-header">
+                                <div class="user-info" style="border: none; padding: 0;">
+                                    <div class="user-avatar" style="width: 2.5rem; height: 2.5rem; border-width: 2px; background: linear-gradient(135deg, #8B5CF6, #7C3AED);">
+                                        <div class="user-avatar-initial" style="font-size: 1rem; color: white;">SJ</div>
+                                    </div>
+                                    <div class="user-details">
+                                        <h3 style="font-size: 0.9375rem;">Sarah Johnson</h3>
+                                        <p style="font-size: 0.8125rem;">Product Manager at Meta</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 class="font-semibold text-gray-900">Sarah Johnson</h4>
-                                    <p class="text-sm text-gray-600">Product Manager at Meta</p>
-                                </div>
+                                <a href="#" style="font-size: 0.8125rem;">View →</a>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <div class="text-sm text-gray-600">
-                                    <i class="fas fa-star text-yellow-400 mr-1"></i> 4.8 (37 reviews)
-                                </div>
-                                <a href="#" class="text-primary text-sm font-medium">View Profile →</a>
+                            <div class="session-details">
+                                <span class="session-detail">
+                                    <i class="fas fa-star text-yellow-400"></i> 4.8 (37 reviews)
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Right Column -->
-            <div class="space-y-8">
-                <!-- Stats -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Your Learning Stats</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-sm text-gray-600">Total Sessions</p>
-                            <p class="text-2xl font-bold text-gray-900">{% if bookings %}{{ bookings|length }}{% else %}0{% endif %}</p>
+        <div>
+            <!-- Stats -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Your Learning Stats</h2>
+                </div>
+                
+                <div class="card-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">{% if bookings %}{{ bookings|length }}{% else %}0{% endif %}</div>
+                            <div class="stat-label">Total Sessions</div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-600">Hours of Mentorship</p>
-                            <p class="text-2xl font-bold text-gray-900">{% if bookings %}{{ bookings|length * 1 }}{% else %}0{% endif %}</p>
+                        <div class="stat-item">
+                            <div class="stat-value">{% if bookings %}{{ bookings|length * 1 }}{% else %}0{% endif %}</div>
+                            <div class="stat-label">Hours</div>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-600">Skills Learned</p>
-                            <p class="text-2xl font-bold text-gray-900">5+</p>
+                        <div class="stat-item">
+                            <div class="stat-value">5+</div>
+                            <div class="stat-label">Skills</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">4.5</div>
+                            <div class="stat-label">Avg Rating</div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Quick Actions -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Quick Actions</h3>
-                    <div class="space-y-3">
-                        <a href="/explore" 
-                           class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-primary hover:bg-blue-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                                <i class="fas fa-search text-blue-600"></i>
+            <!-- Quick Actions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Quick Actions</h2>
+                </div>
+                
+                <div class="card-content">
+                    <div class="quick-actions">
+                        <a href="/explore" class="quick-action">
+                            <div class="action-icon icon-search">
+                                <i class="fas fa-search"></i>
                             </div>
-                            <span class="font-medium text-gray-900">Find New Mentors</span>
+                            <span class="action-text">Find New Mentors</span>
                         </a>
                         
-                        <a href="/profile/edit" 
-                           class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-primary hover:bg-blue-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                                <i class="fas fa-user-edit text-green-600"></i>
+                        <a href="/profile/edit" class="quick-action">
+                            <div class="action-icon icon-edit">
+                                <i class="fas fa-user-edit"></i>
                             </div>
-                            <span class="font-medium text-gray-900">Update Profile</span>
+                            <span class="action-text">Update Profile</span>
                         </a>
                         
-                        <a href="/mentorship-program" 
-                           class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:border-primary hover:bg-blue-50 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
-                                <i class="fas fa-trophy text-yellow-600"></i>
+                        <a href="/mentorship-program" class="quick-action">
+                            <div class="action-icon icon-trophy">
+                                <i class="fas fa-trophy"></i>
                             </div>
-                            <span class="font-medium text-gray-900">Join Program</span>
+                            <span class="action-text">Join Program</span>
                         </a>
                     </div>
                 </div>
@@ -208,136 +1064,116 @@
 
         {% elif current_user.role == 'mentor' %}
         <!-- Mentor Dashboard -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column -->
-            <div class="lg:col-span-2 space-y-8">
-                <!-- Mentor Status Card -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h2 class="text-xl font-bold text-gray-900">Mentor Profile</h2>
-                            <p class="text-gray-600 mt-1">Manage your services and availability</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
-                                {% if mentor.verification_status == 'approved' %}bg-green-100 text-green-800
-                                {% elif mentor.verification_status == 'pending' %}bg-yellow-100 text-yellow-800
-                                {% else %}bg-red-100 text-red-800{% endif %}">
-                                <i class="fas {% if mentor.verification_status == 'approved' %}fa-check-circle{% else %}fa-clock{% endif %} mr-1"></i>
-                                {{ mentor.verification_status|title }}
-                            </span>
-                        </div>
+        <div>
+            <!-- Mentor Status Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <div>
+                        <h2>Mentor Profile</h2>
+                        <p style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.25rem;">Manage your services and availability</p>
                     </div>
-                    
+                    <span class="status-badge {% if mentor.verification_status == 'approved' %}status-confirmed{% elif mentor.verification_status == 'pending' %}status-pending{% else %}status-unpaid{% endif %}">
+                        <i class="fas {% if mentor.verification_status == 'approved' %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
+                        {{ mentor.verification_status|title }}
+                    </span>
+                </div>
+                
+                <div class="card-content">
                     {% if mentor.verification_status == 'pending' %}
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                        <div class="flex items-start">
-                            <i class="fas fa-info-circle text-yellow-500 mt-0.5 mr-3"></i>
-                            <div>
-                                <h4 class="font-semibold text-yellow-800">Profile Under Review</h4>
-                                <p class="text-yellow-700 mt-1 text-sm">
-                                    Your mentor profile is currently being reviewed by our admin team. 
-                                    You can set up your services and availability, but they won't be visible to learners until you're approved.
-                                </p>
-                            </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle alert-icon"></i>
+                        <div class="alert-content">
+                            <h4>Profile Under Review</h4>
+                            <p>Your mentor profile is currently being reviewed. You can set up services, but they won't be visible until approved.</p>
                         </div>
                     </div>
                     {% endif %}
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <a href="/mentor/dashboard/services" 
-                           class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 hover:border-blue-300 transition-colors">
-                            <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
-                                <i class="fas fa-list-alt text-blue-600 text-xl"></i>
+                    <div class="mentor-services-grid">
+                        <a href="/mentor/dashboard/services" class="service-card service-blue">
+                            <div class="service-icon" style="background: #EFF6FF; color: var(--primary);">
+                                <i class="fas fa-list-alt"></i>
                             </div>
-                            <h3 class="font-bold text-gray-900 mb-2">Services</h3>
-                            <p class="text-sm text-gray-600">Create and manage your services</p>
+                            <h3>Services</h3>
+                            <p>Create and manage your services</p>
                         </a>
                         
-                        <a href="/mentor/availability" 
-                           class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-5 hover:border-green-300 transition-colors">
-                            <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center mb-4">
-                                <i class="fas fa-calendar-alt text-green-600 text-xl"></i>
+                        <a href="/mentor/availability" class="service-card service-green">
+                            <div class="service-icon" style="background: #F0FDF4; color: var(--success);">
+                                <i class="fas fa-calendar-alt"></i>
                             </div>
-                            <h3 class="font-bold text-gray-900 mb-2">Availability</h3>
-                            <p class="text-sm text-gray-600">Set your available time slots</p>
+                            <h3>Availability</h3>
+                            <p>Set your available time slots</p>
                         </a>
                         
-                        <a href="/profile/edit" 
-                           class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-5 hover:border-purple-300 transition-colors">
-                            <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center mb-4">
-                                <i class="fas fa-user-edit text-purple-600 text-xl"></i>
+                        <a href="/profile/edit" class="service-card service-purple">
+                            <div class="service-icon" style="background: #FAF5FF; color: var(--secondary);">
+                                <i class="fas fa-user-edit"></i>
                             </div>
-                            <h3 class="font-bold text-gray-900 mb-2">Profile</h3>
-                            <p class="text-sm text-gray-600">Edit your public profile</p>
+                            <h3>Profile</h3>
+                            <p>Edit your public profile</p>
                         </a>
                     </div>
                 </div>
+            </div>
 
-                <!-- Upcoming Sessions -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-gray-900">Upcoming Sessions</h2>
-                        <span class="text-sm text-gray-600">{{ bookings|length if bookings else 0 }} total</span>
-                    </div>
-                    
+            <!-- Upcoming Sessions -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Upcoming Sessions</h2>
+                    <span style="font-size: 0.875rem; color: var(--gray-600);">
+                        {{ bookings|length if bookings else 0 }} total
+                    </span>
+                </div>
+                
+                <div class="card-content">
                     {% if bookings and bookings|length > 0 %}
-                    <div class="space-y-4">
+                    <div class="sessions-list">
                         {% for booking in bookings %}
-                        <div class="border border-gray-200 rounded-xl p-4 hover:border-primary transition-colors">
-                            <div class="flex items-start justify-between">
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">
-                                        {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
-                                    </h3>
-                                    <div class="flex items-center gap-4 mt-2">
-                                        <span class="flex items-center text-sm text-gray-600">
-                                            <i class="fas fa-user mr-2"></i>
-                                            {{ booking.learner.full_name if booking.learner else 'Learner' }}
-                                        </span>
-                                        <span class="flex items-center text-sm text-gray-600">
-                                            <i class="fas fa-calendar-alt mr-2"></i>
-                                            {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
-                                        </span>
-                                        <span class="flex items-center text-sm text-gray-600">
-                                            <i class="fas fa-clock mr-2"></i>
-                                            {{ booking.start_time if booking.start_time else 'TBD' }}
-                                        </span>
-                                    </div>
-                                    <div class="mt-3">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
-                                            {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
-                                            {% elif booking.status == 'pending' %}bg-yellow-100 text-yellow-800
-                                            {% elif booking.status == 'completed' %}bg-blue-100 text-blue-800
-                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                            {{ booking.status|title }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-lg font-bold text-primary">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
-                                    <button class="mt-2 text-sm text-primary hover:text-primary-dark font-medium">
-                                        View Details
-                                    </button>
-                                </div>
+                        <div class="session-item">
+                            <div class="session-header">
+                                <h3 class="session-title">
+                                    {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                </h3>
+                                <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                            </div>
+                            
+                            <div class="session-details">
+                                <span class="session-detail">
+                                    <i class="fas fa-user"></i>
+                                    {{ booking.learner.full_name if booking.learner else 'Learner' }}
+                                </span>
+                                <span class="session-detail">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                </span>
+                                <span class="session-detail">
+                                    <i class="fas fa-clock"></i>
+                                    {{ booking.start_time if booking.start_time else 'TBD' }}
+                                </span>
+                            </div>
+                            
+                            <div class="session-status">
+                                <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
+                                    <i class="fas {% if booking.status == 'confirmed' %}fa-check-circle{% elif booking.status == 'pending' %}fa-clock{% else %}fa-check{% endif %}"></i>
+                                    {{ booking.status|title }}
+                                </span>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
-                            <i class="fas fa-calendar text-gray-400 text-2xl"></i>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-calendar"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Upcoming Sessions</h3>
-                        <p class="text-gray-500 mb-6">Set up your services and availability to get started</p>
-                        <div class="flex gap-3 justify-center">
-                            <a href="/mentor/dashboard/services" 
-                               class="px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all">
+                        <h3>No Upcoming Sessions</h3>
+                        <p>Set up your services and availability to get started</p>
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
+                            <a href="/mentor/dashboard/services" class="header-action-btn" style="background: var(--primary); color: white;">
                                 Add Services
                             </a>
-                            <a href="/mentor/availability" 
-                               class="px-4 py-2 border border-primary text-primary font-medium rounded-lg hover:bg-blue-50 transition-colors">
+                            <a href="/mentor/availability" class="header-action-btn" style="background: transparent; border-color: var(--primary); color: var(--primary);">
                                 Set Availability
                             </a>
                         </div>
@@ -345,60 +1181,76 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
 
-            <!-- Right Column -->
-            <div class="space-y-8">
-                <!-- Earnings Summary -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Earnings Summary</h3>
-                    <div class="space-y-6">
-                        <div>
-                            <p class="text-sm text-gray-600">Total Earnings</p>
-                            <p class="text-3xl font-bold text-gray-900">₹{{ earnings|default(0) }}</p>
+        <div>
+            <!-- Earnings Summary -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Earnings Summary</h2>
+                </div>
+                
+                <div class="card-content">
+                    <div class="earnings-summary">
+                        <div class="earnings-total">
+                            <div class="total-label">Total Earnings</div>
+                            <div class="total-amount">₹{{ earnings|default(0) }}</div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-sm text-gray-600">Completed</p>
-                                <p class="text-xl font-bold text-gray-900">
+                        
+                        <div class="earnings-stats">
+                            <div class="earning-stat-item">
+                                <div class="earning-stat-value">
                                     {% if bookings %}{{ bookings|selectattr('status', 'equalto', 'completed')|list|length }}{% else %}0{% endif %}
-                                </p>
+                                </div>
+                                <div class="earning-stat-label">Completed</div>
                             </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Pending</p>
-                                <p class="text-xl font-bold text-gray-900">
+                            
+                            <div class="earning-stat-item">
+                                <div class="earning-stat-value">
                                     {% if bookings %}{{ bookings|selectattr('payment_status', 'equalto', 'pending')|list|length }}{% else %}0{% endif %}
-                                </p>
+                                </div>
+                                <div class="earning-stat-label">Pending</div>
                             </div>
                         </div>
-                        <div class="pt-4 border-t border-gray-200">
-                            <p class="text-sm text-gray-600 mb-2">Next Payout</p>
-                            <div class="flex items-center justify-between">
-                                <span class="font-medium text-gray-900">₹{{ (earnings|default(0) * 0.8)|int }}</span>
-                                <span class="text-sm text-gray-500">in 3 days</span>
+                        
+                        <div class="payout-info">
+                            <div class="payout-row">
+                                <span style="font-size: 0.875rem; color: var(--gray-600);">Next Payout</span>
+                                <span style="font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);">
+                                    ₹{{ (earnings|default(0) * 0.8)|int }}
+                                </span>
+                            </div>
+                            <div class="payout-row">
+                                <span style="font-size: 0.75rem; color: var(--gray-500);">in 3 days</span>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Quick Stats -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Quick Stats</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600">Rating</span>
-                            <span class="font-semibold text-gray-900">{{ mentor.rating|default('4.9') }}/5</span>
+            <!-- Quick Stats -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Quick Stats</h2>
+                </div>
+                
+                <div class="card-content">
+                    <div class="quick-stats-list">
+                        <div class="quick-stat-item">
+                            <span class="stat-label-text">Rating</span>
+                            <span class="stat-value-text">{{ mentor.rating|default('4.9') }}/5</span>
                         </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600">Reviews</span>
-                            <span class="font-semibold text-gray-900">{{ mentor.review_count|default('0') }}</span>
+                        <div class="quick-stat-item">
+                            <span class="stat-label-text">Reviews</span>
+                            <span class="stat-value-text">{{ mentor.review_count|default('0') }}</span>
                         </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600">Total Sessions</span>
-                            <span class="font-semibold text-gray-900">{{ mentor.total_sessions|default('0') }}</span>
+                        <div class="quick-stat-item">
+                            <span class="stat-label-text">Total Sessions</span>
+                            <span class="stat-value-text">{{ mentor.total_sessions|default('0') }}</span>
                         </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-gray-600">Response Time</span>
-                            <span class="font-semibold text-gray-900">24h</span>
+                        <div class="quick-stat-item">
+                            <span class="stat-label-text">Response Time</span>
+                            <span class="stat-value-text">24h</span>
                         </div>
                     </div>
                 </div>
@@ -407,119 +1259,113 @@
 
         {% elif current_user.role == 'admin' %}
         <!-- Admin Dashboard -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column -->
-            <div class="lg:col-span-2 space-y-8">
-                <!-- Pending Mentor Approvals -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-gray-900">Pending Mentor Approvals</h2>
-                        <span class="text-sm text-gray-600">{{ pending_mentors|length if pending_mentors else 0 }} pending</span>
-                    </div>
-                    
+        <div>
+            <!-- Pending Mentor Approvals -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Pending Mentor Approvals</h2>
+                    <span style="font-size: 0.875rem; color: var(--gray-600);">
+                        {{ pending_mentors|length if pending_mentors else 0 }} pending
+                    </span>
+                </div>
+                
+                <div class="card-content">
                     {% if pending_mentors and pending_mentors|length > 0 %}
-                    <div class="space-y-4">
+                    <div>
                         {% for mentor in pending_mentors %}
-                        <div class="border border-gray-200 rounded-xl p-4">
-                            <div class="flex items-start justify-between">
-                                <div class="flex items-center gap-3">
-                                    {% if mentor.user.profile_image %}
-                                    <img src="/static/{{ mentor.user.profile_image }}" 
-                                         alt="{{ mentor.user.full_name }}"
-                                         class="w-12 h-12 rounded-full object-cover">
-                                    {% else %}
-                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
-                                        {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
-                                    </div>
-                                    {% endif %}
-                                    <div>
-                                        <h3 class="font-semibold text-gray-900">{{ mentor.user.full_name or mentor.user.username }}</h3>
-                                        <p class="text-sm text-gray-600">{{ mentor.user.email }}</p>
-                                        <div class="flex items-center gap-2 mt-1">
-                                            {% if mentor.industry %}
-                                            <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full">
-                                                {{ mentor.industry }}
-                                            </span>
-                                            {% endif %}
-                                            {% if mentor.experience_years %}
-                                            <span class="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-full">
-                                                {{ mentor.experience_years }} years exp
-                                            </span>
-                                            {% endif %}
-                                        </div>
+                        <div class="pending-mentor">
+                            <div class="mentor-info">
+                                {% if mentor.user.profile_image %}
+                                <img src="/static/{{ mentor.user.profile_image }}" 
+                                     alt="{{ mentor.user.full_name }}"
+                                     class="mentor-avatar">
+                                {% else %}
+                                <div class="mentor-avatar">
+                                    {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
+                                </div>
+                                {% endif %}
+                                <div class="mentor-details">
+                                    <h3>{{ mentor.user.full_name or mentor.user.username }}</h3>
+                                    <p>{{ mentor.user.email }}</p>
+                                    <div class="mentor-tags">
+                                        {% if mentor.industry %}
+                                        <span class="mentor-tag">{{ mentor.industry }}</span>
+                                        {% endif %}
+                                        {% if mentor.experience_years %}
+                                        <span class="mentor-tag">{{ mentor.experience_years }} years exp</span>
+                                        {% endif %}
                                     </div>
                                 </div>
-                                <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" class="flex gap-2">
-                                    <button type="submit" name="action" value="approve"
-                                            class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-lg hover:bg-green-600 transition-colors">
-                                        Approve
-                                    </button>
-                                    <button type="submit" name="action" value="reject"
-                                            class="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors">
-                                        Reject
-                                    </button>
-                                </form>
                             </div>
+                            
+                            <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" class="mentor-actions">
+                                <button type="submit" name="action" value="approve" class="action-button action-approve">
+                                    Approve
+                                </button>
+                                <button type="submit" name="action" value="reject" class="action-button action-reject">
+                                    Reject
+                                </button>
+                            </form>
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-green-100 to-green-200 flex items-center justify-center">
-                            <i class="fas fa-check text-green-500 text-2xl"></i>
+                    <div class="empty-state">
+                        <div class="empty-state-icon" style="background: linear-gradient(135deg, #DCFCE7, #BBF7D0); color: var(--success);">
+                            <i class="fas fa-check"></i>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">All Caught Up!</h3>
-                        <p class="text-gray-500">No pending mentor approvals</p>
+                        <h3>All Caught Up!</h3>
+                        <p>No pending mentor approvals</p>
                     </div>
                     {% endif %}
                 </div>
+            </div>
 
-                <!-- Recent Bookings -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Recent Bookings</h2>
-                    
+            <!-- Recent Bookings -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2>Recent Bookings</h2>
+                </div>
+                
+                <div class="card-content">
                     {% if recent_bookings and recent_bookings|length > 0 %}
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                    <div class="bookings-table">
+                        <table>
                             <thead>
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mentor</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Learner</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th> 
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th> 
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th> 
+                                    <th>ID</th>
+                                    <th>Mentor</th>
+                                    <th>Learner</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200">
+                            <tbody>
                                 {% for booking in recent_bookings[:5] %}
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3 text-sm text-gray-900">#{{ booking.id }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                <tr>
+                                    <td>#{{ booking.id }}</td>
+                                    <td>
                                         {% if booking.mentor and booking.mentor.user %}
                                         {{ booking.mentor.user.full_name or booking.mentor.user.username }}
                                         {% else %}
                                         N/A
                                         {% endif %}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">
+                                    <td>
                                         {% if booking.learner %}
                                         {{ booking.learner.full_name or booking.learner.username }}
                                         {% else %}
                                         N/A
                                         {% endif %}
                                     </td>
-                                    <td class="px-4 py-3 text-sm font-semibold text-gray-900">₹{{ booking.amount_paid or 0 }}</td>
-                                    <td class="px-4 py-3">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                            {% if booking.status == 'confirmed' %}bg-green-100 text-green-800 
-                                            {% elif booking.status == 'pending' %}bg-yellow-100 text-yellow-800 
-                                            {% elif booking.status == 'completed' %}bg-blue-100 text-blue-800 
-                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    <td>₹{{ booking.amount_paid or 0 }}</td>
+                                    <td>
+                                        <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}" style="display: inline-flex;">
                                             {{ booking.status|title }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-500">
+                                    <td>
                                         {{ booking.created_at.strftime('%Y-%m-%d') if booking.created_at else '' }}
                                     </td>
                                 </tr>
@@ -528,11 +1374,11 @@
                         </table>
                     </div>
                     {% else %}
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
-                            <i class="fas fa-calendar text-gray-400 text-2xl"></i>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-calendar"></i>
                         </div>
-                        <p class="text-gray-500">No recent bookings</p>
+                        <p>No recent bookings</p>
                     </div>
                     {% endif %}
                 </div>
@@ -541,4 +1387,57 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add hover effects to all interactive elements
+        const interactiveElements = document.querySelectorAll('.session-item, .quick-action, .service-card, .action-button');
+        
+        interactiveElements.forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Handle form submissions
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const button = e.submitter;
+                if (button && button.name === 'action') {
+                    const action = button.value;
+                    if (action === 'reject') {
+                        if (!confirm('Are you sure you want to reject this mentor?')) {
+                            e.preventDefault();
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Make tables responsive on mobile
+        const tables = document.querySelectorAll('table');
+        tables.forEach(table => {
+            const wrapper = table.parentElement;
+            if (wrapper && wrapper.classList.contains('bookings-table')) {
+                // Add horizontal scroll indicators on mobile
+                const checkScroll = () => {
+                    const hasScroll = wrapper.scrollWidth > wrapper.clientWidth;
+                    if (hasScroll) {
+                        wrapper.style.position = 'relative';
+                        // Add gradient overlay for scroll indication
+                        wrapper.style.background = 'linear-gradient(to right, transparent 90%, rgba(0,0,0,0.05))';
+                    }
+                };
+                
+                checkScroll();
+                window.addEventListener('resize', checkScroll);
+            }
+        });
+    });
+</script>
 {% endblock %}
