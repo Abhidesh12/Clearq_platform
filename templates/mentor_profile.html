@@ -604,8 +604,8 @@
                     {% if services and services|length > 0 %}
                     <div class="services-grid">
                         {% for service in services %}
-                        <a href="/mentor/username/{{ mentor.user.username }}/service/{{ service.id }}" 
-                           class="block hover:no-underline service-card-link">
+                         <a href="/{{ mentor.user.username }}/service/{{ service.id }}" 
+                             class="block hover:no-underline service-card-link">
                             <div class="service-card">
                                 {% if service.is_popular %}
                                 <div class="service-card-badge">Most Popular</div>
@@ -874,20 +874,21 @@ async function loadTimeSlots(date) {
     `;
     
     try {
-        const pathParts = window.location.pathname.split('/');
-        let identifier;
-        
-        if (pathParts[1] === 'mentor' && pathParts[2] === 'username') {
-            identifier = pathParts[3];
-        } else {
-            identifier = {{ mentor.id }};
-        }
+const pathParts = window.location.pathname.split('/');
+let identifier;
+
+// New URL format: /username or /username/service/123
+if (pathParts.length >= 2 && pathParts[1]) {
+    identifier = pathParts[1]; // Username
+} else {
+    identifier = {{ mentor.id }}; // Fallback to ID
+}
         
         if (!identifier) {
             throw new Error('Invalid mentor identifier');
         }
         
-        const response = await fetch('/api/time-slots/' + identifier, {
+        const response = await fetch('/api/time-slots/user/' + identifier, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
