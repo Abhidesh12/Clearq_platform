@@ -8,17 +8,17 @@
         <!-- Header -->
         <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Manage Availability</h1>
-            <p class="text-gray-600 mt-2">Set your available time slots for mentoring sessions</p>
+            <p class="text-gray-600 mt-2">Set your available dates for mentoring sessions (Default: 9:00 AM - 9:00 PM)</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column - Calendar & Form -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Add Availability</h2>
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Add Availability Date</h2>
                     
                     <form action="/mentor/availability/create" method="POST" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Date *
@@ -26,40 +26,33 @@
                                 <input type="date" name="date" required
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                                        min="{{ today }}">
+                                <p class="mt-1 text-sm text-gray-500">
+                                    Select a date for availability
+                                </p>
                             </div>
                             
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Start Time *
+                                    Time Range (Default)
                                 </label>
-                                <select name="start_time" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                    <option value="">Select Start Time</option>
-                                    {% for hour in range(9, 18) %}
-                                    {% for minute in ['00', '30'] %}
-                                    <option value="{{ '%02d'|format(hour) }}:{{ minute }}">
-                                        {{ '%02d'|format(hour) }}:{{ minute }}
-                                    </option>
-                                    {% endfor %}
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    End Time *
-                                </label>
-                                <select name="end_time" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                    <option value="">Select End Time</option>
-                                    {% for hour in range(10, 19) %}
-                                    {% for minute in ['00', '30'] %}
-                                    <option value="{{ '%02d'|format(hour) }}:{{ minute }}">
-                                        {{ '%02d'|format(hour) }}:{{ minute }}
-                                    </option>
-                                    {% endfor %}
-                                    {% endfor %}
-                                </select>
+                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div class="text-center">
+                                            <div class="text-lg font-bold text-gray-900">9:00 AM</div>
+                                            <div class="text-xs text-gray-500">Start Time</div>
+                                        </div>
+                                        <div class="text-gray-400 mx-2">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-lg font-bold text-gray-900">9:00 PM</div>
+                                            <div class="text-xs text-gray-500">End Time</div>
+                                        </div>
+                                    </div>
+                                    <p class="mt-2 text-xs text-gray-500 text-center">
+                                        Time slots will be automatically generated based on service durations
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         
@@ -72,7 +65,7 @@
                                 <option value="">All Services</option>
                                 {% if services %}
                                 {% for service in services %}
-                                <option value="{{ service.id }}">{{ service.name }}</option>
+                                <option value="{{ service.id }}">{{ service.name }} ({{ service.duration_minutes }} mins)</option>
                                 {% endfor %}
                                 {% endif %}
                             </select>
@@ -81,10 +74,23 @@
                             </p>
                         </div>
                         
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-blue-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-blue-700">
+                                        <strong>How it works:</strong> Learners will see available time slots from 9:00 AM to 9:00 PM based on your service durations. Each time slot duration matches the selected service length.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="pt-4 border-t border-gray-200">
                             <button type="submit"
                                     class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5">
-                                <i class="fas fa-plus mr-2"></i> Add Time Slot
+                                <i class="fas fa-plus mr-2"></i> Add Availability Date
                             </button>
                         </div>
                     </form>
@@ -124,12 +130,24 @@
                             
                             <div class="flex items-center justify-between">
                                 <span class="text-sm text-gray-500">
-                                    Duration: {{ ((availability.end_time|string).split(':')[0]|int - (availability.start_time|string).split(':')[0]|int) * 60 + ((availability.end_time|string).split(':')[1]|int - (availability.start_time|string).split(':')[1]|int) }} mins
+                                    Time slots: 9:00 AM - 9:00 PM
                                 </span>
-                                <button class="text-red-500 hover:text-red-700 text-sm font-medium">
-                                    <i class="fas fa-trash mr-1"></i> Remove
-                                </button>
+                                <form action="/mentor/availability/{{ availability.id }}/delete" method="POST" class="inline" 
+                                      onsubmit="return confirm('Are you sure you want to remove this availability?');">
+                                    <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium">
+                                        <i class="fas fa-trash mr-1"></i> Remove
+                                    </button>
+                                </form>
                             </div>
+                            
+                            {% if availability.service %}
+                            <div class="mt-3 pt-3 border-t border-gray-100">
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                                    <span>Time slots will be generated based on {{ availability.service.duration_minutes }} minute sessions</span>
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                         {% endfor %}
                     </div>
@@ -139,7 +157,8 @@
                             <i class="fas fa-calendar-times text-gray-400 text-2xl"></i>
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900 mb-2">No Upcoming Availability</h3>
-                        <p class="text-gray-500">Add time slots to start accepting bookings</p>
+                        <p class="text-gray-500">Add availability dates to start accepting bookings</p>
+                        <p class="text-sm text-gray-400 mt-1">Learners will see available time slots from 9:00 AM to 9:00 PM</p>
                     </div>
                     {% endif %}
                 </div>
@@ -177,29 +196,84 @@
                         </div>
                         {% endfor %}
                     </div>
+                    
+                    <!-- Legend -->
+                    <div class="pt-4 border-t border-gray-200">
+                        <div class="flex items-center justify-center gap-4">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-green-100 border border-green-300 mr-2"></div>
+                                <span class="text-xs text-gray-600">Available</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-blue-100 border border-blue-300 mr-2"></div>
+                                <span class="text-xs text-gray-600">Today</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Availability Tips -->
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg border border-blue-200 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Tips for Setting Availability</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">How Time Slots Work</h3>
                     <ul class="space-y-3">
                         <li class="flex items-start">
                             <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                            <span class="text-sm text-gray-700">Set consistent weekly slots for better visibility</span>
+                            <span class="text-sm text-gray-700"><strong>Default Hours:</strong> 9:00 AM to 9:00 PM</span>
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                            <span class="text-sm text-gray-700">Add buffer time between sessions (15-30 mins)</span>
+                            <span class="text-sm text-gray-700"><strong>Automatic Generation:</strong> Time slots are generated based on service duration</span>
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                            <span class="text-sm text-gray-700">Update availability at least 2 weeks in advance</span>
+                            <span class="text-sm text-gray-700"><strong>Buffer Time:</strong> 15 minutes between sessions</span>
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                            <span class="text-sm text-gray-700">Consider time zones of your target audience</span>
+                            <span class="text-sm text-gray-700"><strong>Service-Specific:</strong> Different durations create different time slots</span>
                         </li>
                     </ul>
+                    
+                    <div class="mt-4 pt-4 border-t border-blue-200">
+                        <h4 class="font-medium text-gray-900 mb-2">Example Time Slots:</h4>
+                        <div class="space-y-2">
+                            <div class="text-sm text-gray-600">
+                                <span class="font-medium">60-min service:</span> 9:00-10:00, 10:15-11:15, etc.
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <span class="font-medium">30-min service:</span> 9:00-9:30, 9:45-10:15, etc.
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <span class="font-medium">90-min service:</span> 9:00-10:30, 10:45-12:15, etc.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl shadow-lg border border-green-200 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button onclick="addNextWeek()" class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-green-200 hover:border-green-400 transition-colors">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-calendar-plus text-green-600"></i>
+                                </div>
+                                <span class="font-medium text-gray-900">Add Next Week</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </button>
+                        
+                        <button onclick="addMultipleDays()" class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-green-200 hover:border-green-400 transition-colors">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-calendar-week text-blue-600"></i>
+                                </div>
+                                <span class="font-medium text-gray-900">Add Work Week</span>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -215,31 +289,78 @@ document.addEventListener('DOMContentLoaded', function() {
         dateInput.value = today;
     }
     
-    // Calculate end time based on start time selection
-    const startTimeSelect = document.querySelector('select[name="start_time"]');
-    const endTimeSelect = document.querySelector('select[name="end_time"]');
+    // Highlight dates in calendar that have availability
+    const availabilityDates = [
+        {% for availability in availabilities %}
+        "{{ availability.date.strftime('%Y-%m-%d') if availability.date else '' }}",
+        {% endfor %}
+    ];
     
-    if (startTimeSelect && endTimeSelect) {
-        startTimeSelect.addEventListener('change', function() {
-            if (this.value) {
-                const [hours, minutes] = this.value.split(':').map(Number);
-                // Default to 1 hour later
-                let endHour = hours + 1;
-                let endMinute = minutes;
-                
-                // Handle hour overflow
-                if (endHour >= 24) {
-                    endHour = 0;
-                }
-                
-                // Format end time
-                const endTime = `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
-                
-                // Set the end time
-                endTimeSelect.value = endTime;
+    const calendarDays = document.querySelectorAll('.text-center.p-2.border');
+    calendarDays.forEach(day => {
+        const dayNum = day.querySelector('span').textContent.trim();
+        if (dayNum) {
+            // Create a date object for this day
+            const currentDate = new Date();
+            currentDate.setDate(parseInt(dayNum));
+            const dateStr = currentDate.toISOString().split('T')[0];
+            
+            // Check if this date has availability
+            if (availabilityDates.includes(dateStr)) {
+                day.classList.add('border-green-300', 'bg-green-50');
+                // Add indicator dot
+                const dot = document.createElement('div');
+                dot.className = 'absolute top-1 right-1 w-2 h-2 rounded-full bg-green-500';
+                day.style.position = 'relative';
+                day.appendChild(dot);
             }
-        });
-    }
+        }
+    });
 });
+
+// Helper functions for quick actions
+function addNextWeek() {
+    const dateInput = document.querySelector('input[name="date"]');
+    if (dateInput) {
+        const currentDate = new Date(dateInput.value);
+        currentDate.setDate(currentDate.getDate() + 7);
+        dateInput.value = currentDate.toISOString().split('T')[0];
+        
+        // Show notification
+        showNotification('Next week date selected. Click "Add Availability Date" to confirm.', 'info');
+    }
+}
+
+function addMultipleDays() {
+    // This would typically open a modal to select multiple days
+    // For now, just show a message
+    showNotification('Coming soon: Add multiple days at once feature', 'info');
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
+        type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
+        type === 'info' ? 'bg-gradient-to-r from-blue-500 to-cyan-600' :
+        'bg-gradient-to-r from-red-500 to-pink-600'
+    } text-white max-w-sm`;
+    notification.innerHTML = `
+        <div class="flex items-center gap-3">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'info' ? 'info-circle' : 'exclamation-circle'} text-xl"></i>
+            <span class="font-medium">${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 4 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 4000);
+}
 </script>
 {% endblock %}
