@@ -297,112 +297,6 @@
     }
 }
     
-    /* Quick Booking Styles */
-    .quick-booking-card {
-        background: white;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-        border: 1px solid #f1f5f9;
-    }
-    
-    .date-selector {
-        display: flex;
-        gap: 10px;
-        overflow-x: auto;
-        padding: 12px 0;
-        scrollbar-width: thin;
-    }
-    
-    .date-item {
-        min-width: 70px;
-        padding: 12px 8px;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: white;
-        flex-shrink: 0;
-    }
-    
-    .date-item:hover {
-        border-color: #4f46e5;
-        transform: translateY(-2px);
-    }
-    
-    .date-item.selected {
-        border-color: #4f46e5;
-        background: var(--primary-gradient);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-    }
-    
-    .time-slots-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 8px;
-        margin: 16px 0;
-    }
-    
-    .time-slot-btn {
-        padding: 10px 8px;
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        background: white;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.85rem;
-        text-align: center;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .time-slot-btn:hover {
-        border-color: #4f46e5;
-        background: #f8fafc;
-    }
-    
-    .time-slot-btn.selected {
-        background: var(--primary-gradient);
-        color: white;
-        border-color: transparent;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-    }
-    
-    .time-slot-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        background: #f1f5f9;
-        border-color: #e2e8f0;
-    }
-    
-    /* Booking Summary */
-    .booking-summary {
-        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-        border-radius: 12px;
-        padding: 20px;
-        margin: 20px 0;
-        border: 1px solid #e2e8f0;
-    }
-    
-    .booking-summary-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .booking-summary-item:last-child {
-        border-bottom: none;
-        font-weight: 700;
-        font-size: 1.1rem;
-    }
-    
     /* Profile Header */
     .profile-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -582,10 +476,10 @@
                 </h1>
                 
                 {% if current_user and current_user.role == 'learner' %}
-                <button onclick="scrollToBooking()" 
+                <button onclick="scrollToServices()" 
                         class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200">
-                    <i class="fas fa-calendar-check"></i>
-                    <span class="hidden sm:inline">Book Now</span>
+                    <i class="fas fa-gem"></i>
+                    <span class="hidden sm:inline">View Services</span>
                 </button>
                 {% endif %}
             </div>
@@ -687,8 +581,8 @@
 
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Column -->
-            <div class="lg:col-span-2 space-y-6">
+            <!-- Left Column - Full width now -->
+            <div class="lg:col-span-3 space-y-6">
                 <!-- About Section -->
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 animate-fadeInUp">
                     <div class="flex items-center gap-3 mb-6">
@@ -813,118 +707,9 @@
                 </div>
             </div>
 
-            <!-- Right Column - Quick Booking -->
-            <div class="space-y-6">
-                <!-- Quick Booking Card -->
-                <div id="quick-booking" class="quick-booking-card animate-fadeInUp lg:sticky lg:top-24">
-                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                <i class="fas fa-calendar-alt text-white"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-white">Quick Booking</h3>
-                                <p class="text-white/80 text-sm">Book a session in minutes</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="p-6 space-y-6">
-                        <!-- Service Selection -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Select Service</label>
-                            <select id="quick-service" 
-                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                                <option value="">Choose a service</option>
-                                {% for service in services %}
-                                <option value="{{ service.id }}" 
-                                        data-price="{{ service.price if service.price else 0 }}"
-                                        data-name="{{ service.name }}"
-                                        data-duration="{{ service.duration_minutes }}">
-                                    {{ service.name }} - ₹{{ service.price if service.price else 0 }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <!-- Date Selection -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Select Date</label>
-                            <div class="date-selector" id="dateContainer">
-                                {% if available_dates and available_dates|length > 0 %}
-                                    {% for date_info in available_dates %}
-                                    <div class="date-item {% if loop.first %}selected{% endif %}" 
-                                         data-date="{{ date_info.full_date }}"
-                                         onclick="selectDate(this, '{{ date_info.full_date }}')">
-                                        <div class="text-xs font-semibold">{{ date_info.day_name[:3] }}</div>
-                                        <div class="text-lg font-bold my-1">{{ date_info.day_num }}</div>
-                                        <div class="text-xs">{{ date_info.month[:3] }}</div>
-                                    </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="text-center w-full py-3 text-gray-500">
-                                        No available dates
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <input type="hidden" id="selected-date" value="{{ available_dates[0].full_date if available_dates and available_dates|length > 0 else '' }}">
-                        </div>
-                        
-                        <!-- Time Slots -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">
-                                Available Time Slots
-                                <span id="slot-duration-info" class="text-xs text-gray-500 ml-2"></span>
-                            </label>
-                            <div id="time-slots-container">
-                                <div class="loading-spinner">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <p class="text-sm text-gray-500 mt-2">Select a service and date to see available slots</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Booking Summary -->
-                        <div class="booking-summary">
-                            <div class="booking-summary-item">
-                                <span class="text-gray-600">Service:</span>
-                                <span id="selected-service-name" class="font-medium text-gray-900">-</span>
-                            </div>
-                            <div class="booking-summary-item">
-                                <span class="text-gray-600">Date:</span>
-                                <span id="selected-date-display" class="font-medium text-gray-900">-</span>
-                            </div>
-                            <div class="booking-summary-item">
-                                <span class="text-gray-600">Time:</span>
-                                <span id="selected-time-display" class="font-medium text-gray-900">-</span>
-                            </div>
-                            <div class="booking-summary-item">
-                                <span class="text-gray-600">Total Amount:</span>
-                                <span id="selected-price" class="font-bold text-blue-600 text-lg">₹0</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Book Button -->
-                        <button onclick="quickBook()" 
-                                class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:shadow-xl hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                id="book-button" disabled>
-                            <i class="fas fa-lock"></i>
-                            {% if current_user and current_user.role == 'learner' %}
-                            Secure Booking - ₹<span id="book-price">0</span>
-                            {% else %}
-                            Login to Book Session
-                            {% endif %}
-                        </button>
-                        
-                        <p class="text-xs text-gray-500 text-center">
-                            <i class="fas fa-shield-alt text-green-500 mr-1"></i>
-                            100% Secure • 24/7 Support • Cancel Anytime
-                        </p>
-                    </div>
-                </div>
-                
-                <!-- Contact Card -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 animate-fadeInUp">
+            <!-- Contact Card (Now appears below services on mobile, to the right on desktop) -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 animate-fadeInUp sticky top-24">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                             <i class="fas fa-envelope text-white"></i>
@@ -983,150 +768,6 @@ let selectedQuickTime = null;
 let selectedQuickService = null;
 let selectedQuickPrice = 0;
 let selectedQuickDuration = 60;
-
-// Function to select date
-function selectDate(element, date) {
-    // Update UI
-    document.querySelectorAll('.date-item').forEach(item => {
-        item.classList.remove('selected');
-    });
-    element.classList.add('selected');
-    
-    selectedQuickDate = date;
-    document.getElementById('selected-date').value = date;
-    
-    // Update date display
-    const dateObj = new Date(date);
-    const options = { weekday: 'short', month: 'short', day: 'numeric' };
-    document.getElementById('selected-date-display').textContent = dateObj.toLocaleDateString('en-US', options);
-    
-    // Load time slots for selected date
-    loadTimeSlots(date);
-}
-
-// Function to load time slots using the new API
-async function loadTimeSlots(date) {
-    const container = document.getElementById('time-slots-container');
-    const serviceSelect = document.getElementById('quick-service');
-    const serviceId = serviceSelect.value;
-    
-    if (!serviceId) {
-        container.innerHTML = `
-            <div class="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-100">
-                <i class="fas fa-exclamation-circle text-yellow-400 text-lg mb-2"></i>
-                <p class="text-sm text-yellow-600">Please select a service first</p>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = `
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p class="text-sm text-gray-500 mt-2">Loading available slots...</p>
-        </div>
-    `;
-    
-    try {
-        const mentorId = {{ mentor.id }};
-        
-        // Use the new generate-time-slots endpoint
-        const response = await fetch('/api/generate-time-slots', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                date: date,
-                service_id: serviceId,
-                mentor_id: mentorId
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success && data.slots && data.slots.length > 0) {
-            // Update duration info
-            const durationInfo = document.getElementById('slot-duration-info');
-            if (durationInfo) {
-                durationInfo.textContent = `(${data.duration} min sessions)`;
-            }
-            
-            // Update selected duration
-            const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-            selectedQuickDuration = selectedOption.dataset.duration || data.duration;
-            
-            container.innerHTML = `
-                <div class="mb-3">
-                    <p class="text-sm text-gray-600">${data.slots.length} slots available</p>
-                </div>
-                <div class="time-slots-grid">
-                    ${data.slots.map(slot => `
-                        <button type="button" 
-                                onclick="selectTimeSlot('${slot.value}', this, '${slot.display}')" 
-                                class="time-slot-btn hover:shadow-md">
-                            ${slot.display}
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-            
-            // Auto-select first time slot if available
-            if (data.slots[0]) {
-                const firstBtn = container.querySelector('.time-slot-btn');
-                if (firstBtn) {
-                    selectTimeSlot(data.slots[0].value, firstBtn, data.slots[0].display);
-                }
-            }
-        } else {
-            container.innerHTML = `
-                <div class="text-center p-4 bg-red-50 rounded-lg border border-red-100">
-                    <i class="fas fa-clock text-red-400 text-lg mb-2"></i>
-                    <p class="text-sm text-red-600">${data.message || 'No available time slots for this date'}</p>
-                    <p class="text-xs text-gray-500 mt-1">Try selecting another date</p>
-                </div>
-            `;
-            selectedQuickTime = null;
-            document.getElementById('selected-time-display').textContent = '-';
-        }
-    } catch (error) {
-        console.error('Error loading time slots:', error);
-        container.innerHTML = `
-            <div class="text-center p-4 bg-red-50 rounded-lg">
-                <p class="text-sm text-red-600">Error loading time slots. Please try again.</p>
-            </div>
-        `;
-    }
-    
-    checkBookingReady();
-}
-
-// Function to select time slot
-function selectTimeSlot(timeValue, element, timeDisplay) {
-    // Update UI
-    document.querySelectorAll('.time-slot-btn').forEach(btn => {
-        btn.classList.remove('selected');
-    });
-    element.classList.add('selected');
-    
-    selectedQuickTime = timeValue;
-    document.getElementById('selected-time-display').textContent = timeDisplay;
-    checkBookingReady();
-}
-
-// Check if booking is ready
-function checkBookingReady() {
-    const bookButton = document.getElementById('book-button');
-    const isReady = selectedQuickService && selectedQuickDate && selectedQuickTime;
-    
-    bookButton.disabled = !isReady;
-    
-    if (isReady) {
-        bookButton.classList.remove('disabled');
-    } else {
-        bookButton.classList.add('disabled');
-    }
-}
 
 // Copy Profile URL Function
 function copyProfileUrl() {
@@ -1204,58 +845,6 @@ function fallbackCopy(url, copyBtn) {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
-    // Set first date as selected
-    const firstDate = document.querySelector('.date-item');
-    if (firstDate) {
-        const date = firstDate.dataset.date;
-        selectDate(firstDate, date);
-    }
-    
-    // Service selection handler
-    const serviceSelect = document.getElementById('quick-service');
-    if (serviceSelect) {
-        serviceSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            selectedQuickService = this.value;
-            
-            if (selectedOption.value) {
-                selectedQuickPrice = selectedOption.dataset.price || 0;
-                selectedQuickDuration = selectedOption.dataset.duration || 60;
-                const serviceName = selectedOption.dataset.name || selectedOption.text.split(' - ')[0];
-                
-                document.getElementById('selected-price').textContent = '₹' + selectedQuickPrice;
-                document.getElementById('book-price').textContent = selectedQuickPrice;
-                document.getElementById('selected-service-name').textContent = serviceName;
-                
-                // Update duration info
-                const durationInfo = document.getElementById('slot-duration-info');
-                if (durationInfo) {
-                    durationInfo.textContent = `(${selectedQuickDuration} min sessions)`;
-                }
-                
-                // Load time slots if date is already selected
-                if (selectedQuickDate) {
-                    loadTimeSlots(selectedQuickDate);
-                }
-            } else {
-                selectedQuickPrice = 0;
-                selectedQuickService = null;
-                selectedQuickDuration = 60;
-                document.getElementById('selected-price').textContent = '₹0';
-                document.getElementById('book-price').textContent = '0';
-                document.getElementById('selected-service-name').textContent = '-';
-                
-                // Clear time slots
-                const container = document.getElementById('time-slots-container');
-                container.innerHTML = `
-                    <div class="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-100">
-                        <p class="text-sm text-yellow-600">Please select a service first</p>
-                    </div>
-                `;
-            }
-            checkBookingReady();
-        });
-    }
     
     // Floating share button functionality
     const shareButton = document.getElementById('shareButton');
@@ -1293,88 +882,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Quick booking function
-function quickBook() {
-    if (!selectedQuickService || !selectedQuickDate || !selectedQuickTime) {
-        showNotification('Please select service, date, and time slot', 'error');
-        return;
-    }
-    
-    {% if not current_user %}
-        window.location.href = "/login?next=" + encodeURIComponent(window.location.pathname);
-        return;
-    {% endif %}
-    
-    {% if current_user.role != 'learner' %}
-        showNotification('Only learners can book mentoring sessions', 'error');
-        return;
-    {% endif %}
-    
-    // Show loading state
-    const bookButton = document.getElementById('book-button');
-    const originalHTML = bookButton.innerHTML;
-    bookButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    bookButton.disabled = true;
-    
-    createBooking().finally(() => {
-        bookButton.innerHTML = originalHTML;
-        checkBookingReady();
-    });
-}
-
-async function createBooking() {
-    try {
-        const response = await fetch('/api/create-booking', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                service_id: selectedQuickService,
-                date: selectedQuickDate,
-                time: selectedQuickTime,
-                mentor_id: {{ mentor.id }},
-                duration: selectedQuickDuration
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showNotification('✅ Booking confirmed! Redirecting to payment...', 'success');
-            
-            // Add a slight delay for better UX
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            if (data.redirect_url) {
-                window.location.href = data.redirect_url;
-            } else if (data.booking_id) {
-                window.location.href = '/payment/' + data.booking_id;
-            } else {
-                window.location.href = '/dashboard';
-            }
-        } else {
-            showNotification(data.message || 'Failed to create booking. Please try again.', 'error');
-        }
-    } catch (error) {
-        console.error('Error creating booking:', error);
-        showNotification('Network error. Please check your connection and try again.', 'error');
-    }
-}
-
-// Scroll to booking function
-function scrollToBooking() {
-    const bookingSection = document.getElementById('quick-booking');
-    if (bookingSection) {
-        bookingSection.scrollIntoView({
+// Scroll to services function
+function scrollToServices() {
+    const servicesSection = document.getElementById('services-section');
+    if (servicesSection) {
+        servicesSection.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
         });
         
         // Pulse animation
-        bookingSection.style.animation = 'none';
+        servicesSection.style.animation = 'none';
         setTimeout(() => {
-            bookingSection.style.animation = 'pulse 2s';
+            servicesSection.style.animation = 'pulse 2s';
         }, 10);
     }
 }
