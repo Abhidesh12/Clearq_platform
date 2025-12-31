@@ -341,7 +341,7 @@
     
     .time-slots-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 8px;
         margin: 16px 0;
     }
@@ -353,8 +353,12 @@
         background: white;
         cursor: pointer;
         transition: all 0.2s ease;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         text-align: center;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .time-slot-btn:hover {
@@ -367,6 +371,13 @@
         color: white;
         border-color: transparent;
         box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+    
+    .time-slot-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f1f5f9;
+        border-color: #e2e8f0;
     }
     
     /* Booking Summary */
@@ -799,6 +810,8 @@
     <p class="text-gray-500 max-w-md mx-auto">This mentor is currently setting up their services. Check back soon!</p>
 </div>
 {% endif %}
+                </div>
+            </div>
 
             <!-- Right Column - Quick Booking -->
             <div class="space-y-6">
@@ -826,7 +839,8 @@
                                 {% for service in services %}
                                 <option value="{{ service.id }}" 
                                         data-price="{{ service.price if service.price else 0 }}"
-                                        data-name="{{ service.name }}">
+                                        data-name="{{ service.name }}"
+                                        data-duration="{{ service.duration_minutes }}">
                                     {{ service.name }} - ₹{{ service.price if service.price else 0 }}
                                 </option>
                                 {% endfor %}
@@ -858,11 +872,14 @@
                         
                         <!-- Time Slots -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Available Time Slots</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">
+                                Available Time Slots
+                                <span id="slot-duration-info" class="text-xs text-gray-500 ml-2"></span>
+                            </label>
                             <div id="time-slots-container">
                                 <div class="loading-spinner">
                                     <i class="fas fa-spinner fa-spin"></i>
-                                    <p class="text-sm text-gray-500 mt-2">Loading time slots...</p>
+                                    <p class="text-sm text-gray-500 mt-2">Select a service and date to see available slots</p>
                                 </div>
                             </div>
                         </div>
@@ -965,6 +982,7 @@ let selectedQuickDate = null;
 let selectedQuickTime = null;
 let selectedQuickService = null;
 let selectedQuickPrice = 0;
+let selectedQuickDuration = 60;
 
 // Function to select date
 function selectDate(element, date) {
@@ -986,9 +1004,22 @@ function selectDate(element, date) {
     loadTimeSlots(date);
 }
 
-// Function to load time slots
+// Function to load time slots using the new API
 async function loadTimeSlots(date) {
     const container = document.getElementById('time-slots-container');
+    const serviceSelect = document.getElementById('quick-service');
+    const serviceId = serviceSelect.value;
+    
+    if (!serviceId) {
+        container.innerHTML = `
+            <div class="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+                <i class="fas fa-exclamation-circle text-yellow-400 text-lg mb-2"></i>
+                <p class="text-sm text-yellow-600">Please select a service first</p>
+            </div>
+        `;
+        return;
+    }
+    
     container.innerHTML = `
         <div class="loading-spinner">
             <i class="fas fa-spinner fa-spin"></i>
@@ -997,50 +1028,54 @@ async function loadTimeSlots(date) {
     `;
     
     try {
-        const pathParts = window.location.pathname.split('/');
-        let identifier;
+        const mentorId = {{ mentor.id }};
         
-        if (pathParts[1] === 'mentor' && pathParts[2] === 'username') {
-            identifier = pathParts[3];
-        } else {
-            identifier = {{ mentor.id }};
-        }
-        
-        if (!identifier) {
-            throw new Error('Invalid mentor identifier');
-        }
-        
-        const response = await fetch('/api/time-slots/' + identifier, {
+        // Use the new generate-time-slots endpoint
+        const response = await fetch('/api/generate-time-slots', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ date: date })
+            body: JSON.stringify({
+                date: date,
+                service_id: serviceId,
+                mentor_id: mentorId
+            })
         });
         
         const data = await response.json();
         
         if (data.success && data.slots && data.slots.length > 0) {
+            // Update duration info
+            const durationInfo = document.getElementById('slot-duration-info');
+            if (durationInfo) {
+                durationInfo.textContent = `(${data.duration} min sessions)`;
+            }
+            
+            // Update selected duration
+            const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+            selectedQuickDuration = selectedOption.dataset.duration || data.duration;
+            
             container.innerHTML = `
+                <div class="mb-3">
+                    <p class="text-sm text-gray-600">${data.slots.length} slots available</p>
+                </div>
                 <div class="time-slots-grid">
                     ${data.slots.map(slot => `
                         <button type="button" 
-                                onclick="selectTime(${JSON.stringify(slot)}, this)" 
+                                onclick="selectTimeSlot('${slot.value}', this, '${slot.display}')" 
                                 class="time-slot-btn hover:shadow-md">
-                            ${slot.display || slot.value}
+                            ${slot.display}
                         </button>
                     `).join('')}
                 </div>
-                <p class="text-xs text-gray-500 mt-3 text-center">
-                    ${data.slots.length} slots available
-                </p>
             `;
             
             // Auto-select first time slot if available
             if (data.slots[0]) {
                 const firstBtn = container.querySelector('.time-slot-btn');
                 if (firstBtn) {
-                    selectTime(data.slots[0], firstBtn);
+                    selectTimeSlot(data.slots[0].value, firstBtn, data.slots[0].display);
                 }
             }
         } else {
@@ -1066,16 +1101,8 @@ async function loadTimeSlots(date) {
     checkBookingReady();
 }
 
-// Function to select time
-function selectTime(timeData, element) {
-    let timeValue = timeData;
-    let timeDisplay = timeData;
-    
-    if (typeof timeData === 'object') {
-        timeValue = timeData.value;
-        timeDisplay = timeData.display || timeData.value;
-    }
-    
+// Function to select time slot
+function selectTimeSlot(timeValue, element, timeDisplay) {
     // Update UI
     document.querySelectorAll('.time-slot-btn').forEach(btn => {
         btn.classList.remove('selected');
@@ -1093,6 +1120,12 @@ function checkBookingReady() {
     const isReady = selectedQuickService && selectedQuickDate && selectedQuickTime;
     
     bookButton.disabled = !isReady;
+    
+    if (isReady) {
+        bookButton.classList.remove('disabled');
+    } else {
+        bookButton.classList.add('disabled');
+    }
 }
 
 // Copy Profile URL Function
@@ -1106,7 +1139,6 @@ function copyProfileUrl() {
             .then(() => {
                 // Show success feedback
                 copyBtn.classList.add('copied');
-                const originalIcon = copyBtn.querySelector('i');
                 const originalHTML = copyBtn.innerHTML;
                 
                 // Change icon to checkmark
@@ -1188,17 +1220,38 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (selectedOption.value) {
                 selectedQuickPrice = selectedOption.dataset.price || 0;
+                selectedQuickDuration = selectedOption.dataset.duration || 60;
                 const serviceName = selectedOption.dataset.name || selectedOption.text.split(' - ')[0];
                 
                 document.getElementById('selected-price').textContent = '₹' + selectedQuickPrice;
                 document.getElementById('book-price').textContent = selectedQuickPrice;
                 document.getElementById('selected-service-name').textContent = serviceName;
+                
+                // Update duration info
+                const durationInfo = document.getElementById('slot-duration-info');
+                if (durationInfo) {
+                    durationInfo.textContent = `(${selectedQuickDuration} min sessions)`;
+                }
+                
+                // Load time slots if date is already selected
+                if (selectedQuickDate) {
+                    loadTimeSlots(selectedQuickDate);
+                }
             } else {
                 selectedQuickPrice = 0;
                 selectedQuickService = null;
+                selectedQuickDuration = 60;
                 document.getElementById('selected-price').textContent = '₹0';
                 document.getElementById('book-price').textContent = '0';
                 document.getElementById('selected-service-name').textContent = '-';
+                
+                // Clear time slots
+                const container = document.getElementById('time-slots-container');
+                container.innerHTML = `
+                    <div class="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+                        <p class="text-sm text-yellow-600">Please select a service first</p>
+                    </div>
+                `;
             }
             checkBookingReady();
         });
@@ -1265,6 +1318,7 @@ function quickBook() {
     
     createBooking().finally(() => {
         bookButton.innerHTML = originalHTML;
+        checkBookingReady();
     });
 }
 
@@ -1279,7 +1333,8 @@ async function createBooking() {
                 service_id: selectedQuickService,
                 date: selectedQuickDate,
                 time: selectedQuickTime,
-                mentor_id: {{ mentor.id }}
+                mentor_id: {{ mentor.id }},
+                duration: selectedQuickDuration
             })
         });
         
