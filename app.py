@@ -173,16 +173,29 @@ class Availability(Base):
     __tablename__ = "availabilities"
     
     id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False)  # Changed from DateTime to Date
+    start_time = Column(String, default="09:00")  # Default start time
+    end_time = Column(String, default="24:00")
     mentor_id = Column(Integer, ForeignKey("mentors.id"))
-    service_id = Column(Integer, ForeignKey("services.id"), nullable=True)
-    date = Column(DateTime, nullable=False)
-    start_time = Column(String, nullable=False)  # "14:00"
-    end_time = Column(String, nullable=False)    # "15:00"
+    service_id = Column(Integer, ForeignKey("services.id"), nullable=True)   
     is_booked = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
     mentor = relationship("Mentor", back_populates="availabilities")
+
+class TimeSlot(Base):
+    __tablename__ = "time_slots"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    booking_id = Column(Integer, ForeignKey("bookings.id"))
+    start_time = Column(String, nullable=False)
+    end_time = Column(String, nullable=False)
+    date = Column(Date, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    booking = relationship("Booking", back_populates="time_slots")
 
 class Booking(Base):
     __tablename__ = "bookings"
@@ -191,15 +204,16 @@ class Booking(Base):
     learner_id = Column(Integer, ForeignKey("users.id"))
     mentor_id = Column(Integer, ForeignKey("mentors.id"))
     service_id = Column(Integer, ForeignKey("services.id"))
-    booking_date = Column(DateTime, nullable=False)
-    start_time = Column(String, nullable=False)
-    end_time = Column(String, nullable=False)
+    booking_date = Column(Date, nullable=False)
+    selected_time = Column(String, nullable=False)
     status = Column(String, default="pending")  # pending, confirmed, completed, cancelled
     payment_status = Column(String, default="pending")  # pending, paid, failed, refunded
     razorpay_order_id = Column(String)
     razorpay_payment_id = Column(String)
     amount_paid = Column(Integer)
     meeting_link = Column(String)
+    meeting_id = Column(String)
+    meeting_password = Column(String)
     notes = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     
@@ -208,6 +222,7 @@ class Booking(Base):
     mentor = relationship("Mentor", foreign_keys=[mentor_id], back_populates="bookings_as_mentor")
     service = relationship("Service", back_populates="bookings")
     review = relationship("Review", back_populates="booking", uselist=False)
+    time_slots = relationship("TimeSlot", back_populates="booking")
 
 class Review(Base):
     __tablename__ = "reviews"
@@ -1260,17 +1275,14 @@ async def mentor_availability_page(
         "today": today.strftime("%Y-%m-%d"),
         "flash_messages": flash_messages
     })
-
 @app.post("/mentor/availability/create")
 async def create_availability(
     request: Request,
     date: str = Form(...),
-    start_time: str = Form(...),
-    end_time: str = Form(...),
     service_id: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
-    """Create a new availability slot"""
+    """Create a new availability date (default 9am-9pm)"""
     # Get current user from cookie manually
     token = request.cookies.get("access_token")
     current_user = None
@@ -1318,41 +1330,6 @@ async def create_availability(
                 status_code=303
             )
         
-        # Validate time format (simplified)
-        if ":" not in start_time or ":" not in end_time:
-            return RedirectResponse(
-                url="/mentor/availability?error=Invalid%20time%20format.%20Use%20HH:MM",
-                status_code=303
-            )
-        
-        # Validate start time is before end time
-        try:
-            start_hour, start_minute = map(int, start_time.split(":"))
-            end_hour, end_minute = map(int, end_time.split(":"))
-            
-            if start_hour < 0 or start_hour > 23 or start_minute < 0 or start_minute > 59:
-                return RedirectResponse(
-                    url="/mentor/availability?error=Invalid%20start%20time",
-                    status_code=303
-                )
-            
-            if end_hour < 0 or end_hour > 23 or end_minute < 0 or end_minute > 59:
-                return RedirectResponse(
-                    url="/mentor/availability?error=Invalid%20end%20time",
-                    status_code=303
-                )
-            
-            if start_hour > end_hour or (start_hour == end_hour and start_minute >= end_minute):
-                return RedirectResponse(
-                    url="/mentor/availability?error=Start%20time%20must%20be%20before%20end%20time",
-                    status_code=303
-                )
-        except ValueError:
-            return RedirectResponse(
-                url="/mentor/availability?error=Invalid%20time%20format",
-                status_code=303
-            )
-        
         # Validate date is not in the past
         today = datetime.now().date()
         if parsed_date < today:
@@ -1361,16 +1338,15 @@ async def create_availability(
                 status_code=303
             )
         
-        # Check if time slot already exists
+        # Check if availability already exists for this date
         existing = db.query(Availability).filter(
             Availability.mentor_id == mentor.id,
-            Availability.date == parsed_date,
-            Availability.start_time == start_time
+            Availability.date == parsed_date
         ).first()
         
         if existing:
             return RedirectResponse(
-                url="/mentor/availability?error=Time%20slot%20already%20exists",
+                url="/mentor/availability?error=Availability%20already%20exists%20for%20this%20date",
                 status_code=303
             )
         
@@ -1386,13 +1362,13 @@ async def create_availability(
                     status_code=303
                 )
         
-        # Create new availability
+        # Create new availability with default 9am-9pm
         availability = Availability(
             mentor_id=mentor.id,
             service_id=parsed_service_id,
             date=parsed_date,
-            start_time=start_time,
-            end_time=end_time,
+            start_time="09:00",  # Default start time
+            end_time="21:00",    # Default end time (9pm)
             is_booked=False,
             created_at=datetime.utcnow()
         )
@@ -1401,7 +1377,7 @@ async def create_availability(
         db.commit()
         
         return RedirectResponse(
-            url="/mentor/availability?success=Availability%20added%20successfully",
+            url="/mentor/availability?success=Availability%20added%20successfully%20(9:00%20AM%20-%209:00%20PM)",
             status_code=303
         )
         
@@ -1427,11 +1403,20 @@ async def create_booking(
     
     service_id = booking_data.get("service_id")
     date_str = booking_data.get("date")
-    time_slot = booking_data.get("time")
+    time_slot = booking_data.get("time")  # This is the start time selected by learner
     
     service = db.query(Service).filter(Service.id == service_id).first()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Calculate end time based on service duration
+    start_time = datetime.strptime(time_slot, "%H:%M")
+    end_time = start_time + timedelta(minutes=service.duration_minutes)
+    end_time_str = end_time.strftime("%H:%M")
+    
+    # Generate Google Meet link
+    meeting_id = f"clearq-{uuid.uuid4().hex[:8]}"
+    meeting_link = f"https://meet.google.com/{meeting_id}"
     
     # Create Razorpay order
     order_amount = service.price * 100  # Convert to paise
@@ -1446,7 +1431,8 @@ async def create_booking(
                 "service_id": service_id,
                 "learner_id": current_user.id,
                 "date": date_str,
-                "time": time_slot
+                "time": time_slot,
+                "duration": service.duration_minutes
             }
         }
         
@@ -1454,36 +1440,135 @@ async def create_booking(
         razorpay_order = razorpay_client.order.create(order_data)
         print(f"Razorpay order created: {razorpay_order['id']}")
         
-        # Create booking record
+        # Create booking record with selected_time instead of start_time/end_time
         booking = Booking(
             learner_id=current_user.id,
             mentor_id=service.mentor_id,
             service_id=service_id,
             booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
-            start_time=time_slot,
-            end_time=(datetime.strptime(time_slot, "%H:%M") + timedelta(minutes=service.duration_minutes)).strftime("%H:%M"),
+            selected_time=time_slot,  # Store the selected start time
             razorpay_order_id=razorpay_order["id"],
             amount_paid=service.price,
             status="pending",
-            payment_status="pending"
+            payment_status="pending",
+            meeting_link=meeting_link,
+            meeting_id=meeting_id
         )
         
         db.add(booking)
         db.commit()
         db.refresh(booking)
         
-        print(f"Booking created with ID: {booking.id}")
+        print(f"Booking created with ID: {booking.id}, Meeting Link: {meeting_link}")
+        
+        # Mark the availability as booked for this specific time slot
+        # Find the availability for this date
+        availability = db.query(Availability).filter(
+            Availability.mentor_id == service.mentor_id,
+            Availability.date == datetime.strptime(date_str, "%Y-%m-%d").date()
+        ).first()
+        
+        if availability:
+            # For now, we'll just mark the whole availability as booked
+            # In a more advanced system, you might want to track specific time slots
+            availability.is_booked = True
+            db.commit()
         
         return JSONResponse({
             "success": True,
             "booking_id": booking.id,
-            "redirect_url": f"/payment/{booking.id}"
+            "redirect_url": f"/payment/{booking.id}",
+            "meeting_link": meeting_link
         })
         
     except Exception as e:
         print(f"Error creating booking: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Add this new API endpoint for generating time slots
+@app.post("/api/generate-time-slots")
+async def generate_time_slots(
+    data: dict,
+    db: Session = Depends(get_db)
+):
+    """Generate available time slots based on service duration and date"""
+    date_str = data.get("date")
+    service_id = data.get("service_id")
+    mentor_id = data.get("mentor_id")
+    
+    if not all([date_str, service_id, mentor_id]):
+        return JSONResponse({"success": False, "message": "Missing parameters"})
+    
+    try:
+        # Get service to know duration
+        service = db.query(Service).filter(Service.id == service_id).first()
+        if not service:
+            return JSONResponse({"success": False, "message": "Service not found"})
         
+        duration = service.duration_minutes
+        date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        
+        # Get mentor's availability for this date
+        availability = db.query(Availability).filter(
+            Availability.mentor_id == mentor_id,
+            Availability.date == date,
+            Availability.is_booked == False
+        ).first()
+        
+        if not availability:
+            return JSONResponse({"success": False, "message": "No availability for this date"})
+        
+        # Parse default time range (9am to 9pm)
+        start_time = datetime.strptime(availability.start_time, "%H:%M")
+        end_time = datetime.strptime(availability.end_time, "%H:%M")
+        
+        # Generate time slots
+        slots = []
+        current_time = start_time
+        slot_duration = timedelta(minutes=duration)
+        buffer_duration = timedelta(minutes=15)  # 15 min buffer between sessions
+        
+        while current_time + slot_duration <= end_time:
+            slot_start = current_time.strftime("%H:%M")
+            slot_end = (current_time + slot_duration).strftime("%H:%M")
+            
+            # Check if this slot is already booked
+            existing_booking = db.query(Booking).filter(
+                Booking.mentor_id == mentor_id,
+                Booking.booking_date == date,
+                Booking.selected_time == slot_start,
+                Booking.status.in_(["pending", "confirmed"])
+            ).first()
+            
+            if not existing_booking:
+                # Format for display
+                display_start = current_time.strftime("%I:%M %p").lstrip("0")
+                display_end = (current_time + slot_duration).strftime("%I:%M %p").lstrip("0")
+                
+                slots.append({
+                    "value": slot_start,
+                    "display": f"{display_start} - {display_end}",
+                    "end_time": slot_end
+                })
+            
+            # Move to next slot with buffer
+            current_time += slot_duration + buffer_duration
+        
+        if slots:
+            return JSONResponse({
+                "success": True,
+                "slots": slots,
+                "duration": duration,
+                "availability_hours": f"{availability.start_time} - {availability.end_time}"
+            })
+        else:
+            return JSONResponse({
+                "success": False,
+                "message": "No available time slots for this date"
+            })
+            
+    except Exception as e:
+        return JSONResponse({"success": False, "message": str(e)})
 @app.post("/payment/verify")
 async def verify_payment(
     request: Request,
