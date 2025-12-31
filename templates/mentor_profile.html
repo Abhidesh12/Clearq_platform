@@ -5,13 +5,16 @@
 {% block content %}
 <style>
     :root {
-        --primary: #4f46e5;
-        --primary-light: #818cf8;
-        --secondary: #8b5cf6;
-        --accent: #06b6d4;
+        --primary: #8b5cf6;
+        --primary-light: #a78bfa;
+        --primary-dark: #7c3aed;
+        --secondary: #06b6d4;
+        --secondary-light: #22d3ee;
+        --accent: #f59e0b;
         --success: #10b981;
-        --warning: #f59e0b;
+        --success-light: #34d399;
         --danger: #ef4444;
+        --danger-light: #f87171;
         --gray-900: #0f172a;
         --gray-800: #1e293b;
         --gray-700: #334155;
@@ -27,12 +30,13 @@
         --radius: 0.5rem;
         --radius-md: 0.75rem;
         --radius-lg: 1rem;
+        --radius-xl: 1.5rem;
         --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        --transition: all 0.2s ease;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Modern Scrollbar */
@@ -53,7 +57,7 @@
 
     /* Animations */
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
@@ -62,14 +66,22 @@
         to { transform: translateX(0); opacity: 1; }
     }
 
-    .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+    }
+
+    .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
     .animate-slideIn { animation: slideIn 0.3s ease-out; }
+    .animate-float { animation: float 3s ease-in-out infinite; }
 
     /* Main Layout */
     .mentor-profile-container {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 1rem;
+        padding: 0.75rem;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     }
 
     /* Mobile Header */
@@ -77,14 +89,17 @@
         position: sticky;
         top: 0;
         z-index: 100;
-        background: var(--white);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
-        border-bottom: 1px solid var(--gray-200);
-        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 0.5rem 0.75rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 1rem;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
     }
 
     .back-button {
@@ -92,47 +107,46 @@
         align-items: center;
         gap: 0.5rem;
         padding: 0.5rem 0.75rem;
-        background: var(--gray-100);
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
         border-radius: var(--radius);
         text-decoration: none;
         color: var(--gray-700);
         font-weight: 500;
+        font-size: 0.875rem;
+        border: 1px solid var(--gray-200);
         transition: var(--transition);
     }
 
     .back-button:hover {
-        background: var(--gray-200);
-        color: var(--gray-900);
+        background: linear-gradient(135deg, var(--white), var(--gray-50));
+        color: var(--primary);
+        border-color: var(--primary-light);
         transform: translateX(-2px);
-    }
-
-    .mobile-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        box-shadow: var(--shadow);
     }
 
     .share-btn-mobile {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 2.25rem;
+        height: 2.25rem;
         border-radius: var(--radius);
-        background: var(--gray-100);
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
         border: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--gray-700);
+        color: var(--white);
         cursor: pointer;
         transition: var(--transition);
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
     }
 
     .share-btn-mobile:hover {
-        background: var(--gray-200);
-        color: var(--primary);
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
         transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
     }
 
-    /* Profile Sidebar */
+    /* Profile Sidebar - Compact */
     .profile-sidebar {
         background: var(--white);
         border-radius: var(--radius-lg);
@@ -144,8 +158,8 @@
     }
 
     .profile-header {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        padding: 2rem 1.5rem;
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        padding: 1.25rem 1rem;
         position: relative;
         overflow: hidden;
     }
@@ -167,14 +181,15 @@
     }
 
     .profile-avatar {
-        width: 6rem;
-        height: 6rem;
-        border-radius: var(--radius-lg);
-        border: 4px solid rgba(255, 255, 255, 0.3);
+        width: 4rem;
+        height: 4rem;
+        border-radius: var(--radius);
+        border: 3px solid rgba(255, 255, 255, 0.3);
         overflow: hidden;
         background: var(--white);
-        margin: 0 auto 1rem;
+        margin: 0 auto 0.75rem;
         position: relative;
+        box-shadow: var(--shadow-md);
     }
 
     .profile-avatar img {
@@ -189,7 +204,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: var(--primary);
         background: linear-gradient(135deg, var(--gray-100), var(--white));
@@ -197,17 +212,19 @@
 
     .verified-badge {
         position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 2rem;
-        height: 2rem;
+        bottom: -4px;
+        right: -4px;
+        width: 1.5rem;
+        height: 1.5rem;
         border-radius: 50%;
-        background: var(--success);
+        background: linear-gradient(135deg, var(--success), var(--success-light));
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--white);
         border: 2px solid var(--white);
+        font-size: 0.75rem;
+        box-shadow: var(--shadow);
     }
 
     .profile-info {
@@ -218,28 +235,28 @@
     }
 
     .profile-info h1 {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: 700;
         margin-bottom: 0.25rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 
     .profile-info p {
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
         opacity: 0.9;
-        margin-bottom: 1rem;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        margin-bottom: 0.75rem;
     }
 
     .profile-rating {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        background: rgba(255, 255, 255, 0.2);
+        gap: 0.375rem;
+        background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(10px);
-        padding: 0.5rem 1rem;
+        padding: 0.375rem 0.75rem;
         border-radius: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.875rem;
     }
 
     .profile-rating .stars {
@@ -248,21 +265,19 @@
 
     .profile-rating .rating {
         font-weight: 700;
-        font-size: 1.125rem;
     }
 
     .profile-rating .reviews {
-        font-size: 0.875rem;
         opacity: 0.9;
     }
 
     /* Profile Content */
     .profile-content {
-        padding: 1.5rem;
+        padding: 1.25rem;
     }
 
     .profile-section {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
     }
 
     .profile-section:last-child {
@@ -270,10 +285,10 @@
     }
 
     .section-title {
-        font-size: 1.125rem;
+        font-size: 0.9375rem;
         font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 1rem;
+        color: var(--gray-800);
+        margin-bottom: 0.75rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -281,21 +296,21 @@
 
     .section-title i {
         color: var(--primary);
-        font-size: 1rem;
+        font-size: 0.875rem;
     }
 
     /* Stats Grid */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
     }
 
     .stat-item {
         text-align: center;
-        padding: 1rem;
-        background: var(--gray-50);
+        padding: 0.75rem 0.5rem;
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
         border-radius: var(--radius);
         border: 1px solid var(--gray-200);
         transition: var(--transition);
@@ -305,17 +320,18 @@
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
         border-color: var(--primary-light);
+        background: linear-gradient(135deg, var(--white), var(--gray-50));
     }
 
     .stat-value {
-        font-size: 1.25rem;
+        font-size: 1rem;
         font-weight: 700;
-        color: var(--gray-900);
-        margin-bottom: 0.25rem;
+        color: var(--primary);
+        margin-bottom: 0.125rem;
     }
 
     .stat-label {
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         color: var(--gray-600);
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -325,42 +341,42 @@
     .skills-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.375rem;
     }
 
     .skill-tag {
-        padding: 0.375rem 0.75rem;
-        background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
-        color: var(--gray-700);
+        padding: 0.25rem 0.625rem;
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        color: var(--secondary);
         border-radius: 1rem;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         font-weight: 500;
-        border: 1px solid var(--gray-300);
+        border: 1px solid rgba(6, 182, 212, 0.2);
         transition: var(--transition);
     }
 
     .skill-tag:hover {
-        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        background: linear-gradient(135deg, var(--secondary-light), var(--secondary));
         color: var(--white);
-        border-color: var(--primary);
+        border-color: var(--secondary);
         transform: translateY(-1px);
     }
 
     /* Contact Info */
     .contact-info {
-        background: var(--gray-50);
+        background: linear-gradient(135deg, #fef7ff, #faf5ff);
         border-radius: var(--radius);
-        padding: 1.25rem;
-        border: 1px solid var(--gray-200);
+        padding: 1rem;
+        border: 1px solid rgba(139, 92, 246, 0.1);
     }
 
     .contact-item {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.625rem;
         margin-bottom: 0.75rem;
         padding-bottom: 0.75rem;
-        border-bottom: 1px solid var(--gray-200);
+        border-bottom: 1px solid rgba(139, 92, 246, 0.1);
     }
 
     .contact-item:last-child {
@@ -370,16 +386,17 @@
     }
 
     .contact-icon {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 2rem;
+        height: 2rem;
         border-radius: var(--radius);
-        background: var(--white);
+        background: linear-gradient(135deg, var(--white), #faf5ff);
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--primary);
         flex-shrink: 0;
-        border: 1px solid var(--gray-200);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        font-size: 0.875rem;
     }
 
     .contact-details {
@@ -388,7 +405,7 @@
     }
 
     .contact-details .label {
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         color: var(--gray-600);
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -396,8 +413,8 @@
     }
 
     .contact-details .value {
-        font-size: 0.9375rem;
-        color: var(--gray-900);
+        font-size: 0.875rem;
+        color: var(--gray-800);
         font-weight: 500;
         word-break: break-word;
     }
@@ -409,50 +426,81 @@
     }
 
     .contact-details a.value:hover {
-        color: var(--secondary);
+        color: var(--primary-dark);
         text-decoration: underline;
+    }
+
+    /* Copy Button */
+    .copy-btn {
+        width: 100%;
+        padding: 0.625rem;
+        background: linear-gradient(135deg, var(--white), var(--gray-50));
+        color: var(--gray-700);
+        font-weight: 600;
+        font-size: 0.875rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--gray-300);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .copy-btn:hover {
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        color: var(--white);
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
     }
 
     /* Services Section */
     .services-header {
-        background: linear-gradient(135deg, var(--white), var(--gray-50));
+        background: linear-gradient(135deg, var(--white), #fef7ff);
         border-radius: var(--radius-lg);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid var(--gray-200);
-        box-shadow: var(--shadow-md);
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid rgba(139, 92, 246, 0.1);
+        box-shadow: var(--shadow);
     }
 
     .services-header h2 {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: 700;
         color: var(--gray-900);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.375rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .services-header p {
         color: var(--gray-600);
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
     }
 
     .services-count {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        margin-top: 0.75rem;
-        padding: 0.5rem 1rem;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
         background: linear-gradient(135deg, var(--primary-light), var(--primary));
         color: var(--white);
-        border-radius: 2rem;
+        border-radius: 1rem;
         font-weight: 600;
-        font-size: 0.875rem;
+        font-size: 0.75rem;
+        box-shadow: var(--shadow-sm);
     }
 
-    /* Service Cards Grid */
+    /* Service Cards - Compact */
     .services-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.25rem;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
     }
 
     @media (max-width: 768px) {
@@ -474,27 +522,28 @@
     }
 
     .service-card:hover {
-        transform: translateY(-4px);
+        transform: translateY(-4px) scale(1.02);
         box-shadow: var(--shadow-xl);
         border-color: var(--primary-light);
     }
 
     .service-card-badge {
         position: absolute;
-        top: 1rem;
-        right: 1rem;
-        padding: 0.25rem 0.75rem;
-        background: linear-gradient(135deg, var(--warning), #f97316);
+        top: 0.75rem;
+        right: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        background: linear-gradient(135deg, #f59e0b, #f97316);
         color: var(--white);
         border-radius: 1rem;
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         font-weight: 600;
         z-index: 2;
+        box-shadow: var(--shadow);
     }
 
     .service-card-header {
-        padding: 1.5rem;
-        background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8fafc, var(--gray-50));
         position: relative;
         border-bottom: 1px solid var(--gray-200);
     }
@@ -505,94 +554,100 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 3px;
+        height: 2px;
         background: linear-gradient(90deg, var(--primary), var(--secondary));
     }
 
     .service-icon {
-        width: 3rem;
-        height: 3rem;
+        width: 2.5rem;
+        height: 2.5rem;
         border-radius: var(--radius);
-        background: var(--white);
+        background: linear-gradient(135deg, var(--white), #faf5ff);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 1rem;
-        box-shadow: var(--shadow-md);
+        margin-bottom: 0.75rem;
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(139, 92, 246, 0.1);
     }
 
     .service-icon i {
-        font-size: 1.25rem;
+        font-size: 1rem;
         background: linear-gradient(135deg, var(--primary), var(--secondary));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
     .service-card-body {
-        padding: 1.5rem;
+        padding: 1rem;
         flex: 1;
     }
 
     .service-title {
-        font-size: 1.125rem;
-        font-weight: 600;
+        font-size: 0.9375rem;
+        font-weight: 700;
         color: var(--gray-900);
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
         line-height: 1.4;
     }
 
     .service-price {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: 800;
         color: var(--primary);
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
         display: flex;
         align-items: baseline;
-        gap: 0.25rem;
+        gap: 0.125rem;
     }
 
     .service-price .currency {
-        font-size: 1rem;
+        font-size: 0.875rem;
         font-weight: 600;
     }
 
     .service-price .original {
-        font-size: 0.875rem;
+        font-size: 0.75rem;
         color: var(--gray-500);
         text-decoration: line-through;
-        margin-left: 0.5rem;
+        margin-left: 0.375rem;
     }
 
     .service-description {
         color: var(--gray-600);
-        font-size: 0.9375rem;
+        font-size: 0.8125rem;
         line-height: 1.5;
-        margin-bottom: 1.25rem;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .service-features {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .service-feature {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
+        gap: 0.375rem;
+        margin-bottom: 0.375rem;
         color: var(--gray-700);
-        font-size: 0.875rem;
+        font-size: 0.75rem;
     }
 
     .service-feature i {
         color: var(--success);
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         flex-shrink: 0;
     }
 
     .service-card-footer {
-        padding: 1.5rem;
+        padding: 1rem;
         border-top: 1px solid var(--gray-200);
-        background: var(--gray-50);
+        background: linear-gradient(135deg, #f8fafc, var(--gray-50));
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -601,31 +656,33 @@
     .service-duration {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
+        gap: 0.375rem;
+        font-size: 0.75rem;
         color: var(--gray-600);
         font-weight: 500;
     }
 
     .service-book-btn {
-        padding: 0.625rem 1.25rem;
+        padding: 0.5rem 1rem;
         background: linear-gradient(135deg, var(--primary), var(--secondary));
         color: var(--white);
         border: none;
         border-radius: var(--radius);
         font-weight: 600;
-        font-size: 0.9375rem;
+        font-size: 0.8125rem;
         cursor: pointer;
         transition: var(--transition);
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
         text-decoration: none;
+        box-shadow: var(--shadow-sm);
     }
 
     .service-book-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        box-shadow: var(--shadow);
+        background: linear-gradient(135deg, var(--primary-dark), var(--secondary-light));
     }
 
     .service-card-link {
@@ -638,39 +695,59 @@
     /* Empty State */
     .empty-state {
         text-align: center;
-        padding: 3rem 1.5rem;
-        background: var(--gray-50);
+        padding: 2.5rem 1rem;
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
         border-radius: var(--radius-lg);
         border: 2px dashed var(--gray-300);
         grid-column: 1 / -1;
     }
 
     .empty-state-icon {
-        width: 4rem;
-        height: 4rem;
-        margin: 0 auto 1.5rem;
+        width: 3rem;
+        height: 3rem;
+        margin: 0 auto 1rem;
         background: linear-gradient(135deg, var(--gray-200), var(--gray-300));
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--gray-500);
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 
     .empty-state h3 {
-        font-size: 1.25rem;
+        font-size: 1rem;
         font-weight: 600;
         color: var(--gray-900);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.375rem;
     }
 
     .empty-state p {
         color: var(--gray-600);
-        font-size: 0.9375rem;
-        max-width: 300px;
-        margin: 0 auto 1.5rem;
+        font-size: 0.8125rem;
+        max-width: 250px;
+        margin: 0 auto 1rem;
         line-height: 1.5;
+    }
+
+    .empty-state-btn {
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: var(--white);
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.8125rem;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .empty-state-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
     }
 
     /* Notification */
@@ -678,22 +755,26 @@
         position: fixed;
         top: 1rem;
         right: 1rem;
-        padding: 1rem 1.5rem;
+        padding: 0.75rem 1rem;
         border-radius: var(--radius);
         color: var(--white);
         font-weight: 500;
         z-index: 1000;
         box-shadow: var(--shadow-xl);
         animation: slideIn 0.3s ease-out;
-        max-width: 300px;
+        max-width: 280px;
+        font-size: 0.875rem;
+        backdrop-filter: blur(10px);
     }
 
     .notification.success {
-        background: linear-gradient(135deg, var(--success), #059669);
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+        border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
     .notification.error {
-        background: linear-gradient(135deg, var(--danger), #dc2626);
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
+        border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
     /* Responsive Design */
@@ -704,16 +785,16 @@
 
         .profile-sidebar {
             position: static;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .profile-header {
-            padding: 1.5rem 1rem;
+            padding: 1rem 0.75rem;
         }
 
         .profile-avatar {
-            width: 5rem;
-            height: 5rem;
+            width: 3.5rem;
+            height: 3.5rem;
         }
 
         .stats-grid {
@@ -721,16 +802,21 @@
         }
 
         .profile-content {
-            padding: 1.25rem;
+            padding: 1rem;
+        }
+
+        .services-header {
+            padding: 1rem;
+            margin-bottom: 1rem;
         }
     }
 
     @media (min-width: 1024px) {
         .mentor-profile-container {
             display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 1.5rem;
-            padding: 1.5rem;
+            grid-template-columns: 320px 1fr;
+            gap: 1.25rem;
+            padding: 1.25rem;
         }
 
         .mobile-header {
@@ -740,20 +826,106 @@
 
     @media (min-width: 1280px) {
         .mentor-profile-container {
-            gap: 2rem;
-            padding: 2rem 1rem;
+            gap: 1.5rem;
+            padding: 1.5rem 1rem;
         }
+    }
+
+    /* Floating Action Button */
+    .fab {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-xl);
+        cursor: pointer;
+        transition: var(--transition);
+        z-index: 90;
+        border: none;
+    }
+
+    .fab:hover {
+        transform: scale(1.1) rotate(10deg);
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        .fab {
+            bottom: 1rem;
+            right: 1rem;
+            width: 2.75rem;
+            height: 2.75rem;
+        }
+    }
+
+    /* Quick Stats Bar */
+    .quick-stats {
+        display: flex;
+        gap: 0.75rem;
+        margin: 0.75rem 0;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .quick-stat {
+        flex: 1;
+        min-width: 80px;
+        text-align: center;
+        padding: 0.5rem;
+        background: linear-gradient(135deg, var(--white), #fef7ff);
+        border-radius: var(--radius);
+        border: 1px solid rgba(139, 92, 246, 0.1);
+    }
+
+    .quick-stat-value {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.125rem;
+    }
+
+    .quick-stat-label {
+        font-size: 0.6875rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Gradient Borders */
+    .gradient-border {
+        position: relative;
+        border-radius: var(--radius-lg);
+    }
+
+    .gradient-border::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        bottom: -1px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: inherit;
+        z-index: -1;
+        opacity: 0.3;
     }
 </style>
 
 <!-- Mobile Header -->
-<div class="mobile-header lg:hidden">
+<div class="mobile-header lg:hidden animate-slideIn">
     <a href="javascript:history.back()" class="back-button">
         <i class="fas fa-arrow-left"></i>
         <span>Back</span>
     </a>
     
-    <h1 class="text-lg font-semibold text-gray-900 truncate flex-1 text-center">
+    <h1 class="text-sm font-semibold text-gray-900 truncate flex-1 text-center">
         {{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}
     </h1>
     
@@ -797,28 +969,26 @@
                         <i class="fas fa-star-half-alt"></i>
                     </span>
                     <span class="rating">{{ mentor.rating if mentor.rating else '4.9' }}</span>
-                    <span class="reviews">({{ mentor.review_count if mentor.review_count else '24' }} reviews)</span>
+                    <span class="reviews">({{ mentor.review_count if mentor.review_count else '24' }})</span>
                 </div>
             </div>
         </div>
 
         <!-- Profile Content -->
         <div class="profile-content">
-            <!-- Stats -->
-            <div class="profile-section">
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value">{{ mentor.experience_years if mentor.experience_years else '5+' }}+</div>
-                        <div class="stat-label">Years Exp</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ mentor.total_sessions if mentor.total_sessions else '150+' }}</div>
-                        <div class="stat-label">Sessions</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">95%</div>
-                        <div class="stat-label">Success</div>
-                    </div>
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="quick-stat">
+                    <div class="quick-stat-value">{{ mentor.experience_years if mentor.experience_years else '5+' }}+</div>
+                    <div class="quick-stat-label">Years</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value">{{ mentor.total_sessions if mentor.total_sessions else '150+' }}</div>
+                    <div class="quick-stat-label">Sessions</div>
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value">95%</div>
+                    <div class="quick-stat-label">Success</div>
                 </div>
             </div>
 
@@ -828,9 +998,15 @@
                     <i class="fas fa-user"></i>
                     About Me
                 </h3>
-                <p class="text-gray-700 text-sm leading-relaxed">
+                <p class="text-gray-700 text-sm leading-relaxed mb-2">
                     {{ mentor.bio if mentor.bio else 'Experienced professional with a passion for mentoring and helping others grow in their careers.' }}
                 </p>
+                {% if mentor.industry %}
+                <div class="flex items-center gap-1 text-xs text-gray-600">
+                    <i class="fas fa-industry"></i>
+                    <span>{{ mentor.industry }}</span>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Skills -->
@@ -842,16 +1018,16 @@
                 <div class="skills-container">
                     {% if mentor.skills %}
                         {% set skills_list = mentor.skills.split(',') %}
-                        {% for skill in skills_list[:8] %}
+                        {% for skill in skills_list[:6] %}
                         <span class="skill-tag">{{ skill }}</span>
                         {% endfor %}
-                        {% if skills_list|length > 8 %}
-                        <span class="skill-tag">+{{ skills_list|length - 8 }} more</span>
+                        {% if skills_list|length > 6 %}
+                        <span class="skill-tag">+{{ skills_list|length - 6 }}</span>
                         {% endif %}
                     {% else %}
-                        <span class="skill-tag">Career Coaching</span>
-                        <span class="skill-tag">Interview Prep</span>
-                        <span class="skill-tag">Resume Review</span>
+                        <span class="skill-tag">Career</span>
+                        <span class="skill-tag">Interview</span>
+                        <span class="skill-tag">Resume</span>
                         <span class="skill-tag">Leadership</span>
                     {% endif %}
                 </div>
@@ -876,18 +1052,6 @@
                     </div>
                     {% endif %}
                     
-                    {% if mentor.industry %}
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-industry"></i>
-                        </div>
-                        <div class="contact-details">
-                            <div class="label">Industry</div>
-                            <div class="value">{{ mentor.industry }}</div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
                     {% if mentor.user.email %}
                     <div class="contact-item">
                         <div class="contact-icon">
@@ -907,7 +1071,7 @@
                         </div>
                         <div class="contact-details">
                             <div class="label">LinkedIn</div>
-                            <a href="{{ mentor.linkedin_url }}" target="_blank" class="value">Connect on LinkedIn</a>
+                            <a href="{{ mentor.linkedin_url }}" target="_blank" class="value">Connect</a>
                         </div>
                     </div>
                     {% endif %}
@@ -915,8 +1079,7 @@
             </div>
 
             <!-- Copy Link Button -->
-            <button onclick="copyProfileUrl()" 
-                    class="w-full mt-4 py-3 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-semibold rounded-lg border border-blue-200 hover:border-blue-300 hover:from-blue-100 hover:to-blue-200 transition-all duration-200 flex items-center justify-center gap-2">
+            <button onclick="copyProfileUrl()" class="copy-btn">
                 <i class="fas fa-copy"></i>
                 Copy Profile Link
             </button>
@@ -928,10 +1091,10 @@
         <!-- Services Header -->
         <div class="services-header">
             <h2>Available Services</h2>
-            <p>Choose from personalized mentoring sessions tailored to your needs</p>
+            <p>Choose from personalized mentoring sessions</p>
             <div class="services-count">
                 <i class="fas fa-gem"></i>
-                {{ services|length if services else 0 }} Services Available
+                {{ services|length if services else 0 }} Services
             </div>
         </div>
 
@@ -944,7 +1107,7 @@
                 <div class="service-card">
                     {% if loop.index <= 2 %}
                     <div class="service-card-badge">
-                        {% if loop.index == 1 %}Best Seller{% else %}Popular{% endif %}
+                        {% if loop.index == 1 %}🔥 Best Seller{% else %}⭐ Popular{% endif %}
                     </div>
                     {% endif %}
                     
@@ -984,15 +1147,11 @@
                         <div class="service-features">
                             <div class="service-feature">
                                 <i class="fas fa-check-circle"></i>
-                                <span>1-on-1 Personalized Session</span>
+                                <span>1-on-1 Session</span>
                             </div>
                             <div class="service-feature">
                                 <i class="fas fa-check-circle"></i>
-                                <span>Expert Feedback & Guidance</span>
-                            </div>
-                            <div class="service-feature">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Actionable Insights</span>
+                                <span>Expert Feedback</span>
                             </div>
                         </div>
                     </div>
@@ -1001,10 +1160,10 @@
                     <div class="service-card-footer">
                         <div class="service-duration">
                             <i class="fas fa-clock"></i>
-                            {{ service.duration_minutes if service.duration_minutes else '60' }} mins
+                            {{ service.duration_minutes if service.duration_minutes else '60' }}m
                         </div>
                         <span class="service-book-btn">
-                            Book Now
+                            Book
                             <i class="fas fa-arrow-right"></i>
                         </span>
                     </div>
@@ -1019,16 +1178,20 @@
                 <i class="fas fa-gem"></i>
             </div>
             <h3>No Services Available</h3>
-            <p>This mentor is currently setting up their services. Check back soon!</p>
-            <button onclick="history.back()" 
-                    class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200">
-                <i class="fas fa-arrow-left mr-2"></i>
+            <p>This mentor is currently setting up their services.</p>
+            <button onclick="history.back()" class="empty-state-btn">
+                <i class="fas fa-arrow-left"></i>
                 Go Back
             </button>
         </div>
         {% endif %}
     </div>
 </div>
+
+<!-- Floating Action Button -->
+<button onclick="copyProfileUrl()" class="fab animate-float" title="Copy Profile Link">
+    <i class="fas fa-copy"></i>
+</button>
 
 <!-- Notification Container -->
 <div id="notificationContainer"></div>
@@ -1042,7 +1205,7 @@ function copyProfileUrl() {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url)
             .then(() => {
-                showNotification('Profile link copied to clipboard! 📋', 'success');
+                showNotification('Profile link copied! 📋', 'success');
             })
             .catch(err => {
                 console.error('Failed to copy: ', err);
@@ -1067,13 +1230,13 @@ function fallbackCopy(url) {
     try {
         const successful = document.execCommand('copy');
         if (successful) {
-            showNotification('Profile link copied to clipboard! 📋', 'success');
+            showNotification('Profile link copied! 📋', 'success');
         } else {
-            showNotification('Failed to copy link. Please try again.', 'error');
+            showNotification('Failed to copy link', 'error');
         }
     } catch (err) {
         console.error('Fallback copy failed: ', err);
-        showNotification('Failed to copy link. Please copy manually.', 'error');
+        showNotification('Failed to copy', 'error');
     }
     
     document.body.removeChild(textArea);
@@ -1083,11 +1246,15 @@ function fallbackCopy(url) {
 function showNotification(message, type) {
     const container = document.getElementById('notificationContainer');
     
+    // Remove existing notifications
+    const existing = container.querySelectorAll('.notification');
+    existing.forEach(notif => notif.remove());
+    
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.innerHTML = `
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
             <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
             <span>${message}</span>
         </div>
@@ -1096,7 +1263,7 @@ function showNotification(message, type) {
     // Add to container
     container.appendChild(notification);
     
-    // Remove after 4 seconds
+    // Remove after 3 seconds
     setTimeout(() => {
         notification.style.opacity = '0';
         notification.style.transform = 'translateX(100%)';
@@ -1105,33 +1272,28 @@ function showNotification(message, type) {
                 notification.parentNode.removeChild(notification);
             }
         }, 300);
-    }, 4000);
+    }, 3000);
 }
 
 // Add hover effects to service cards
 document.addEventListener('DOMContentLoaded', function() {
     const serviceCards = document.querySelectorAll('.service-card-link');
     
-    serviceCards.forEach(card => {
+    serviceCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.05}s`;
+        
         card.addEventListener('mouseenter', function() {
-            const btn = this.querySelector('.service-book-btn');
-            if (btn) {
-                btn.style.transform = 'translateX(4px)';
-            }
+            this.querySelector('.service-book-btn').style.transform = 'translateX(2px)';
         });
         
         card.addEventListener('mouseleave', function() {
-            const btn = this.querySelector('.service-book-btn');
-            if (btn) {
-                btn.style.transform = 'translateX(0)';
-            }
+            this.querySelector('.service-book-btn').style.transform = 'translateX(0)';
         });
     });
     
-    // Add pulse animation to service cards on load
+    // Add animations to cards
     setTimeout(() => {
-        serviceCards.forEach((card, index) => {
-            card.style.animationDelay = `${index * 0.1}s`;
+        serviceCards.forEach(card => {
             card.classList.add('animate-fadeIn');
         });
     }, 100);
@@ -1153,5 +1315,24 @@ if (navigator.share) {
         }
     });
 }
+
+// Add pulse effect to FAB on page load
+setTimeout(() => {
+    const fab = document.querySelector('.fab');
+    if (fab) {
+        fab.style.animation = 'float 3s ease-in-out infinite, pulse 2s ease-in-out 2';
+    }
+}, 500);
+
+// Add pulse animation for FAB
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+    }
+`;
+document.head.appendChild(style);
 </script>
 {% endblock %}
