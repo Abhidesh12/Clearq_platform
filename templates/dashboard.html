@@ -233,12 +233,83 @@
         border-color: rgba(34, 197, 94, 0.5);
     }
 
+    /* Mentor Menu Bar */
+    .mentor-menu-bar {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+    }
+
+    .mentor-menu-bar .menu-items {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.25rem;
+        background: var(--gray-100);
+        border-radius: var(--radius-lg);
+        width: max-content;
+        min-width: 100%;
+    }
+
+    .mentor-menu-bar .menu-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        text-decoration: none;
+        color: var(--gray-700);
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+
+    .mentor-menu-bar .menu-item:hover {
+        background: var(--white);
+        color: var(--primary);
+        border-color: var(--gray-200);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .mentor-menu-bar .menu-item.active {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        box-shadow: var(--shadow-md);
+    }
+
+    .mentor-menu-bar .menu-item i {
+        font-size: 0.875rem;
+    }
+
+    /* Mentor Sections */
+    .mentor-section {
+        display: none;
+        grid-column: 1 / -1;
+        gap: 1.5rem;
+    }
+
+    .mentor-section.active {
+        display: grid;
+    }
+
+    @media (min-width: 768px) {
+        .mentor-section {
+            grid-template-columns: 2fr 1fr;
+        }
+    }
+
     /* Main Content */
     .dashboard-main {
         padding: 1.25rem;
         max-width: 1200px;
         margin: 0 auto;
         position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
     /* Dashboard Cards - Enhanced */
@@ -447,50 +518,6 @@
         color: var(--primary);
     }
 
-    .session-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-top: 0.75rem;
-    }
-
-    .session-action-btn {
-        padding: 0.375rem 0.75rem;
-        border-radius: var(--radius);
-        font-size: 0.75rem;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        transition: var(--transition);
-        border: 1px solid;
-    }
-
-    .meeting-btn {
-        background: linear-gradient(135deg, var(--success), #059669);
-        color: var(--white);
-        border-color: var(--success);
-    }
-
-    .meeting-btn:hover {
-        background: linear-gradient(135deg, #059669, #047857);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .copy-btn {
-        background: linear-gradient(135deg, var(--primary-light), var(--primary));
-        color: var(--white);
-        border-color: var(--primary);
-    }
-
-    .copy-btn:hover {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-sm);
-    }
-
     .session-status {
         display: flex;
         flex-wrap: wrap;
@@ -684,7 +711,7 @@
         color: var(--gray-900);
     }
 
-    /* Mentor Dashboard - Enhanced */
+    /* Mentor Services Grid - Enhanced */
     .mentor-services-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -1207,12 +1234,16 @@
         .action-text {
             text-align: center;
         }
+        
+        .mentor-menu-bar .menu-item span {
+            display: inline;
+        }
     }
 
     @media (min-width: 768px) {
         .dashboard-main {
-            display: grid;
-            grid-template-columns: 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 1.5rem;
         }
         
@@ -1240,6 +1271,10 @@
         .action-text {
             text-align: left;
         }
+        
+        .mentor-menu-bar .menu-items {
+            justify-content: center;
+        }
     }
 
     @media (min-width: 1024px) {
@@ -1253,13 +1288,7 @@
         }
         
         .dashboard-main {
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
             padding: 2rem;
-        }
-        
-        .quick-actions {
-            grid-template-columns: 1fr;
         }
         
         .share-btn {
@@ -1302,14 +1331,14 @@
             </div>
             
             <div class="profile-share-buttons">
-                <!-- New Tab Button -->
+                <!-- New Tab Button - FIXED -->
                 {% if current_user.role == 'mentor' %}
-                <a href="/{{ current_user.username }}" 
+                <a href="/mentor/profile/{{ current_user.username }}" 
                    target="_blank" 
                    class="share-btn"
                    title="Open profile in new tab">
                     <i class="fas fa-external-link-alt"></i>
-                    <span class="hidden sm:inline">Your Profile</span>
+                    <span class="hidden sm:inline">New Tab</span>
                 </a>
                 {% endif %}
                 
@@ -1335,7 +1364,8 @@
     <div class="dashboard-main">
         {% if current_user.role == 'learner' %}
         <!-- Learner Dashboard -->
-        <div>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+            {% if bookings and bookings|length > 0 %}
             <!-- Upcoming Sessions -->
             <div class="dashboard-card">
                 <div class="card-header">
@@ -1346,7 +1376,6 @@
                 </div>
                 
                 <div class="card-content">
-                    {% if bookings and bookings|length > 0 %}
                     <div class="sessions-list">
                         {% for booking in bookings %}
                         <div class="session-item">
@@ -1364,7 +1393,7 @@
                                 </span>
                                 <span class="session-detail">
                                     <i class="fas fa-clock"></i>
-                                    {{ booking.selected_time if booking.selected_time else 'TBD' }}
+                                    {{ booking.start_time if booking.start_time else 'TBD' }}
                                 </span>
                                 <span class="session-detail">
                                     <i class="fas fa-user-tie"></i>
@@ -1386,27 +1415,15 @@
                                     {{ booking.payment_status|title }}
                                 </span>
                             </div>
-                            
-                            <!-- Meeting Actions -->
-                            {% if booking.meeting_link and booking.status == 'confirmed' %}
-                            <div class="session-actions">
-                                <a href="{{ booking.meeting_link }}" 
-                                   target="_blank" 
-                                   class="session-action-btn meeting-btn">
-                                    <i class="fas fa-video"></i>
-                                    Join Meeting
-                                </a>
-                                <button onclick="copyMeetingLink('{{ booking.meeting_link }}')" 
-                                        class="session-action-btn copy-btn">
-                                    <i class="fas fa-copy"></i>
-                                    Copy Link
-                                </button>
-                            </div>
-                            {% endif %}
                         </div>
                         {% endfor %}
                     </div>
-                    {% else %}
+                </div>
+            </div>
+            {% else %}
+            <!-- Empty State for Learners -->
+            <div class="dashboard-card">
+                <div class="card-content">
                     <div class="empty-state">
                         <div class="empty-state-icon">
                             <i class="fas fa-calendar-plus"></i>
@@ -1418,306 +1435,636 @@
                             Find Mentors
                         </a>
                     </div>
-                    {% endif %}
                 </div>
             </div>
-        </div>
+            {% endif %}
 
-        <div>
-            <!-- Stats -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-chart-line"></i> Your Learning Stats</h2>
-                </div>
-                
-                <div class="card-content">
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-value">{% if bookings %}{{ bookings|length }}{% else %}0{% endif %}</div>
-                            <div class="stat-label">Total Sessions</div>
-                        </div>
-                        <div class="stat-item">
-                            {% set total_hours = 0 %}
-                            {% if bookings %}
-                                {% for booking in bookings %}
-                                    {% if booking.service and booking.service.duration_minutes %}
-                                        {% set total_hours = total_hours + (booking.service.duration_minutes // 60) %}
-                                    {% endif %}
-                                {% endfor %}
-                            {% endif %}
-                            <div class="stat-value">{{ total_hours }}</div>
-                            <div class="stat-label">Hours</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">5+</div>
-                            <div class="stat-label">Skills</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">4.5</div>
-                            <div class="stat-label">Avg Rating</div>
+            <!-- Stats and Quick Actions Grid -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+                <!-- Stats -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> Your Learning Stats</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">{% if bookings %}{{ bookings|length }}{% else %}0{% endif %}</div>
+                                <div class="stat-label">Total Sessions</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{% if bookings %}{{ bookings|length * 1 }}{% else %}0{% endif %}</div>
+                                <div class="stat-label">Hours</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">5+</div>
+                                <div class="stat-label">Skills</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">4.5</div>
+                                <div class="stat-label">Avg Rating</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Quick Actions -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
-                </div>
-                
-                <div class="card-content">
-                    <div class="quick-actions">
-                        <a href="/explore" class="quick-action">
-                            <div class="action-icon icon-search">
-                                <i class="fas fa-search"></i>
-                            </div>
-                            <span class="action-text">Find New Mentors</span>
-                        </a>
-                        
-                        <a href="/profile/edit" class="quick-action">
-                            <div class="action-icon icon-edit">
-                                <i class="fas fa-user-edit"></i>
-                            </div>
-                            <span class="action-text">Update Profile</span>
-                        </a>
-                        
-                        <a href="/mentorship-program" class="quick-action">
-                            <div class="action-icon icon-trophy">
-                                <i class="fas fa-trophy"></i>
-                            </div>
-                            <span class="action-text">Join Program</span>
-                        </a>
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="quick-actions">
+                            <a href="/explore" class="quick-action">
+                                <div class="action-icon icon-search">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <span class="action-text">Find New Mentors</span>
+                            </a>
+                            
+                            <a href="/profile/edit" class="quick-action">
+                                <div class="action-icon icon-edit">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <span class="action-text">Update Profile</span>
+                            </a>
+                            
+                            <a href="/mentorship-program" class="quick-action">
+                                <div class="action-icon icon-trophy">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <span class="action-text">Join Program</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         {% elif current_user.role == 'mentor' %}
-        <!-- Mentor Dashboard -->
-        <div>
-            <!-- Mentor Status Card -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <div>
-                        <h2><i class="fas fa-user-tie"></i> Mentor Profile</h2>
-                        <p style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.25rem;">Manage your services and availability</p>
-                    </div>
-                    <span class="status-badge {% if mentor.verification_status == 'approved' %}status-confirmed{% elif mentor.verification_status == 'pending' %}status-pending{% else %}status-unpaid{% endif %}">
-                        <i class="fas {% if mentor.verification_status == 'approved' %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
-                        {{ mentor.verification_status|title }}
-                    </span>
-                </div>
-                
-                <div class="card-content">
-                    {% if mentor.verification_status == 'pending' %}
-                    <div class="alert alert-warning">
-                        <i class="fas fa-info-circle alert-icon"></i>
-                        <div class="alert-content">
-                            <h4>Profile Under Review</h4>
-                            <p>Your mentor profile is currently being reviewed. You can set up services, but they won't be visible until approved.</p>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="mentor-services-grid">
-                        <a href="/mentor/dashboard/services" class="service-card service-blue">
-                            <div class="service-icon" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
-                                <i class="fas fa-list-alt"></i>
-                            </div>
-                            <h3>Services</h3>
-                            <p>Create and manage your mentoring services</p>
+        <!-- Mentor Dashboard with Sidebar Menu -->
+        <!-- Menu Bar -->
+        <div class="dashboard-card">
+            <div class="card-content" style="padding: 0.75rem;">
+                <div class="mentor-menu-bar">
+                    <div class="menu-items">
+                        <a href="#overview" 
+                           class="menu-item active" 
+                           onclick="showMentorSection('overview')">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Overview</span>
                         </a>
-                        
-                        <a href="/mentor/availability" class="service-card service-green">
-                            <div class="service-icon" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
-                                <i class="fas fa-calendar-alt"></i>
-                            </div>
-                            <h3>Availability</h3>
-                            <p>Set your available dates for sessions</p>
+                        <a href="#sessions" 
+                           class="menu-item" 
+                           onclick="showMentorSection('sessions')">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Upcoming Sessions</span>
                         </a>
-                        
-                        <a href="/profile/edit" class="service-card service-purple">
-                            <div class="service-icon" style="background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: var(--secondary);">
-                                <i class="fas fa-user-edit"></i>
-                            </div>
-                            <h3>Profile</h3>
-                            <p>Edit your public mentor profile</p>
+                        <a href="#services" 
+                           class="menu-item" 
+                           onclick="showMentorSection('services')">
+                            <i class="fas fa-list-alt"></i>
+                            <span>Services</span>
+                        </a>
+                        <a href="#availability" 
+                           class="menu-item" 
+                           onclick="showMentorSection('availability')">
+                            <i class="fas fa-clock"></i>
+                            <span>Availability</span>
+                        </a>
+                        <a href="#earnings" 
+                           class="menu-item" 
+                           onclick="showMentorSection('earnings')">
+                            <i class="fas fa-wallet"></i>
+                            <span>Earnings</span>
+                        </a>
+                        <a href="#profile" 
+                           class="menu-item" 
+                           onclick="showMentorSection('profile')">
+                            <i class="fas fa-user-edit"></i>
+                            <span>Profile</span>
                         </a>
                     </div>
-                </div>
-            </div>
-
-            <!-- Upcoming Sessions -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
-                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
-                        <i class="fas fa-hashtag"></i>
-                        {{ bookings|length if bookings else 0 }} total
-                    </span>
-                </div>
-                
-                <div class="card-content">
-                    {% if bookings and bookings|length > 0 %}
-                    <div class="sessions-list">
-                        {% for booking in bookings %}
-                        <div class="session-item">
-                            <div class="session-header">
-                                <h3 class="session-title">
-                                    {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
-                                </h3>
-                                <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
-                            </div>
-                            
-                            <div class="session-details">
-                                <span class="session-detail">
-                                    <i class="fas fa-user-graduate"></i>
-                                    {{ booking.learner.full_name if booking.learner else 'Learner' }}
-                                </span>
-                                <span class="session-detail">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
-                                </span>
-                                <span class="session-detail">
-                                    <i class="fas fa-clock"></i>
-                                    {{ booking.selected_time if booking.selected_time else 'TBD' }}
-                                </span>
-                            </div>
-                            
-                            <div class="session-status">
-                                <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
-                                    <i class="fas {% if booking.status == 'confirmed' %}fa-check-circle{% elif booking.status == 'pending' %}fa-clock{% else %}fa-check{% endif %}"></i>
-                                    {{ booking.status|title }}
-                                </span>
-                            </div>
-                            
-                            <!-- Meeting Actions -->
-                            {% if booking.meeting_link and booking.status == 'confirmed' %}
-                            <div class="session-actions">
-                                <a href="{{ booking.meeting_link }}" 
-                                   target="_blank" 
-                                   class="session-action-btn meeting-btn">
-                                    <i class="fas fa-video"></i>
-                                    Start Meeting
-                                </a>
-                                <button onclick="copyMeetingLink('{{ booking.meeting_link }}')" 
-                                        class="session-action-btn copy-btn">
-                                    <i class="fas fa-copy"></i>
-                                    Copy Link
-                                </button>
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-calendar"></i>
-                        </div>
-                        <h3>No Upcoming Sessions</h3>
-                        <p>Set up your services and availability to start receiving bookings</p>
-                        <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
-                            <a href="/mentor/dashboard/services" class="header-action-btn" style="background: var(--primary); color: white;">
-                                <i class="fas fa-plus"></i> Add Services
-                            </a>
-                            <a href="/mentor/availability" class="header-action-btn" style="background: transparent; border-color: var(--primary); color: var(--primary);">
-                                <i class="fas fa-calendar-alt"></i> Set Availability
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
 
-        <div>
-            <!-- Earnings Summary -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-wallet"></i> Earnings Summary</h2>
-                </div>
-                
-                <div class="card-content">
-                    <div class="earnings-summary">
-                        <div class="earnings-total">
-                            <div class="total-label">Total Earnings</div>
-                            <div class="total-amount">₹{{ earnings|default(0) }}</div>
+        <!-- Overview Section -->
+        <div id="mentor-overview" class="mentor-section active">
+            <!-- Left Column -->
+            <div>
+                <!-- Mentor Status Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div>
+                            <h2><i class="fas fa-user-tie"></i> Mentor Dashboard</h2>
+                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.25rem;">
+                                Welcome to your mentor dashboard. Everything you need in one place.
+                            </p>
                         </div>
-                        
-                        <div class="earnings-stats">
-                            <div class="earning-stat-item">
-                                <div class="earning-stat-value">
-                                    {% if bookings %}{{ bookings|selectattr('status', 'equalto', 'completed')|list|length }}{% else %}0{% endif %}
-                                </div>
-                                <div class="earning-stat-label">Completed</div>
+                        <span class="status-badge {% if mentor.verification_status == 'approved' %}status-confirmed{% elif mentor.verification_status == 'pending' %}status-pending{% else %}status-unpaid{% endif %}">
+                            <i class="fas {% if mentor.verification_status == 'approved' %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
+                            {{ mentor.verification_status|title }}
+                        </span>
+                    </div>
+                    
+                    <div class="card-content">
+                        {% if mentor.verification_status == 'pending' %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle alert-icon"></i>
+                            <div class="alert-content">
+                                <h4>Profile Under Review</h4>
+                                <p>Your mentor profile is currently being reviewed. You can set up services, but they won't be visible until approved.</p>
                             </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mentor-services-grid">
+                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-blue">
+                                <div class="service-icon" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
+                                    <i class="fas fa-list-alt"></i>
+                                </div>
+                                <h3>Manage Services</h3>
+                                <p>Create and manage your mentoring services</p>
+                            </a>
                             
-                            <div class="earning-stat-item">
-                                <div class="earning-stat-value">
-                                    {% if bookings %}{{ bookings|selectattr('payment_status', 'equalto', 'pending')|list|length }}{% else %}0{% endif %}
+                            <a href="#availability" onclick="showMentorSection('availability')" class="service-card service-green">
+                                <div class="service-icon" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
+                                    <i class="fas fa-calendar-alt"></i>
                                 </div>
-                                <div class="earning-stat-label">Pending</div>
-                            </div>
+                                <h3>Set Availability</h3>
+                                <p>Set your available time slots for sessions</p>
+                            </a>
+                            
+                            <a href="/profile/edit" class="service-card service-purple">
+                                <div class="service-icon" style="background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: var(--secondary);">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <h3>Edit Profile</h3>
+                                <p>Edit your public mentor profile</p>
+                            </a>
                         </div>
-                        
-                        <div class="payout-info">
-                            <div class="payout-row">
-                                <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                    Next Payout
-                                </span>
-                                <span style="font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);">
-                                    ₹{{ (earnings|default(0) * 0.8)|int }}
-                                </span>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> Quick Stats</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">
+                                    {% if bookings %}{{ bookings|length }}{% else %}0{% endif %}
+                                </div>
+                                <div class="stat-label">Total Sessions</div>
                             </div>
-                            <div class="payout-row">
-                                <span style="font-size: 0.75rem; color: var(--gray-500); display: flex; align-items: center; gap: 0.25rem;">
-                                    <i class="fas fa-clock"></i>
-                                    in 3 days
-                                </span>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ mentor.rating|default('4.9') }}/5</div>
+                                <div class="stat-label">Avg Rating</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ mentor.review_count|default('0') }}</div>
+                                <div class="stat-label">Reviews</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">₹{{ earnings|default(0) }}</div>
+                                <div class="stat-label">Earnings</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Stats -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-chart-bar"></i> Quick Stats</h2>
+            <!-- Right Column -->
+            <div>
+                <!-- Earnings Summary -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-wallet"></i> Earnings Summary</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="earnings-summary">
+                            <div class="earnings-total">
+                                <div class="total-label">Total Earnings</div>
+                                <div class="total-amount">₹{{ earnings|default(0) }}</div>
+                            </div>
+                            
+                            <div class="earnings-stats">
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">
+                                        {% if bookings %}{{ bookings|selectattr('status', 'equalto', 'completed')|list|length }}{% else %}0{% endif %}
+                                    </div>
+                                    <div class="earning-stat-label">Completed</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">
+                                        {% if bookings %}{{ bookings|selectattr('payment_status', 'equalto', 'pending')|list|length }}{% else %}0{% endif %}
+                                    </div>
+                                    <div class="earning-stat-label">Pending</div>
+                                </div>
+                            </div>
+                            
+                            <div class="payout-info">
+                                <div class="payout-row">
+                                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        Next Payout
+                                    </span>
+                                    <span style="font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);">
+                                        ₹{{ (earnings|default(0) * 0.8)|int }}
+                                    </span>
+                                </div>
+                                <div class="payout-row">
+                                    <span style="font-size: 0.75rem; color: var(--gray-500); display: flex; align-items: center; gap: 0.25rem;">
+                                        <i class="fas fa-clock"></i>
+                                        in 3 days
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="card-content">
-                    <div class="quick-stats-list">
-                        <div class="quick-stat-item">
-                            <span class="stat-label-text">
-                                <i class="fas fa-star"></i>
-                                Rating
-                            </span>
-                            <span class="stat-value-text">{{ mentor.rating|default('4.9') }}/5</span>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="quick-actions">
+                            <a href="/mentor/dashboard/services" class="quick-action">
+                                <div class="action-icon icon-search">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <span class="action-text">Add New Service</span>
+                            </a>
+                            
+                            <a href="/mentor/availability" class="quick-action">
+                                <div class="action-icon icon-edit">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <span class="action-text">Update Availability</span>
+                            </a>
+                            
+                            <a href="/profile/edit" class="quick-action">
+                                <div class="action-icon icon-trophy">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <span class="action-text">Edit Profile</span>
+                            </a>
                         </div>
-                        <div class="quick-stat-item">
-                            <span class="stat-label-text">
-                                <i class="fas fa-comment"></i>
-                                Reviews
-                            </span>
-                            <span class="stat-value-text">{{ mentor.review_count|default('0') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions Section -->
+        <div id="mentor-sessions" class="mentor-section">
+            <div style="grid-column: 1 / -1;">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
+                        <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                            <i class="fas fa-hashtag"></i>
+                            {{ bookings|length if bookings else 0 }} total
+                        </span>
+                    </div>
+                    
+                    <div class="card-content">
+                        {% if bookings and bookings|length > 0 %}
+                        <div class="sessions-list">
+                            {% for booking in bookings %}
+                            <div class="session-item">
+                                <div class="session-header">
+                                    <h3 class="session-title">
+                                        {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                    </h3>
+                                    <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                                </div>
+                                
+                                <div class="session-details">
+                                    <span class="session-detail">
+                                        <i class="fas fa-user-graduate"></i>
+                                        {{ booking.learner.full_name if booking.learner else 'Learner' }}
+                                    </span>
+                                    <span class="session-detail">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                    </span>
+                                    <span class="session-detail">
+                                        <i class="fas fa-clock"></i>
+                                        {{ booking.start_time if booking.start_time else 'TBD' }}
+                                    </span>
+                                </div>
+                                
+                                <div class="session-status">
+                                    <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
+                                        <i class="fas {% if booking.status == 'confirmed' %}fa-check-circle{% elif booking.status == 'pending' %}fa-clock{% else %}fa-check{% endif %}"></i>
+                                        {{ booking.status|title }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
-                        <div class="quick-stat-item">
-                            <span class="stat-label-text">
-                                <i class="fas fa-chart-line"></i>
-                                Total Sessions
-                            </span>
-                            <span class="stat-value-text">{{ mentor.total_sessions|default('0') }}</span>
+                        {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <h3>No Upcoming Sessions</h3>
+                            <p>Set up your services and availability to start receiving bookings</p>
+                            <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                                <a href="#services" onclick="showMentorSection('services')" class="header-action-btn" style="background: var(--primary); color: white;">
+                                    <i class="fas fa-plus"></i> Add Services
+                                </a>
+                                <a href="#availability" onclick="showMentorSection('availability')" class="header-action-btn" style="background: transparent; border-color: var(--primary); color: var(--primary);">
+                                    <i class="fas fa-calendar-alt"></i> Set Availability
+                                </a>
+                            </div>
                         </div>
-                        <div class="quick-stat-item">
-                            <span class="stat-label-text">
-                                <i class="fas fa-clock"></i>
-                                Response Time
-                            </span>
-                            <span class="stat-value-text">24h</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services Section -->
+        <div id="mentor-services" class="mentor-section">
+            <div style="grid-column: 1 / -1;">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-list-alt"></i> Manage Services</h2>
+                        <a href="/mentor/dashboard/services" class="header-action-btn" style="background: var(--primary); color: white;">
+                            <i class="fas fa-plus"></i> Create Service
+                        </a>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-list-alt"></i>
+                            </div>
+                            <h3>Manage Your Services</h3>
+                            <p>Create and manage your mentoring services. Set prices, durations, and descriptions for each service you offer.</p>
+                            <a href="/mentor/dashboard/services" class="header-action-btn" style="margin-top: 1rem;">
+                                <i class="fas fa-plus"></i> Go to Services Manager
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability Section -->
+        <div id="mentor-availability" class="mentor-section">
+            <div style="grid-column: 1 / -1;">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-clock"></i> Manage Availability</h2>
+                        <a href="/mentor/availability" class="header-action-btn" style="background: var(--primary); color: white;">
+                            <i class="fas fa-calendar-alt"></i> Set Availability
+                        </a>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <h3>Set Your Availability</h3>
+                            <p>Define your available time slots for mentoring sessions. Learners can only book sessions during your available hours.</p>
+                            <a href="/mentor/availability" class="header-action-btn" style="margin-top: 1rem;">
+                                <i class="fas fa-calendar-alt"></i> Go to Availability Manager
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings Section -->
+        <div id="mentor-earnings" class="mentor-section">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+                <!-- Earnings Summary -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-wallet"></i> Earnings Dashboard</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="earnings-summary">
+                            <div class="earnings-total">
+                                <div class="total-label">Total Earnings</div>
+                                <div class="total-amount">₹{{ earnings|default(0) }}</div>
+                            </div>
+                            
+                            <div class="earnings-stats">
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">
+                                        {% if bookings %}{{ bookings|selectattr('status', 'equalto', 'completed')|list|length }}{% else %}0{% endif %}
+                                    </div>
+                                    <div class="earning-stat-label">Completed</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">
+                                        {% if bookings %}{{ bookings|selectattr('status', 'equalto', 'pending')|list|length }}{% else %}0{% endif %}
+                                    </div>
+                                    <div class="earning-stat-label">Pending</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">
+                                        {% if bookings %}{{ bookings|selectattr('payment_status', 'equalto', 'paid')|list|length }}{% else %}0{% endif %}
+                                    </div>
+                                    <div class="earning-stat-label">Paid</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">
+                                        {% if bookings %}{{ bookings|selectattr('payment_status', 'equalto', 'pending')|list|length }}{% else %}0{% endif %}
+                                    </div>
+                                    <div class="earning-stat-label">Unpaid</div>
+                                </div>
+                            </div>
+                            
+                            <div class="payout-info">
+                                <div class="payout-row">
+                                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        Next Payout
+                                    </span>
+                                    <span style="font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);">
+                                        ₹{{ (earnings|default(0) * 0.8)|int }}
+                                    </span>
+                                </div>
+                                <div class="payout-row">
+                                    <span style="font-size: 0.75rem; color: var(--gray-500); display: flex; align-items: center; gap: 0.25rem;">
+                                        <i class="fas fa-calendar"></i>
+                                        Payout Date
+                                    </span>
+                                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--gray-700);">
+                                        in 3 days
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-history"></i> Recent Transactions</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        {% if bookings and bookings|length > 0 %}
+                        <div class="sessions-list">
+                            {% for booking in bookings[:5] %}
+                            <div class="session-item">
+                                <div class="session-header">
+                                    <h3 class="session-title">Session #{{ booking.id }}</h3>
+                                    <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                                </div>
+                                
+                                <div class="session-details">
+                                    <span class="session-detail">
+                                        <i class="fas fa-user-graduate"></i>
+                                        {{ booking.learner.full_name if booking.learner else 'Learner' }}
+                                    </span>
+                                    <span class="session-detail">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        {{ booking.created_at.strftime('%b %d, %Y') if booking.created_at else '' }}
+                                    </span>
+                                </div>
+                                
+                                <div class="session-status">
+                                    <span class="status-badge {% if booking.payment_status == 'paid' %}status-paid{% else %}status-unpaid{% endif %}">
+                                        <i class="fas {% if booking.payment_status == 'paid' %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
+                                        {{ booking.payment_status|title }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state" style="padding: 2rem;">
+                            <div class="empty-state-icon" style="width: 3rem; height: 3rem;">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <h3>No Transactions Yet</h3>
+                            <p>Your transaction history will appear here once you start receiving bookings</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="mentor-profile" class="mentor-section">
+            <div style="grid-column: 1 / -1;">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user-edit"></i> Profile Management</h2>
+                        <a href="/profile/edit" class="header-action-btn" style="background: var(--primary); color: white;">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </a>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+                            <!-- Profile Summary -->
+                            <div>
+                                <div style="text-align: center; margin-bottom: 1.5rem;">
+                                    <div class="user-avatar" style="width: 6rem; height: 6rem; margin: 0 auto 1rem;">
+                                        {% if current_user.profile_image %}
+                                        <img src="/static/{{ current_user.profile_image }}" 
+                                             alt="{{ current_user.full_name or current_user.username }}"
+                                             class="user-avatar-img">
+                                        {% else %}
+                                        <div class="user-avatar-initial" style="font-size: 2rem;">
+                                            {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.25rem;">
+                                        {{ current_user.full_name or current_user.username }}
+                                    </h3>
+                                    <p style="font-size: 0.875rem; color: var(--gray-600);">
+                                        {{ current_user.email }}
+                                    </p>
+                                    <div style="margin-top: 0.75rem;">
+                                        <span class="status-badge {% if mentor.verification_status == 'approved' %}status-confirmed{% elif mentor.verification_status == 'pending' %}status-pending{% else %}status-unpaid{% endif %}">
+                                            <i class="fas {% if mentor.verification_status == 'approved' %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
+                                            {{ mentor.verification_status|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Info -->
+                            <div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                                    <div>
+                                        <h4 style="font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                                            Rating
+                                        </h4>
+                                        <p style="font-size: 1rem; font-weight: 600; color: var(--gray-900);">
+                                            {{ mentor.rating|default('4.9') }}/5
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h4 style="font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                                            Reviews
+                                        </h4>
+                                        <p style="font-size: 1rem; font-weight: 600; color: var(--gray-900);">
+                                            {{ mentor.review_count|default('0') }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h4 style="font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                                            Sessions
+                                        </h4>
+                                        <p style="font-size: 1rem; font-weight: 600; color: var(--gray-900);">
+                                            {{ mentor.total_sessions|default('0') }}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Profile Actions -->
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <a href="/profile/edit" class="quick-action">
+                                        <div class="action-icon icon-edit">
+                                            <i class="fas fa-user-edit"></i>
+                                        </div>
+                                        <span class="action-text">Edit Personal Information</span>
+                                    </a>
+                                    
+                                    <a href="/mentor/dashboard/services" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
+                                            <i class="fas fa-list-alt"></i>
+                                        </div>
+                                        <span class="action-text">Manage Services</span>
+                                    </a>
+                                    
+                                    <a href="/mentor/availability" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                        <span class="action-text">Update Availability</span>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1726,7 +2073,7 @@
 
         {% elif current_user.role == 'admin' %}
         <!-- Admin Dashboard -->
-        <div>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
             <!-- Pending Mentor Approvals -->
             <div class="dashboard-card">
                 <div class="card-header">
@@ -1789,6 +2136,85 @@
                         </div>
                         <h3>All Caught Up!</h3>
                         <p>No pending mentor approvals at the moment</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Bookings -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-receipt"></i> Recent Bookings</h2>
+                    <a href="/admin/bookings" style="font-size: 0.75rem;">
+                        View All <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+                
+                <div class="card-content">
+                    {% if recent_bookings and recent_bookings|length > 0 %}
+                    <div class="bookings-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Mentor</th>
+                                    <th>Learner</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in recent_bookings[:5] %}
+                                <tr>
+                                    <td><strong>#{{ booking.id }}</strong></td>
+                                    <td>
+                                        {% if booking.mentor and booking.mentor.user %}
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="width: 1.5rem; height: 1.5rem; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.625rem; font-weight: 600;">
+                                                {{ (booking.mentor.user.full_name[0] if booking.mentor.user.full_name else booking.mentor.user.username[0])|upper }}
+                                            </div>
+                                            {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+                                        </div>
+                                        {% else %}
+                                        <span style="color: var(--gray-400);">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if booking.learner %}
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--gray-300); display: flex; align-items: center; justify-content: center; color: var(--gray-700); font-size: 0.625rem; font-weight: 600;">
+                                                {{ (booking.learner.full_name[0] if booking.learner.full_name else booking.learner.username[0])|upper }}
+                                            </div>
+                                            {{ booking.learner.full_name or booking.learner.username }}
+                                        </div>
+                                        {% else %}
+                                        <span style="color: var(--gray-400);">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>₹{{ booking.amount_paid or 0 }}</strong></td>
+                                    <td>
+                                        <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}" style="display: inline-flex;">
+                                            {{ booking.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span style="font-size: 0.75rem; color: var(--gray-500);">
+                                            {{ booking.created_at.strftime('%Y-%m-%d') if booking.created_at else '' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <h3>No Recent Bookings</h3>
+                        <p>There are no recent bookings to display</p>
                     </div>
                     {% endif %}
                 </div>
@@ -1858,7 +2284,69 @@
                 window.addEventListener('resize', checkScroll);
             }
         });
+
+        // Initialize mentor section management
+        initializeMentorSections();
     });
+
+    // Mentor Section Management
+    function initializeMentorSections() {
+        // Get current hash or default to overview
+        const hash = window.location.hash.substring(1) || 'overview';
+        showMentorSection(hash);
+        
+        // Update active menu item based on hash
+        updateActiveMenuItem(hash);
+        
+        // Listen for hash changes
+        window.addEventListener('hashchange', function() {
+            const newHash = window.location.hash.substring(1) || 'overview';
+            showMentorSection(newHash);
+            updateActiveMenuItem(newHash);
+        });
+    }
+
+    function showMentorSection(sectionId) {
+        // Hide all sections
+        const sections = document.querySelectorAll('.mentor-section');
+        sections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Show selected section
+        const selectedSection = document.getElementById(`mentor-${sectionId}`);
+        if (selectedSection) {
+            selectedSection.classList.add('active');
+        } else {
+            // Fallback to overview if section doesn't exist
+            document.getElementById('mentor-overview').classList.add('active');
+            updateActiveMenuItem('overview');
+        }
+        
+        // Update URL hash without scrolling
+        if (sectionId !== 'overview') {
+            history.replaceState(null, null, `#${sectionId}`);
+        } else {
+            history.replaceState(null, null, ' ');
+        }
+    }
+
+    function updateActiveMenuItem(sectionId) {
+        // Remove active class from all menu items
+        const menuItems = document.querySelectorAll('.mentor-menu-bar .menu-item');
+        menuItems.forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Add active class to current menu item
+        const activeMenuItem = document.querySelector(`.mentor-menu-bar .menu-item[href="#${sectionId}"]`);
+        if (activeMenuItem) {
+            activeMenuItem.classList.add('active');
+        } else {
+            // Fallback to overview
+            document.querySelector('.mentor-menu-bar .menu-item[href="#overview"]').classList.add('active');
+        }
+    }
 
     // Copy Dashboard URL Function
     function copyDashboardUrl() {
@@ -1894,28 +2382,10 @@
         }
     }
 
-    // Copy Meeting Link Function
-    function copyMeetingLink(link) {
-        // Try using the modern Clipboard API first
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(link)
-                .then(() => {
-                    showNotification('Meeting link copied to clipboard! 🎥', 'success');
-                })
-                .catch(err => {
-                    console.error('Failed to copy: ', err);
-                    fallbackCopy(link, null, null, null);
-                });
-        } else {
-            // Fallback for older browsers
-            fallbackCopy(link, null, null, null);
-        }
-    }
-
     // Fallback copy method
-    function fallbackCopy(text, copyBtn, originalIcon, originalText) {
+    function fallbackCopy(url, copyBtn, originalIcon, originalText) {
         const textArea = document.createElement('textarea');
-        textArea.value = text;
+        textArea.value = url;
         textArea.style.position = 'fixed';
         textArea.style.opacity = '0';
         document.body.appendChild(textArea);
@@ -1925,18 +2395,18 @@
         try {
             const successful = document.execCommand('copy');
             if (successful) {
-                if (copyBtn) {
-                    // Show success feedback for dashboard URL
-                    copyBtn.classList.add('copied');
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
-                    
-                    // Reset after 2 seconds
-                    setTimeout(() => {
-                        copyBtn.classList.remove('copied');
-                        copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
-                    }, 2000);
-                }
-                showNotification('Link copied to clipboard! 📋', 'success');
+                // Show success feedback
+                copyBtn.classList.add('copied');
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
+                }, 2000);
+                
+                // Show notification
+                showNotification('Dashboard link copied to clipboard! 📋', 'success');
             } else {
                 showNotification('Failed to copy link. Please try again.', 'error');
             }
