@@ -487,6 +487,64 @@
         color: var(--danger);
     }
 
+    /* Quick Actions Card */
+    .quick-actions-card {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .quick-actions-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .quick-action-button {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.875rem 1rem;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius);
+        color: var(--white);
+        font-weight: 500;
+        font-size: 0.9375rem;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .quick-action-button:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-action-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius);
+        font-size: 1rem;
+    }
+
     /* Empty State */
     .empty-state {
         flex: 1;
@@ -521,6 +579,31 @@
     .empty-state p {
         font-size: 0.875rem;
         color: var(--gray-600);
+    }
+
+    /* Info Card */
+    .info-card {
+        background: linear-gradient(135deg, var(--accent), var(--primary));
+        color: var(--white);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-md);
+    }
+
+    .info-card h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-card p {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        line-height: 1.5;
     }
 
     /* Responsive Design */
@@ -569,6 +652,10 @@
             flex-direction: row;
             gap: 1.5rem;
         }
+        
+        .quick-actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     @media (min-width: 768px) {
@@ -606,6 +693,10 @@
         
         .form-group:nth-child(6) {
             grid-column: span 1;
+        }
+        
+        .quick-actions-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
@@ -645,6 +736,40 @@
                         ₹{{ (services|map(attribute='price')|sum / services|length if services and services|length > 0 else 0)|int }}
                     </div>
                 </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions-card">
+                <div class="quick-actions-title">
+                    <i class="fas fa-bolt"></i>
+                    Quick Actions
+                </div>
+                <div class="quick-actions-grid">
+                    <a href="/mentor/availability" class="quick-action-button">
+                        <div>
+                            <div class="font-semibold">Set Availability</div>
+                            <div class="text-xs opacity-80">Add available dates for booking</div>
+                        </div>
+                        <div class="quick-action-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                    </a>
+                    <a href="/dashboard" class="quick-action-button">
+                        <div>
+                            <div class="font-semibold">View Dashboard</div>
+                            <div class="text-xs opacity-80">See all bookings & earnings</div>
+                        </div>
+                        <div class="quick-action-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Info Card about Availability System -->
+            <div class="info-card">
+                <h3><i class="fas fa-info-circle"></i> New Availability System</h3>
+                <p>Set your availability by date (default 9am-9pm). Learners can book specific time slots within your available hours. You need to set availability dates first before learners can book your services.</p>
             </div>
 
             <!-- Create Service Form -->
@@ -765,7 +890,7 @@
             </div>
         </div>
 
-        <!-- Right Column - Services List -->
+        <!-- Right Column - Services List & Actions -->
         <div>
             <div class="services-list-card">
                 <div class="list-header">
@@ -813,10 +938,24 @@
                         </div>
                         <h3>No Services Yet</h3>
                         <p>Create your first service to start accepting bookings</p>
+                        <p class="text-sm text-gray-500 mt-2">Don't forget to set your availability dates!</p>
                     </div>
                     {% endif %}
                 </div>
             </div>
+
+            <!-- Next Steps Card -->
+            {% if services and services|length > 0 %}
+            <div class="info-card" style="background: linear-gradient(135deg, var(--success), var(--accent)); margin-top: 1.5rem;">
+                <h3><i class="fas fa-check-circle"></i> Next Steps</h3>
+                <p>Great! You have {{ services|length }} service(s). Now set your availability dates so learners can book sessions with you.</p>
+                <a href="/mentor/availability" 
+                   class="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-all">
+                    <i class="fas fa-calendar-plus"></i>
+                    Set Availability Dates
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -894,6 +1033,15 @@
             // Round to nearest 15
             this.value = Math.round(this.value / 15) * 15;
         });
+
+        // Show notification about availability system
+        const showAvailabilityInfo = localStorage.getItem('availabilityInfoShown');
+        if (!showAvailabilityInfo) {
+            setTimeout(() => {
+                alert('💡 New Feature: Set your availability by date (default 9am-9pm). Learners can book specific time slots within your available hours.');
+                localStorage.setItem('availabilityInfoShown', 'true');
+            }, 1000);
+        }
     });
 </script>
 {% endblock %}
