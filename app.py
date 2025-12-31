@@ -1,6 +1,7 @@
 import os
 import re
 from sqlalchemy import or_
+from sqlalchemy.pool import QueuePool
 import uuid
 from datetime import datetime, timedelta, date
 from typing import List, Optional
@@ -56,7 +57,14 @@ app.add_middleware(CSPMiddleware)
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/clearq")
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    poolclass=QueuePool,
+    pool_size=5,
+    max_overflow=10,
+    pool_timeout=30,
+    pool_recycle=1800,  # Recycle connections every 30 minutes
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -85,7 +93,7 @@ razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440
 
 # File upload configuration
 UPLOAD_DIR = Path("static/uploads")
@@ -368,7 +376,19 @@ def get_db():
         yield db
     finally:
         db.close()
-
+        
+def load_availabilities_with_retry(mentor_id, db, retries=3):
+    for i in range(retries):
+        try:
+            return db.query(Availability).filter(
+                Availability.mentor_id == mentor_id,
+                Availability.date >= datetime.now().date()
+            ).order_by(Availability.date).all()
+        except Exception as e:
+            if i == retries - 1:
+                raise e
+            time.sleep(1)
+            
 def get_current_user(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
     if not token:
@@ -1416,8 +1436,9 @@ async def create_booking(
     end_time_str = end_time.strftime("%H:%M")
     
     # Generate Google Meet link
-    meeting_id = f"clearq-{uuid.uuid4().hex[:8]}"
-    meeting_link = f"https://meet.google.com/{meeting_id}"
+    meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
+    meeting_link = f"https://meet.google.com/new?hs=197&authuser=0"
+    #meeting_link = f"/meeting/{booking.id}"
     
     # Create Razorpay order
     order_amount = service.price * 100  # Convert to paise
@@ -2081,7 +2102,40 @@ async def create_razorpay_order(request: Request, db: Session = Depends(get_db))
         db.commit()
     
     return {"order_id": order["id"]}
-
+    
+@app.get("/meeting/{booking_id}", response_class=HTMLResponse)
+async def meeting_page(
+    request: Request,
+    booking_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Meeting page with Google Meet integration"""
+    booking = db.query(Booking).filter(
+        Booking.id == booking_id,
+        or_(
+            Booking.learner_id == current_user.id,
+            Booking.mentor_id == current_user.id  # If user is mentor
+        )
+    ).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+    
+    # Generate Google Meet link if not exists
+    if not booking.meeting_link or "meet.google.com" not in booking.meeting_link:
+        # Generate new meeting link
+        meeting_id = f"clearq-{uuid.uuid4().hex[:8]}"
+        booking.meeting_link = f"https://meet.google.com/{meeting_id}"
+        booking.meeting_id = meeting_id
+        db.commit()
+    
+    return templates.TemplateResponse("meeting.html", {
+        "request": request,
+        "current_user": current_user,
+        "booking": booking,
+        "meeting_link": booking.meeting_link
+    })
 @app.post("/api/verify-payment")
 async def verify_payment(request: Request, db: Session = Depends(get_db)):
     data = await request.json()
