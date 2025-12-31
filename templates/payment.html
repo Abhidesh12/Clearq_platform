@@ -30,6 +30,20 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out forwards;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -377,11 +391,45 @@
                                 
                                 if (result.success) {
                                     // Show success message
-                                    alert('🎉 Payment Successful! Your booking is now confirmed.');
-                                    // Redirect to dashboard
-                                    window.location.href = '/dashboard?payment=success&booking_id={{ booking.id }}';
+                                    const successMessage = document.createElement('div');
+                                    successMessage.innerHTML = `
+                                        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                            <div class="bg-white rounded-xl p-8 max-w-md mx-4 text-center">
+                                                <div class="text-green-500 text-5xl mb-4">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <h3 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h3>
+                                                <p class="text-gray-600 mb-6">Your booking is now confirmed. Redirecting to dashboard...</p>
+                                                <div class="loader mx-auto mb-4"></div>
+                                            </div>
+                                        </div>
+                                    `;
+                                    document.body.appendChild(successMessage);
+                                    
+                                    // Redirect to dashboard after 2 seconds
+                                    setTimeout(() => {
+                                        window.location.href = '/dashboard?payment=success&booking_id={{ booking.id }}';
+                                    }, 2000);
                                 } else {
-                                    alert('❌ Payment verification failed. Please contact support with payment ID: ' + response.razorpay_payment_id);
+                                    // Show error message
+                                    const errorMessage = document.createElement('div');
+                                    errorMessage.innerHTML = `
+                                        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                            <div class="bg-white rounded-xl p-8 max-w-md mx-4 text-center">
+                                                <div class="text-red-500 text-5xl mb-4">
+                                                    <i class="fas fa-exclamation-circle"></i>
+                                                </div>
+                                                <h3 class="text-2xl font-bold text-gray-900 mb-2">Payment Verification Failed</h3>
+                                                <p class="text-gray-600 mb-4">Please contact support with payment ID: ${response.razorpay_payment_id}</p>
+                                                <button onclick="this.parentElement.parentElement.remove()" 
+                                                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
+                                                    Close
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `;
+                                    document.body.appendChild(errorMessage);
+                                    
                                     // Re-enable button
                                     payButton.disabled = false;
                                     payButton.innerHTML = originalText;
@@ -415,7 +463,25 @@
                         
                     } catch (error) {
                         console.error('Payment error:', error);
-                        alert('❌ Error: ' + error.message);
+                        
+                        // Show error message
+                        const errorMessage = document.createElement('div');
+                        errorMessage.innerHTML = `
+                            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                <div class="bg-white rounded-xl p-8 max-w-md mx-4 text-center">
+                                    <div class="text-red-500 text-5xl mb-4">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Payment Error</h3>
+                                    <p class="text-gray-600 mb-4">${error.message}</p>
+                                    <button onclick="this.parentElement.parentElement.remove()" 
+                                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-300">
+                                        Try Again
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(errorMessage);
                         
                         // Re-enable button
                         payButton.disabled = false;
@@ -440,6 +506,32 @@
                     console.log('✅ Razorpay loaded successfully');
                 }
             }, 3000);
+
+            // Check for payment success parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('payment') && urlParams.get('payment') === 'success') {
+                // Show success message if redirected back with success parameter
+                setTimeout(() => {
+                    const successToast = document.createElement('div');
+                    successToast.innerHTML = `
+                        <div class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slideIn">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle mr-3 text-xl"></i>
+                                <div>
+                                    <p class="font-semibold">Payment Successful!</p>
+                                    <p class="text-sm opacity-90">Your booking has been confirmed.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(successToast);
+                    
+                    // Remove toast after 5 seconds
+                    setTimeout(() => {
+                        successToast.remove();
+                    }, 5000);
+                }, 1000);
+            }
         });
     </script>
 </body>
