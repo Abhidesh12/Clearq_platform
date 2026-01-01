@@ -797,37 +797,27 @@
                                 </label>
                                 <div class="rich-text-editor-container">
                                     <div class="editor-toolbar">
-                                        <button type="button" class="toolbar-btn" data-command="bold" title="Bold">
+                                        <button type="button" class="toolbar-btn" data-format="bold" title="Bold">
                                             <i class="fas fa-bold"></i>
                                         </button>
-                                        <button type="button" class="toolbar-btn" data-command="italic" title="Italic">
+                                        <button type="button" class="toolbar-btn" data-format="italic" title="Italic">
                                             <i class="fas fa-italic"></i>
                                         </button>
-                                        <button type="button" class="toolbar-btn" data-command="underline" title="Underline">
+                                        <button type="button" class="toolbar-btn" data-format="underline" title="Underline">
                                             <i class="fas fa-underline"></i>
                                         </button>
                                         <div class="toolbar-separator"></div>
-                                        <button type="button" class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
+                                        <button type="button" class="toolbar-btn" data-format="bullet-list" title="Bullet List">
                                             <i class="fas fa-list-ul"></i>
                                         </button>
-                                        <button type="button" class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
+                                        <button type="button" class="toolbar-btn" data-format="numbered-list" title="Numbered List">
                                             <i class="fas fa-list-ol"></i>
                                         </button>
                                         <div class="toolbar-separator"></div>
-                                        <button type="button" class="toolbar-btn" data-command="justifyLeft" title="Align Left">
-                                            <i class="fas fa-align-left"></i>
-                                        </button>
-                                        <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Center">
-                                            <i class="fas fa-align-center"></i>
-                                        </button>
-                                        <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right">
-                                            <i class="fas fa-align-right"></i>
-                                        </button>
-                                        <div class="toolbar-separator"></div>
-                                        <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="h2" title="Heading">
+                                        <button type="button" class="toolbar-btn" data-format="heading" title="Heading">
                                             <i class="fas fa-heading"></i>
                                         </button>
-                                        <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="p" title="Paragraph">
+                                        <button type="button" class="toolbar-btn" data-format="paragraph" title="Paragraph">
                                             <i class="fas fa-paragraph"></i>
                                         </button>
                                     </div>
@@ -978,107 +968,145 @@
         const textarea = document.getElementById('description-textarea');
         const toolbarButtons = document.querySelectorAll('.toolbar-btn');
         
-        // Sanitize HTML function to remove problematic inline styles
-        function sanitizeHTML(html) {
-            // Create a temporary div to parse the HTML
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
+        // Simple formatting function that wraps selection with clean tags
+        function applyFormat(format) {
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0) return;
             
-            // Remove problematic elements and styles
-            const elementsToRemove = tempDiv.querySelectorAll('[style*="grid-column"], [style*="grid-template-columns"]');
-            elementsToRemove.forEach(el => {
-                el.remove();
-            });
+            const range = selection.getRangeAt(0);
             
-            // Clean up common issues
-            const allElements = tempDiv.querySelectorAll('*');
-            allElements.forEach(el => {
-                // Remove any inline styles that might break layout
-                if (el.hasAttribute('style')) {
-                    const style = el.getAttribute('style');
-                    // Remove problematic CSS properties
-                    const cleanStyle = style.replace(/grid-column[^;]+;?/g, '')
-                                           .replace(/grid-template-columns[^;]+;?/g, '')
-                                           .replace(/display[^;]+;?/g, '')
-                                           .replace(/color[^;]+;?/g, '');
-                    
-                    if (cleanStyle.trim() === '') {
-                        el.removeAttribute('style');
-                    } else {
-                        el.setAttribute('style', cleanStyle);
-                    }
-                }
-                
-                // Remove class attributes that might conflict
-                if (el.hasAttribute('class')) {
-                    const classes = el.getAttribute('class');
-                    if (classes.includes('form-group') || classes.includes('grid-column')) {
-                        el.removeAttribute('class');
-                    }
-                }
-            });
+            switch(format) {
+                case 'bold':
+                    wrapSelection(range, 'b');
+                    break;
+                case 'italic':
+                    wrapSelection(range, 'i');
+                    break;
+                case 'underline':
+                    wrapSelection(range, 'u');
+                    break;
+                case 'heading':
+                    wrapBlock(range, 'h2');
+                    break;
+                case 'paragraph':
+                    wrapBlock(range, 'p');
+                    break;
+                case 'bullet-list':
+                    wrapBlock(range, 'ul');
+                    break;
+                case 'numbered-list':
+                    wrapBlock(range, 'ol');
+                    break;
+            }
             
-            // Return cleaned HTML
-            let cleanedHTML = tempDiv.innerHTML;
-            
-            // Remove any remaining problematic patterns
-            cleanedHTML = cleanedHTML.replace(/style="[^"]*"/g, (match) => {
-                // Remove style attribute if it contains problematic properties
-                if (match.includes('grid-column') || match.includes('grid-template-columns') || match.includes('display:')) {
-                    return '';
-                }
-                return match;
-            });
-            
-            // Remove empty style attributes
-            cleanedHTML = cleanedHTML.replace(/style=""/g, '');
-            
-            return cleanedHTML;
+            updateTextarea();
+            editor.focus();
         }
         
-        // Initialize textarea with sanitized editor content
-        function updateTextarea() {
-            const originalContent = editor.innerHTML;
-            const sanitizedContent = sanitizeHTML(originalContent);
-            textarea.value = sanitizedContent;
-            
-            // Update editor with sanitized content if it changed
-            if (originalContent !== sanitizedContent) {
-                editor.innerHTML = sanitizedContent;
+        // Wrap selected text with tag
+        function wrapSelection(range, tagName) {
+            if (!range.collapsed) {
+                const selectedText = range.toString();
+                if (!selectedText.trim()) return;
+                
+                const wrapper = document.createElement(tagName);
+                wrapper.textContent = selectedText;
+                
+                range.deleteContents();
+                range.insertNode(wrapper);
+                
+                // Select the new content
+                const newRange = document.createRange();
+                newRange.selectNodeContents(wrapper);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
             }
         }
         
-        // Set initial placeholder
-        if (!editor.textContent.trim()) {
-            editor.innerHTML = '';
+        // Wrap block content
+        function wrapBlock(range, tagName) {
+            const content = range.cloneContents();
+            const wrapper = document.createElement(tagName);
+            
+            if (tagName === 'ul' || tagName === 'ol') {
+                const li = document.createElement('li');
+                if (content.childNodes.length > 0) {
+                    li.appendChild(content);
+                } else {
+                    li.textContent = 'List item';
+                }
+                wrapper.appendChild(li);
+            } else {
+                if (content.childNodes.length > 0) {
+                    wrapper.appendChild(content);
+                } else {
+                    wrapper.textContent = tagName === 'h2' ? 'Heading' : 'Paragraph';
+                }
+            }
+            
+            range.deleteContents();
+            range.insertNode(wrapper);
+            
+            // Select the new content
+            const newRange = document.createRange();
+            newRange.selectNodeContents(wrapper);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
         }
         
-        // Update textarea when editor content changes
-        editor.addEventListener('input', updateTextarea);
-        editor.addEventListener('blur', updateTextarea);
+        // Clean HTML function
+        function cleanHTML(html) {
+            // Remove empty tags
+            html = html.replace(/<[^\/>][^>]*><\/[^>]+>/g, '');
+            
+            // Remove unclosed tags
+            const tagsToClose = ['b', 'i', 'u', 'h2', 'p', 'ul', 'ol', 'li'];
+            tagsToClose.forEach(tag => {
+                const openRegex = new RegExp(`<${tag}[^>]*>`, 'gi');
+                const closeRegex = new RegExp(`</${tag}>`, 'gi');
+                const openMatches = html.match(openRegex) || [];
+                const closeMatches = html.match(closeRegex) || [];
+                
+                if (openMatches.length > closeMatches.length) {
+                    // Add missing closing tags
+                    html += `</${tag}>`;
+                }
+            });
+            
+            // Remove invalid nested tags
+            html = html.replace(/<\/b><\/b>/g, '</b>')
+                       .replace(/<\/i><\/i>/g, '</i>')
+                       .replace(/<\/u><\/u>/g, '</u>')
+                       .replace(/<div><\/div>/g, '')
+                       .replace(/<br><\/b>/g, '<br>')
+                       .replace(/<\/div><\/u>/g, '</div>')
+                       .replace(/<\/u><\/i>/g, '</u>')
+                       .replace(/<\/i><\/i>/g, '</i>');
+            
+            return html;
+        }
+        
+        // Update textarea with cleaned content
+        function updateTextarea() {
+            const cleanedContent = cleanHTML(editor.innerHTML);
+            textarea.value = cleanedContent;
+            
+            // Update editor if content was cleaned
+            if (editor.innerHTML !== cleanedContent) {
+                editor.innerHTML = cleanedContent;
+            }
+        }
+        
+        // Initialize with empty content
+        editor.innerHTML = '';
+        updateTextarea();
         
         // Handle toolbar button clicks
         toolbarButtons.forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
-                const command = this.dataset.command;
-                const value = this.dataset.value;
-                
-                // Focus editor first
-                editor.focus();
-                
-                // Execute the command
-                if (command === 'formatBlock' && value) {
-                    document.execCommand(command, false, value);
-                } else {
-                    document.execCommand(command, false, null);
-                }
-                
-                // Update textarea after command execution
-                updateTextarea();
-                
-                // Focus back to editor
-                editor.focus();
+                const format = this.getAttribute('data-format');
+                applyFormat(format);
             });
         });
         
@@ -1086,8 +1114,8 @@
         editor.addEventListener('paste', function(e) {
             e.preventDefault();
             
-            // Get pasted text
-            const text = (e.clipboardData || window.clipboardData).getData('text');
+            // Get plain text from clipboard
+            const text = e.clipboardData.getData('text/plain');
             
             // Insert plain text
             document.execCommand('insertText', false, text);
@@ -1096,14 +1124,19 @@
             updateTextarea();
         });
         
+        // Update textarea on input
+        editor.addEventListener('input', updateTextarea);
+        editor.addEventListener('blur', updateTextarea);
+        
         // Form submission handler
         const form = document.querySelector('form');
         form.addEventListener('submit', function(e) {
-            // Ensure textarea has the latest sanitized content
+            // Ensure textarea has the latest cleaned content
             updateTextarea();
             
             // Validate that description is not empty
-            if (!editor.textContent.trim() || editor.innerHTML === '<br>') {
+            const textContent = editor.textContent.trim();
+            if (!textContent || textContent === '') {
                 e.preventDefault();
                 alert('Please provide a description for your service.');
                 editor.focus();
