@@ -33,7 +33,7 @@
         </div>
         {% endif %}
 
-        <form class="mt-8 space-y-6" action="/register" method="POST">
+        <form class="mt-8 space-y-6" action="/register" method="POST" id="register-form">
             <div class="rounded-md shadow-sm space-y-4">
                 <div>
                     <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">
@@ -99,6 +99,56 @@
                         Note: Mentor accounts require admin verification before you can start accepting bookings.
                     </p>
                 </div>
+
+                <!-- Mentor Specific Fields (Hidden by default) -->
+                <div id="mentor-fields" class="space-y-4 hidden transition-all duration-300 ease-in-out">
+                    <div class="pt-4 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-graduation-cap text-secondary mr-2"></i>
+                            Mentor Information
+                        </h3>
+                        
+                        <!-- Bio Field -->
+                        <div class="mb-4">
+                            <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">
+                                Bio
+                            </label>
+                            <textarea id="bio" 
+                                      name="bio" 
+                                      rows="3"
+                                      class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                                      placeholder="Tell learners about your experience, expertise, and mentoring style..."></textarea>
+                            <p class="mt-1 text-xs text-gray-500">This will appear on your public mentor profile</p>
+                        </div>
+
+                        <!-- Social Links Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="linkedin_url" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="fab fa-linkedin text-blue-700 mr-1"></i>
+                                    LinkedIn
+                                </label>
+                                <input type="url" 
+                                       id="linkedin_url" 
+                                       name="linkedin_url" 
+                                       class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                                       placeholder="https://linkedin.com/in/username">
+                            </div>
+
+                            <div>
+                                <label for="github_url" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="fab fa-github text-gray-800 mr-1"></i>
+                                    GitHub
+                                </label>
+                                <input type="url" 
+                                       id="github_url" 
+                                       name="github_url" 
+                                       class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                                       placeholder="https://github.com/username">
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="flex items-center">
@@ -134,10 +184,114 @@
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const learnerRadio = document.getElementById('learner');
+    const mentorRadio = document.getElementById('mentor');
+    const mentorFields = document.getElementById('mentor-fields');
+    
+    // Function to toggle mentor fields
+    function toggleMentorFields() {
+        if (mentorRadio.checked) {
+            mentorFields.classList.remove('hidden');
+            mentorFields.classList.add('block');
+            // Add animation
+            mentorFields.style.opacity = '0';
+            mentorFields.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                mentorFields.style.transition = 'all 0.3s ease-in-out';
+                mentorFields.style.opacity = '1';
+                mentorFields.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Make mentor fields optional
+            document.getElementById('bio').removeAttribute('required');
+            document.getElementById('linkedin_url').removeAttribute('required');
+            document.getElementById('github_url').removeAttribute('required');
+        } else {
+            mentorFields.style.opacity = '0';
+            mentorFields.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                mentorFields.classList.remove('block');
+                mentorFields.classList.add('hidden');
+            }, 300);
+            
+            // Clear mentor fields when switching to learner
+            document.getElementById('bio').value = '';
+            document.getElementById('linkedin_url').value = '';
+            document.getElementById('github_url').value = '';
+        }
+    }
+    
+    // Initial check
+    toggleMentorFields();
+    
+    // Add event listeners
+    learnerRadio.addEventListener('change', toggleMentorFields);
+    mentorRadio.addEventListener('change', toggleMentorFields);
+    
+    // Form validation for mentor fields (make required when mentor is selected)
+    const form = document.getElementById('register-form');
+    form.addEventListener('submit', function(e) {
+        if (mentorRadio.checked) {
+            // You can add validation here if needed
+            // Currently mentor fields are optional
+        }
+    });
+});
+
+// Smooth scrolling to mentor fields when selected (mobile friendly)
+function scrollToMentorFields() {
+    if (document.getElementById('mentor').checked) {
+        const mentorFields = document.getElementById('mentor-fields');
+        mentorFields.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+    }
+}
+</script>
+
 <style>
     input[type="radio"]:checked + label {
         border-color: #2563eb;
         background-color: rgba(37, 99, 235, 0.05);
+    }
+    
+    /* Animation for mentor fields */
+    #mentor-fields {
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    }
+    
+    #mentor-fields.block {
+        max-height: 500px;
+        opacity: 1;
+    }
+    
+    /* Improve form focus states */
+    textarea:focus, input[type="url"]:focus {
+        outline: none;
+        ring: 2px;
+        ring-color: #2563eb;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+        .grid-cols-2 {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+        
+        #mentor-fields {
+            padding-top: 1rem;
+        }
     }
 </style>
 {% endblock %}
