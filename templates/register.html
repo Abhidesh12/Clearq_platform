@@ -121,6 +121,20 @@
                             <p class="mt-1 text-xs text-gray-500">This will appear on your public mentor profile</p>
                         </div>
 
+                        <!-- Industry Field -->
+                        <div class="mb-4">
+                            <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">
+                                <i class="fas fa-industry text-blue-600 mr-1"></i>
+                                Industry
+                            </label>
+                            <input type="text" 
+                                   id="industry" 
+                                   name="industry" 
+                                   class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                                   placeholder="Technology, Finance, Healthcare">
+                            <p class="mt-1 text-xs text-gray-500">Your primary industry or field</p>
+                        </div>
+
                         <!-- Social Links Grid -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -207,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Make mentor fields optional
             document.getElementById('bio').removeAttribute('required');
+            document.getElementById('industry').removeAttribute('required');
             document.getElementById('linkedin_url').removeAttribute('required');
             document.getElementById('github_url').removeAttribute('required');
         } else {
@@ -220,6 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Clear mentor fields when switching to learner
             document.getElementById('bio').value = '';
+            document.getElementById('industry').value = '';
             document.getElementById('linkedin_url').value = '';
             document.getElementById('github_url').value = '';
         }
@@ -269,17 +285,24 @@ function scrollToMentorFields() {
     }
     
     #mentor-fields.block {
-        max-height: 500px;
+        max-height: 600px;
         opacity: 1;
     }
     
     /* Improve form focus states */
-    textarea:focus, input[type="url"]:focus {
+    textarea:focus, input[type="url"]:focus, input[type="text"]:focus {
         outline: none;
         ring: 2px;
         ring-color: #2563eb;
         border-color: #2563eb;
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    /* Style for the industry icon */
+    .fa-industry {
+        display: inline-block;
+        width: 16px;
+        text-align: center;
     }
     
     /* Responsive adjustments */
@@ -291,6 +314,11 @@ function scrollToMentorFields() {
         
         #mentor-fields {
             padding-top: 1rem;
+        }
+        
+        .grid-cols-1.md\:grid-cols-2 {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
         }
     }
 </style>
