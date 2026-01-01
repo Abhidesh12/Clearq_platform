@@ -344,6 +344,105 @@
         box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
     }
 
+    /* Rich Text Editor Styles */
+    .rich-text-editor-container {
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background-color: var(--white);
+        transition: var(--transition);
+    }
+
+    .rich-text-editor-container:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .editor-toolbar {
+        display: flex;
+        padding: 0.5rem;
+        background-color: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        align-items: center;
+    }
+
+    .toolbar-btn {
+        background: none;
+        border: 1px solid transparent;
+        border-radius: var(--radius-sm);
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--gray-600);
+        font-size: 0.875rem;
+        transition: var(--transition);
+        padding: 0;
+    }
+
+    .toolbar-btn:hover {
+        background-color: var(--gray-200);
+        border-color: var(--gray-300);
+        color: var(--gray-900);
+    }
+
+    .toolbar-btn.active {
+        background-color: var(--primary-light);
+        border-color: var(--primary);
+        color: var(--primary-dark);
+    }
+
+    .toolbar-separator {
+        width: 1px;
+        height: 1.5rem;
+        background-color: var(--gray-300);
+        margin: 0 0.25rem;
+    }
+
+    .editor-content {
+        min-height: 180px;
+        padding: 0.875rem;
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        overflow-y: auto;
+        outline: none;
+        color: var(--gray-900);
+        font-family: inherit;
+    }
+
+    .editor-content:focus {
+        outline: none;
+    }
+
+    .editor-content p {
+        margin-bottom: 0.75rem;
+    }
+
+    .editor-content ul, .editor-content ol {
+        padding-left: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .editor-content h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 1rem 0 0.5rem;
+        color: var(--gray-900);
+    }
+
+    .editor-content[placeholder]:empty:before {
+        content: attr(placeholder);
+        color: var(--gray-400);
+    }
+
+    .hidden-textarea {
+        display: none;
+    }
+
     /* Services List */
     .services-list-card {
         background: var(--white);
@@ -391,7 +490,7 @@
 
     .service-item:hover {
         border-color: var(--primary);
-        background: var(--blue-50);
+        background: var(--gray-50);
         transform: translateY(-1px);
     }
 
@@ -569,6 +668,10 @@
             flex-direction: row;
             gap: 1.5rem;
         }
+        
+        .editor-toolbar {
+            gap: 0.5rem;
+        }
     }
 
     @media (min-width: 768px) {
@@ -581,6 +684,10 @@
         .create-service-card,
         .services-list-card {
             margin-bottom: 0;
+        }
+        
+        .editor-content {
+            min-height: 200px;
         }
     }
 
@@ -683,14 +790,57 @@
                                 </select>
                             </div>
                             
-                            <!-- Description -->
+                            <!-- Description with Rich Text Editor -->
                             <div class="form-group">
                                 <label class="form-label">
                                     Description <span class="form-required">*</span>
                                 </label>
-                                <textarea name="description" rows="3" required 
-                                          class="form-textarea"
-                                          placeholder="Describe what learners will get from this service..."></textarea>
+                                <div class="rich-text-editor-container">
+                                    <div class="editor-toolbar">
+                                        <button type="button" class="toolbar-btn" data-command="bold" title="Bold">
+                                            <i class="fas fa-bold"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="italic" title="Italic">
+                                            <i class="fas fa-italic"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="underline" title="Underline">
+                                            <i class="fas fa-underline"></i>
+                                        </button>
+                                        <div class="toolbar-separator"></div>
+                                        <button type="button" class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
+                                            <i class="fas fa-list-ul"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
+                                            <i class="fas fa-list-ol"></i>
+                                        </button>
+                                        <div class="toolbar-separator"></div>
+                                        <button type="button" class="toolbar-btn" data-command="justifyLeft" title="Align Left">
+                                            <i class="fas fa-align-left"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Center">
+                                            <i class="fas fa-align-center"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right">
+                                            <i class="fas fa-align-right"></i>
+                                        </button>
+                                        <div class="toolbar-separator"></div>
+                                        <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="h2" title="Heading">
+                                            <i class="fas fa-heading"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="p" title="Paragraph">
+                                            <i class="fas fa-paragraph"></i>
+                                        </button>
+                                    </div>
+                                    <div class="editor-content" contenteditable="true" id="rich-text-editor"
+                                         placeholder="Describe what learners will get from this service..."></div>
+                                    <textarea name="description" rows="3" required 
+                                              class="form-textarea hidden-textarea"
+                                              placeholder="Describe what learners will get from this service..."
+                                              id="description-textarea"></textarea>
+                                </div>
+                                <p class="form-help">
+                                    Use the toolbar to format your description. This will be displayed to learners.
+                                </p>
                             </div>
                             
                             <!-- Price, Duration, Type -->
@@ -823,6 +973,73 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Rich Text Editor Functionality
+        const editor = document.getElementById('rich-text-editor');
+        const textarea = document.getElementById('description-textarea');
+        const toolbarButtons = document.querySelectorAll('.toolbar-btn');
+        
+        // Initialize textarea with editor content
+        function updateTextarea() {
+            textarea.value = editor.innerHTML;
+        }
+        
+        // Set initial placeholder
+        if (!editor.textContent.trim()) {
+            editor.innerHTML = '';
+        }
+        
+        // Update textarea when editor content changes
+        editor.addEventListener('input', updateTextarea);
+        
+        // Handle toolbar button clicks
+        toolbarButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const command = this.dataset.command;
+                const value = this.dataset.value;
+                
+                // Execute the command
+                if (command === 'formatBlock' && value) {
+                    document.execCommand(command, false, value);
+                } else {
+                    document.execCommand(command, false, null);
+                }
+                
+                // Update textarea after command execution
+                updateTextarea();
+                
+                // Focus back to editor
+                editor.focus();
+            });
+        });
+        
+        // Form submission handler
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            // Ensure textarea has the latest content
+            updateTextarea();
+            
+            // Validate that description is not empty
+            if (!editor.textContent.trim() || editor.innerHTML === '<br>') {
+                e.preventDefault();
+                alert('Please provide a description for your service.');
+                editor.focus();
+                return;
+            }
+            
+            // Show loading state
+            const submitButton = this.querySelector('.submit-button');
+            const originalHTML = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Creating...</span>';
+            submitButton.disabled = true;
+            
+            // Re-enable after 5 seconds if still on page
+            setTimeout(() => {
+                submitButton.innerHTML = originalHTML;
+                submitButton.disabled = false;
+            }, 5000);
+        });
+        
+        // Digital product fields toggle
         const digitalProductFields = document.getElementById('digital-product-fields');
         const digitalRadio = document.querySelector('input[name="is_digital"][value="true"]');
         const liveRadio = document.querySelector('input[name="is_digital"][value="false"]');
@@ -841,22 +1058,6 @@
         
         // Initialize
         toggleDigitalFields();
-        
-        // Form submission handling
-        const form = document.querySelector('form');
-        form.addEventListener('submit', function(e) {
-            // Show loading state
-            const submitButton = this.querySelector('.submit-button');
-            const originalHTML = submitButton.innerHTML;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Creating...</span>';
-            submitButton.disabled = true;
-            
-            // Re-enable after 5 seconds if still on page
-            setTimeout(() => {
-                submitButton.innerHTML = originalHTML;
-                submitButton.disabled = false;
-            }, 5000);
-        });
         
         // Service action buttons
         const editButtons = document.querySelectorAll('.edit-button');
