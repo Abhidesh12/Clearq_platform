@@ -570,6 +570,49 @@
         border: 1px solid #FECACA;
     }
 
+    /* Google Meet Button Styles */
+    .join-meet-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .join-meet-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.2), 
+            transparent);
+        transition: left 0.5s;
+    }
+
+    .join-meet-btn:hover::before {
+        left: 100%;
+    }
+
+    .join-meet-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+    }
+
     /* Stats Grid - Enhanced */
     .stats-grid {
         display: grid;
@@ -1331,7 +1374,7 @@
             </div>
             
             <div class="profile-share-buttons">
-                <!-- New Tab Button - FIXED -->
+                <!-- New Tab Button -->
                 {% if current_user.role == 'mentor' %}
                 <a href="/mentor/profile/{{ current_user.username }}" 
                    target="_blank" 
@@ -1380,40 +1423,59 @@
                         {% for booking in bookings %}
                         <div class="session-item">
                             <div class="session-header">
-                                <h3 class="session-title">
-                                    {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
-                                </h3>
+                                <div style="flex: 1;">
+                                    <h3 class="session-title">
+                                        {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                    </h3>
+                                    <div class="session-details" style="margin-top: 0.25rem;">
+                                        <span class="session-detail">
+                                            <i class="fas fa-user-tie"></i>
+                                            {% if booking.mentor and booking.mentor.user %}
+                                                {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+                                            {% else %}
+                                                Mentor
+                                            {% endif %}
+                                        </span>
+                                        <span class="session-detail">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                        </span>
+                                        <span class="session-detail">
+                                            <i class="fas fa-clock"></i>
+                                            {{ booking.start_time if booking.start_time else 'TBD' }}
+                                        </span>
+                                    </div>
+                                </div>
                                 <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
                             </div>
                             
-                            <div class="session-details">
-                                <span class="session-detail">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
-                                </span>
-                                <span class="session-detail">
-                                    <i class="fas fa-clock"></i>
-                                    {{ booking.start_time if booking.start_time else 'TBD' }}
-                                </span>
-                                <span class="session-detail">
-                                    <i class="fas fa-user-tie"></i>
-                                    {% if booking.mentor and booking.mentor.user %}
-                                        {{ booking.mentor.user.full_name or booking.mentor.user.username }}
-                                    {% else %}
-                                        Mentor
-                                    {% endif %}
-                                </span>
+                            <!-- Google Meet Button Row -->
+                            {% if booking.meeting_link %}
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200);">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;"></div>
+                                    <span style="font-size: 0.8125rem; color: var(--gray-600);">Meeting link available</span>
+                                </div>
+                                <a href="{{ booking.meeting_link }}" 
+                                   target="_blank" 
+                                   class="join-meet-btn"
+                                   style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+                                    <i class="fas fa-video"></i>
+                                    Join
+                                </a>
                             </div>
+                            {% endif %}
                             
-                            <div class="session-status">
+                            <div class="session-status" style="margin-top: {% if booking.meeting_link %}0.75rem{% else %}0.5rem{% endif %};">
                                 <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
-                                    <i class="fas {% if booking.status == 'confirmed' %}fa-check-circle{% elif booking.status == 'pending' %}fa-clock{% else %}fa-check{% endif %}"></i>
                                     {{ booking.status|title }}
                                 </span>
-                                <span class="status-badge {% if booking.payment_status == 'paid' %}status-paid{% else %}status-unpaid{% endif %}">
-                                    <i class="fas {% if booking.payment_status == 'paid' %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
-                                    {{ booking.payment_status|title }}
+                                {% if booking.meeting_id %}
+                                <span class="status-badge" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary); border: 1px solid #DBEAFE;">
+                                    <i class="fas fa-video"></i>
+                                    Meet ID: {{ booking.meeting_id|truncate(10) }}
                                 </span>
+                                {% endif %}
                             </div>
                         </div>
                         {% endfor %}
@@ -1744,32 +1806,55 @@
                             {% for booking in bookings %}
                             <div class="session-item">
                                 <div class="session-header">
-                                    <h3 class="session-title">
-                                        {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
-                                    </h3>
+                                    <div style="flex: 1;">
+                                        <h3 class="session-title">
+                                            {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                        </h3>
+                                        <div class="session-details" style="margin-top: 0.25rem;">
+                                            <span class="session-detail">
+                                                <i class="fas fa-user-graduate"></i>
+                                                {{ booking.learner.full_name if booking.learner else 'Learner' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-clock"></i>
+                                                {{ booking.start_time if booking.start_time else 'TBD' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                     <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
                                 </div>
                                 
-                                <div class="session-details">
-                                    <span class="session-detail">
-                                        <i class="fas fa-user-graduate"></i>
-                                        {{ booking.learner.full_name if booking.learner else 'Learner' }}
-                                    </span>
-                                    <span class="session-detail">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
-                                    </span>
-                                    <span class="session-detail">
-                                        <i class="fas fa-clock"></i>
-                                        {{ booking.start_time if booking.start_time else 'TBD' }}
-                                    </span>
+                                <!-- Google Meet Button Row -->
+                                {% if booking.meeting_link %}
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200);">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;"></div>
+                                        <span style="font-size: 0.8125rem; color: var(--gray-600);">Meeting link available</span>
+                                    </div>
+                                    <a href="{{ booking.meeting_link }}" 
+                                       target="_blank" 
+                                       class="join-meet-btn"
+                                       style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+                                        <i class="fas fa-video"></i>
+                                        Start Meeting
+                                    </a>
                                 </div>
+                                {% endif %}
                                 
-                                <div class="session-status">
+                                <div class="session-status" style="margin-top: {% if booking.meeting_link %}0.75rem{% else %}0.5rem{% endif %};">
                                     <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
-                                        <i class="fas {% if booking.status == 'confirmed' %}fa-check-circle{% elif booking.status == 'pending' %}fa-clock{% else %}fa-check{% endif %}"></i>
                                         {{ booking.status|title }}
                                     </span>
+                                    {% if booking.meeting_id %}
+                                    <span class="status-badge" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary); border: 1px solid #DBEAFE;">
+                                        <i class="fas fa-video"></i>
+                                        Meet ID: {{ booking.meeting_id|truncate(10) }}
+                                    </span>
+                                    {% endif %}
                                 </div>
                             </div>
                             {% endfor %}
@@ -1932,26 +2017,49 @@
                             {% for booking in bookings[:5] %}
                             <div class="session-item">
                                 <div class="session-header">
-                                    <h3 class="session-title">Session #{{ booking.id }}</h3>
+                                    <div style="flex: 1;">
+                                        <h3 class="session-title">Session #{{ booking.id }}</h3>
+                                        <div class="session-details" style="margin-top: 0.25rem;">
+                                            <span class="session-detail">
+                                                <i class="fas fa-user-graduate"></i>
+                                                {{ booking.learner.full_name if booking.learner else 'Learner' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                {{ booking.created_at.strftime('%b %d, %Y') if booking.created_at else '' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                     <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
                                 </div>
                                 
-                                <div class="session-details">
-                                    <span class="session-detail">
-                                        <i class="fas fa-user-graduate"></i>
-                                        {{ booking.learner.full_name if booking.learner else 'Learner' }}
-                                    </span>
-                                    <span class="session-detail">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        {{ booking.created_at.strftime('%b %d, %Y') if booking.created_at else '' }}
-                                    </span>
+                                <!-- Google Meet Button Row -->
+                                {% if booking.meeting_link %}
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200);">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;"></div>
+                                        <span style="font-size: 0.8125rem; color: var(--gray-600);">Meeting link available</span>
+                                    </div>
+                                    <a href="{{ booking.meeting_link }}" 
+                                       target="_blank" 
+                                       class="join-meet-btn"
+                                       style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+                                        <i class="fas fa-video"></i>
+                                        Join
+                                    </a>
                                 </div>
+                                {% endif %}
                                 
-                                <div class="session-status">
+                                <div class="session-status" style="margin-top: {% if booking.meeting_link %}0.75rem{% else %}0.5rem{% endif %};">
                                     <span class="status-badge {% if booking.payment_status == 'paid' %}status-paid{% else %}status-unpaid{% endif %}">
-                                        <i class="fas {% if booking.payment_status == 'paid' %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
                                         {{ booking.payment_status|title }}
                                     </span>
+                                    {% if booking.meeting_id %}
+                                    <span class="status-badge" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary); border: 1px solid #DBEAFE;">
+                                        <i class="fas fa-video"></i>
+                                        Meet ID: {{ booking.meeting_id|truncate(10) }}
+                                    </span>
+                                    {% endif %}
                                 </div>
                             </div>
                             {% endfor %}
