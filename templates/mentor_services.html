@@ -978,9 +978,74 @@
         const textarea = document.getElementById('description-textarea');
         const toolbarButtons = document.querySelectorAll('.toolbar-btn');
         
-        // Initialize textarea with editor content
+        // Sanitize HTML function to remove problematic inline styles
+        function sanitizeHTML(html) {
+            // Create a temporary div to parse the HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Remove problematic elements and styles
+            const elementsToRemove = tempDiv.querySelectorAll('[style*="grid-column"], [style*="grid-template-columns"]');
+            elementsToRemove.forEach(el => {
+                el.remove();
+            });
+            
+            // Clean up common issues
+            const allElements = tempDiv.querySelectorAll('*');
+            allElements.forEach(el => {
+                // Remove any inline styles that might break layout
+                if (el.hasAttribute('style')) {
+                    const style = el.getAttribute('style');
+                    // Remove problematic CSS properties
+                    const cleanStyle = style.replace(/grid-column[^;]+;?/g, '')
+                                           .replace(/grid-template-columns[^;]+;?/g, '')
+                                           .replace(/display[^;]+;?/g, '')
+                                           .replace(/color[^;]+;?/g, '');
+                    
+                    if (cleanStyle.trim() === '') {
+                        el.removeAttribute('style');
+                    } else {
+                        el.setAttribute('style', cleanStyle);
+                    }
+                }
+                
+                // Remove class attributes that might conflict
+                if (el.hasAttribute('class')) {
+                    const classes = el.getAttribute('class');
+                    if (classes.includes('form-group') || classes.includes('grid-column')) {
+                        el.removeAttribute('class');
+                    }
+                }
+            });
+            
+            // Return cleaned HTML
+            let cleanedHTML = tempDiv.innerHTML;
+            
+            // Remove any remaining problematic patterns
+            cleanedHTML = cleanedHTML.replace(/style="[^"]*"/g, (match) => {
+                // Remove style attribute if it contains problematic properties
+                if (match.includes('grid-column') || match.includes('grid-template-columns') || match.includes('display:')) {
+                    return '';
+                }
+                return match;
+            });
+            
+            // Remove empty style attributes
+            cleanedHTML = cleanedHTML.replace(/style=""/g, '');
+            
+            return cleanedHTML;
+        }
+        
+        // Initialize textarea with sanitized editor content
         function updateTextarea() {
-            textarea.value = editor.innerHTML;
+            const originalContent = editor.innerHTML;
+            const sanitizedContent = sanitizeHTML(originalContent);
+            textarea.value = sanitizedContent;
+            
+            // Update editor with sanitized content if it changed
+            if (originalContent !== sanitizedContent) {
+                editor.innerHTML = sanitizedContent;
+            }
         }
         
         // Set initial placeholder
@@ -990,12 +1055,17 @@
         
         // Update textarea when editor content changes
         editor.addEventListener('input', updateTextarea);
+        editor.addEventListener('blur', updateTextarea);
         
         // Handle toolbar button clicks
         toolbarButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
                 const command = this.dataset.command;
                 const value = this.dataset.value;
+                
+                // Focus editor first
+                editor.focus();
                 
                 // Execute the command
                 if (command === 'formatBlock' && value) {
@@ -1012,10 +1082,24 @@
             });
         });
         
+        // Clean up paste events
+        editor.addEventListener('paste', function(e) {
+            e.preventDefault();
+            
+            // Get pasted text
+            const text = (e.clipboardData || window.clipboardData).getData('text');
+            
+            // Insert plain text
+            document.execCommand('insertText', false, text);
+            
+            // Update textarea
+            updateTextarea();
+        });
+        
         // Form submission handler
         const form = document.querySelector('form');
         form.addEventListener('submit', function(e) {
-            // Ensure textarea has the latest content
+            // Ensure textarea has the latest sanitized content
             updateTextarea();
             
             // Validate that description is not empty
