@@ -1408,8 +1408,8 @@
         {% if current_user.role == 'learner' %}
         <!-- Learner Dashboard -->
         <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
-            {% if bookings and bookings|length > 0 %}
-            <!-- Upcoming Sessions -->
+            <!-- Upcoming Sessions (Confirmed & Paid with Meeting Links) -->
+            {% if upcoming_sessions and upcoming_sessions|length > 0 %}
             <div class="dashboard-card">
                 <div class="card-header">
                     <h2><i class="fas fa-calendar-check"></i> Upcoming Sessions</h2>
@@ -1420,7 +1420,7 @@
                 
                 <div class="card-content">
                     <div class="sessions-list">
-                        {% for booking in bookings %}
+                        {% for booking in upcoming_sessions %}
                         <div class="session-item">
                             <div class="session-header">
                                 <div style="flex: 1;">
@@ -1442,7 +1442,7 @@
                                         </span>
                                         <span class="session-detail">
                                             <i class="fas fa-clock"></i>
-                                            {{ booking.start_time if booking.start_time else 'TBD' }}
+                                            {{ booking.selected_time if booking.selected_time else 'TBD' }}
                                         </span>
                                     </div>
                                 </div>
@@ -1454,21 +1454,22 @@
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200);">
                                 <div style="display: flex; align-items: center; gap: 0.5rem;">
                                     <div style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;"></div>
-                                    <span style="font-size: 0.8125rem; color: var(--gray-600);">Meeting link available</span>
+                                    <span style="font-size: 0.8125rem; color: var(--gray-600);">Meeting link ready</span>
                                 </div>
                                 <a href="{{ booking.meeting_link }}" 
                                    target="_blank" 
                                    class="join-meet-btn"
                                    style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
                                     <i class="fas fa-video"></i>
-                                    Join
+                                    Join Meeting
                                 </a>
                             </div>
                             {% endif %}
                             
                             <div class="session-status" style="margin-top: {% if booking.meeting_link %}0.75rem{% else %}0.5rem{% endif %};">
-                                <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
-                                    {{ booking.status|title }}
+                                <span class="status-badge status-confirmed">
+                                    <i class="fas fa-check-circle"></i>
+                                    Confirmed
                                 </span>
                                 {% if booking.meeting_id %}
                                 <span class="status-badge" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary); border: 1px solid #DBEAFE;">
@@ -1501,6 +1502,69 @@
             </div>
             {% endif %}
 
+            <!-- Pending Payments Section -->
+            {% if pending_bookings and pending_bookings|length > 0 %}
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-clock"></i> Pending Payments</h2>
+                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                        <i class="fas fa-hashtag"></i>
+                        {{ pending_bookings|length }} awaiting payment
+                    </span>
+                </div>
+                
+                <div class="card-content">
+                    <div class="sessions-list">
+                        {% for booking in pending_bookings %}
+                        <div class="session-item" style="border-left: 4px solid var(--warning);">
+                            <div class="session-header">
+                                <div style="flex: 1;">
+                                    <h3 class="session-title">
+                                        {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                    </h3>
+                                    <div class="session-details" style="margin-top: 0.25rem;">
+                                        <span class="session-detail">
+                                            <i class="fas fa-user-tie"></i>
+                                            {% if booking.mentor and booking.mentor.user %}
+                                                {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+                                            {% else %}
+                                                Mentor
+                                            {% endif %}
+                                        </span>
+                                        <span class="session-detail">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                        </span>
+                                        <span class="session-detail">
+                                            <i class="fas fa-clock"></i>
+                                            {{ booking.selected_time if booking.selected_time else 'TBD' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                            </div>
+                            
+                            <div style="margin-top: 0.75rem;">
+                                <div class="session-status">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Payment Pending
+                                    </span>
+                                    {% if booking.razorpay_order_id %}
+                                    <a href="/payment/{{ booking.id }}" class="join-meet-btn" style="background: var(--primary);">
+                                        <i class="fas fa-credit-card"></i>
+                                        Complete Payment
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Stats and Quick Actions Grid -->
             <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
                 <!-- Stats -->
@@ -1512,16 +1576,16 @@
                     <div class="card-content">
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <div class="stat-value">{% if bookings %}{{ bookings|length }}{% else %}0{% endif %}</div>
+                                <div class="stat-value">{{ total_sessions|default(0) }}</div>
                                 <div class="stat-label">Total Sessions</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-value">{% if bookings %}{{ bookings|length * 1 }}{% else %}0{% endif %}</div>
-                                <div class="stat-label">Hours</div>
+                                <div class="stat-value">{{ completed_sessions|default(0) }}</div>
+                                <div class="stat-label">Completed</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-value">5+</div>
-                                <div class="stat-label">Skills</div>
+                                <div class="stat-value">{{ pending_payments|default(0) }}</div>
+                                <div class="stat-label">Pending</div>
                             </div>
                             <div class="stat-item">
                                 <div class="stat-value">4.5</div>
@@ -1680,10 +1744,8 @@
                     <div class="card-content">
                         <div class="stats-grid">
                             <div class="stat-item">
-                                <div class="stat-value">
-                                    {% if bookings %}{{ bookings|length }}{% else %}0{% endif %}
-                                </div>
-                                <div class="stat-label">Total Sessions</div>
+                                <div class="stat-value">{{ total_bookings|default(0) }}</div>
+                                <div class="stat-label">Total Bookings</div>
                             </div>
                             <div class="stat-item">
                                 <div class="stat-value">{{ mentor.rating|default('4.9') }}/5</div>
@@ -1694,8 +1756,8 @@
                                 <div class="stat-label">Reviews</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-value">₹{{ earnings|default(0) }}</div>
-                                <div class="stat-label">Earnings</div>
+                                <div class="stat-value">{{ upcoming_count|default(0) }}</div>
+                                <div class="stat-label">Upcoming</div>
                             </div>
                         </div>
                     </div>
@@ -1719,17 +1781,25 @@
                             
                             <div class="earnings-stats">
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">
-                                        {% if bookings %}{{ bookings|selectattr('status', 'equalto', 'completed')|list|length }}{% else %}0{% endif %}
-                                    </div>
-                                    <div class="earning-stat-label">Completed</div>
+                                    <div class="earning-stat-value">{{ upcoming_count|default(0) }}</div>
+                                    <div class="earning-stat-label">Upcoming</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
+                                    <div class="earning-stat-label">Pending</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
                                     <div class="earning-stat-value">
-                                        {% if bookings %}{{ bookings|selectattr('payment_status', 'equalto', 'pending')|list|length }}{% else %}0{% endif %}
+                                        {% if confirmed_bookings %}{{ confirmed_bookings|selectattr('payment_status', 'equalto', 'paid')|list|length }}{% else %}0{% endif %}
                                     </div>
-                                    <div class="earning-stat-label">Pending</div>
+                                    <div class="earning-stat-label">Paid</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
+                                    <div class="earning-stat-label">Unpaid</div>
                                 </div>
                             </div>
                             
@@ -1791,19 +1861,20 @@
         <!-- Sessions Section -->
         <div id="mentor-sessions" class="mentor-section">
             <div style="grid-column: 1 / -1;">
+                <!-- Upcoming Sessions Section -->
+                {% if upcoming_sessions and upcoming_sessions|length > 0 %}
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
                         <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
                             <i class="fas fa-hashtag"></i>
-                            {{ bookings|length if bookings else 0 }} total
+                            {{ upcoming_sessions|length }} confirmed
                         </span>
                     </div>
                     
                     <div class="card-content">
-                        {% if bookings and bookings|length > 0 %}
                         <div class="sessions-list">
-                            {% for booking in bookings %}
+                            {% for booking in upcoming_sessions %}
                             <div class="session-item">
                                 <div class="session-header">
                                     <div style="flex: 1;">
@@ -1821,14 +1892,13 @@
                                             </span>
                                             <span class="session-detail">
                                                 <i class="fas fa-clock"></i>
-                                                {{ booking.start_time if booking.start_time else 'TBD' }}
+                                                {{ booking.selected_time if booking.selected_time else 'TBD' }}
                                             </span>
                                         </div>
                                     </div>
                                     <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
                                 </div>
                                 
-                                <!-- Google Meet Button Row -->
                                 {% if booking.meeting_link %}
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200);">
                                     <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -1846,8 +1916,9 @@
                                 {% endif %}
                                 
                                 <div class="session-status" style="margin-top: {% if booking.meeting_link %}0.75rem{% else %}0.5rem{% endif %};">
-                                    <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}">
-                                        {{ booking.status|title }}
+                                    <span class="status-badge status-confirmed">
+                                        <i class="fas fa-check-circle"></i>
+                                        Confirmed
                                     </span>
                                     {% if booking.meeting_id %}
                                     <span class="status-badge" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary); border: 1px solid #DBEAFE;">
@@ -1859,7 +1930,14 @@
                             </div>
                             {% endfor %}
                         </div>
-                        {% else %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
+                    </div>
+                    <div class="card-content">
                         <div class="empty-state">
                             <div class="empty-state-icon">
                                 <i class="fas fa-calendar"></i>
@@ -1875,9 +1953,64 @@
                                 </a>
                             </div>
                         </div>
-                        {% endif %}
                     </div>
                 </div>
+                {% endif %}
+                
+                <!-- Pending Bookings Section -->
+                {% if pending_bookings and pending_bookings|length > 0 %}
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-hourglass-half"></i> Pending Bookings</h2>
+                        <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                            <i class="fas fa-hashtag"></i>
+                            {{ pending_bookings|length }} awaiting payment
+                        </span>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="sessions-list">
+                            {% for booking in pending_bookings %}
+                            <div class="session-item" style="border-left: 4px solid var(--warning);">
+                                <div class="session-header">
+                                    <div style="flex: 1;">
+                                        <h3 class="session-title">
+                                            {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                        </h3>
+                                        <div class="session-details" style="margin-top: 0.25rem;">
+                                            <span class="session-detail">
+                                                <i class="fas fa-user-graduate"></i>
+                                                {{ booking.learner.full_name if booking.learner else 'Learner' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-clock"></i>
+                                                {{ booking.selected_time if booking.selected_time else 'TBD' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                                </div>
+                                
+                                <div class="session-status" style="margin-top: 0.5rem;">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Awaiting Payment
+                                    </span>
+                                    <span class="status-badge" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; border: 1px solid #FDE68A;">
+                                        <i class="fas fa-info-circle"></i>
+                                        Meeting link will generate after payment
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -1953,30 +2086,24 @@
                             
                             <div class="earnings-stats">
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">
-                                        {% if bookings %}{{ bookings|selectattr('status', 'equalto', 'completed')|list|length }}{% else %}0{% endif %}
-                                    </div>
-                                    <div class="earning-stat-label">Completed</div>
+                                    <div class="earning-stat-value">{{ upcoming_count|default(0) }}</div>
+                                    <div class="earning-stat-label">Upcoming</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">
-                                        {% if bookings %}{{ bookings|selectattr('status', 'equalto', 'pending')|list|length }}{% else %}0{% endif %}
-                                    </div>
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
                                     <div class="earning-stat-label">Pending</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
                                     <div class="earning-stat-value">
-                                        {% if bookings %}{{ bookings|selectattr('payment_status', 'equalto', 'paid')|list|length }}{% else %}0{% endif %}
+                                        {% if confirmed_bookings %}{{ confirmed_bookings|selectattr('payment_status', 'equalto', 'paid')|list|length }}{% else %}0{% endif %}
                                     </div>
                                     <div class="earning-stat-label">Paid</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">
-                                        {% if bookings %}{{ bookings|selectattr('payment_status', 'equalto', 'pending')|list|length }}{% else %}0{% endif %}
-                                    </div>
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
                                     <div class="earning-stat-label">Unpaid</div>
                                 </div>
                             </div>
@@ -2012,9 +2139,9 @@
                     </div>
                     
                     <div class="card-content">
-                        {% if bookings and bookings|length > 0 %}
+                        {% if confirmed_bookings and confirmed_bookings|length > 0 %}
                         <div class="sessions-list">
-                            {% for booking in bookings[:5] %}
+                            {% for booking in confirmed_bookings[:5] %}
                             <div class="session-item">
                                 <div class="session-header">
                                     <div style="flex: 1;">
