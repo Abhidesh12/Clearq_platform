@@ -1,0 +1,347 @@
+<!-- templates/jitsi_meeting.html -->
+{% extends "base.html" %}
+
+{% block title %}Meeting Room - ClearQ{% endblock %}
+
+{% block content %}
+<style>
+    .meeting-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+    
+    .meeting-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .meeting-info {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .meeting-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+    
+    .action-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+    
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+        border: none;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    
+    .meeting-embed {
+        width: 100%;
+        height: 600px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        margin-top: 2rem;
+    }
+    
+    .participant-list {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 2rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .participant {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .participant:last-child {
+        border-bottom: none;
+    }
+    
+    .participant-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .meeting-code {
+        background: rgba(255,255,255,0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-family: monospace;
+        margin-top: 1rem;
+        display: inline-block;
+    }
+    
+    @media (max-width: 768px) {
+        .meeting-embed {
+            height: 400px;
+        }
+        
+        .meeting-header {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<div class="meeting-container">
+    <div class="meeting-header">
+        <h1 style="margin: 0; font-size: 2rem; font-weight: 600;">🎯 Live Mentorship Session</h1>
+        <p style="margin: 0.5rem 0 0; opacity: 0.9;">
+            {% if current_user.id == booking.learner_id %}
+            Session with {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+            {% else %}
+            Session with {{ booking.learner.full_name or booking.learner.username }}
+            {% endif %}
+        </p>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
+            <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 6px;">
+                <i class="fas fa-calendar-alt"></i>
+                {{ booking.booking_date.strftime('%B %d, %Y') }}
+            </div>
+            <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 6px;">
+                <i class="fas fa-clock"></i>
+                {{ booking.selected_time }}
+            </div>
+            <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 6px;">
+                <i class="fas fa-chalkboard-teacher"></i>
+                {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+            </div>
+        </div>
+        
+        {% if meeting_id %}
+        <div style="margin-top: 1rem;">
+            <p style="margin: 0; font-size: 0.9rem; opacity: 0.8;">Meeting ID:</p>
+            <div class="meeting-code">{{ meeting_id }}</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="meeting-actions">
+        <a href="{{ meeting_link }}" target="_blank" class="action-btn btn-primary">
+            <i class="fas fa-external-link-alt"></i>
+            Open Meeting in New Tab
+        </a>
+        
+        <a href="/dashboard" class="action-btn btn-secondary">
+            <i class="fas fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+        
+        {% if booking.status == 'confirmed' and booking.booking_date.strftime('%Y-%m-%d') == now().strftime('%Y-%m-%d') %}
+        <button onclick="embedMeeting()" class="action-btn btn-primary">
+            <i class="fas fa-video"></i>
+            Start Meeting Here
+        </button>
+        {% endif %}
+    </div>
+    
+    <!-- Meeting Embed Container -->
+    <div id="meeting-embed" class="meeting-embed" style="display: none;">
+        <!-- Jitsi Meet will be embedded here -->
+    </div>
+    
+    <!-- Instructions -->
+    <div class="meeting-info">
+        <h3 style="margin-top: 0; color: #475569;"><i class="fas fa-info-circle"></i> Meeting Instructions</h3>
+        <ol style="margin: 1rem 0; padding-left: 1.5rem; color: #64748b;">
+            <li>Allow camera and microphone access when prompted</li>
+            <li>Enter your name when joining the meeting</li>
+            <li>Click the red phone icon to leave the meeting</li>
+            <li>For best experience, use Chrome or Firefox</li>
+            <li>Test your audio/video before starting the session</li>
+        </ol>
+    </div>
+    
+    <!-- Participants -->
+    <div class="participant-list">
+        <h3 style="margin-top: 0; color: #475569;"><i class="fas fa-users"></i> Participants</h3>
+        
+        <div class="participant">
+            <div class="participant-avatar">
+                {{ (booking.mentor.user.full_name[0] if booking.mentor.user.full_name else booking.mentor.user.username[0])|upper }}
+            </div>
+            <div>
+                <strong>{{ booking.mentor.user.full_name or booking.mentor.user.username }}</strong>
+                <p style="margin: 0.25rem 0 0; color: #64748b; font-size: 0.9rem;">Mentor</p>
+            </div>
+        </div>
+        
+        <div class="participant">
+            <div class="participant-avatar">
+                {{ (booking.learner.full_name[0] if booking.learner.full_name else booking.learner.username[0])|upper }}
+            </div>
+            <div>
+                <strong>{{ booking.learner.full_name or booking.learner.username }}</strong>
+                <p style="margin: 0.25rem 0 0; color: #64748b; font-size: 0.9rem;">Learner</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src='https://meet.jit.si/external_api.js'></script>
+<script>
+    // Function to embed Jitsi Meet
+    function embedMeeting() {
+        const container = document.getElementById('meeting-embed');
+        container.style.display = 'block';
+        
+        // Get meeting ID from URL
+        const meetingLink = '{{ meeting_link }}';
+        const url = new URL(meetingLink);
+        const roomName = url.pathname.substring(1); // Remove leading slash
+        
+        // Get user's display name
+        const displayName = '{{ current_user.full_name or current_user.username }}';
+        
+        const domain = 'meet.jit.si';
+        const options = {
+            roomName: roomName,
+            width: '100%',
+            height: '100%',
+            parentNode: container,
+            userInfo: {
+                displayName: displayName,
+                email: '{{ current_user.email }}'
+            },
+            interfaceConfigOverwrite: {
+                APP_NAME: 'ClearQ Mentorship',
+                DEFAULT_BACKGROUND: '#667eea',
+                TOOLBAR_BUTTONS: [
+                    'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
+                    'fodeviceselection', 'hangup', 'profile', 'info', 'chat', 'recording',
+                    'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
+                    'videoquality', 'filmstrip', 'feedback', 'stats', 'shortcuts',
+                    'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
+                    'security'
+                ],
+                SHOW_JITSI_WATERMARK: false,
+                SHOW_WATERMARK_FOR_GUESTS: false,
+                SHOW_BRAND_WATERMARK: false,
+                BRAND_WATERMARK_LINK: '',
+                MOBILE_APP_PROMO: false,
+                HIDE_INVITE_MORE_HEADER: true,
+            },
+            configOverwrite: {
+                startWithAudioMuted: true,
+                startWithVideoMuted: false,
+                enableWelcomePage: false,
+                prejoinPageEnabled: false,
+                disableDeepLinking: true,
+                hideConferenceSubject: true,
+                subject: 'ClearQ Mentorship Session',
+            }
+        };
+        
+        // Initialize Jitsi Meet
+        try {
+            const api = new JitsiMeetExternalAPI(domain, options);
+            
+            // Handle meeting events
+            api.addEventListeners({
+                readyToClose: () => {
+                    container.style.display = 'none';
+                    api.dispose();
+                },
+                participantJoined: (participant) => {
+                    console.log('Participant joined:', participant);
+                },
+                participantLeft: (participant) => {
+                    console.log('Participant left:', participant);
+                },
+                videoConferenceJoined: () => {
+                    console.log('Conference joined');
+                },
+                videoConferenceLeft: () => {
+                    console.log('Conference left');
+                }
+            });
+            
+            // Scroll to meeting
+            container.scrollIntoView({ behavior: 'smooth' });
+            
+        } catch (error) {
+            console.error('Failed to load Jitsi Meet:', error);
+            container.innerHTML = `
+                <div style="background: #fef2f2; color: #991b1b; padding: 2rem; text-align: center; border-radius: 8px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                    <h3>Failed to Load Meeting</h3>
+                    <p>Please try opening the meeting in a new tab instead.</p>
+                    <a href="${meetingLink}" target="_blank" class="action-btn btn-primary" style="margin-top: 1rem;">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open in New Tab
+                    </a>
+                </div>
+            `;
+        }
+    }
+    
+    // Auto-embed if meeting is within next 30 minutes
+    document.addEventListener('DOMContentLoaded', function() {
+        const bookingTime = '{{ booking.selected_time }}';
+        const bookingDate = '{{ booking.booking_date.strftime("%Y-%m-%d") }}';
+        const today = new Date().toISOString().split('T')[0];
+        
+        if (bookingDate === today) {
+            // Parse time and check if within 30 minutes
+            const [hours, minutes] = bookingTime.split(':').map(Number);
+            const meetingTime = new Date();
+            meetingTime.setHours(hours, minutes, 0, 0);
+            const now = new Date();
+            
+            // If meeting is within next 30 minutes, auto-embed
+            const diffMinutes = (meetingTime - now) / (1000 * 60);
+            if (diffMinutes >= -5 && diffMinutes <= 30) {
+                embedMeeting();
+            }
+        }
+    });
+</script>
+{% endblock %}
