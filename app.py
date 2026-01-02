@@ -2467,17 +2467,16 @@ async def create_razorpay_order(request: Request, db: Session = Depends(get_db))
     
 @app.get("/meeting/{booking_id}", response_class=HTMLResponse)
 async def meeting_page(
-    request: Request,
     booking_id: int,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Meeting page with Google Meet integration"""
+    """Meeting page with Jitsi Meet integration"""
     booking = db.query(Booking).filter(
         Booking.id == booking_id,
         or_(
             Booking.learner_id == current_user.id,
-            Booking.mentor_id == current_user.id  # If user is mentor
+            Booking.mentor_id == current_user.id
         )
     ).first()
     
@@ -2491,14 +2490,14 @@ async def meeting_page(
             detail="Meeting not confirmed yet. Please wait for payment confirmation."
         )
     
-    # If meeting link doesn't exist, generate one using the existing function
+    # If meeting link doesn't exist, generate one
     if not booking.meeting_link:
         meeting_link, meeting_id = generate_meeting_link(booking.id, db)
     else:
         meeting_link = booking.meeting_link
         meeting_id = booking.meeting_id
     
-    return templates.TemplateResponse("meeting.html", {
+    return templates.TemplateResponse("jitsi_meeting.html", {
         "request": request,
         "current_user": current_user,
         "booking": booking,
