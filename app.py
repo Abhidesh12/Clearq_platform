@@ -696,43 +696,146 @@ async def dashboard(
     context = {"request": request, "current_user": current_user}
     
     if current_user.role == "learner":
-        bookings = db.query(Booking).filter(
+        # Show ALL bookings for the learner, but separate by status
+        all_bookings = db.query(Booking).filter(
             Booking.learner_id == current_user.id
-        ).order_by(Booking.booking_date.desc()).limit(10).all()
-        context["bookings"] = bookings
+        ).order_by(Booking.booking_date.desc()).limit(15).all()
+        
+        # Separate bookings by status
+        confirmed_bookings = []
+        pending_bookings = []
+        upcoming_sessions = []
+        
+        today = datetime.now().date()
+        
+        for booking in all_bookings:
+            if booking.payment_status == "paid" and booking.status == "confirmed" and booking.meeting_link:
+                # This is a confirmed, paid booking with meeting link
+                if booking.booking_date >= today:  # Only upcoming sessions
+                    upcoming_sessions.append(booking)
+                confirmed_bookings.append(booking)
+            elif booking.payment_status == "pending" or booking.status == "pending":
+                # This is a pending booking (awaiting payment)
+                pending_bookings.append(booking)
+            else:
+                # Other statuses (cancelled, completed, etc.)
+                confirmed_bookings.append(booking)
+        
+        # Get stats for the learner
+        total_sessions = len([b for b in all_bookings if b.payment_status == "paid"])
+        completed_sessions = len([b for b in all_bookings if b.status == "completed"])
+        pending_payments = len(pending_bookings)
+        
+        context.update({
+            "all_bookings": all_bookings,
+            "upcoming_sessions": upcoming_sessions,  # Only confirmed, upcoming sessions with meeting links
+            "confirmed_bookings": confirmed_bookings,
+            "pending_bookings": pending_bookings,
+            "total_sessions": total_sessions,
+            "completed_sessions": completed_sessions,
+            "pending_payments": pending_payments,
+            "stats": {
+                "total": total_sessions,
+                "completed": completed_sessions,
+                "pending": pending_payments
+            }
+        })
     
     elif current_user.role == "mentor":
         mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
         if mentor:
-            bookings = db.query(Booking).filter(
+            # Show ALL bookings for the mentor, but separate by status
+            all_bookings = db.query(Booking).filter(
                 Booking.mentor_id == mentor.id
-            ).order_by(Booking.booking_date.desc()).limit(10).all()
+            ).order_by(Booking.booking_date.desc()).limit(15).all()
+            
+            # Separate bookings by status
+            confirmed_bookings = []
+            pending_bookings = []
+            upcoming_sessions = []
+            
+            today = datetime.now().date()
+            
+            for booking in all_bookings:
+                if booking.payment_status == "paid" and booking.status == "confirmed" and booking.meeting_link:
+                    # This is a confirmed, paid booking with meeting link
+                    if booking.booking_date >= today:  # Only upcoming sessions
+                        upcoming_sessions.append(booking)
+                    confirmed_bookings.append(booking)
+                elif booking.payment_status == "pending" or booking.status == "pending":
+                    # This is a pending booking (awaiting payment)
+                    pending_bookings.append(booking)
+                else:
+                    # Other statuses (cancelled, completed, etc.)
+                    confirmed_bookings.append(booking)
+            
+            # Calculate earnings (only from paid bookings)
             earnings = db.query(Booking).filter(
                 Booking.mentor_id == mentor.id,
                 Booking.payment_status == "paid"
             ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
             
+            # Get stats for the mentor
+            total_bookings = len(all_bookings)
+            pending_payments = len(pending_bookings)
+            upcoming_count = len(upcoming_sessions)
+            
             context.update({
                 "mentor": mentor,
-                "bookings": bookings,
-                "earnings": earnings
+                "all_bookings": all_bookings,
+                "upcoming_sessions": upcoming_sessions,  # Only confirmed, upcoming sessions with meeting links
+                "confirmed_bookings": confirmed_bookings,
+                "pending_bookings": pending_bookings,
+                "earnings": earnings,
+                "total_bookings": total_bookings,
+                "pending_payments": pending_payments,
+                "upcoming_count": upcoming_count,
+                "stats": {
+                    "total": total_bookings,
+                    "pending": pending_payments,
+                    "upcoming": upcoming_count,
+                    "earnings": earnings
+                }
             })
     
     elif current_user.role == "admin":
         pending_mentors = db.query(Mentor).filter(
             Mentor.verification_status == "pending"
         ).all()
+        
+        # Get all recent bookings for admin
         recent_bookings = db.query(Booking).order_by(
             Booking.created_at.desc()
         ).limit(20).all()
         
+        # Calculate admin stats
+        total_users = db.query(User).count()
+        total_mentors = db.query(Mentor).filter(
+            Mentor.is_verified_by_admin == True
+        ).count()
+        total_bookings = db.query(Booking).count()
+        revenue = db.query(Booking).filter(
+            Booking.payment_status == "paid"
+        ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+        
+        # Get pending bookings count
+        pending_bookings_count = db.query(Booking).filter(
+            Booking.payment_status == "pending"
+        ).count()
+        
         context.update({
             "pending_mentors": pending_mentors,
-            "recent_bookings": recent_bookings
+            "recent_bookings": recent_bookings,
+            "stats": {
+                "total_users": total_users,
+                "total_mentors": total_mentors,
+                "total_bookings": total_bookings,
+                "revenue": revenue,
+                "pending_bookings": pending_bookings_count
+            }
         })
     
     return templates.TemplateResponse("dashboard.html", context)
-
 @app.get("/profile/edit", response_class=HTMLResponse)
 async def edit_profile_page(
     request: Request,
@@ -1435,10 +1538,9 @@ async def create_booking(
     end_time = start_time + timedelta(minutes=service.duration_minutes)
     end_time_str = end_time.strftime("%H:%M")
     
-    # Generate Google Meet link
-    meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
-    meeting_link = f"https://meet.google.com/new?hs=197&authuser=0"
-    #meeting_link = f"/meeting/{booking.id}"
+    # DO NOT generate Google Meet link yet - will generate after payment
+    meeting_id = None
+    meeting_link = None
     
     # Create Razorpay order
     order_amount = service.price * 100  # Convert to paise
@@ -1471,43 +1573,92 @@ async def create_booking(
             selected_time=time_slot,  # Store the selected start time
             razorpay_order_id=razorpay_order["id"],
             amount_paid=service.price,
-            status="pending",
-            payment_status="pending",
-            meeting_link=meeting_link,
-            meeting_id=meeting_id
+            status="pending",  # Will change to "confirmed" after payment
+            payment_status="pending",  # Will change to "paid" after payment
+            meeting_link=meeting_link,  # Will be set after payment
+            meeting_id=meeting_id,  # Will be set after payment
+            notes=f"Session scheduled for {date_str} at {time_slot} (Pending Payment)"
         )
         
         db.add(booking)
         db.commit()
         db.refresh(booking)
         
-        print(f"Booking created with ID: {booking.id}, Meeting Link: {meeting_link}")
+        print(f"Booking created with ID: {booking.id}, Payment pending")
         
-        # Mark the availability as booked for this specific time slot
-        # Find the availability for this date
+        # Create a TimeSlot record but DO NOT mark availability as booked yet
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        
+        # Find the specific time slot in availability
         availability = db.query(Availability).filter(
             Availability.mentor_id == service.mentor_id,
-            Availability.date == datetime.strptime(date_str, "%Y-%m-%d").date()
+            Availability.date == target_date,
+            Availability.is_booked == False
         ).first()
         
         if availability:
-            # For now, we'll just mark the whole availability as booked
-            # In a more advanced system, you might want to track specific time slots
-            availability.is_booked = True
+            # Create a time slot record to reserve this slot temporarily
+            time_slot_record = TimeSlot(
+                booking_id=booking.id,
+                start_time=time_slot,
+                end_time=end_time_str,
+                date=target_date,
+                created_at=datetime.utcnow()
+            )
+            db.add(time_slot_record)
             db.commit()
+            
+            # Note: We're NOT marking availability as booked yet
+            # This will happen after payment confirmation
         
         return JSONResponse({
             "success": True,
             "booking_id": booking.id,
             "redirect_url": f"/payment/{booking.id}",
-            "meeting_link": meeting_link
+            "message": "Booking created. Please complete payment to confirm your session."
         })
         
     except Exception as e:
         print(f"Error creating booking: {str(e)}")
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 # Add this new API endpoint for generating time slots
+def generate_meeting_link(booking_id: int, db: Session):
+    """Generate Google Meet link for a confirmed booking"""
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # Generate unique meeting ID
+    meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
+    
+    # Generate Google Meet link
+    # Note: This is a placeholder. In production, you'd use Google Calendar API
+    meeting_link = f"https://meet.google.com/new?hs=197&authuser=0"
+    
+    # Update booking with meeting details
+    booking.meeting_link = meeting_link
+    booking.meeting_id = meeting_id
+    booking.status = "confirmed"
+    
+    # Also mark the time slot/availability as booked
+    target_date = booking.booking_date
+    
+    # Find and mark the availability as booked
+    availability = db.query(Availability).filter(
+        Availability.mentor_id == booking.mentor_id,
+        Availability.date == target_date
+    ).first()
+    
+    if availability:
+        availability.is_booked = True
+    
+    db.commit()
+    
+    return meeting_link, meeting_id
+    
 @app.post("/api/generate-time-slots")
 async def generate_time_slots(
     data: dict,
@@ -1617,17 +1768,38 @@ async def verify_payment(
         if booking:
             booking.payment_status = "paid"
             booking.razorpay_payment_id = data['razorpay_payment_id']
-            booking.status = "confirmed"
+            
+            # NOW generate meeting link after payment is confirmed
+            meeting_link, meeting_id = generate_meeting_link(booking.id, db)
+            
+            # Create payment record
+            payment = Payment(
+                booking_id=booking.id,
+                razorpay_order_id=data['razorpay_order_id'],
+                razorpay_payment_id=data['razorpay_payment_id'],
+                amount=booking.amount_paid,
+                status="paid",
+                payment_method="razorpay",
+                created_at=datetime.utcnow()
+            )
+            db.add(payment)
             db.commit()
             
             # Optionally: Send confirmation email here
             
-            return JSONResponse({"success": True, "message": "Payment verified successfully"})
+            return JSONResponse({
+                "success": True, 
+                "message": "Payment verified successfully! Meeting scheduled.",
+                "meeting_link": meeting_link,
+                "meeting_id": meeting_id,
+                "redirect_url": "/dashboard"
+            })
         else:
             return JSONResponse({"success": False, "message": "Booking not found"})
         
     except Exception as e:
         print(f"Payment verification error: {e}")
+        db.rollback()
         return JSONResponse({"success": False, "message": "Payment verification failed"})
 
 # ============ ADMIN ROUTES ============
@@ -1924,49 +2096,54 @@ async def user_profile(
         for avail in availabilities:
             if isinstance(avail.date, datetime):
                 date_str = avail.date.strftime("%Y-%m-%d")
+                date_obj = avail.date
             elif isinstance(avail.date, date):
                 date_str = avail.date.strftime("%Y-%m-%d")
+                date_obj = avail.date
             else:
                 try:
                     date_str = datetime.strptime(str(avail.date), "%Y-%m-%d").strftime("%Y-%m-%d")
+                    date_obj = datetime.strptime(str(avail.date), "%Y-%m-%d").date()
                 except:
                     continue
             
-            date_slots[date_str].append({
-                "start_time": avail.start_time,
-                "end_time": avail.end_time
-            })
+            # Only include if date is not in the past
+            if date_obj >= today:
+                date_slots[date_str].append({
+                    "start_time": avail.start_time,
+                    "end_time": avail.end_time
+                })
         
-        # Prepare available dates for display (next 7 days with slots)
+        # Prepare available dates for display (only dates with availability)
         available_dates = []
-        for i in range(7):
-            target_date = today + timedelta(days=i)
-            date_str = target_date.strftime("%Y-%m-%d")
-            
-            if date_str in date_slots:
-                time_slots = date_slots[date_str]
-                # Only show dates that have available time slots
-                if time_slots:
-                    available_dates.append({
-                        "day_name": target_date.strftime("%a"),
-                        "day_num": target_date.day,
-                        "month": target_date.strftime("%b"),
-                        "full_date": date_str,
-                        "time_slots": time_slots
-                    })
+        for date_str in sorted(date_slots.keys()):
+            try:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+                if date_obj >= today:  # Ensure date is not in the past
+                    time_slots = date_slots[date_str]
+                    # Only show dates that have available time slots
+                    if time_slots:
+                        available_dates.append({
+                            "day_name": date_obj.strftime("%a"),
+                            "day_num": date_obj.day,
+                            "month": date_obj.strftime("%b"),
+                            "full_date": date_str,
+                            "time_slots": time_slots
+                        })
+            except ValueError:
+                continue
         
+        # Limit to 7 dates for display
         return templates.TemplateResponse("mentor_profile.html", {
             "request": request,
             "current_user": current_user,
             "mentor": mentor,
             "services": services,
-            "available_dates": available_dates[:7]
+            "available_dates": available_dates[:7]  # Only show up to 7 available dates
         })
     
     # If user is a learner, show simple learner profile
     elif user.role == "learner":
-        # You can create a learner_profile.html template if needed
-        # For now, redirect to dashboard or show basic info
         return templates.TemplateResponse("learner_profile.html", {
             "request": request,
             "current_user": current_user,
@@ -1975,7 +2152,6 @@ async def user_profile(
     
     else:
         raise HTTPException(status_code=404, detail="Profile not found")
-
 # Service page by username and service ID
 @app.get("/{username}/service/{service_id}", response_class=HTMLResponse)
 async def user_service_page(
@@ -2017,7 +2193,7 @@ async def user_service_page(
         Service.is_active == True
     ).limit(4).all()
     
-    # Get availabilities for this service
+    # Get availabilities for this service (only future dates)
     today = datetime.now().date()
     availabilities = db.query(Availability).filter(
         Availability.mentor_id == mentor.id,
@@ -2036,45 +2212,51 @@ async def user_service_page(
     for avail in availabilities:
         if isinstance(avail.date, datetime):
             date_str = avail.date.strftime("%Y-%m-%d")
+            date_obj = avail.date
         elif isinstance(avail.date, date):
             date_str = avail.date.strftime("%Y-%m-%d")
+            date_obj = avail.date
         else:
             try:
                 date_str = datetime.strptime(str(avail.date), "%Y-%m-%d").strftime("%Y-%m-%d")
+                date_obj = datetime.strptime(str(avail.date), "%Y-%m-%d").date()
             except:
                 continue
         
-        date_slots[date_str].append({
-            "start_time": avail.start_time,
-            "end_time": avail.end_time
-        })
+        # Only include if date is not in the past
+        if date_obj >= today:
+            date_slots[date_str].append({
+                "start_time": avail.start_time,
+                "end_time": avail.end_time
+            })
     
-    # Prepare available dates for display
+    # Prepare available dates for display (only dates with availability)
     available_dates = []
-    for i in range(14):  # Show 2 weeks
-        target_date = today + timedelta(days=i)
-        date_str = target_date.strftime("%Y-%m-%d")
-        
-        if date_str in date_slots:
-            time_slots = date_slots[date_str]
-            if time_slots:
-                available_dates.append({
-                    "day_name": target_date.strftime("%a"),
-                    "day_num": target_date.day,
-                    "month": target_date.strftime("%b"),
-                    "full_date": date_str,
-                    "time_slots": time_slots
-                })
+    for date_str in sorted(date_slots.keys()):
+        try:
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+            if date_obj >= today:  # Ensure date is not in the past
+                time_slots = date_slots[date_str]
+                if time_slots:
+                    available_dates.append({
+                        "day_name": date_obj.strftime("%a"),
+                        "day_num": date_obj.day,
+                        "month": date_obj.strftime("%b"),
+                        "full_date": date_str,
+                        "time_slots": time_slots
+                    })
+        except ValueError:
+            continue
     
+    # Limit to 7 dates for display
     return templates.TemplateResponse("service_page.html", {
         "request": request,
         "current_user": current_user,
         "mentor": mentor,
         "service": service,
         "other_services": other_services,
-        "available_dates": available_dates[:7]
+        "available_dates": available_dates[:7]  # Only show up to 7 available dates
     })
-
 # ============ API ENDPOINTS ============
 # In your FastAPI app
 @app.post("/api/create-razorpay-order")
