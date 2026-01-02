@@ -1,5 +1,8 @@
 import os
 import re
+import uuid
+import requests
+from datetime import datetime, timedelta
 import time  # Add this import
 from sqlalchemy import or_
 from sqlalchemy.pool import QueuePool
@@ -324,6 +327,43 @@ class BookingCreate(BaseModel):
 
 # ============ DEPENDENCIES ============
 # Add this function after your database models
+
+
+# Add this to your imports
+import uuid
+import requests
+from datetime import datetime, timedelta
+
+# Add this function after your imports
+def generate_jitsi_meeting_link(booking_id: int, mentor_name: str, learner_name: str):
+    """
+    Generate a Jitsi Meet link for a booking session
+    Jitsi is open-source and doesn't require API keys
+    """
+    # Create a unique meeting ID
+    meeting_id = f"clearq-{booking_id}-{uuid.uuid4().hex[:8]}"
+    
+    # Jitsi public server
+    jitsi_server = "meet.jit.si"
+    
+    # Create meeting link with encoded room name
+    meeting_link = f"https://{jitsi_server}/{meeting_id}"
+    
+    # Add optional parameters for better experience
+    params = {
+        "config.startWithAudioMuted": "true",
+        "config.startWithVideoMuted": "false",
+        "interfaceConfig.APP_NAME": "ClearQ Mentorship",
+        "userInfo.displayName": "",  # Will be set by user
+    }
+    
+    # Build URL with parameters
+    if params:
+        param_str = "&".join([f"{k}={v}" for k, v in params.items()])
+        meeting_link = f"{meeting_link}#{param_str}"
+    
+    return meeting_link, meeting_id
+    
 def create_admin_user(db: Session):
     """Create an admin user if not exists"""
     admin_email = "admin@clearq.com"
@@ -1530,7 +1570,7 @@ async def create_availability(
 # ============ BOOKING & PAYMENT ROUTES ============
 
 def generate_meeting_link(booking_id: int, db: Session):
-    """Generate or retrieve Google Meet link for a confirmed booking"""
+    """Generate or retrieve meeting link for a confirmed booking"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     
     if not booking:
@@ -1540,13 +1580,19 @@ def generate_meeting_link(booking_id: int, db: Session):
     if booking.meeting_link and booking.meeting_id:
         return booking.meeting_link, booking.meeting_id
     
-    # Generate unique meeting ID
-    meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
+    # Get user details for the meeting
+    mentor = db.query(User).filter(User.id == booking.mentor.user_id).first()
+    learner = db.query(User).filter(User.id == booking.learner_id).first()
     
-    # Generate Google Meet link
-    # Note: This is a placeholder. In production, you'd use Google Calendar API
-    meeting_link = f"https://meet.google.com/new?hs=197&authuser=0"
-
+    mentor_name = mentor.full_name or mentor.username
+    learner_name = learner.full_name or learner.username
+    
+    # Generate Jitsi meeting link
+    meeting_link, meeting_id = generate_jitsi_meeting_link(
+        booking_id=booking.id,
+        mentor_name=mentor_name,
+        learner_name=learner_name
+    )
     
     # Update booking with meeting details
     booking.meeting_link = meeting_link
@@ -1572,7 +1618,20 @@ def generate_meeting_link(booking_id: int, db: Session):
     
     db.commit()
     
+    # Send notification (optional)
+    send_meeting_notification(booking, meeting_link, db)
+    
     return meeting_link, meeting_id
+
+def send_meeting_notification(booking: Booking, meeting_link: str, db: Session):
+    """Send meeting details to both users"""
+    # In production, you'd send emails or push notifications
+    # For now, we'll just print/log
+    print(f"Meeting created for Booking #{booking.id}")
+    print(f"Meeting Link: {meeting_link}")
+    print(f"Date: {booking.booking_date}")
+    print(f"Time: {booking.selected_time}")
+    print(f"Participants: Learner {booking.learner_id}, Mentor {booking.mentor_id}")
 
 @app.post("/api/create-booking")
 async def create_booking(
