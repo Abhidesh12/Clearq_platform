@@ -335,32 +335,51 @@ import requests
 from datetime import datetime, timedelta
 
 # Add this function after your imports
-def generate_jitsi_meeting_link(booking_id: int, mentor_name: str, learner_name: str):
-    """
-    Generate a Jitsi Meet link for a booking session
-    Jitsi is open-source and doesn't require API keys
-    """
-    # Create a unique meeting ID
+def generate_meeting_link(booking_id: int, db: Session):
+    """Generate or retrieve meeting link for a confirmed booking"""
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # If meeting link already exists, return it
+    if booking.meeting_link and booking.meeting_id:
+        return booking.meeting_link, booking.meeting_id
+    
+    # Get user details
+    mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
+    learner = db.query(User).filter(User.id == booking.learner_id).first()
+    
+    if not mentor or not learner:
+        raise HTTPException(status_code=404, detail="User details not found")
+    
+    # Generate simple Jitsi meeting link
     meeting_id = f"clearq-{booking_id}-{uuid.uuid4().hex[:8]}"
+    meeting_link = f"https://meet.jit.si/{meeting_id}"
     
-    # Jitsi public server
-    jitsi_server = "meet.jit.si"
+    # Update booking with meeting details
+    booking.meeting_link = meeting_link
+    booking.meeting_id = meeting_id
+    booking.status = "confirmed"
     
-    # Create meeting link with encoded room name
-    meeting_link = f"https://{jitsi_server}/{meeting_id}"
+    # Also mark the time slot/availability as booked
+    target_date = booking.booking_date
     
-    # Add optional parameters for better experience
-    params = {
-        "config.startWithAudioMuted": "true",
-        "config.startWithVideoMuted": "false",
-        "interfaceConfig.APP_NAME": "ClearQ Mentorship",
-        "userInfo.displayName": "",  # Will be set by user
-    }
+    # Find and mark the availability as booked
+    availability = db.query(Availability).filter(
+        Availability.mentor_id == booking.mentor_id,
+        Availability.date == target_date
+    ).first()
     
-    # Build URL with parameters
-    if params:
-        param_str = "&".join([f"{k}={v}" for k, v in params.items()])
-        meeting_link = f"{meeting_link}#{param_str}"
+    if availability:
+        availability.is_booked = True
+    
+    # Also update all TimeSlot records for this booking
+    time_slots = db.query(TimeSlot).filter(TimeSlot.booking_id == booking.id).all()
+    for time_slot in time_slots:
+        time_slot.is_booked = True
+    
+    db.commit()
     
     return meeting_link, meeting_id
     
