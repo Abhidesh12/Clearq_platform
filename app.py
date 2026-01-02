@@ -1686,7 +1686,7 @@ async def create_booking(
     if is_free_service:
         # For free services, generate meeting link immediately
         meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
-        mmeeting_link = f"https://meet.jit.si/{meeting_id}"
+        meeting_link = f"https://meet.jit.si/{meeting_id}"
 
         
         # Create booking record for free service
