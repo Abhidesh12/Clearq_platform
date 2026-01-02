@@ -1,5 +1,6 @@
 import os
 import re
+import time  # Add this import
 from sqlalchemy import or_
 from sqlalchemy.pool import QueuePool
 import uuid
@@ -201,6 +202,7 @@ class TimeSlot(Base):
     start_time = Column(String, nullable=False)
     end_time = Column(String, nullable=False)
     date = Column(Date, nullable=False)
+    is_booked = Column(Boolean, default=False)  # Add this field
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -216,7 +218,7 @@ class Booking(Base):
     booking_date = Column(Date, nullable=False)
     selected_time = Column(String, nullable=False)
     status = Column(String, default="pending")  # pending, confirmed, completed, cancelled
-    payment_status = Column(String, default="pending")  # pending, paid, failed, refunded
+    payment_status = Column(String, default="pending")  # pending, paid, failed, refunded, free
     razorpay_order_id = Column(String)
     razorpay_payment_id = Column(String)
     amount_paid = Column(Integer)
@@ -696,7 +698,7 @@ async def dashboard(
     context = {"request": request, "current_user": current_user}
     
     if current_user.role == "learner":
-        # Show ALL bookings for the learner, but separate by status
+        # Show ALL bookings for the learner
         all_bookings = db.query(Booking).filter(
             Booking.learner_id == current_user.id
         ).order_by(Booking.booking_date.desc()).limit(15).all()
@@ -705,15 +707,19 @@ async def dashboard(
         confirmed_bookings = []
         pending_bookings = []
         upcoming_sessions = []
+        free_sessions = []
         
         today = datetime.now().date()
         
         for booking in all_bookings:
-            if booking.payment_status == "paid" and booking.status == "confirmed" and booking.meeting_link:
-                # This is a confirmed, paid booking with meeting link
-                if booking.booking_date >= today:  # Only upcoming sessions
+            if booking.payment_status in ["paid", "free"] and booking.status == "confirmed" and booking.meeting_link:
+                # This is a confirmed booking with meeting link
+                if booking.booking_date >= today:
                     upcoming_sessions.append(booking)
                 confirmed_bookings.append(booking)
+                
+                if booking.payment_status == "free":
+                    free_sessions.append(booking)
             elif booking.payment_status == "pending" or booking.status == "pending":
                 # This is a pending booking (awaiting payment)
                 pending_bookings.append(booking)
@@ -722,15 +728,16 @@ async def dashboard(
                 confirmed_bookings.append(booking)
         
         # Get stats for the learner
-        total_sessions = len([b for b in all_bookings if b.payment_status == "paid"])
+        total_sessions = len([b for b in all_bookings if b.payment_status in ["paid", "free"] and b.status == "confirmed"])
         completed_sessions = len([b for b in all_bookings if b.status == "completed"])
         pending_payments = len(pending_bookings)
         
         context.update({
             "all_bookings": all_bookings,
-            "upcoming_sessions": upcoming_sessions,  # Only confirmed, upcoming sessions with meeting links
+            "upcoming_sessions": upcoming_sessions,
             "confirmed_bookings": confirmed_bookings,
             "pending_bookings": pending_bookings,
+            "free_sessions": free_sessions,
             "total_sessions": total_sessions,
             "completed_sessions": completed_sessions,
             "pending_payments": pending_payments,
@@ -744,7 +751,7 @@ async def dashboard(
     elif current_user.role == "mentor":
         mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
         if mentor:
-            # Show ALL bookings for the mentor, but separate by status
+            # Show ALL bookings for the mentor
             all_bookings = db.query(Booking).filter(
                 Booking.mentor_id == mentor.id
             ).order_by(Booking.booking_date.desc()).limit(15).all()
@@ -753,15 +760,19 @@ async def dashboard(
             confirmed_bookings = []
             pending_bookings = []
             upcoming_sessions = []
+            free_sessions = []
             
             today = datetime.now().date()
             
             for booking in all_bookings:
-                if booking.payment_status == "paid" and booking.status == "confirmed" and booking.meeting_link:
-                    # This is a confirmed, paid booking with meeting link
-                    if booking.booking_date >= today:  # Only upcoming sessions
+                if booking.payment_status in ["paid", "free"] and booking.status == "confirmed" and booking.meeting_link:
+                    # This is a confirmed booking with meeting link
+                    if booking.booking_date >= today:
                         upcoming_sessions.append(booking)
                     confirmed_bookings.append(booking)
+                    
+                    if booking.payment_status == "free":
+                        free_sessions.append(booking)
                 elif booking.payment_status == "pending" or booking.status == "pending":
                     # This is a pending booking (awaiting payment)
                     pending_bookings.append(booking)
@@ -772,7 +783,7 @@ async def dashboard(
             # Calculate earnings (only from paid bookings)
             earnings = db.query(Booking).filter(
                 Booking.mentor_id == mentor.id,
-                Booking.payment_status == "paid"
+                Booking.payment_status == "paid"  # Only count paid, not free
             ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
             
             # Get stats for the mentor
@@ -783,9 +794,10 @@ async def dashboard(
             context.update({
                 "mentor": mentor,
                 "all_bookings": all_bookings,
-                "upcoming_sessions": upcoming_sessions,  # Only confirmed, upcoming sessions with meeting links
+                "upcoming_sessions": upcoming_sessions,
                 "confirmed_bookings": confirmed_bookings,
                 "pending_bookings": pending_bookings,
+                "free_sessions": free_sessions,
                 "earnings": earnings,
                 "total_bookings": total_bookings,
                 "pending_payments": pending_payments,
@@ -836,6 +848,7 @@ async def dashboard(
         })
     
     return templates.TemplateResponse("dashboard.html", context)
+    
 @app.get("/profile/edit", response_class=HTMLResponse)
 async def edit_profile_page(
     request: Request,
@@ -1399,6 +1412,7 @@ async def mentor_availability_page(
         "today": today.strftime("%Y-%m-%d"),
         "flash_messages": flash_messages
     })
+    
 @app.post("/mentor/availability/create")
 async def create_availability(
     request: Request,
@@ -1515,115 +1529,6 @@ async def create_availability(
 
 # ============ BOOKING & PAYMENT ROUTES ============
 
-@app.post("/api/create-booking")
-async def create_booking(
-    request: Request,
-    booking_data: dict,
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    if not current_user or current_user.role != "learner":
-        raise HTTPException(status_code=403, detail="Only learners can book sessions")
-    
-    service_id = booking_data.get("service_id")
-    date_str = booking_data.get("date")
-    time_slot = booking_data.get("time")  # This is the start time selected by learner
-    
-    service = db.query(Service).filter(Service.id == service_id).first()
-    if not service:
-        raise HTTPException(status_code=404, detail="Service not found")
-    
-    # Calculate end time based on service duration
-    start_time = datetime.strptime(time_slot, "%H:%M")
-    end_time = start_time + timedelta(minutes=service.duration_minutes)
-    end_time_str = end_time.strftime("%H:%M")
-    
-    # DO NOT generate Google Meet link yet - will generate after payment
-    meeting_id = None
-    meeting_link = None
-    
-    # Create Razorpay order
-    order_amount = service.price * 100  # Convert to paise
-    order_currency = "INR"
-    
-    try:
-        order_data = {
-            "amount": order_amount,
-            "currency": order_currency,
-            "payment_capture": 1,
-            "notes": {
-                "service_id": service_id,
-                "learner_id": current_user.id,
-                "date": date_str,
-                "time": time_slot,
-                "duration": service.duration_minutes
-            }
-        }
-        
-        print(f"Creating Razorpay order with amount: {order_amount}")
-        razorpay_order = razorpay_client.order.create(order_data)
-        print(f"Razorpay order created: {razorpay_order['id']}")
-        
-        # Create booking record with selected_time instead of start_time/end_time
-        booking = Booking(
-            learner_id=current_user.id,
-            mentor_id=service.mentor_id,
-            service_id=service_id,
-            booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
-            selected_time=time_slot,  # Store the selected start time
-            razorpay_order_id=razorpay_order["id"],
-            amount_paid=service.price,
-            status="pending",  # Will change to "confirmed" after payment
-            payment_status="pending",  # Will change to "paid" after payment
-            meeting_link=meeting_link,  # Will be set after payment
-            meeting_id=meeting_id,  # Will be set after payment
-            notes=f"Session scheduled for {date_str} at {time_slot} (Pending Payment)"
-        )
-        
-        db.add(booking)
-        db.commit()
-        db.refresh(booking)
-        
-        print(f"Booking created with ID: {booking.id}, Payment pending")
-        
-        # Create a TimeSlot record but DO NOT mark availability as booked yet
-        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        
-        # Find the specific time slot in availability
-        availability = db.query(Availability).filter(
-            Availability.mentor_id == service.mentor_id,
-            Availability.date == target_date,
-            Availability.is_booked == False
-        ).first()
-        
-        if availability:
-            # Create a time slot record to reserve this slot temporarily
-            time_slot_record = TimeSlot(
-                booking_id=booking.id,
-                start_time=time_slot,
-                end_time=end_time_str,
-                date=target_date,
-                created_at=datetime.utcnow()
-            )
-            db.add(time_slot_record)
-            db.commit()
-            
-            # Note: We're NOT marking availability as booked yet
-            # This will happen after payment confirmation
-        
-        return JSONResponse({
-            "success": True,
-            "booking_id": booking.id,
-            "redirect_url": f"/payment/{booking.id}",
-            "message": "Booking created. Please complete payment to confirm your session."
-        })
-        
-    except Exception as e:
-        print(f"Error creating booking: {str(e)}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Add this new API endpoint for generating time slots
 def generate_meeting_link(booking_id: int, db: Session):
     """Generate Google Meet link for a confirmed booking"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
@@ -1655,10 +1560,187 @@ def generate_meeting_link(booking_id: int, db: Session):
     if availability:
         availability.is_booked = True
     
+    # Also update all TimeSlot records for this booking
+    time_slots = db.query(TimeSlot).filter(TimeSlot.booking_id == booking.id).all()
+    for time_slot in time_slots:
+        time_slot.is_booked = True
+    
     db.commit()
     
     return meeting_link, meeting_id
+
+@app.post("/api/create-booking")
+async def create_booking(
+    request: Request,
+    booking_data: dict,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not current_user or current_user.role != "learner":
+        raise HTTPException(status_code=403, detail="Only learners can book sessions")
     
+    service_id = booking_data.get("service_id")
+    date_str = booking_data.get("date")
+    time_slot = booking_data.get("time")  # This is the start time selected by learner
+    
+    service = db.query(Service).filter(Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Check if the selected time is in the past
+    selected_datetime = datetime.strptime(f"{date_str} {time_slot}", "%Y-%m-%d %H:%M")
+    if selected_datetime < datetime.now():
+        raise HTTPException(status_code=400, detail="Cannot book sessions in the past")
+    
+    # Calculate end time based on service duration
+    start_time = datetime.strptime(time_slot, "%H:%M")
+    end_time = start_time + timedelta(minutes=service.duration_minutes)
+    end_time_str = end_time.strftime("%H:%M")
+    
+    # Check if service is free (price = 0)
+    is_free_service = service.price == 0
+    
+    if is_free_service:
+        # For free services, generate meeting link immediately
+        meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
+        meeting_link = f"https://meet.google.com/new?hs=197&authuser=0"
+        
+        # Create booking record for free service
+        booking = Booking(
+            learner_id=current_user.id,
+            mentor_id=service.mentor_id,
+            service_id=service_id,
+            booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
+            selected_time=time_slot,
+            razorpay_order_id=None,  # No payment for free service
+            amount_paid=0,
+            status="confirmed",  # Immediately confirmed
+            payment_status="free",  # Special status for free services
+            meeting_link=meeting_link,
+            meeting_id=meeting_id,
+            notes=f"Free session scheduled for {date_str} at {time_slot}"
+        )
+        
+        db.add(booking)
+        db.commit()
+        db.refresh(booking)
+        
+        print(f"Free booking created with ID: {booking.id}, Meeting Link: {meeting_link}")
+        
+        # Mark the time slot as booked
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        
+        # Find and mark the availability as booked
+        availability = db.query(Availability).filter(
+            Availability.mentor_id == service.mentor_id,
+            Availability.date == target_date
+        ).first()
+        
+        if availability:
+            availability.is_booked = True
+        
+        # Create a time slot record
+        time_slot_record = TimeSlot(
+            booking_id=booking.id,
+            start_time=time_slot,
+            end_time=end_time_str,
+            date=target_date,
+            is_booked=True,
+            created_at=datetime.utcnow()
+        )
+        db.add(time_slot_record)
+        db.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "booking_id": booking.id,
+            "redirect_url": f"/dashboard",  # Redirect to dashboard for free services
+            "meeting_link": meeting_link,
+            "is_free": True,
+            "message": "Free session booked successfully!"
+        })
+        
+    else:
+        # For paid services, proceed with payment flow
+        meeting_id = None
+        meeting_link = None
+        
+        # Create Razorpay order
+        order_amount = service.price * 100  # Convert to paise
+        order_currency = "INR"
+        
+        try:
+            order_data = {
+                "amount": order_amount,
+                "currency": order_currency,
+                "payment_capture": 1,
+                "notes": {
+                    "service_id": service_id,
+                    "learner_id": current_user.id,
+                    "date": date_str,
+                    "time": time_slot,
+                    "duration": service.duration_minutes
+                }
+            }
+            
+            print(f"Creating Razorpay order with amount: {order_amount}")
+            razorpay_order = razorpay_client.order.create(order_data)
+            print(f"Razorpay order created: {razorpay_order['id']}")
+            
+            # Create booking record for paid service
+            booking = Booking(
+                learner_id=current_user.id,
+                mentor_id=service.mentor_id,
+                service_id=service_id,
+                booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
+                selected_time=time_slot,
+                razorpay_order_id=razorpay_order["id"],
+                amount_paid=service.price,
+                status="pending",
+                payment_status="pending",
+                meeting_link=meeting_link,
+                meeting_id=meeting_id,
+                notes=f"Session scheduled for {date_str} at {time_slot} (Pending Payment)"
+            )
+            
+            db.add(booking)
+            db.commit()
+            db.refresh(booking)
+            
+            print(f"Paid booking created with ID: {booking.id}, Payment pending")
+            
+            # Create a TimeSlot record to temporarily reserve the slot
+            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            
+            # Create a time slot record to reserve this slot
+            time_slot_record = TimeSlot(
+                booking_id=booking.id,
+                start_time=time_slot,
+                end_time=end_time_str,
+                date=target_date,
+                is_booked=False,  # Not booked yet, just reserved
+                created_at=datetime.utcnow()
+            )
+            db.add(time_slot_record)
+            db.commit()
+            
+            # Note: We're NOT marking availability as booked yet for paid services
+            # This will happen after payment confirmation
+            
+            return JSONResponse({
+                "success": True,
+                "booking_id": booking.id,
+                "redirect_url": f"/payment/{booking.id}",
+                "is_free": False,
+                "message": "Booking created. Please complete payment to confirm your session."
+            })
+            
+        except Exception as e:
+            print(f"Error creating booking: {str(e)}")
+            db.rollback()
+            raise HTTPException(status_code=500, detail=str(e))
+
+# Add this new API endpoint for generating time slots
 @app.post("/api/generate-time-slots")
 async def generate_time_slots(
     data: dict,
@@ -1679,21 +1761,44 @@ async def generate_time_slots(
             return JSONResponse({"success": False, "message": "Service not found"})
         
         duration = service.duration_minutes
-        date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+        today = datetime.now().date()
+        
+        # Check if date is in the past
+        if date_obj < today:
+            return JSONResponse({
+                "success": False,
+                "message": "Cannot book sessions for past dates"
+            })
         
         # Get mentor's availability for this date
         availability = db.query(Availability).filter(
             Availability.mentor_id == mentor_id,
-            Availability.date == date,
+            Availability.date == date_obj,
             Availability.is_booked == False
         ).first()
         
         if not availability:
             return JSONResponse({"success": False, "message": "No availability for this date"})
         
-        # Parse default time range (9am to 9pm)
+        # Parse default time range
         start_time = datetime.strptime(availability.start_time, "%H:%M")
         end_time = datetime.strptime(availability.end_time, "%H:%M")
+        
+        # If it's today, check current time and filter out past slots
+        now = datetime.now()
+        if date_obj == today:
+            current_hour = now.hour
+            current_minute = now.minute
+            
+            # Adjust start_time to be at least current time + buffer
+            if start_time.hour < current_hour or (start_time.hour == current_hour and start_time.minute < current_minute):
+                # Set start_time to current time + 30 minutes buffer
+                buffer_minutes = 30
+                start_time = datetime.combine(date_obj, now.time()) + timedelta(minutes=buffer_minutes)
+                # Round to nearest 15 minutes
+                minutes_to_add = (15 - start_time.minute % 15) % 15
+                start_time += timedelta(minutes=minutes_to_add)
         
         # Generate time slots
         slots = []
@@ -1705,15 +1810,22 @@ async def generate_time_slots(
             slot_start = current_time.strftime("%H:%M")
             slot_end = (current_time + slot_duration).strftime("%H:%M")
             
-            # Check if this slot is already booked
+            # Check if this slot is already booked in Booking table
             existing_booking = db.query(Booking).filter(
                 Booking.mentor_id == mentor_id,
-                Booking.booking_date == date,
+                Booking.booking_date == date_obj,
                 Booking.selected_time == slot_start,
                 Booking.status.in_(["pending", "confirmed"])
             ).first()
             
-            if not existing_booking:
+            # Also check TimeSlot table
+            existing_time_slot = db.query(TimeSlot).filter(
+                TimeSlot.date == date_obj,
+                TimeSlot.start_time == slot_start,
+                TimeSlot.is_booked == True
+            ).first()
+            
+            if not existing_booking and not existing_time_slot:
                 # Format for display
                 display_start = current_time.strftime("%I:%M %p").lstrip("0")
                 display_end = (current_time + slot_duration).strftime("%I:%M %p").lstrip("0")
@@ -1742,6 +1854,7 @@ async def generate_time_slots(
             
     except Exception as e:
         return JSONResponse({"success": False, "message": str(e)})
+        
 @app.post("/payment/verify")
 async def verify_payment(
     request: Request,
@@ -1785,8 +1898,6 @@ async def verify_payment(
             db.add(payment)
             db.commit()
             
-            # Optionally: Send confirmation email here
-            
             return JSONResponse({
                 "success": True, 
                 "message": "Payment verified successfully! Meeting scheduled.",
@@ -1800,7 +1911,7 @@ async def verify_payment(
     except Exception as e:
         print(f"Payment verification error: {e}")
         db.rollback()
-        return JSONResponse({"success": False, "message": "Payment verification failed"})
+        return JSONResponse({"success": False, "message": f"Payment verification failed: {str(e)}"})
 
 # ============ ADMIN ROUTES ============
 
@@ -2032,6 +2143,7 @@ async def mentor_profile(
         "services": services,
         "available_dates": available_dates[:7]  # Show up to 7 dates
     })
+    
 # ============ ERROR HANDLERS ============
 @app.get("/mentor/username/{username}")
 async def redirect_old_mentor_url(username: str):
@@ -2152,6 +2264,7 @@ async def user_profile(
     
     else:
         raise HTTPException(status_code=404, detail="Profile not found")
+
 # Service page by username and service ID
 @app.get("/{username}/service/{service_id}", response_class=HTMLResponse)
 async def user_service_page(
@@ -2257,6 +2370,7 @@ async def user_service_page(
         "other_services": other_services,
         "available_dates": available_dates[:7]  # Only show up to 7 available dates
     })
+
 # ============ API ENDPOINTS ============
 # In your FastAPI app
 @app.post("/api/create-razorpay-order")
@@ -2318,6 +2432,7 @@ async def meeting_page(
         "booking": booking,
         "meeting_link": booking.meeting_link
     })
+    
 @app.post("/api/verify-payment")
 async def verify_payment(request: Request, db: Session = Depends(get_db)):
     data = await request.json()
@@ -2342,6 +2457,7 @@ async def verify_payment(request: Request, db: Session = Depends(get_db)):
         return {"success": True, "message": "Payment verified"}
     except Exception as e:
         return {"success": False, "error": str(e)}
+        
 # Update the time-slots API to support both ID and username
 @app.post("/api/time-slots/{identifier}")
 async def get_time_slots(
