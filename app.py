@@ -1667,7 +1667,7 @@ async def create_booking(
     if is_free_service:
         # For free services, generate meeting link immediately
         meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
-        meeting_link = f"https://meet.google.com/new?hs=197&authuser=0"
+        meeting_link = f"https://{jitsi_server}/{meeting_id}"
 
         
         # Create booking record for free service
