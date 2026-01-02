@@ -11,4 +11,5 @@ jinja2
 pydantic
 email-validator
 bcrypt==4.0.1
-requests uuid
+requests
+uuid
