@@ -1530,11 +1530,15 @@ async def create_availability(
 # ============ BOOKING & PAYMENT ROUTES ============
 
 def generate_meeting_link(booking_id: int, db: Session):
-    """Generate Google Meet link for a confirmed booking"""
+    """Generate or retrieve Google Meet link for a confirmed booking"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # If meeting link already exists, return it
+    if booking.meeting_link and booking.meeting_id:
+        return booking.meeting_link, booking.meeting_id
     
     # Generate unique meeting ID
     meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
@@ -1656,6 +1660,7 @@ async def create_booking(
             "booking_id": booking.id,
             "redirect_url": f"/dashboard",  # Redirect to dashboard for free services
             "meeting_link": meeting_link,
+            "meeting_id": meeting_id,
             "is_free": True,
             "message": "Free session booked successfully!"
         })
@@ -2418,21 +2423,27 @@ async def meeting_page(
     if not booking:
         raise HTTPException(status_code=404, detail="Meeting not found")
     
-    # Generate Google Meet link if not exists
-    if not booking.meeting_link or "meet.google.com" not in booking.meeting_link:
-        # Generate new meeting link
-        meeting_id = f"clearq-{uuid.uuid4().hex[:8]}"
-        booking.meeting_link = f"https://meet.google.com/{meeting_id}"
-        booking.meeting_id = meeting_id
-        db.commit()
+    # Check if meeting is confirmed (paid or free)
+    if booking.payment_status not in ["paid", "free"] or booking.status != "confirmed":
+        raise HTTPException(
+            status_code=400, 
+            detail="Meeting not confirmed yet. Please wait for payment confirmation."
+        )
+    
+    # If meeting link doesn't exist, generate one using the existing function
+    if not booking.meeting_link:
+        meeting_link, meeting_id = generate_meeting_link(booking.id, db)
+    else:
+        meeting_link = booking.meeting_link
+        meeting_id = booking.meeting_id
     
     return templates.TemplateResponse("meeting.html", {
         "request": request,
         "current_user": current_user,
         "booking": booking,
-        "meeting_link": booking.meeting_link
+        "meeting_link": meeting_link,
+        "meeting_id": meeting_id
     })
-    
 @app.post("/api/verify-payment")
 async def verify_payment(request: Request, db: Session = Depends(get_db)):
     data = await request.json()
