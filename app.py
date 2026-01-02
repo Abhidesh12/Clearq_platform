@@ -1545,7 +1545,8 @@ def generate_meeting_link(booking_id: int, db: Session):
     
     # Generate Google Meet link
     # Note: This is a placeholder. In production, you'd use Google Calendar API
-    meeting_link = f"https://meet.google.com/{meeting_id}"
+    meeting_link = f"https://meet.google.com/new?hs=197&authuser=0"
+
     
     # Update booking with meeting details
     booking.meeting_link = meeting_link
@@ -1607,7 +1608,8 @@ async def create_booking(
     if is_free_service:
         # For free services, generate meeting link immediately
         meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
-        meeting_link = f"https://meet.google.com/{meeting_id}"
+        meeting_link = f"https://meet.google.com/new?hs=197&authuser=0"
+
         
         # Create booking record for free service
         booking = Booking(
