@@ -33,6 +33,7 @@
         --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         --transition: all 0.2s ease;
     }
 
@@ -344,6 +345,20 @@
         box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
     }
 
+    /* Digital Product Badge */
+    .digital-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        color: white;
+        border-radius: 1rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
     /* Rich Text Editor Styles */
     .rich-text-editor-container {
         border: 1px solid var(--gray-300);
@@ -506,6 +521,9 @@
         font-weight: 600;
         color: var(--gray-900);
         margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
     }
 
     .service-category {
@@ -536,6 +554,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-top: 0.75rem;
     }
 
     .service-price {
@@ -584,6 +603,28 @@
 
     .delete-button:hover {
         color: var(--danger);
+    }
+
+    /* Service Type Indicator */
+    .service-type-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        margin-left: 0.5rem;
+    }
+
+    .type-live {
+        background: #E0F2FE;
+        color: #0369A1;
+    }
+
+    .type-digital {
+        background: #F3E8FF;
+        color: #7C3AED;
     }
 
     /* Empty State */
@@ -722,7 +763,7 @@
     <div class="services-header">
         <div style="max-width: 1200px; margin: 0 auto;">
             <h1>Manage Services</h1>
-            <p>Create and manage your mentoring services</p>
+            <p>Create and manage your mentoring services & digital products</p>
         </div>
     </div>
 
@@ -761,7 +802,7 @@
                 </div>
                 
                 <div class="form-content">
-                    <form action="/mentor/services/create" method="POST">
+                    <form action="/mentor/services/create" method="POST" id="create-service-form">
                         <div class="form-grid">
                             <!-- Service Name -->
                             <div class="form-group">
@@ -770,7 +811,7 @@
                                 </label>
                                 <input type="text" name="name" required 
                                        class="form-input"
-                                       placeholder="e.g., Mock Interview, Resume Review">
+                                       placeholder="e.g., Mock Interview, Resume Review, E-Book">
                             </div>
                             
                             <!-- Category -->
@@ -786,6 +827,7 @@
                                     <option value="technical-coaching">Technical Coaching</option>
                                     <option value="portfolio-review">Portfolio Review</option>
                                     <option value="salary-negotiation">Salary Negotiation</option>
+                                    <option value="digital-product">Digital Product</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
@@ -854,17 +896,19 @@
                                         <span class="price-prefix">₹</span>
                                         <input type="number" name="price" required min="0"
                                                class="form-input"
-                                               placeholder="999">
+                                               placeholder="999"
+                                               id="price-input">
                                     </div>
                                 </div>
                                 
-                                <!-- Duration -->
+                                <!-- Duration (for live sessions) -->
                                 <div class="form-group" style="margin-bottom: 1rem;">
-                                    <label class="form-label">
+                                    <label class="form-label" id="duration-label">
                                         Duration (minutes) <span class="form-required">*</span>
                                     </label>
                                     <input type="number" name="duration_minutes" value="60" required min="15" step="15"
-                                           class="form-input">
+                                           class="form-input"
+                                           id="duration-input">
                                 </div>
                                 
                                 <!-- Service Type -->
@@ -875,12 +919,14 @@
                                     <div class="radio-group">
                                         <label class="radio-option">
                                             <input type="radio" name="is_digital" value="false" checked 
-                                                   class="radio-input">
+                                                   class="radio-input service-type-radio"
+                                                   data-type="live">
                                             <span class="radio-label">Live Session</span>
                                         </label>
                                         <label class="radio-option">
                                             <input type="radio" name="is_digital" value="true" 
-                                                   class="radio-input">
+                                                   class="radio-input service-type-radio"
+                                                   data-type="digital">
                                             <span class="radio-label">Digital Product</span>
                                         </label>
                                     </div>
@@ -892,14 +938,21 @@
                         <div id="digital-product-fields" class="digital-fields hidden">
                             <div class="form-group">
                                 <label class="form-label">
-                                    Digital Product URL
+                                    Digital Product URL <span class="form-required" id="digital-url-required">*</span>
                                 </label>
                                 <input type="url" name="digital_product_url"
                                        class="form-input"
-                                       placeholder="https://drive.google.com/file/...">
+                                       placeholder="https://drive.google.com/file/... or https://yourwebsite.com/download"
+                                       id="digital-product-url">
                                 <p class="form-help">
-                                    Learners will get access to this URL after purchase
+                                    Learners will get access to this URL immediately after purchase. Ensure the link is accessible.
                                 </p>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-help" style="color: var(--primary); font-weight: 500;">
+                                    <i class="fas fa-info-circle"></i>
+                                    For digital products, duration is automatically set to "Instant Access"
+                                </div>
                             </div>
                         </div>
                         
@@ -929,7 +982,18 @@
                         <div class="service-item">
                             <div class="service-header">
                                 <div>
-                                    <div class="service-name">{{ service.name }}</div>
+                                    <div class="service-name">
+                                        {{ service.name }}
+                                        {% if service.is_digital %}
+                                        <span class="service-type-indicator type-digital">
+                                            <i class="fas fa-download"></i> Digital
+                                        </span>
+                                        {% else %}
+                                        <span class="service-type-indicator type-live">
+                                            <i class="fas fa-video"></i> Live
+                                        </span>
+                                        {% endif %}
+                                    </div>
                                     <div class="service-category">
                                         {{ service.category|replace('-', ' ')|title }}
                                     </div>
@@ -939,16 +1003,34 @@
                                 </span>
                             </div>
                             
+                            <div style="margin-bottom: 0.5rem;">
+                                <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4; margin-bottom: 0.5rem;">
+                                    {{ service.description|truncate(120) }}
+                                </p>
+                                {% if service.is_digital and service.digital_product_url %}
+                                <div style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--gray-500);">
+                                    <i class="fas fa-link"></i>
+                                    <span>Download link added</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
                             <div class="service-footer">
                                 <div class="service-price">
                                     <span class="price-amount">₹{{ service.price }}</span>
-                                    <span class="price-duration">{{ service.duration_minutes }} min</span>
+                                    <span class="price-duration">
+                                        {% if service.is_digital %}
+                                        Instant Access
+                                        {% else %}
+                                        {{ service.duration_minutes }} min
+                                        {% endif %}
+                                    </span>
                                 </div>
                                 <div class="service-actions">
-                                    <button class="action-button edit-button" title="Edit Service">
+                                    <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="action-button delete-button" title="Delete Service">
+                                    <button class="action-button delete-button" title="Delete Service" onclick="deleteService({{ service.id }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -978,9 +1060,8 @@
         const textarea = document.getElementById('description-textarea');
         const toolbarButtons = document.querySelectorAll('.toolbar-btn');
         
-        // Sanitize HTML function to remove problematic inline styles
+        // Sanitize HTML function
         function sanitizeHTML(html) {
-            // Create a temporary div to parse the HTML
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html;
             
@@ -990,13 +1071,10 @@
                 el.remove();
             });
             
-            // Clean up common issues
             const allElements = tempDiv.querySelectorAll('*');
             allElements.forEach(el => {
-                // Remove any inline styles that might break layout
                 if (el.hasAttribute('style')) {
                     const style = el.getAttribute('style');
-                    // Remove problematic CSS properties
                     const cleanStyle = style.replace(/grid-column[^;]+;?/g, '')
                                            .replace(/grid-template-columns[^;]+;?/g, '')
                                            .replace(/display[^;]+;?/g, '')
@@ -1009,7 +1087,6 @@
                     }
                 }
                 
-                // Remove class attributes that might conflict
                 if (el.hasAttribute('class')) {
                     const classes = el.getAttribute('class');
                     if (classes.includes('form-group') || classes.includes('grid-column')) {
@@ -1018,21 +1095,15 @@
                 }
             });
             
-            // Return cleaned HTML
             let cleanedHTML = tempDiv.innerHTML;
-            
-            // Remove any remaining problematic patterns
             cleanedHTML = cleanedHTML.replace(/style="[^"]*"/g, (match) => {
-                // Remove style attribute if it contains problematic properties
                 if (match.includes('grid-column') || match.includes('grid-template-columns') || match.includes('display:')) {
                     return '';
                 }
                 return match;
             });
             
-            // Remove empty style attributes
             cleanedHTML = cleanedHTML.replace(/style=""/g, '');
-            
             return cleanedHTML;
         }
         
@@ -1042,7 +1113,6 @@
             const sanitizedContent = sanitizeHTML(originalContent);
             textarea.value = sanitizedContent;
             
-            // Update editor with sanitized content if it changed
             if (originalContent !== sanitizedContent) {
                 editor.innerHTML = sanitizedContent;
             }
@@ -1064,20 +1134,15 @@
                 const command = this.dataset.command;
                 const value = this.dataset.value;
                 
-                // Focus editor first
                 editor.focus();
                 
-                // Execute the command
                 if (command === 'formatBlock' && value) {
                     document.execCommand(command, false, value);
                 } else {
                     document.execCommand(command, false, null);
                 }
                 
-                // Update textarea after command execution
                 updateTextarea();
-                
-                // Focus back to editor
                 editor.focus();
             });
         });
@@ -1085,19 +1150,70 @@
         // Clean up paste events
         editor.addEventListener('paste', function(e) {
             e.preventDefault();
-            
-            // Get pasted text
             const text = (e.clipboardData || window.clipboardData).getData('text');
-            
-            // Insert plain text
             document.execCommand('insertText', false, text);
-            
-            // Update textarea
             updateTextarea();
         });
         
+        // Digital product fields toggle
+        const digitalProductFields = document.getElementById('digital-product-fields');
+        const digitalProductUrl = document.getElementById('digital-product-url');
+        const digitalUrlRequired = document.getElementById('digital-url-required');
+        const durationInput = document.getElementById('duration-input');
+        const durationLabel = document.getElementById('duration-label');
+        const priceInput = document.getElementById('price-input');
+        const serviceTypeRadios = document.querySelectorAll('.service-type-radio');
+        
+        function toggleDigitalFields() {
+            const isDigital = document.querySelector('input[name="is_digital"][value="true"]').checked;
+            
+            if (isDigital) {
+                digitalProductFields.classList.remove('hidden');
+                digitalProductUrl.required = true;
+                digitalUrlRequired.style.display = 'inline';
+                
+                // For digital products, duration is "Instant Access"
+                durationInput.value = 0;
+                durationInput.disabled = true;
+                durationLabel.innerHTML = 'Access Type <span class="form-required">*</span>';
+                durationInput.placeholder = "Instant Access";
+                
+                // Add help text for digital products
+                if (!document.querySelector('.digital-help')) {
+                    const helpDiv = document.createElement('div');
+                    helpDiv.className = 'form-help digital-help';
+                    helpDiv.innerHTML = '<i class="fas fa-info-circle"></i> For digital products, learners get instant access after purchase';
+                    durationInput.parentNode.appendChild(helpDiv);
+                }
+            } else {
+                digitalProductFields.classList.add('hidden');
+                digitalProductUrl.required = false;
+                digitalUrlRequired.style.display = 'none';
+                
+                // For live sessions, enable duration input
+                durationInput.disabled = false;
+                durationInput.value = 60;
+                durationLabel.innerHTML = 'Duration (minutes) <span class="form-required">*</span>';
+                durationInput.placeholder = "60";
+                
+                // Remove digital help text
+                const helpDiv = document.querySelector('.digital-help');
+                if (helpDiv) {
+                    helpDiv.remove();
+                }
+            }
+        }
+        
+        // Add event listeners
+        serviceTypeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleDigitalFields);
+        });
+        
+        // Initialize
+        toggleDigitalFields();
+        
         // Form submission handler
-        const form = document.querySelector('form');
+        const form = document.getElementById('create-service-form');
         form.addEventListener('submit', function(e) {
             // Ensure textarea has the latest sanitized content
             updateTextarea();
@@ -1108,6 +1224,28 @@
                 alert('Please provide a description for your service.');
                 editor.focus();
                 return;
+            }
+            
+            // Validate digital product URL if digital product is selected
+            const isDigital = document.querySelector('input[name="is_digital"][value="true"]').checked;
+            if (isDigital) {
+                const digitalUrl = digitalProductUrl.value.trim();
+                if (!digitalUrl) {
+                    e.preventDefault();
+                    alert('Please provide a download URL for your digital product.');
+                    digitalProductUrl.focus();
+                    return;
+                }
+                
+                // Basic URL validation
+                try {
+                    new URL(digitalUrl);
+                } catch (_) {
+                    e.preventDefault();
+                    alert('Please enter a valid URL starting with http:// or https://');
+                    digitalProductUrl.focus();
+                    return;
+                }
             }
             
             // Show loading state
@@ -1123,62 +1261,111 @@
             }, 5000);
         });
         
-        // Digital product fields toggle
-        const digitalProductFields = document.getElementById('digital-product-fields');
-        const digitalRadio = document.querySelector('input[name="is_digital"][value="true"]');
-        const liveRadio = document.querySelector('input[name="is_digital"][value="false"]');
+        // Service action buttons functions
+        window.editService = function(serviceId) {
+            // In a real app, this would open an edit modal
+            // For now, redirect to edit page
+            window.location.href = `/mentor/dashboard/services/${serviceId}/edit`;
+        };
         
-        function toggleDigitalFields() {
-            if (digitalRadio.checked) {
-                digitalProductFields.classList.remove('hidden');
-            } else {
-                digitalProductFields.classList.add('hidden');
+        window.deleteService = function(serviceId) {
+            if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+                fetch(`/mentor/services/${serviceId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Service deleted successfully!', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showNotification('Failed to delete service: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('An error occurred while deleting the service.', 'error');
+                });
             }
-        }
-        
-        // Add event listeners
-        digitalRadio.addEventListener('change', toggleDigitalFields);
-        liveRadio.addEventListener('change', toggleDigitalFields);
-        
-        // Initialize
-        toggleDigitalFields();
-        
-        // Service action buttons
-        const editButtons = document.querySelectorAll('.edit-button');
-        const deleteButtons = document.querySelectorAll('.delete-button');
-        
-        editButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // In a real app, this would open an edit modal
-                alert('Edit functionality coming soon!');
-            });
-        });
-        
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
-                    // In a real app, this would send a delete request
-                    this.closest('.service-item').style.opacity = '0.5';
-                    setTimeout(() => {
-                        alert('Delete functionality coming soon!');
-                    }, 300);
-                }
-            });
-        });
+        };
         
         // Input validation
-        const priceInput = document.querySelector('input[name="price"]');
-        const durationInput = document.querySelector('input[name="duration_minutes"]');
-        
         priceInput.addEventListener('input', function() {
             if (this.value < 0) this.value = 0;
         });
         
         durationInput.addEventListener('input', function() {
+            if (this.disabled) return;
             if (this.value < 15) this.value = 15;
             // Round to nearest 15
             this.value = Math.round(this.value / 15) * 15;
         });
+        
+        // Category selection handler
+        const categorySelect = document.querySelector('select[name="category"]');
+        categorySelect.addEventListener('change', function() {
+            if (this.value === 'digital-product') {
+                // Auto-select digital product type
+                document.querySelector('input[name="is_digital"][value="true"]').checked = true;
+                toggleDigitalFields();
+            } else if (this.value !== '') {
+                // Auto-select live session for other categories
+                document.querySelector('input[name="is_digital"][value="false"]').checked = true;
+                toggleDigitalFields();
+            }
+        });
+        
+        // Notification system
+        window.showNotification = function(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
+                type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
+                type === 'error' ? 'bg-gradient-to-r from-red-500 to-pink-600' : 'bg-gradient-to-r from-blue-500 to-cyan-600'
+            } text-white max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} text-xl"></i>
+                    <span class="font-medium">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        };
+        
+        // Check for URL parameters for messages
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+        const error = urlParams.get('error');
+        
+        if (success) {
+            showNotification(decodeURIComponent(success), 'success');
+            // Clean URL
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+        
+        if (error) {
+            showNotification(decodeURIComponent(error), 'error');
+            // Clean URL
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
     });
 </script>
 {% endblock %}
