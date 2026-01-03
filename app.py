@@ -1650,8 +1650,8 @@ async def mentor_availability_page(
         db.commit()
         db.refresh(mentor)
     
-    # Get today's date
-    today = date.today()
+    # Get today's date - FIXED: removed extra today()
+    today = datetime.now().date()
     
     # Clean up past availabilities first
     try:
@@ -1684,14 +1684,14 @@ async def mentor_availability_page(
                 Booking.booking_date == avail.date,
                 Booking.status.in_(["confirmed", "pending"]),
                 Booking.payment_status.in_(["paid", "free", "pending"])
-            ).exists()
+            ).first() is not None  # FIXED: replaced .exists() with .first() is not None
             
             if booking_exists:
                 # Double-check with TimeSlot
                 time_slot_exists = db.query(TimeSlot).filter(
                     TimeSlot.date == avail.date,
                     TimeSlot.is_booked == True
-                ).exists()
+                ).first() is not None  # FIXED: replaced .exists() with .first() is not None
                 if time_slot_exists:
                     avail.is_booked = True
         
@@ -1709,6 +1709,9 @@ async def mentor_availability_page(
     if request.query_params.get("error"):
         flash_messages.append({"category": "error", "message": request.query_params.get("error")})
     
+    # Get current datetime for template
+    current_datetime = datetime.now()
+    
     return templates.TemplateResponse("mentor_availability.html", {
         "request": request,
         "current_user": current_user,
@@ -1716,7 +1719,7 @@ async def mentor_availability_page(
         "availabilities": availabilities,
         "services": services,
         "today": today.strftime("%Y-%m-%d"),
-        "now": datetime.now(),
+        "now": current_datetime,  # Pass datetime object
         "flash_messages": flash_messages
     })
 
