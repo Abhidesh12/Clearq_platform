@@ -77,7 +77,7 @@ async def add_now_to_context(request: Request):
     return {"now": datetime.now()}
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["now"] = datetime.now 
+templates.env.globals["now"] = datetime.now()
 
 from passlib.context import CryptContext
 
@@ -1440,6 +1440,7 @@ async def mentor_availability_page(
         "availabilities": availabilities,
         "services": services,
         "today": today.strftime("%Y-%m-%d"),
+        "now": datetime.now(),
         "flash_messages": flash_messages
     })
 
