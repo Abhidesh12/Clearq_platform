@@ -226,7 +226,7 @@
                     
                     <div class="mb-4">
                         <div id="currentMonth" class="text-center text-lg font-bold text-gray-900 mb-4">
-                            {{ now.strftime('%B %Y') }}
+                            {{ now().strftime('%B %Y') if callable(now) else now.strftime('%B %Y') }}
                         </div>
                         
                         <div class="grid grid-cols-7 gap-1 mb-4">
