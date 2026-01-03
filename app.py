@@ -408,20 +408,32 @@ def create_admin_user(db: Session):
 
 
 def cleanup_past_availabilities(db: Session):
-    """Remove availability slots from past dates"""
-    today = datetime.now().date()
+    """Remove availability slots from past dates, but keep today's"""
+    today = date.today()
     try:
-        # Delete availabilities from past dates
-        db.query(Availability).filter(
+        # Delete availabilities from past dates (before today)
+        past_availabilities = db.query(Availability).filter(
             Availability.date < today
-        ).delete(synchronize_session=False)
+        ).all()
+        
+        # Check each past availability for bookings before deleting
+        for avail in past_availabilities:
+            # Check if there are any bookings for this availability
+            booking_exists = db.query(Booking).filter(
+                Booking.mentor_id == avail.mentor_id,
+                Booking.booking_date == avail.date,
+                Booking.status.in_(["confirmed", "pending"])
+            ).first()
+            
+            # Only delete if no bookings exist
+            if not booking_exists:
+                db.delete(avail)
+        
         db.commit()
-        print(f"Cleaned up past availabilities")
+        print(f"Cleaned up {len(past_availabilities)} past availabilities")
     except Exception as e:
         db.rollback()
         print(f"Error cleaning up past availabilities: {e}")
-
-
         
 @app.on_event("startup")
 async def startup_event():
@@ -1351,135 +1363,153 @@ async def mentor_availability_page(
     db: Session = Depends(get_db)
 ):
     """Mentor availability management page"""
-    # Get current user from cookie manually since get_current_user might be failing
-    token = request.cookies.get("access_token")
-    current_user = None
-    
-    if token:
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            user_id: int = payload.get("sub")
-            if user_id:
-                current_user = db.query(User).filter(User.id == user_id).first()
-        except JWTError:
-            pass
-    
-    # Check if user is authenticated and is a mentor
-    if not current_user:
+    if not current_user or current_user.role != "mentor":
         return RedirectResponse(url="/login", status_code=303)
-    
-    if current_user.role != "mentor":
-        # If not mentor, redirect to appropriate dashboard
-        if current_user.role == "admin":
-            return RedirectResponse(url="/admin/dashboard", status_code=303)
-        elif current_user.role == "learner":
-            return RedirectResponse(url="/dashboard", status_code=303)
-        else:
-            return RedirectResponse(url="/dashboard", status_code=303)
     
     # Get or create mentor profile
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
     if not mentor:
-        # Create a mentor profile if it doesn't exist
-        mentor = Mentor(
-            user_id=current_user.id,
-            verification_status="pending",
-            created_at=datetime.utcnow()
-        )
+        mentor = Mentor(user_id=current_user.id, verification_status="pending")
         db.add(mentor)
         db.commit()
         db.refresh(mentor)
     
     # Get today's date
-    today = datetime.now().date()
+    today = date.today()
     
-    # Get availabilities (current and future dates only)
+    # Clean up past availabilities first
     try:
-        # Try different date filtering approaches
+        cleanup_past_availabilities(db)
+    except Exception as e:
+        print(f"Cleanup error: {e}")
+    
+    # Get all future availabilities
+    try:
+        # Get availabilities from today onwards
         availabilities = db.query(Availability).filter(
-            Availability.mentor_id == mentor.id
+            Availability.mentor_id == mentor.id,
+            Availability.date >= today
         ).order_by(Availability.date, Availability.start_time).all()
         
-        # Filter for future dates in Python
-        future_availabilities = []
+        # Process each availability for display
         for avail in availabilities:
-            # Extract date safely
-            avail_date = None
+            # Ensure date is a date object
             if isinstance(avail.date, datetime):
-                avail_date = avail.date.date()
-            elif isinstance(avail.date, date):
-                avail_date = avail.date
-            else:
-                # Try to convert if it's a string or other type
-                try:
-                    if hasattr(avail.date, 'date'):
-                        avail_date = avail.date.date()
-                    elif isinstance(avail.date, str):
-                        avail_date = datetime.strptime(avail.date, "%Y-%m-%d").date()
-                except:
-                    continue
+                avail.date = avail.date.date()
             
-            # Only include future dates
-            if avail_date and avail_date >= today:
-                future_availabilities.append(avail)
-        
-        # Sort by date and time
-        future_availabilities.sort(key=lambda x: (
-            x.date if isinstance(x.date, (date, datetime)) else datetime.min,
-            x.start_time
-        ))
+            # Format display fields
+            avail.display_date = avail.date.strftime("%Y-%m-%d")
+            avail.display_day = avail.date.strftime("%A")
+            avail.display_time = f"{avail.start_time} - {avail.end_time}"
+            
+            # Check if this date/time is actually booked
+            booking_exists = db.query(Booking).filter(
+                Booking.mentor_id == mentor.id,
+                Booking.booking_date == avail.date,
+                Booking.status.in_(["confirmed", "pending"]),
+                Booking.payment_status.in_(["paid", "free", "pending"])
+            ).exists()
+            
+            if booking_exists:
+                # Double-check with TimeSlot
+                time_slot_exists = db.query(TimeSlot).filter(
+                    TimeSlot.date == avail.date,
+                    TimeSlot.is_booked == True
+                ).exists()
+                if time_slot_exists:
+                    avail.is_booked = True
         
     except Exception as e:
         print(f"Error loading availabilities: {e}")
-        future_availabilities = []
+        availabilities = []
     
-    # Get services for dropdown
+    # Get services
     services = db.query(Service).filter(Service.mentor_id == mentor.id).all()
     
-    # Get success/error messages from query params
+    # Get flash messages
     flash_messages = []
-    success = request.query_params.get("success")
-    error = request.query_params.get("error")
-    
-    if success:
-        flash_messages.append({"category": "success", "message": success})
-    if error:
-        flash_messages.append({"category": "error", "message": error})
-    
-    # Format dates for display
-    for avail in future_availabilities:
-        try:
-            if isinstance(avail.date, datetime):
-                avail.display_date = avail.date.strftime("%Y-%m-%d")
-                avail.display_day = avail.date.strftime("%A")
-                avail.display_time = f"{avail.start_time} - {avail.end_time}"
-            elif isinstance(avail.date, date):
-                avail.display_date = avail.date.strftime("%Y-%m-%d")
-                avail.display_day = avail.date.strftime("%A")
-                avail.display_time = f"{avail.start_time} - {avail.end_time}"
-        except:
-            avail.display_date = "N/A"
-            avail.display_day = "N/A"
-            avail.display_time = f"{avail.start_time} - {avail.end_time}"
+    if request.query_params.get("success"):
+        flash_messages.append({"category": "success", "message": request.query_params.get("success")})
+    if request.query_params.get("error"):
+        flash_messages.append({"category": "error", "message": request.query_params.get("error")})
     
     return templates.TemplateResponse("mentor_availability.html", {
         "request": request,
         "current_user": current_user,
         "mentor": mentor,
-        "availabilities": future_availabilities,
+        "availabilities": availabilities,
         "services": services,
         "today": today.strftime("%Y-%m-%d"),
         "flash_messages": flash_messages
     })
+
+@app.get("/debug/availability/{mentor_id}")
+async def debug_availability(
+    mentor_id: int,
+    db: Session = Depends(get_db)
+):
+    """Debug endpoint to check availability data"""
+    mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
+    if not mentor:
+        return {"error": "Mentor not found"}
+    
+    availabilities = db.query(Availability).filter(
+        Availability.mentor_id == mentor_id
+    ).all()
+    
+    bookings = db.query(Booking).filter(
+        Booking.mentor_id == mentor_id
+    ).all()
+    
+    time_slots = db.query(TimeSlot).filter(
+        TimeSlot.booking.has(mentor_id=mentor_id)
+    ).all()
+    
+    return {
+        "mentor": {
+            "id": mentor.id,
+            "name": mentor.user.full_name if mentor.user else "No user"
+        },
+        "availabilities": [
+            {
+                "id": a.id,
+                "date": str(a.date),
+                "start_time": a.start_time,
+                "end_time": a.end_time,
+                "is_booked": a.is_booked,
+                "service_id": a.service_id
+            } for a in availabilities
+        ],
+        "bookings": [
+            {
+                "id": b.id,
+                "date": str(b.booking_date),
+                "time": b.selected_time,
+                "status": b.status,
+                "payment_status": b.payment_status
+            } for b in bookings
+        ],
+        "time_slots": [
+            {
+                "id": t.id,
+                "date": str(t.date),
+                "start_time": t.start_time,
+                "end_time": t.end_time,
+                "is_booked": t.is_booked
+            } for t in time_slots
+        ]
+    }
     
 @app.post("/mentor/availability/create")
 async def create_availability(
     request: Request,
     date: str = Form(...),
     service_id: Optional[str] = Form(None),
+    start_time: str = Form("09:00"),
+    end_time: str = Form("21:00"),
     db: Session = Depends(get_db)
 ):
-    """Create a new availability date (default 9am-9pm)"""
+    """Create a new availability with custom time range"""
     # Get current user from cookie manually
     token = request.cookies.get("access_token")
     current_user = None
@@ -1495,7 +1525,10 @@ async def create_availability(
     
     # Check if user is authenticated and is a mentor
     if not current_user or current_user.role != "mentor":
-        return RedirectResponse(url="/login", status_code=303)
+        return RedirectResponse(
+            url="/login?error=Please%20login%20as%20a%20mentor%20to%20add%20availability",
+            status_code=303
+        )
     
     try:
         # Get or create mentor profile
@@ -1510,13 +1543,10 @@ async def create_availability(
             db.commit()
             db.refresh(mentor)
         
-        # Parse and validate service_id
-        parsed_service_id = None
-        if service_id and service_id.strip() and service_id != "None":
-            try:
-                parsed_service_id = int(service_id)
-            except ValueError:
-                pass
+        # Clean input
+        date = date.strip()
+        start_time = start_time.strip()
+        end_time = end_time.strip()
         
         # Validate date format
         try:
@@ -1535,6 +1565,77 @@ async def create_availability(
                 status_code=303
             )
         
+        # Validate time formats
+        try:
+            # Parse times to validate format
+            start_dt = datetime.strptime(start_time, "%H:%M")
+            end_dt = datetime.strptime(end_time, "%H:%M")
+            
+            # Validate start_time is before end_time
+            if start_dt >= end_dt:
+                return RedirectResponse(
+                    url="/mentor/availability?error=Start%20time%20must%20be%20before%20end%20time",
+                    status_code=303
+                )
+            
+            # Validate times are within reasonable bounds (0-23:59)
+            if not (0 <= start_dt.hour <= 23 and 0 <= start_dt.minute <= 59):
+                return RedirectResponse(
+                    url="/mentor/availability?error=Start%20time%20must%20be%20between%2000%3A00%20and%2023%3A59",
+                    status_code=303
+                )
+            
+            if not (0 <= end_dt.hour <= 23 and 0 <= end_dt.minute <= 59):
+                return RedirectResponse(
+                    url="/mentor/availability?error=End%20time%20must%20be%20between%2000%3A00%20and%2023%3A59",
+                    status_code=303
+                )
+            
+            # Minimum slot duration (15 minutes)
+            min_duration = timedelta(minutes=15)
+            if (end_dt - start_dt) < min_duration:
+                return RedirectResponse(
+                    url="/mentor/availability?error=Time%20slot%20must%20be%20at%20least%2015%20minutes",
+                    status_code=303
+                )
+            
+        except ValueError:
+            return RedirectResponse(
+                url="/mentor/availability?error=Invalid%20time%20format.%20Use%20HH%3AMM%20(24-hour%20format)",
+                status_code=303
+            )
+        
+        # Parse and validate service_id if provided
+        parsed_service_id = None
+        if service_id and service_id.strip() and service_id.lower() != "none" and service_id != "null":
+            try:
+                parsed_service_id = int(service_id)
+                
+                # Validate the service belongs to this mentor
+                service = db.query(Service).filter(
+                    Service.id == parsed_service_id,
+                    Service.mentor_id == mentor.id
+                ).first()
+                
+                if not service:
+                    return RedirectResponse(
+                        url="/mentor/availability?error=Invalid%20service%20selected",
+                        status_code=303
+                    )
+                    
+                # Also check if service is active
+                if not service.is_active:
+                    return RedirectResponse(
+                        url="/mentor/availability?error=Selected%20service%20is%20not%20active",
+                        status_code=303
+                    )
+                    
+            except ValueError:
+                return RedirectResponse(
+                    url="/mentor/availability?error=Invalid%20service%20ID",
+                    status_code=303
+                )
+        
         # Check if availability already exists for this date
         existing = db.query(Availability).filter(
             Availability.mentor_id == mentor.id,
@@ -1542,30 +1643,46 @@ async def create_availability(
         ).first()
         
         if existing:
+            # If availability exists but is booked, we shouldn't allow overriding
+            if existing.is_booked:
+                return RedirectResponse(
+                    url="/mentor/availability?error=Cannot%20modify%20availability%20that%20has%20bookings",
+                    status_code=303
+                )
+            
+            # If it exists but is not booked, update it with new times
+            existing.start_time = start_time
+            existing.end_time = end_time
+            existing.service_id = parsed_service_id
+            existing.is_booked = False
+            
+            db.commit()
+            
             return RedirectResponse(
-                url="/mentor/availability?error=Availability%20already%20exists%20for%20this%20date",
+                url="/mentor/availability?success=Availability%20updated%20successfully",
                 status_code=303
             )
         
-        # Validate service_id if provided
-        if parsed_service_id:
-            service = db.query(Service).filter(
-                Service.id == parsed_service_id,
-                Service.mentor_id == mentor.id
-            ).first()
-            if not service:
-                return RedirectResponse(
-                    url="/mentor/availability?error=Invalid%20service%20selected",
-                    status_code=303
-                )
+        # Check if there are any bookings for this date
+        existing_bookings = db.query(Booking).filter(
+            Booking.mentor_id == mentor.id,
+            Booking.booking_date == parsed_date,
+            Booking.status.in_(["pending", "confirmed"])
+        ).first()
         
-        # Create new availability with default 9am-9pm
+        if existing_bookings:
+            return RedirectResponse(
+                url="/mentor/availability?error=Cannot%20add%20availability%20for%20date%20with%20existing%20bookings",
+                status_code=303
+            )
+        
+        # Create new availability
         availability = Availability(
             mentor_id=mentor.id,
             service_id=parsed_service_id,
             date=parsed_date,
-            start_time="09:00",  # Default start time
-            end_time="21:00",    # Default end time (9pm)
+            start_time=start_time,
+            end_time=end_time,
             is_booked=False,
             created_at=datetime.utcnow()
         )
@@ -1573,19 +1690,26 @@ async def create_availability(
         db.add(availability)
         db.commit()
         
+        # Format success message with the times
+        start_display = datetime.strptime(start_time, "%H:%M").strftime("%I:%M %p").lstrip("0")
+        end_display = datetime.strptime(end_time, "%H:%M").strftime("%I:%M %p").lstrip("0")
+        
+        success_msg = f"Availability%20added%20successfully%20({start_display}%20-%20{end_display})"
+        
         return RedirectResponse(
-            url="/mentor/availability?success=Availability%20added%20successfully%20(9:00%20AM%20-%209:00%20PM)",
+            url=f"/mentor/availability?success={success_msg}",
             status_code=303
         )
         
     except Exception as e:
         db.rollback()
-        error_msg = str(e).replace(" ", "%20").replace(":", "%3A")
+        error_msg = f"Error creating availability: {str(e)}"
+        # Clean up error message for URL
+        clean_error = error_msg.replace(" ", "%20").replace(":", "%3A")
         return RedirectResponse(
-            url=f"/mentor/availability?error={error_msg}",
+            url=f"/mentor/availability?error={clean_error}",
             status_code=303
         )
-
 # ============ BOOKING & PAYMENT ROUTES ============
 
 def generate_meeting_link(booking_id: int, db: Session):
@@ -1840,89 +1964,92 @@ async def generate_time_slots(
         return JSONResponse({"success": False, "message": "Missing parameters"})
     
     try:
-        # Get service to know duration
+        # Get service
         service = db.query(Service).filter(Service.id == service_id).first()
         if not service:
             return JSONResponse({"success": False, "message": "Service not found"})
         
         duration = service.duration_minutes
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-        today = datetime.now().date()
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        today = date.today()
         
-        # Check if date is in the past
-        if date_obj < today:
-            return JSONResponse({
-                "success": False,
-                "message": "Cannot book sessions for past dates"
-            })
+        # Validate date
+        if target_date < today:
+            return JSONResponse({"success": False, "message": "Cannot book sessions for past dates"})
         
         # Get mentor's availability for this date
         availability = db.query(Availability).filter(
             Availability.mentor_id == mentor_id,
-            Availability.date == date_obj,
+            Availability.date == target_date,
             Availability.is_booked == False
         ).first()
         
         if not availability:
             return JSONResponse({"success": False, "message": "No availability for this date"})
         
-        # Parse default time range
+        # Parse time range
         start_time = datetime.strptime(availability.start_time, "%H:%M")
         end_time = datetime.strptime(availability.end_time, "%H:%M")
         
-        # If it's today, check current time and filter out past slots
-        now = datetime.now()
-        if date_obj == today:
-            current_hour = now.hour
-            current_minute = now.minute
+        # Adjust for today's current time
+        if target_date == today:
+            now = datetime.now()
+            current_time = now.time()
             
-            # Adjust start_time to be at least current time + buffer
-            if start_time.hour < current_hour or (start_time.hour == current_hour and start_time.minute < current_minute):
+            # If start_time is in the past, adjust it
+            if start_time.time() < current_time:
                 # Set start_time to current time + 30 minutes buffer
-                buffer_minutes = 30
-                start_time = datetime.combine(date_obj, now.time()) + timedelta(minutes=buffer_minutes)
-                # Round to nearest 15 minutes
-                minutes_to_add = (15 - start_time.minute % 15) % 15
-                start_time += timedelta(minutes=minutes_to_add)
+                buffer_time = datetime.combine(today, current_time) + timedelta(minutes=30)
+                # Round to next 15-minute interval
+                minutes_to_add = (15 - buffer_time.minute % 15) % 15
+                start_time = buffer_time + timedelta(minutes=minutes_to_add)
         
-        # Generate time slots
+        # Generate slots
         slots = []
-        current_time = start_time
+        current_slot = start_time
         slot_duration = timedelta(minutes=duration)
-        buffer_duration = timedelta(minutes=15)  # 15 min buffer between sessions
         
-        while current_time + slot_duration <= end_time:
-            slot_start = current_time.strftime("%H:%M")
-            slot_end = (current_time + slot_duration).strftime("%H:%M")
+        while current_slot + slot_duration <= end_time:
+            slot_start_str = current_slot.strftime("%H:%M")
+            slot_end_str = (current_slot + slot_duration).strftime("%H:%M")
             
-            # Check if this slot is already booked in Booking table
-            existing_booking = db.query(Booking).filter(
+            # Check if this slot is booked
+            is_booked = False
+            
+            # Check Booking table
+            booking = db.query(Booking).filter(
                 Booking.mentor_id == mentor_id,
-                Booking.booking_date == date_obj,
-                Booking.selected_time == slot_start,
-                Booking.status.in_(["pending", "confirmed"])
+                Booking.booking_date == target_date,
+                Booking.selected_time == slot_start_str,
+                Booking.status.in_(["confirmed", "pending"])
             ).first()
             
-            # Also check TimeSlot table
-            existing_time_slot = db.query(TimeSlot).filter(
-                TimeSlot.date == date_obj,
-                TimeSlot.start_time == slot_start,
-                TimeSlot.is_booked == True
-            ).first()
+            if booking:
+                is_booked = True
             
-            if not existing_booking and not existing_time_slot:
+            # Check TimeSlot table
+            if not is_booked:
+                time_slot = db.query(TimeSlot).filter(
+                    TimeSlot.date == target_date,
+                    TimeSlot.start_time == slot_start_str,
+                    TimeSlot.is_booked == True
+                ).first()
+                if time_slot:
+                    is_booked = True
+            
+            if not is_booked:
                 # Format for display
-                display_start = current_time.strftime("%I:%M %p").lstrip("0")
-                display_end = (current_time + slot_duration).strftime("%I:%M %p").lstrip("0")
+                display_start = current_slot.strftime("%I:%M %p").lstrip("0")
+                display_end = (current_slot + slot_duration).strftime("%I:%M %p").lstrip("0")
                 
                 slots.append({
-                    "value": slot_start,
+                    "value": slot_start_str,
                     "display": f"{display_start} - {display_end}",
-                    "end_time": slot_end
+                    "end_time": slot_end_str
                 })
             
-            # Move to next slot with buffer
-            current_time += slot_duration + buffer_duration
+            # Move to next slot (add 15-minute buffer)
+            current_slot += slot_duration + timedelta(minutes=15)
         
         if slots:
             return JSONResponse({
@@ -1938,8 +2065,21 @@ async def generate_time_slots(
             })
             
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)})
-        
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"success": False, "message": f"Error: {str(e)}"})
+def ensure_date_object(input_date):
+    """Convert any date input to a date object"""
+    if isinstance(input_date, date):
+        return input_date
+    elif isinstance(input_date, datetime):
+        return input_date.date()
+    elif isinstance(input_date, str):
+        try:
+            return datetime.strptime(input_date, "%Y-%m-%d").date()
+        except ValueError:
+            return None
+    return None
 @app.post("/payment/verify")
 async def verify_payment(
     request: Request,
