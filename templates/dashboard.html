@@ -392,6 +392,201 @@
         padding: 1.25rem;
     }
 
+    /* Combined Services & Availability Styles */
+    .services-availability-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    @media (min-width: 1024px) {
+        .services-availability-grid {
+            grid-template-columns: 2fr 1fr;
+        }
+    }
+
+    .services-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .availability-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .services-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .services-list {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+    }
+
+    .service-item {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-item:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .service-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .service-item-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0;
+    }
+
+    .service-item-price {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .service-item-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .service-detail {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+        padding: 0.375rem 0.75rem;
+        background: var(--gray-100);
+        border-radius: var(--radius-sm);
+    }
+
+    .service-detail i {
+        font-size: 0.75rem;
+        color: var(--primary);
+    }
+
+    .service-item-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .service-action-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--gray-300);
+        background: var(--white);
+        color: var(--gray-700);
+        border-radius: var(--radius);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        text-decoration: none;
+    }
+
+    .service-action-btn:hover {
+        background: var(--gray-50);
+        transform: translateY(-1px);
+    }
+
+    .service-action-btn.edit {
+        color: var(--primary);
+        border-color: var(--primary-light);
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .service-action-btn.delete {
+        color: var(--danger);
+        border-color: var(--danger-light);
+        background: rgba(239, 68, 68, 0.05);
+    }
+
+    .availability-summary {
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
+        border-radius: var(--radius);
+        border: 1px solid var(--gray-200);
+        padding: 1.5rem;
+    }
+
+    .availability-days {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .availability-day {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        transition: var(--transition);
+    }
+
+    .availability-day:hover {
+        border-color: var(--primary);
+        background: var(--gray-50);
+    }
+
+    .day-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .day-status {
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+    }
+
+    .day-available {
+        background: var(--success-light);
+        color: var(--success-dark);
+    }
+
+    .day-unavailable {
+        background: var(--gray-200);
+        color: var(--gray-600);
+    }
+
     /* Empty State - Enhanced */
     .empty-state {
         text-align: center;
@@ -752,89 +947,6 @@
         font-size: 0.9375rem;
         font-weight: 500;
         color: var(--gray-900);
-    }
-
-    /* Mentor Services Grid - Enhanced */
-    .mentor-services-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 0.75rem;
-        margin-top: 1rem;
-    }
-
-    .service-card {
-        padding: 1.5rem;
-        border-radius: var(--radius);
-        border: 1px solid;
-        text-decoration: none;
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .service-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .service-card:hover::before {
-        opacity: 1;
-    }
-
-    .service-blue {
-        background: linear-gradient(135deg, #F8FAFC, #EFF6FF);
-        border-color: #DBEAFE;
-    }
-
-    .service-green {
-        background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
-        border-color: #BBF7D0;
-    }
-
-    .service-purple {
-        background: linear-gradient(135deg, #FAF5FF, #F3E8FF);
-        border-color: #E9D5FF;
-    }
-
-    .service-card:hover {
-        transform: translateY(-6px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .service-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: var(--radius);
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        transition: var(--transition);
-    }
-
-    .service-card:hover .service-icon {
-        transform: rotate(10deg) scale(1.1);
-    }
-
-    .service-card h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.25rem;
-    }
-
-    .service-card p {
-        font-size: 0.8125rem;
-        color: var(--gray-600);
-        line-height: 1.4;
     }
 
     /* Alert - Enhanced */
@@ -1257,11 +1369,6 @@
             gap: 1rem;
         }
         
-        .mentor-services-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-        
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -1296,10 +1403,6 @@
         
         .stats-grid {
             grid-template-columns: repeat(4, 1fr);
-        }
-        
-        .mentor-services-grid {
-            grid-template-columns: repeat(3, 1fr);
         }
         
         .quick-actions {
@@ -1656,13 +1759,7 @@
                            class="menu-item" 
                            onclick="showMentorSection('services')">
                             <i class="fas fa-list-alt"></i>
-                            <span>Services</span>
-                        </a>
-                        <a href="#availability" 
-                           class="menu-item" 
-                           onclick="showMentorSection('availability')">
-                            <i class="fas fa-clock"></i>
-                            <span>Availability</span>
+                            <span>Services & Availability</span>
                         </a>
                         <a href="#earnings" 
                            class="menu-item" 
@@ -1711,29 +1808,29 @@
                         </div>
                         {% endif %}
                         
-                        <div class="mentor-services-grid">
-                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-blue">
-                                <div class="service-icon" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-blue" style="padding: 1.5rem; border-radius: var(--radius); border: 1px solid #DBEAFE; background: linear-gradient(135deg, #F8FAFC, #EFF6FF); text-decoration: none; transition: var(--transition); position: relative; overflow: hidden;">
+                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
                                     <i class="fas fa-list-alt"></i>
                                 </div>
-                                <h3>Manage Services</h3>
-                                <p>Create and manage your mentoring services</p>
+                                <h3 style="font-size: 1rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.25rem;">Manage Services</h3>
+                                <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">Create and manage your mentoring services</p>
                             </a>
                             
-                            <a href="#availability" onclick="showMentorSection('availability')" class="service-card service-green">
-                                <div class="service-icon" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
+                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-green" style="padding: 1.5rem; border-radius: var(--radius); border: 1px solid #BBF7D0; background: linear-gradient(135deg, #F0FDF4, #DCFCE7); text-decoration: none; transition: var(--transition); position: relative; overflow: hidden;">
+                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
                                     <i class="fas fa-calendar-alt"></i>
                                 </div>
-                                <h3>Set Availability</h3>
-                                <p>Set your available time slots for sessions</p>
+                                <h3 style="font-size: 1rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.25rem;">Set Availability</h3>
+                                <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">Set your available time slots for sessions</p>
                             </a>
                             
-                            <a href="/profile/edit" class="service-card service-purple">
-                                <div class="service-icon" style="background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: var(--secondary);">
+                            <a href="/profile/edit" class="service-card service-purple" style="padding: 1.5rem; border-radius: var(--radius); border: 1px solid #E9D5FF; background: linear-gradient(135deg, #FAF5FF, #F3E8FF); text-decoration: none; transition: var(--transition); position: relative; overflow: hidden;">
+                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: var(--secondary);">
                                     <i class="fas fa-user-edit"></i>
                                 </div>
-                                <h3>Edit Profile</h3>
-                                <p>Edit your public mentor profile</p>
+                                <h3 style="font-size: 1rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.25rem;">Edit Profile</h3>
+                                <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">Edit your public mentor profile</p>
                             </a>
                         </div>
                     </div>
@@ -1843,7 +1940,7 @@
                                 <span class="action-text">Add New Service</span>
                             </a>
                             
-                            <a href="/mentor/availability" class="quick-action">
+                            <a href="#services" onclick="showMentorSection('services')" class="quick-action">
                                 <div class="action-icon icon-edit">
                                     <i class="fas fa-calendar-alt"></i>
                                 </div>
@@ -1957,7 +2054,7 @@
                                 <a href="#services" onclick="showMentorSection('services')" class="header-action-btn" style="background: var(--primary); color: white;">
                                     <i class="fas fa-plus"></i> Add Services
                                 </a>
-                                <a href="#availability" onclick="showMentorSection('availability')" class="header-action-btn" style="background: transparent; border-color: var(--primary); color: var(--primary);">
+                                <a href="#services" onclick="showMentorSection('services')" class="header-action-btn" style="background: transparent; border-color: var(--primary); color: var(--primary);">
                                     <i class="fas fa-calendar-alt"></i> Set Availability
                                 </a>
                             </div>
@@ -2023,54 +2120,250 @@
             </div>
         </div>
 
-        <!-- Services Section -->
+        <!-- Combined Services & Availability Section -->
         <div id="mentor-services" class="mentor-section">
             <div style="grid-column: 1 / -1;">
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-list-alt"></i> Manage Services</h2>
-                        <a href="/mentor/dashboard/services" class="header-action-btn" style="background: var(--primary); color: white;">
-                            <i class="fas fa-plus"></i> Create Service
-                        </a>
-                    </div>
-                    
-                    <div class="card-content">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-list-alt"></i>
+                <div class="services-availability-grid">
+                    <!-- Services Column -->
+                    <div class="services-section">
+                        <!-- Services Header -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-list-alt"></i> Your Services</h2>
+                                <a href="/mentor/dashboard/services" class="header-action-btn" style="background: var(--primary); color: white;">
+                                    <i class="fas fa-plus"></i> Create Service
+                                </a>
                             </div>
-                            <h3>Manage Your Services</h3>
-                            <p>Create and manage your mentoring services. Set prices, durations, and descriptions for each service you offer.</p>
-                            <a href="/mentor/dashboard/services" class="header-action-btn" style="margin-top: 1rem;">
-                                <i class="fas fa-plus"></i> Go to Services Manager
-                            </a>
+                            
+                            <div class="card-content">
+                                {% if services and services|length > 0 %}
+                                <div class="services-list">
+                                    {% for service in services %}
+                                    <div class="service-item">
+                                        <div class="service-item-header">
+                                            <h3 class="service-item-title">{{ service.name }}</h3>
+                                            <div class="service-item-price">₹{{ service.price }}</div>
+                                        </div>
+                                        
+                                        <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 1rem; line-height: 1.5;">
+                                            {{ service.description|truncate(150) }}
+                                        </p>
+                                        
+                                        <div class="service-item-details">
+                                            <span class="service-detail">
+                                                <i class="fas fa-clock"></i>
+                                                {{ service.duration }} minutes
+                                            </span>
+                                            <span class="service-detail">
+                                                <i class="fas fa-video"></i>
+                                                {{ service.session_type|title }}
+                                            </span>
+                                            <span class="service-detail">
+                                                <i class="fas fa-tags"></i>
+                                                {{ service.category|default('General') }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="service-item-actions">
+                                            <a href="/mentor/dashboard/services/{{ service.id }}/edit" class="service-action-btn edit">
+                                                <i class="fas fa-edit"></i>
+                                                Edit
+                                            </a>
+                                            <button onclick="deleteService({{ service.id }})" class="service-action-btn delete">
+                                                <i class="fas fa-trash"></i>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="empty-state" style="padding: 2rem;">
+                                    <div class="empty-state-icon">
+                                        <i class="fas fa-list-alt"></i>
+                                    </div>
+                                    <h3>No Services Yet</h3>
+                                    <p>Create your first mentoring service to start accepting bookings</p>
+                                    <a href="/mentor/dashboard/services" class="header-action-btn" style="margin-top: 1rem;">
+                                        <i class="fas fa-plus"></i> Create Your First Service
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-chart-bar"></i> Services Performance</h2>
+                            </div>
+                            
+                            <div class="card-content">
+                                <div class="quick-stats-list">
+                                    <div class="quick-stat-item">
+                                        <span class="stat-label-text">
+                                            <i class="fas fa-shopping-cart"></i>
+                                            Total Services
+                                        </span>
+                                        <span class="stat-value-text">{{ services|length if services else 0 }}</span>
+                                    </div>
+                                    <div class="quick-stat-item">
+                                        <span class="stat-label-text">
+                                            <i class="fas fa-calendar-check"></i>
+                                            Bookings This Month
+                                        </span>
+                                        <span class="stat-value-text">{{ monthly_bookings|default(0) }}</span>
+                                    </div>
+                                    <div class="quick-stat-item">
+                                        <span class="stat-label-text">
+                                            <i class="fas fa-star"></i>
+                                            Average Rating
+                                        </span>
+                                        <span class="stat-value-text">{{ mentor.rating|default('4.9') }}/5</span>
+                                    </div>
+                                    <div class="quick-stat-item">
+                                        <span class="stat-label-text">
+                                            <i class="fas fa-users"></i>
+                                            Active Learners
+                                        </span>
+                                        <span class="stat-value-text">{{ active_learners|default(0) }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Availability Section -->
-        <div id="mentor-availability" class="mentor-section">
-            <div style="grid-column: 1 / -1;">
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-clock"></i> Manage Availability</h2>
-                        <a href="/mentor/availability" class="header-action-btn" style="background: var(--primary); color: white;">
-                            <i class="fas fa-calendar-alt"></i> Set Availability
-                        </a>
-                    </div>
-                    
-                    <div class="card-content">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-calendar-alt"></i>
+                    <!-- Availability Column -->
+                    <div class="availability-section">
+                        <!-- Availability Summary -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-calendar-alt"></i> Availability</h2>
+                                <a href="/mentor/availability" class="header-action-btn" style="background: var(--primary); color: white;">
+                                    <i class="fas fa-edit"></i> Manage
+                                </a>
                             </div>
-                            <h3>Set Your Availability</h3>
-                            <p>Define your available time slots for mentoring sessions. Learners can only book sessions during your available hours.</p>
-                            <a href="/mentor/availability" class="header-action-btn" style="margin-top: 1rem;">
-                                <i class="fas fa-calendar-alt"></i> Go to Availability Manager
-                            </a>
+                            
+                            <div class="card-content">
+                                <div class="availability-summary">
+                                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                                        <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
+                                            {{ available_days|default(5) }}/7
+                                        </div>
+                                        <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                            Days Available This Week
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="availability-days">
+                                        {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+                                        {% for day in days %}
+                                        <div class="availability-day">
+                                            <span class="day-name">
+                                                <i class="fas fa-calendar-day"></i>
+                                                {{ day }}
+                                            </span>
+                                            <span class="day-status day-available">
+                                                <i class="fas fa-check"></i>
+                                                Available
+                                            </span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                                        <div style="font-size: 0.875rem; color: var(--gray-600); text-align: center;">
+                                            <i class="fas fa-info-circle"></i>
+                                            Set specific time slots for each day in the availability manager
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Tips -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-lightbulb"></i> Quick Tips</h2>
+                            </div>
+                            
+                            <div class="card-content">
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">
+                                            1
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--gray-900);">
+                                                Set Clear Availability
+                                            </div>
+                                            <div style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">
+                                                Define specific time slots to avoid scheduling conflicts
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">
+                                            2
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--gray-900);">
+                                                Price Your Services Fairly
+                                            </div>
+                                            <div style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">
+                                                Research market rates and set competitive prices
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">
+                                            3
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--gray-900);">
+                                                Update Regularly
+                                            </div>
+                                            <div style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">
+                                                Keep your availability and services up to date
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                            </div>
+                            
+                            <div class="card-content">
+                                <div class="quick-actions">
+                                    <a href="/mentor/dashboard/services" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
+                                            <i class="fas fa-plus"></i>
+                                        </div>
+                                        <span class="action-text">Add New Service</span>
+                                    </a>
+                                    
+                                    <a href="/mentor/availability" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                        <span class="action-text">Manage Availability</span>
+                                    </a>
+                                    
+                                    <a href="/mentor/dashboard/services" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: var(--warning);">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <span class="action-text">View Analytics</span>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2299,18 +2592,11 @@
                                         <span class="action-text">Edit Personal Information</span>
                                     </a>
                                     
-                                    <a href="/mentor/dashboard/services" class="quick-action">
+                                    <a href="#services" onclick="showMentorSection('services')" class="quick-action">
                                         <div class="action-icon" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
                                             <i class="fas fa-list-alt"></i>
                                         </div>
-                                        <span class="action-text">Manage Services</span>
-                                    </a>
-                                    
-                                    <a href="/mentor/availability" class="quick-action">
-                                        <div class="action-icon" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
-                                            <i class="fas fa-calendar-alt"></i>
-                                        </div>
-                                        <span class="action-text">Update Availability</span>
+                                        <span class="action-text">Manage Services & Availability</span>
                                     </a>
                                 </div>
                             </div>
@@ -2476,7 +2762,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Add hover effects to all interactive elements
-        const interactiveElements = document.querySelectorAll('.session-item, .quick-action, .service-card, .action-button, .stat-item');
+        const interactiveElements = document.querySelectorAll('.session-item, .quick-action, .service-item, .action-button, .stat-item, .availability-day');
         
         interactiveElements.forEach(element => {
             element.addEventListener('mouseenter', function() {
@@ -2594,6 +2880,34 @@
         } else {
             // Fallback to overview
             document.querySelector('.mentor-menu-bar .menu-item[href="#overview"]').classList.add('active');
+        }
+    }
+
+    // Delete Service Function
+    function deleteService(serviceId) {
+        if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+            fetch(`/mentor/dashboard/services/${serviceId}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Service deleted successfully!', 'success');
+                    // Reload the page after a short delay
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification('Failed to delete service. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred. Please try again.', 'error');
+            });
         }
     }
 
