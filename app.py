@@ -769,53 +769,94 @@ async def dashboard(
     context = {"request": request, "current_user": current_user}
     
     if current_user.role == "learner":
-        # Show ALL bookings for the learner
+        # Get ALL bookings for the learner
         all_bookings = db.query(Booking).filter(
             Booking.learner_id == current_user.id
-        ).order_by(Booking.booking_date.desc()).limit(15).all()
+        ).order_by(Booking.created_at.desc()).all()
         
-        # Separate bookings by status
+        # Get digital product purchases
+        digital_products = db.query(Booking).filter(
+            Booking.learner_id == current_user.id,
+            Booking.service.has(is_digital=True),
+            Booking.payment_status.in_(["paid", "free"]),
+            Booking.status == "completed"
+        ).order_by(Booking.created_at.desc()).limit(6).all()
+        
+        # Separate bookings by status and type
         confirmed_bookings = []
         pending_bookings = []
         upcoming_sessions = []
         free_sessions = []
+        digital_product_purchases = []
+        session_bookings = []  # Non-digital bookings
         
         today = datetime.now().date()
         
         for booking in all_bookings:
-            if booking.payment_status in ["paid", "free"] and booking.status == "confirmed" and booking.meeting_link:
-                # This is a confirmed booking with meeting link
-                if booking.booking_date >= today:
-                    upcoming_sessions.append(booking)
-                confirmed_bookings.append(booking)
-                
-                if booking.payment_status == "free":
-                    free_sessions.append(booking)
-            elif booking.payment_status == "pending" or booking.status == "pending":
-                # This is a pending booking (awaiting payment)
-                pending_bookings.append(booking)
+            # Check if this is a digital product
+            is_digital = booking.service.is_digital if booking.service else False
+            
+            if is_digital:
+                # Digital product booking
+                if booking.payment_status in ["paid", "free"] and booking.status == "completed":
+                    digital_product_purchases.append(booking)
+                    # Add to confirmed bookings for consistency
+                    confirmed_bookings.append(booking)
+                elif booking.payment_status == "pending":
+                    pending_bookings.append(booking)
             else:
-                # Other statuses (cancelled, completed, etc.)
-                confirmed_bookings.append(booking)
+                # Session booking
+                if booking.payment_status in ["paid", "free"] and booking.status == "confirmed" and booking.meeting_link:
+                    # Confirmed session with meeting link
+                    if booking.booking_date >= today:
+                        upcoming_sessions.append(booking)
+                    confirmed_bookings.append(booking)
+                    
+                    if booking.payment_status == "free":
+                        free_sessions.append(booking)
+                elif booking.payment_status == "pending" or booking.status == "pending":
+                    # Pending session (awaiting payment)
+                    pending_bookings.append(booking)
+                else:
+                    # Other statuses (cancelled, completed, etc.)
+                    confirmed_bookings.append(booking)
+                
+                # Add to session bookings list
+                session_bookings.append(booking)
         
         # Get stats for the learner
-        total_sessions = len([b for b in all_bookings if b.payment_status in ["paid", "free"] and b.status == "confirmed"])
-        completed_sessions = len([b for b in all_bookings if b.status == "completed"])
-        pending_payments = len(pending_bookings)
+        total_sessions = len([b for b in session_bookings if b.payment_status in ["paid", "free"] and b.status == "confirmed"])
+        completed_sessions = len([b for b in session_bookings if b.status == "completed"])
+        pending_payments = len([b for b in pending_bookings if b.payment_status == "pending"])
+        total_digital_products = len(digital_product_purchases)
+        
+        # Get recent sessions (last 5)
+        recent_sessions = session_bookings[:5]
+        
+        # Get upcoming sessions (next 7 days)
+        next_week = today + timedelta(days=7)
+        upcoming_next_week = [b for b in upcoming_sessions if b.booking_date <= next_week][:3]
         
         context.update({
             "all_bookings": all_bookings,
+            "session_bookings": session_bookings,
+            "digital_products": digital_product_purchases,
             "upcoming_sessions": upcoming_sessions,
+            "upcoming_next_week": upcoming_next_week,
             "confirmed_bookings": confirmed_bookings,
             "pending_bookings": pending_bookings,
             "free_sessions": free_sessions,
+            "recent_sessions": recent_sessions,
             "total_sessions": total_sessions,
             "completed_sessions": completed_sessions,
             "pending_payments": pending_payments,
+            "total_digital_products": total_digital_products,
             "stats": {
-                "total": total_sessions,
-                "completed": completed_sessions,
-                "pending": pending_payments
+                "total_sessions": total_sessions,
+                "completed_sessions": completed_sessions,
+                "pending_payments": pending_payments,
+                "digital_products": total_digital_products,
+                "total_bookings": len(all_bookings)
             }
         })
     
@@ -825,71 +866,155 @@ async def dashboard(
             # Show ALL bookings for the mentor
             all_bookings = db.query(Booking).filter(
                 Booking.mentor_id == mentor.id
-            ).order_by(Booking.booking_date.desc()).limit(15).all()
+            ).order_by(Booking.created_at.desc()).all()
             
-            # Separate bookings by status
+            # Separate bookings by type and status
             confirmed_bookings = []
             pending_bookings = []
             upcoming_sessions = []
             free_sessions = []
+            digital_product_sales = []
+            session_bookings = []  # Non-digital bookings
             
             today = datetime.now().date()
             
             for booking in all_bookings:
-                if booking.payment_status in ["paid", "free"] and booking.status == "confirmed" and booking.meeting_link:
-                    # This is a confirmed booking with meeting link
-                    if booking.booking_date >= today:
-                        upcoming_sessions.append(booking)
-                    confirmed_bookings.append(booking)
-                    
-                    if booking.payment_status == "free":
-                        free_sessions.append(booking)
-                elif booking.payment_status == "pending" or booking.status == "pending":
-                    # This is a pending booking (awaiting payment)
-                    pending_bookings.append(booking)
+                # Check if this is a digital product
+                is_digital = booking.service.is_digital if booking.service else False
+                
+                if is_digital:
+                    # Digital product sale
+                    if booking.payment_status in ["paid", "free"] and booking.status == "completed":
+                        digital_product_sales.append(booking)
+                        confirmed_bookings.append(booking)
+                    elif booking.payment_status == "pending":
+                        pending_bookings.append(booking)
                 else:
-                    # Other statuses (cancelled, completed, etc.)
-                    confirmed_bookings.append(booking)
+                    # Session booking
+                    if booking.payment_status in ["paid", "free"] and booking.status == "confirmed" and booking.meeting_link:
+                        if booking.booking_date >= today:
+                            upcoming_sessions.append(booking)
+                        confirmed_bookings.append(booking)
+                        
+                        if booking.payment_status == "free":
+                            free_sessions.append(booking)
+                    elif booking.payment_status == "pending" or booking.status == "pending":
+                        pending_bookings.append(booking)
+                    else:
+                        confirmed_bookings.append(booking)
+                    
+                    session_bookings.append(booking)
             
-            # Calculate earnings (only from paid bookings)
-            earnings = db.query(Booking).filter(
+            # Calculate earnings (only from paid bookings, both sessions and digital products)
+            earnings_query = db.query(Booking).filter(
                 Booking.mentor_id == mentor.id,
-                Booking.payment_status == "paid"  # Only count paid, not free
-            ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+                Booking.payment_status == "paid"
+            ).with_entities(func.sum(Booking.amount_paid))
+            
+            earnings = earnings_query.scalar() or 0
+            
+            # Calculate digital product earnings separately
+            digital_earnings_query = db.query(Booking).filter(
+                Booking.mentor_id == mentor.id,
+                Booking.payment_status == "paid",
+                Booking.service.has(is_digital=True)
+            ).with_entities(func.sum(Booking.amount_paid))
+            
+            digital_earnings = digital_earnings_query.scalar() or 0
             
             # Get stats for the mentor
             total_bookings = len(all_bookings)
+            session_bookings_count = len(session_bookings)
+            digital_sales_count = len(digital_product_sales)
             pending_payments = len(pending_bookings)
             upcoming_count = len(upcoming_sessions)
+            
+            # Get recent sales (last 5)
+            recent_sales = all_bookings[:5]
+            
+            # Get top services
+            top_services = db.query(
+                Service.name,
+                func.count(Booking.id).label('sales_count'),
+                func.sum(Booking.amount_paid).label('revenue')
+            ).join(Booking, Service.id == Booking.service_id).filter(
+                Booking.mentor_id == mentor.id,
+                Booking.payment_status.in_(["paid", "free"])
+            ).group_by(Service.id).order_by(func.count(Booking.id).desc()).limit(5).all()
             
             context.update({
                 "mentor": mentor,
                 "all_bookings": all_bookings,
+                "session_bookings": session_bookings,
+                "digital_product_sales": digital_product_sales,
                 "upcoming_sessions": upcoming_sessions,
                 "confirmed_bookings": confirmed_bookings,
                 "pending_bookings": pending_bookings,
                 "free_sessions": free_sessions,
+                "recent_sales": recent_sales,
+                "top_services": top_services,
                 "earnings": earnings,
+                "digital_earnings": digital_earnings,
+                "session_earnings": earnings - digital_earnings,
                 "total_bookings": total_bookings,
+                "session_bookings_count": session_bookings_count,
+                "digital_sales_count": digital_sales_count,
                 "pending_payments": pending_payments,
                 "upcoming_count": upcoming_count,
                 "stats": {
                     "total": total_bookings,
+                    "sessions": session_bookings_count,
+                    "digital_sales": digital_sales_count,
                     "pending": pending_payments,
                     "upcoming": upcoming_count,
-                    "earnings": earnings
+                    "earnings": earnings,
+                    "digital_earnings": digital_earnings,
+                    "session_earnings": earnings - digital_earnings
+                }
+            })
+        else:
+            # Mentor profile doesn't exist, create one
+            mentor = Mentor(user_id=current_user.id, verification_status="pending")
+            db.add(mentor)
+            db.commit()
+            db.refresh(mentor)
+            
+            context.update({
+                "mentor": mentor,
+                "all_bookings": [],
+                "digital_product_sales": [],
+                "upcoming_sessions": [],
+                "confirmed_bookings": [],
+                "pending_bookings": [],
+                "free_sessions": [],
+                "earnings": 0,
+                "total_bookings": 0,
+                "pending_payments": 0,
+                "upcoming_count": 0,
+                "stats": {
+                    "total": 0,
+                    "pending": 0,
+                    "upcoming": 0,
+                    "earnings": 0
                 }
             })
     
     elif current_user.role == "admin":
+        # Pending mentor verifications
         pending_mentors = db.query(Mentor).filter(
             Mentor.verification_status == "pending"
-        ).all()
+        ).join(User).all()
         
-        # Get all recent bookings for admin
+        # Get all recent bookings (last 20)
         recent_bookings = db.query(Booking).order_by(
             Booking.created_at.desc()
         ).limit(20).all()
+        
+        # Get recent digital product sales
+        recent_digital_sales = db.query(Booking).filter(
+            Booking.service.has(is_digital=True),
+            Booking.payment_status == "paid"
+        ).order_by(Booking.created_at.desc()).limit(10).all()
         
         # Calculate admin stats
         total_users = db.query(User).count()
@@ -897,28 +1022,104 @@ async def dashboard(
             Mentor.is_verified_by_admin == True
         ).count()
         total_bookings = db.query(Booking).count()
-        revenue = db.query(Booking).filter(
+        total_digital_sales = db.query(Booking).filter(
+            Booking.service.has(is_digital=True),
+            Booking.payment_status == "paid"
+        ).count()
+        
+        # Calculate revenue
+        total_revenue = db.query(Booking).filter(
             Booking.payment_status == "paid"
         ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+        
+        digital_revenue = db.query(Booking).filter(
+            Booking.service.has(is_digital=True),
+            Booking.payment_status == "paid"
+        ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+        
+        session_revenue = total_revenue - digital_revenue
         
         # Get pending bookings count
         pending_bookings_count = db.query(Booking).filter(
             Booking.payment_status == "pending"
         ).count()
         
+        # Get today's stats
+        today = datetime.now().date()
+        today_bookings = db.query(Booking).filter(
+            func.date(Booking.created_at) == today
+        ).count()
+        
+        today_revenue = db.query(Booking).filter(
+            func.date(Booking.created_at) == today,
+            Booking.payment_status == "paid"
+        ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+        
         context.update({
             "pending_mentors": pending_mentors,
             "recent_bookings": recent_bookings,
+            "recent_digital_sales": recent_digital_sales,
             "stats": {
                 "total_users": total_users,
                 "total_mentors": total_mentors,
                 "total_bookings": total_bookings,
-                "revenue": revenue,
-                "pending_bookings": pending_bookings_count
+                "total_digital_sales": total_digital_sales,
+                "total_revenue": total_revenue,
+                "digital_revenue": digital_revenue,
+                "session_revenue": session_revenue,
+                "pending_bookings": pending_bookings_count,
+                "today_bookings": today_bookings,
+                "today_revenue": today_revenue
             }
         })
     
+    # Add current datetime for templates
+    context["now"] = datetime.now()
+    
     return templates.TemplateResponse("dashboard.html", context)
+@app.post("/mentor/services/{service_id}/update-digital-url")
+async def update_digital_product_url(
+    service_id: int,
+    digital_product_url: str = Form(...),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update digital product URL"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    service = db.query(Service).filter(
+        Service.id == service_id,
+        Service.mentor_id == mentor.id
+    ).first()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    if not service.is_digital:
+        raise HTTPException(status_code=400, detail="This is not a digital product")
+    
+    # Validate URL
+    import re
+    url_pattern = re.compile(
+        r'^(https?://)'  # http:// or https://
+        r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'  # domain
+        r'(:\d+)?'  # optional port
+        r'(/.*)?$'  # optional path
+    )
+    
+    if not url_pattern.match(digital_product_url):
+        raise HTTPException(status_code=400, detail="Invalid URL format")
+    
+    # Update URL
+    service.digital_product_url = digital_product_url
+    db.commit()
+    
+    return JSONResponse({
+        "success": True,
+        "message": "Digital product URL updated successfully"
+    })
     
 @app.get("/profile/edit", response_class=HTMLResponse)
 async def edit_profile_page(
@@ -1340,6 +1541,30 @@ async def create_service(
     if not mentor:
         raise HTTPException(status_code=404, detail="Mentor profile not found")
     
+    # Validate digital product
+    if is_digital:
+        if not digital_product_url or not digital_product_url.strip():
+            # Redirect back with error
+            return RedirectResponse(
+                url="/mentor/dashboard/services?error=Digital%20product%20requires%20a%20URL",
+                status_code=303
+            )
+        
+        # Validate URL format
+        import re
+        url_pattern = re.compile(
+            r'^(https?://)'  # http:// or https://
+            r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'  # domain
+            r'(:\d+)?'  # optional port
+            r'(/.*)?$'  # optional path
+        )
+        
+        if not url_pattern.match(digital_product_url):
+            return RedirectResponse(
+                url="/mentor/dashboard/services?error=Please%20enter%20a%20valid%20URL%20starting%20with%20http://%20or%20https://",
+                status_code=303
+            )
+    
     service = Service(
         mentor_id=mentor.id,
         name=name,
@@ -1348,14 +1573,65 @@ async def create_service(
         price=price,
         duration_minutes=duration_minutes,
         is_digital=is_digital,
-        digital_product_url=digital_product_url
+        digital_product_url=digital_product_url if is_digital else None
     )
     
     db.add(service)
     db.commit()
     
-    return RedirectResponse(url="/mentor/dashboard/services", status_code=303)
+    success_msg = "Service created successfully!"
+    if is_digital:
+        success_msg = "Digital product created successfully! The download link will be available to buyers."
+    
+    return RedirectResponse(
+        url=f"/mentor/dashboard/services?success={success_msg.replace(' ', '%20')}",
+        status_code=303
+    )
 
+@app.get("/digital-product/{booking_id}")
+async def deliver_digital_product(
+    booking_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Deliver digital product to the buyer"""
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=303)
+    
+    # Get booking
+    booking = db.query(Booking).filter(
+        Booking.id == booking_id,
+        Booking.learner_id == current_user.id,
+        Booking.payment_status.in_(["paid", "free"])
+    ).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # Get service
+    service = db.query(Service).filter(Service.id == booking.service_id).first()
+    if not service or not service.is_digital:
+        raise HTTPException(status_code=404, detail="Digital product not found")
+    
+    # Check if user has access
+    if booking.status != "completed" and booking.payment_status not in ["paid", "free"]:
+        raise HTTPException(
+            status_code=403, 
+            detail="You don't have access to this product yet. Please wait for confirmation."
+        )
+    
+    # Mark booking as completed
+    booking.status = "completed"
+    db.commit()
+    
+    return templates.TemplateResponse("digital_product_delivery.html", {
+        "request": Request,
+        "current_user": current_user,
+        "booking": booking,
+        "service": service,
+        "digital_product_url": service.digital_product_url
+    })
+    
 @app.get("/mentor/availability", response_class=HTMLResponse)
 async def mentor_availability_page(
     request: Request,
@@ -1791,164 +2067,259 @@ async def create_booking(
     date_str = booking_data.get("date")
     time_slot = booking_data.get("time")  # This is the start time selected by learner
     
+    if not all([service_id, date_str, time_slot]):
+        raise HTTPException(status_code=400, detail="Missing required booking data")
+    
     service = db.query(Service).filter(Service.id == service_id).first()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
     
-    # Check if the selected time is in the past
-    selected_datetime = datetime.strptime(f"{date_str} {time_slot}", "%Y-%m-%d %H:%M")
-    if selected_datetime < datetime.now():
-        raise HTTPException(status_code=400, detail="Cannot book sessions in the past")
+    # Get mentor
+    mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor not found")
     
-    # Calculate end time based on service duration
-    start_time = datetime.strptime(time_slot, "%H:%M")
-    end_time = start_time + timedelta(minutes=service.duration_minutes)
-    end_time_str = end_time.strftime("%H:%M")
+    # Check if service is digital
+    is_digital_service = service.is_digital
+    
+    # Check if the selected time is in the past (for non-digital services)
+    if not is_digital_service:
+        try:
+            selected_datetime = datetime.strptime(f"{date_str} {time_slot}", "%Y-%m-%d %H:%M")
+            if selected_datetime < datetime.now():
+                raise HTTPException(status_code=400, detail="Cannot book sessions in the past")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date or time format")
+    
+    # Calculate end time based on service duration (for non-digital)
+    if not is_digital_service:
+        start_time = datetime.strptime(time_slot, "%H:%M")
+        end_time = start_time + timedelta(minutes=service.duration_minutes)
+        end_time_str = end_time.strftime("%H:%M")
     
     # Check if service is free (price = 0)
     is_free_service = service.price == 0
     
     if is_free_service:
-        # For free services, generate meeting link immediately
-        meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
-        meeting_link = f"https://meet.jit.si/{meeting_id}"
-
-        
-        # Create booking record for free service
-        booking = Booking(
-            learner_id=current_user.id,
-            mentor_id=service.mentor_id,
-            service_id=service_id,
-            booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
-            selected_time=time_slot,
-            razorpay_order_id=None,  # No payment for free service
-            amount_paid=0,
-            status="confirmed",  # Immediately confirmed
-            payment_status="free",  # Special status for free services
-            meeting_link=meeting_link,
-            meeting_id=meeting_id,
-            notes=f"Free session scheduled for {date_str} at {time_slot}"
-        )
-        
-        db.add(booking)
-        db.commit()
-        db.refresh(booking)
-        
-        print(f"Free booking created with ID: {booking.id}, Meeting Link: {meeting_link}")
-        
-        # Mark the time slot as booked
-        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-        
-        # Find and mark the availability as booked
-        availability = db.query(Availability).filter(
-            Availability.mentor_id == service.mentor_id,
-            Availability.date == target_date
-        ).first()
-        
-        if availability:
-            availability.is_booked = True
-        
-        # Create a time slot record
-        time_slot_record = TimeSlot(
-            booking_id=booking.id,
-            start_time=time_slot,
-            end_time=end_time_str,
-            date=target_date,
-            is_booked=True,
-            created_at=datetime.utcnow()
-        )
-        db.add(time_slot_record)
-        db.commit()
-        
-        return JSONResponse({
-            "success": True,
-            "booking_id": booking.id,
-            "redirect_url": f"/dashboard",  # Redirect to dashboard for free services
-            "meeting_link": meeting_link,
-            "meeting_id": meeting_id,
-            "is_free": True,
-            "message": "Free session booked successfully!"
-        })
-        
-    else:
-        # For paid services, proceed with payment flow
-        meeting_id = None
-        meeting_link = None
-        
-        # Create Razorpay order
-        order_amount = service.price * 100  # Convert to paise
-        order_currency = "INR"
-        
-        try:
-            order_data = {
-                "amount": order_amount,
-                "currency": order_currency,
-                "payment_capture": 1,
-                "notes": {
-                    "service_id": service_id,
-                    "learner_id": current_user.id,
-                    "date": date_str,
-                    "time": time_slot,
-                    "duration": service.duration_minutes
-                }
-            }
-            
-            print(f"Creating Razorpay order with amount: {order_amount}")
-            razorpay_order = razorpay_client.order.create(order_data)
-            print(f"Razorpay order created: {razorpay_order['id']}")
-            
-            # Create booking record for paid service
+        # For free services
+        if is_digital_service:
+            # Free digital product
             booking = Booking(
                 learner_id=current_user.id,
                 mentor_id=service.mentor_id,
                 service_id=service_id,
-                booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
-                selected_time=time_slot,
-                razorpay_order_id=razorpay_order["id"],
-                amount_paid=service.price,
-                status="pending",
-                payment_status="pending",
-                meeting_link=meeting_link,
-                meeting_id=meeting_id,
-                notes=f"Session scheduled for {date_str} at {time_slot} (Pending Payment)"
+                booking_date=datetime.now().date(),
+                selected_time=datetime.now().strftime("%H:%M"),
+                razorpay_order_id=None,
+                amount_paid=0,
+                status="completed",  # Immediately completed for digital
+                payment_status="free",
+                meeting_link=None,
+                meeting_id=None,
+                notes=f"Free digital product: {service.name}"
             )
             
             db.add(booking)
             db.commit()
             db.refresh(booking)
             
-            print(f"Paid booking created with ID: {booking.id}, Payment pending")
+            return JSONResponse({
+                "success": True,
+                "booking_id": booking.id,
+                "redirect_url": f"/digital-product/{booking.id}",
+                "is_digital": True,
+                "is_free": True,
+                "message": "Free digital product added to your account!"
+            })
+        else:
+            # Free session - generate meeting link
+            meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
+            meeting_link = f"https://meet.jit.si/{meeting_id}"
             
-            # Create a TimeSlot record to temporarily reserve the slot
+            # Create booking record
+            booking = Booking(
+                learner_id=current_user.id,
+                mentor_id=service.mentor_id,
+                service_id=service_id,
+                booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
+                selected_time=time_slot,
+                razorpay_order_id=None,
+                amount_paid=0,
+                status="confirmed",
+                payment_status="free",
+                meeting_link=meeting_link,
+                meeting_id=meeting_id,
+                notes=f"Free session scheduled for {date_str} at {time_slot}"
+            )
+            
+            db.add(booking)
+            db.commit()
+            db.refresh(booking)
+            
+            # Mark the time slot as booked
             target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
             
-            # Create a time slot record to reserve this slot
+            # Find and mark the availability as booked
+            availability = db.query(Availability).filter(
+                Availability.mentor_id == service.mentor_id,
+                Availability.date == target_date
+            ).first()
+            
+            if availability:
+                availability.is_booked = True
+            
+            # Create a time slot record
             time_slot_record = TimeSlot(
                 booking_id=booking.id,
                 start_time=time_slot,
                 end_time=end_time_str,
                 date=target_date,
-                is_booked=False,  # Not booked yet, just reserved
+                is_booked=True,
                 created_at=datetime.utcnow()
             )
             db.add(time_slot_record)
             db.commit()
             
-            # Note: We're NOT marking availability as booked yet for paid services
-            # This will happen after payment confirmation
-            
             return JSONResponse({
                 "success": True,
                 "booking_id": booking.id,
-                "redirect_url": f"/payment/{booking.id}",
-                "is_free": False,
-                "message": "Booking created. Please complete payment to confirm your session."
+                "redirect_url": f"/dashboard",
+                "meeting_link": meeting_link,
+                "meeting_id": meeting_id,
+                "is_digital": False,
+                "is_free": True,
+                "message": "Free session booked successfully!"
             })
+    else:
+        # Paid services
+        if is_digital_service:
+            # Paid digital product - create Razorpay order
+            order_amount = service.price * 100  # Convert to paise
+            order_currency = "INR"
             
-        except Exception as e:
-            print(f"Error creating booking: {str(e)}")
-            db.rollback()
-            raise HTTPException(status_code=500, detail=str(e))
+            try:
+                order_data = {
+                    "amount": order_amount,
+                    "currency": order_currency,
+                    "payment_capture": 1,
+                    "notes": {
+                        "service_id": service_id,
+                        "learner_id": current_user.id,
+                        "product_type": "digital"
+                    }
+                }
+                
+                print(f"Creating Razorpay order for digital product: {order_amount}")
+                razorpay_order = razorpay_client.order.create(order_data)
+                print(f"Razorpay order created: {razorpay_order['id']}")
+                
+                # Create booking record for digital product
+                booking = Booking(
+                    learner_id=current_user.id,
+                    mentor_id=service.mentor_id,
+                    service_id=service_id,
+                    booking_date=datetime.now().date(),
+                    selected_time=datetime.now().strftime("%H:%M"),
+                    razorpay_order_id=razorpay_order["id"],
+                    amount_paid=service.price,
+                    status="pending",  # Will be completed after payment
+                    payment_status="pending",
+                    meeting_link=None,
+                    meeting_id=None,
+                    notes=f"Digital product purchase: {service.name}"
+                )
+                
+                db.add(booking)
+                db.commit()
+                db.refresh(booking)
+                
+                return JSONResponse({
+                    "success": True,
+                    "booking_id": booking.id,
+                    "redirect_url": f"/payment/{booking.id}",
+                    "is_digital": True,
+                    "is_free": False,
+                    "razorpay_order_id": razorpay_order["id"],
+                    "message": "Please complete payment to access your digital product."
+                })
+                
+            except Exception as e:
+                print(f"Error creating digital product order: {str(e)}")
+                raise HTTPException(status_code=500, detail=str(e))
+        else:
+            # Paid session - create Razorpay order
+            order_amount = service.price * 100  # Convert to paise
+            order_currency = "INR"
+            
+            try:
+                order_data = {
+                    "amount": order_amount,
+                    "currency": order_currency,
+                    "payment_capture": 1,
+                    "notes": {
+                        "service_id": service_id,
+                        "learner_id": current_user.id,
+                        "date": date_str,
+                        "time": time_slot,
+                        "duration": service.duration_minutes
+                    }
+                }
+                
+                print(f"Creating Razorpay order for session: {order_amount}")
+                razorpay_order = razorpay_client.order.create(order_data)
+                print(f"Razorpay order created: {razorpay_order['id']}")
+                
+                # Create booking record for session
+                booking = Booking(
+                    learner_id=current_user.id,
+                    mentor_id=service.mentor_id,
+                    service_id=service_id,
+                    booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
+                    selected_time=time_slot,
+                    razorpay_order_id=razorpay_order["id"],
+                    amount_paid=service.price,
+                    status="pending",
+                    payment_status="pending",
+                    meeting_link=None,
+                    meeting_id=None,
+                    notes=f"Session scheduled for {date_str} at {time_slot} (Pending Payment)"
+                )
+                
+                db.add(booking)
+                db.commit()
+                db.refresh(booking)
+                
+                print(f"Paid booking created with ID: {booking.id}, Payment pending")
+                
+                # Create a TimeSlot record to temporarily reserve the slot
+                target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                
+                # Create a time slot record to reserve this slot
+                time_slot_record = TimeSlot(
+                    booking_id=booking.id,
+                    start_time=time_slot,
+                    end_time=end_time_str,
+                    date=target_date,
+                    is_booked=False,  # Not booked yet, just reserved
+                    created_at=datetime.utcnow()
+                )
+                db.add(time_slot_record)
+                db.commit()
+                
+                return JSONResponse({
+                    "success": True,
+                    "booking_id": booking.id,
+                    "redirect_url": f"/payment/{booking.id}",
+                    "is_digital": False,
+                    "is_free": False,
+                    "razorpay_order_id": razorpay_order["id"],
+                    "message": "Booking created. Please complete payment to confirm your session."
+                })
+                
+            except Exception as e:
+                print(f"Error creating booking: {str(e)}")
+                db.rollback()
+                raise HTTPException(status_code=500, detail=str(e))
 
 # Add this new API endpoint for generating time slots
 @app.post("/api/generate-time-slots")
@@ -2108,29 +2479,57 @@ async def verify_payment(
             booking.payment_status = "paid"
             booking.razorpay_payment_id = data['razorpay_payment_id']
             
-            # NOW generate meeting link after payment is confirmed
-            meeting_link, meeting_id = generate_meeting_link(booking.id, db)
+            # Check if this is a digital product
+            is_digital = booking.service.is_digital if booking.service else False
             
-            # Create payment record
-            payment = Payment(
-                booking_id=booking.id,
-                razorpay_order_id=data['razorpay_order_id'],
-                razorpay_payment_id=data['razorpay_payment_id'],
-                amount=booking.amount_paid,
-                status="paid",
-                payment_method="razorpay",
-                created_at=datetime.utcnow()
-            )
-            db.add(payment)
-            db.commit()
-            
-            return JSONResponse({
-                "success": True, 
-                "message": "Payment verified successfully! Meeting scheduled.",
-                "meeting_link": meeting_link,
-                "meeting_id": meeting_id,
-                "redirect_url": "/dashboard"
-            })
+            if is_digital:
+                # For digital products, mark as completed immediately
+                booking.status = "completed"
+                
+                # Create payment record
+                payment = Payment(
+                    booking_id=booking.id,
+                    razorpay_order_id=data['razorpay_order_id'],
+                    razorpay_payment_id=data['razorpay_payment_id'],
+                    amount=booking.amount_paid,
+                    status="paid",
+                    payment_method="razorpay",
+                    created_at=datetime.utcnow()
+                )
+                db.add(payment)
+                db.commit()
+                
+                return JSONResponse({
+                    "success": True, 
+                    "message": "Payment verified successfully! Your digital product is ready.",
+                    "redirect_url": f"/digital-product/{booking.id}",
+                    "is_digital": True
+                })
+            else:
+                # For sessions, generate meeting link
+                meeting_link, meeting_id = generate_meeting_link(booking.id, db)
+                
+                # Create payment record
+                payment = Payment(
+                    booking_id=booking.id,
+                    razorpay_order_id=data['razorpay_order_id'],
+                    razorpay_payment_id=data['razorpay_payment_id'],
+                    amount=booking.amount_paid,
+                    status="paid",
+                    payment_method="razorpay",
+                    created_at=datetime.utcnow()
+                )
+                db.add(payment)
+                db.commit()
+                
+                return JSONResponse({
+                    "success": True, 
+                    "message": "Payment verified successfully! Meeting scheduled.",
+                    "meeting_link": meeting_link,
+                    "meeting_id": meeting_id,
+                    "redirect_url": "/dashboard",
+                    "is_digital": False
+                })
         else:
             return JSONResponse({"success": False, "message": "Booking not found"})
         
