@@ -39,6 +39,66 @@
         --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* Digital Product Badge Styles */
+    .digital-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        color: white;
+        border-radius: 1rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .instant-access-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        background: linear-gradient(135deg, #06B6D4, #0891B2);
+        color: white;
+        border-radius: 1rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+    }
+
+    /* Service Card Updates */
+    .service-card.digital-product {
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+    }
+
+    .service-card.digital-product:hover {
+        border-color: var(--primary);
+        box-shadow: 0 10px 25px rgba(139, 92, 246, 0.2);
+    }
+
+    .service-card.digital-product .service-card-header::before {
+        background: linear-gradient(90deg, #8B5CF6, #7C3AED);
+    }
+
+    .service-card.digital-product .service-icon {
+        background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+        border-color: rgba(139, 92, 246, 0.2);
+    }
+
+    .service-card.digital-product .service-icon i {
+        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .service-card.digital-product .service-book-btn {
+        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+    }
+
+    .service-card.digital-product .service-book-btn:hover {
+        background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    }
+
     /* Modern Scrollbar */
     ::-webkit-scrollbar {
         width: 6px;
@@ -589,6 +649,9 @@
         color: var(--gray-900);
         margin-bottom: 0.5rem;
         line-height: 1.4;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .service-price {
@@ -1033,51 +1096,6 @@
                 </div>
             </div>
 
-            <!-- Contact & Info -->
-            <!-- <div class="profile-section">
-                <h3 class="section-title">
-                    <i class="fas fa-info-circle"></i>
-                    Contact & Info
-                </h3>
-                <div class="contact-info">
-                    {% if mentor.company %}
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-building"></i>
-                        </div>
-                        <div class="contact-details">
-                            <div class="label">Company</div>
-                            <div class="value">{{ mentor.company }}</div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if mentor.user.email %}
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="contact-details">
-                            <div class="label">Email</div>
-                            <a href="mailto:{{ mentor.user.email }}" class="value">{{ mentor.user.email }}</a>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if mentor.linkedin_url %}
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fab fa-linkedin"></i>
-                        </div>
-                        <div class="contact-details">
-                            <div class="label">LinkedIn</div>
-                            <a href="{{ mentor.linkedin_url }}" target="_blank" class="value">Connect</a>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div> -->
-
             <!-- Copy Link Button -->
             <button onclick="copyProfileUrl()" class="copy-btn">
                 <i class="fas fa-copy"></i>
@@ -1090,8 +1108,8 @@
     <div class="animate-fadeIn" style="animation-delay: 0.1s;">
         <!-- Services Header -->
         <div class="services-header">
-            <h2>Available Services</h2>
-            <p>Choose from personalized mentoring sessions</p>
+            <h2>Available Services & Digital Products</h2>
+            <p>Choose from personalized mentoring sessions and digital products</p>
             <div class="services-count">
                 <i class="fas fa-gem"></i>
                 {{ services|length if services else 0 }} Services
@@ -1102,9 +1120,9 @@
         {% if services and services|length > 0 %}
         <div class="services-grid">
             {% for service in services %}
-            <a href="/mentor/username/{{ mentor.user.username }}/service/{{ service.id }}" 
+            <a href="/{{ mentor.user.username }}/service/{{ service.id }}" 
                class="service-card-link">
-                <div class="service-card">
+                <div class="service-card {% if service.is_digital %}digital-product{% endif %}">
                     {% if loop.index <= 2 %}
                     <div class="service-card-badge">
                         {% if loop.index == 1 %}🔥 Best Seller{% else %}⭐ Popular{% endif %}
@@ -1114,7 +1132,9 @@
                     <!-- Card Header -->
                     <div class="service-card-header">
                         <div class="service-icon">
-                            {% if 'resume' in service.name.lower() or 'cv' in service.name.lower() %}
+                            {% if service.is_digital %}
+                            <i class="fas fa-download"></i>
+                            {% elif 'resume' in service.name.lower() or 'cv' in service.name.lower() %}
                             <i class="fas fa-file-alt"></i>
                             {% elif 'interview' in service.name.lower() or 'mock' in service.name.lower() %}
                             <i class="fas fa-comments"></i>
@@ -1130,7 +1150,15 @@
                     
                     <!-- Card Body -->
                     <div class="service-card-body">
-                        <h3 class="service-title">{{ service.name }}</h3>
+                        <h3 class="service-title">
+                            {{ service.name }}
+                            {% if service.is_digital %}
+                            <span class="digital-badge">
+                                <i class="fas fa-box"></i>
+                                Digital
+                            </span>
+                            {% endif %}
+                        </h3>
                         
                         <div class="service-price">
                             <span class="currency">₹</span>
@@ -1145,6 +1173,16 @@
                         </p>
                         
                         <div class="service-features">
+                            {% if service.is_digital %}
+                            <div class="service-feature">
+                                <i class="fas fa-download"></i>
+                                <span>Instant Download</span>
+                            </div>
+                            <div class="service-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Lifetime Access</span>
+                            </div>
+                            {% else %}
                             <div class="service-feature">
                                 <i class="fas fa-check-circle"></i>
                                 <span>1-on-1 Session</span>
@@ -1153,18 +1191,31 @@
                                 <i class="fas fa-check-circle"></i>
                                 <span>Expert Feedback</span>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                     
                     <!-- Card Footer -->
                     <div class="service-card-footer">
                         <div class="service-duration">
-                            <i class="fas fa-clock"></i>
+                            <i class="fas {% if service.is_digital %}fa-bolt{% else %}fa-clock{% endif %}"></i>
+                            {% if service.is_digital %}
+                            <span class="instant-access-badge">
+                                <i class="fas fa-bolt"></i>
+                                Instant Access
+                            </span>
+                            {% else %}
                             {{ service.duration_minutes if service.duration_minutes else '60' }}m
+                            {% endif %}
                         </div>
                         <span class="service-book-btn">
-                            Book
-                            <i class="fas fa-arrow-right"></i>
+                            {% if service.is_digital %}
+                            <i class="fas fa-shopping-cart"></i>
+                            Purchase
+                            {% else %}
+                            <i class="fas fa-calendar"></i>
+                            Book Now
+                            {% endif %}
                         </span>
                     </div>
                 </div>
@@ -1297,7 +1348,31 @@ document.addEventListener('DOMContentLoaded', function() {
             card.classList.add('animate-fadeIn');
         });
     }, 100);
+    
+    // Add digital product hover effects
+    const digitalCards = document.querySelectorAll('.service-card.digital-product');
+    digitalCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            const icon = this.querySelector('.service-icon i');
+            icon.style.animation = 'bounce 0.5s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            const icon = this.querySelector('.service-icon i');
+            icon.style.animation = '';
+        });
+    });
 });
+
+// Add bounce animation for digital product icons
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+`;
+document.head.appendChild(style);
 
 // Web Share API for mobile
 if (navigator.share) {
@@ -1325,14 +1400,14 @@ setTimeout(() => {
 }, 500);
 
 // Add pulse animation for FAB
-const style = document.createElement('style');
-style.textContent = `
+const pulseStyle = document.createElement('style');
+pulseStyle.textContent = `
     @keyframes pulse {
         0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7); }
         70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
         100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(pulseStyle);
 </script>
 {% endblock %}
