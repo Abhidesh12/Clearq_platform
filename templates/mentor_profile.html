@@ -242,19 +242,19 @@
         100% { transform: translateX(100%); }
     }
 
-    /* Social Links in Header Top Right */
+    /* Social Links in Header Top Right - FIXED SIZE */
     .profile-header-top-bar {
         position: absolute;
-        top: 0.75rem;
-        right: 0.75rem;
+        top: 1rem;
+        right: 1rem;
         display: flex;
-        gap: 0.375rem;
+        gap: 0.5rem;
         z-index: 10;
     }
 
     .header-social-link {
-        width: 1.75rem;
-        height: 1.75rem;
+        width: 2.5rem;
+        height: 2.5rem;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -262,9 +262,9 @@
         color: var(--white);
         text-decoration: none;
         transition: var(--transition);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .header-social-link.linkedin {
@@ -275,13 +275,39 @@
         background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
     }
 
-    .header-social-link:hover {
+    .header-social-link.disabled {
+        opacity: 0.7;
+        cursor: default;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    }
+
+    .header-social-link.disabled.linkedin {
+        background: linear-gradient(135deg, rgba(0, 119, 181, 0.6), rgba(0, 85, 130, 0.6));
+    }
+
+    .header-social-link.disabled.instagram {
+        background: linear-gradient(45deg, 
+            rgba(64, 93, 230, 0.6), 
+            rgba(88, 81, 219, 0.6), 
+            rgba(131, 58, 180, 0.6), 
+            rgba(193, 53, 132, 0.6), 
+            rgba(225, 48, 108, 0.6), 
+            rgba(253, 29, 29, 0.6)
+        );
+    }
+
+    .header-social-link:hover:not(.disabled) {
         transform: translateY(-2px) scale(1.1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .header-social-link.disabled:hover {
+        transform: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .header-social-link i {
-        font-size: 0.75rem;
+        font-size: 1.25rem;
     }
 
     .profile-avatar {
@@ -403,44 +429,6 @@
         font-size: 0.875rem;
     }
 
-    /* Social Links (Center-aligned below) */
-    .social-links {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1.25rem;
-        justify-content: center;
-    }
-
-    .social-link {
-        width: 2.25rem;
-        height: 2.25rem;
-        border-radius: var(--radius);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--white);
-        text-decoration: none;
-        transition: var(--transition);
-        box-shadow: var(--shadow);
-    }
-
-    .social-link:hover {
-        transform: translateY(-2px) scale(1.1);
-        box-shadow: var(--shadow-md);
-    }
-
-    .social-link.linkedin {
-        background: linear-gradient(135deg, var(--linkedin), #005582);
-    }
-
-    .social-link.instagram {
-        background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
-    }
-
-    .social-link i {
-        font-size: 1rem;
-    }
-
     /* Stats Grid */
     .stats-grid {
         display: grid;
@@ -504,74 +492,6 @@
         transform: translateY(-1px);
     }
 
-    /* Contact Info */
-    .contact-info {
-        background: linear-gradient(135deg, #fef7ff, #faf5ff);
-        border-radius: var(--radius);
-        padding: 1rem;
-        border: 1px solid rgba(139, 92, 246, 0.1);
-    }
-
-    .contact-item {
-        display: flex;
-        align-items: center;
-        gap: 0.625rem;
-        margin-bottom: 0.75rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid rgba(139, 92, 246, 0.1);
-    }
-
-    .contact-item:last-child {
-        margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
-    }
-
-    .contact-icon {
-        width: 2rem;
-        height: 2rem;
-        border-radius: var(--radius);
-        background: linear-gradient(135deg, var(--white), #faf5ff);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--primary);
-        flex-shrink: 0;
-        border: 1px solid rgba(139, 92, 246, 0.2);
-        font-size: 0.875rem;
-    }
-
-    .contact-details {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .contact-details .label {
-        font-size: 0.6875rem;
-        color: var(--gray-600);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.125rem;
-    }
-
-    .contact-details .value {
-        font-size: 0.875rem;
-        color: var(--gray-800);
-        font-weight: 500;
-        word-break: break-word;
-    }
-
-    .contact-details a.value {
-        color: var(--primary);
-        text-decoration: none;
-        transition: var(--transition);
-    }
-
-    .contact-details a.value:hover {
-        color: var(--primary-dark);
-        text-decoration: underline;
-    }
-
     /* Copy Button */
     .copy-btn {
         width: 100%;
@@ -588,7 +508,7 @@
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        margin-top: 1rem;
+        margin-top: 1.5rem;
     }
 
     .copy-btn:hover {
@@ -955,8 +875,13 @@
             margin-bottom: 1rem;
         }
 
-        .social-links {
-            justify-content: center;
+        .header-social-link {
+            width: 2.25rem;
+            height: 2.25rem;
+        }
+
+        .header-social-link i {
+            font-size: 1rem;
         }
     }
 
@@ -1013,58 +938,6 @@
             height: 2.75rem;
         }
     }
-
-    /* Social icon container for tooltips */
-.social-icon-container {
-    position: relative;
-    display: inline-block;
-}
-
-/* Tooltip styles */
-.social-tooltip {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(5px);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    pointer-events: none;
-    z-index: 100;
-}
-
-.social-tooltip::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 4px solid transparent;
-    border-bottom-color: rgba(0, 0, 0, 0.8);
-}
-
-.header-social-link:hover + .social-tooltip,
-.header-social-link:active + .social-tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(8px);
-}
-
-/* Alternative: Always show icons with hover effect */
-.header-social-link.no-link {
-    cursor: default;
-}
-
-.header-social-link.no-link:hover {
-    transform: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
 
     /* Quick Stats Bar */
     .quick-stats {
@@ -1142,45 +1015,38 @@
     <div class="profile-sidebar animate-fadeIn">
         <!-- Profile Header -->
         <div class="profile-header">
-            <!-- Social Links in Top Right Corner -->
-           <!-- Alternative: Always clickable but with tooltips -->
-<div class="profile-header-top-bar">
-    <!-- LinkedIn Icon -->
-    <div class="social-icon-container">
-        {% if mentor.linkedin_url %}
-        <a href="{{ mentor.linkedin_url }}" 
-           target="_blank" 
-           rel="noopener noreferrer" 
-           class="header-social-link linkedin"
-           title="Visit LinkedIn Profile">
-            <i class="fab fa-linkedin-in"></i>
-        </a>
-        {% else %}
-        <div class="header-social-link linkedin" onclick="showSocialTooltip('LinkedIn')">
-            <i class="fab fa-linkedin-in"></i>
-            <div class="social-tooltip">Profile not linked</div>
-        </div>
-        {% endif %}
-    </div>
-    
-    <!-- Instagram Icon -->
-    <div class="social-icon-container">
-        {% if mentor.github_url %}
-        <a href="https://instagram.com/{{ mentor.github_url }}"
-           target="_blank"
-           rel="noopener noreferrer"
-           class="header-social-link instagram"
-           title="Visit Instagram Profile">
-            <i class="fab fa-instagram"></i>
-        </a>
-        {% else %}
-        <div class="header-social-link instagram" onclick="showSocialTooltip('Instagram')">
-            <i class="fab fa-instagram"></i>
-            <div class="social-tooltip">Profile not linked</div>
-        </div>
-        {% endif %}
-    </div>
-</div>
+            <!-- Social Links in Top Right Corner - ALWAYS VISIBLE -->
+            <div class="profile-header-top-bar">
+                <!-- LinkedIn Icon - Always Visible -->
+                {% if mentor.linkedin_url %}
+                <a href="{{ mentor.linkedin_url }}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="header-social-link linkedin"
+                   title="LinkedIn Profile">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                {% else %}
+                <span class="header-social-link linkedin disabled" title="LinkedIn not available">
+                    <i class="fab fa-linkedin-in"></i>
+                </span>
+                {% endif %}
+                
+                <!-- Instagram Icon - Always Visible -->
+                {% if mentor.github_url %}
+                <a href="https://instagram.com/{{ mentor.github_url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="header-social-link instagram"
+                   title="Instagram Profile">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                {% else %}
+                <span class="header-social-link instagram disabled" title="Instagram not available">
+                    <i class="fab fa-instagram"></i>
+                </span>
+                {% endif %}
+            </div>
             
             <div class="profile-avatar">
                 {% if mentor.user.profile_image %}
@@ -1274,48 +1140,7 @@
                 </div>
             </div>
 
-            <!-- Contact Info -->
-            <div class="profile-section">
-                <h3 class="section-title">
-                    <i class="fas fa-envelope"></i>
-                    Contact Info
-                </h3>
-                <div class="contact-info">
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="contact-details">
-                            <div class="label">Email</div>
-                            <a href="mailto:{{ mentor.user.email }}" class="value">
-                                {{ mentor.user.email }}
-                            </a>
-                        </div>
-                    </div>
-                    {% if mentor.phone %}
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div class="contact-details">
-                            <div class="label">Phone</div>
-                            <div class="value">{{ mentor.phone }}</div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    {% if mentor.location %}
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="contact-details">
-                            <div class="label">Location</div>
-                            <div class="value">{{ mentor.location }}</div>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+            <!-- CONTACT INFO SECTION REMOVED -->
 
             <!-- Copy Link Button -->
             <button onclick="copyProfileUrl()" class="copy-btn">
@@ -1546,15 +1371,11 @@ function showNotification(message, type) {
         }, 300);
     }, 3000);
 }
- // Add to your existing JavaScript
-function showSocialTooltip(platform) {
-    showNotification(`${platform} profile is not linked by this mentor`, 'error');
-}   
 
 // Add hover effects to social links
 document.addEventListener('DOMContentLoaded', function() {
     // Header social links
-    const headerSocialLinks = document.querySelectorAll('.header-social-link');
+    const headerSocialLinks = document.querySelectorAll('.header-social-link:not(.disabled)');
     
     headerSocialLinks.forEach(link => {
         link.addEventListener('mouseenter', function() {
