@@ -37,6 +37,8 @@
         --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        --linkedin: #0077b5;
+        --instagram: #e4405f;
     }
 
     /* Digital Product Badge Styles */
@@ -357,6 +359,43 @@
     .section-title i {
         color: var(--primary);
         font-size: 0.875rem;
+    }
+
+    /* Social Links */
+    .social-links {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .social-link {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        text-decoration: none;
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+    }
+
+    .social-link:hover {
+        transform: translateY(-2px) scale(1.1);
+        box-shadow: var(--shadow-md);
+    }
+
+    .social-link.linkedin {
+        background: linear-gradient(135deg, var(--linkedin), #005582);
+    }
+
+    .social-link.instagram {
+        background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+    }
+
+    .social-link i {
+        font-size: 1rem;
     }
 
     /* Stats Grid */
@@ -872,6 +911,10 @@
             padding: 1rem;
             margin-bottom: 1rem;
         }
+
+        .social-links {
+            justify-content: center;
+        }
     }
 
     @media (min-width: 1024px) {
@@ -1039,6 +1082,37 @@
 
         <!-- Profile Content -->
         <div class="profile-content">
+            <!-- Social Links -->
+            {% if mentor.linkedin_url or mentor.github_url %}
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="fas fa-share-alt"></i>
+                    Connect with me
+                </h3>
+                <div class="social-links">
+                    {% if mentor.linkedin_url %}
+                    <a href="{{ mentor.linkedin_url }}" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="social-link linkedin"
+                       title="LinkedIn Profile">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% if mentor.github_url %}
+                    <a href="https://instagram.com/{{ mentor.github_url }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="social-link instagram"
+                       title="Instagram Profile">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Quick Stats -->
             <div class="quick-stats">
                 <div class="quick-stat">
@@ -1095,6 +1169,45 @@
                     {% endif %}
                 </div>
             </div>
+
+            <!-- Contact Info -->
+            {% if mentor.email or mentor.phone %}
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="fas fa-envelope"></i>
+                    Contact Information
+                </h3>
+                <div class="contact-info">
+                    {% if mentor.email %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="label">Email</div>
+                            <a href="mailto:{{ mentor.email }}" class="value">
+                                {{ mentor.email }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if mentor.phone %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="label">Phone</div>
+                            <a href="tel:{{ mentor.phone }}" class="value">
+                                {{ mentor.phone }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Copy Link Button -->
             <button onclick="copyProfileUrl()" class="copy-btn">
@@ -1326,8 +1439,23 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-// Add hover effects to service cards
+// Add hover effects to social links
 document.addEventListener('DOMContentLoaded', function() {
+    const socialLinks = document.querySelectorAll('.social-link');
+    
+    socialLinks.forEach(link => {
+        link.addEventListener('mouseenter', function() {
+            const icon = this.querySelector('i');
+            icon.style.transform = 'scale(1.2)';
+        });
+        
+        link.addEventListener('mouseleave', function() {
+            const icon = this.querySelector('i');
+            icon.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Add hover effects to service cards
     const serviceCards = document.querySelectorAll('.service-card-link');
     
     serviceCards.forEach((card, index) => {
