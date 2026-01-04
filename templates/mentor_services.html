@@ -985,10 +985,16 @@
                                     <div class="service-name">
                                         {{ service.name }}
                                         {% if service.is_digital %}
-                                        <span class="service-type-indicator type-digital">
-                                            <i class="fas fa-download"></i> Digital
-                                        </span>
-                                        {% else %}
+<div class="digital-product-info bg-blue-50 p-4 rounded-lg mb-4">
+    <h4 class="font-bold text-blue-900 mb-2">
+        <i class="fas fa-download text-blue-500 mr-2"></i>
+        Digital Product - Instant Access
+    </h4>
+    <p class="text-sm text-blue-800">
+        Purchase this product and get immediate download access. No scheduling needed!
+    </p>
+</div>
+{% else %}
                                         <span class="service-type-indicator type-live">
                                             <i class="fas fa-video"></i> Live
                                         </span>
@@ -1017,15 +1023,15 @@
                             
                             <div class="service-footer">
                                 <div class="service-price">
-                                    <span class="price-amount">₹{{ service.price }}</span>
-                                    <span class="price-duration">
-                                        {% if service.is_digital %}
-                                        Instant Access
-                                        {% else %}
-                                        {{ service.duration_minutes }} min
-                                        {% endif %}
-                                    </span>
-                                </div>
+    <span class="price-amount">₹{{ service.price }}</span>
+    <span class="price-duration">
+        {% if service.is_digital %}
+        Instant Access
+        {% else %}
+        {{ service.duration_minutes }} min
+        {% endif %}
+    </span>
+</div>
                                 <div class="service-actions">
                                     <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
                                         <i class="fas fa-edit"></i>
