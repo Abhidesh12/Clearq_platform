@@ -316,28 +316,21 @@
         border-radius: var(--radius);
         border: 3px solid rgba(255, 255, 255, 0.3);
         overflow: hidden;
-        background: var(--white);
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
         margin: 0 auto 0.75rem;
         position: relative;
         box-shadow: var(--shadow-md);
-    }
-
-    .profile-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .avatar-initial {
-        width: 100%;
-        height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
+    }
+
+    .avatar-initial {
+        font-size: 1.75rem;
         font-weight: 700;
-        color: var(--primary);
-        background: linear-gradient(135deg, var(--gray-100), var(--white));
+        color: var(--white);
+        text-transform: uppercase;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 
     .verified-badge {
@@ -862,6 +855,10 @@
             height: 3.5rem;
         }
 
+        .avatar-initial {
+            font-size: 1.5rem;
+        }
+
         .stats-grid {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -1048,20 +1045,27 @@
                 {% endif %}
             </div>
             
-            <div class="profile-avatar">
-                {% if mentor.user.profile_image %}
-                <img src="/static/{{ mentor.user.profile_image }}" 
-                     alt="{{ mentor.user.full_name or mentor.user.username }}"
-                     class="w-full h-full object-cover">
-                {% else %}
-                <div class="avatar-initial">
-                    {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
-                </div>
-                {% endif %}
-                <div class="verified-badge">
-                    <i class="fas fa-check"></i>
-                </div>
-            </div>
+            <!-- User Avatar (Always shows initials) -->
+           <!-- User Avatar (Always shows initials) -->
+<div class="profile-avatar">
+    <div class="avatar-initial">
+        {% if mentor.user.full_name %}
+            {% set name = mentor.user.full_name %}
+            {% set words = name.strip().split() %}
+            {% if words|length == 1 %}
+                {{ words[0][:2]|upper }}
+            {% else %}
+                {{ (words[0][0] + words[-1][0])|upper }}
+            {% endif %}
+        {% else %}
+            {% set name = mentor.user.username %}
+            {{ name[:2]|upper }}
+        {% endif %}
+    </div>
+    <div class="verified-badge">
+        <i class="fas fa-check"></i>
+    </div>
+</div>
             
             <div class="profile-info">
                 <h1>{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}</h1>
@@ -1139,8 +1143,6 @@
                     {% endif %}
                 </div>
             </div>
-
-            <!-- CONTACT INFO SECTION REMOVED -->
 
             <!-- Copy Link Button -->
             <button onclick="copyProfileUrl()" class="copy-btn">
@@ -1471,5 +1473,21 @@ pulseStyle.textContent = `
     }
 `;
 document.head.appendChild(pulseStyle);
+
+// Function to get avatar initials
+function getAvatarInitials(name) {
+    if (!name) return 'U';
+    
+    // Remove extra spaces and split
+    const words = name.trim().split(/\s+/);
+    
+    if (words.length === 1) {
+        // Single word - take first 2 letters
+        return words[0].substring(0, 2).toUpperCase();
+    } else {
+        // Multiple words - take first letter of first and last word
+        return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+    }
+}
 </script>
 {% endblock %}
