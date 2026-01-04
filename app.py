@@ -1410,7 +1410,12 @@ async def upload_profile_photo_api(
             status_code=500,
             content={"success": False, "message": f"Failed to upload photo: {str(e)}"}
         )
+from fastapi.responses import FileResponse
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("static/favicon.ico")
+    
 @app.post("/profile/remove-photo")
 async def remove_profile_photo(
     request: Request,
