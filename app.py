@@ -1602,11 +1602,13 @@ async def deliver_digital_product(
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
     
-    # Get the service
+    # Get the service - check your Service model for correct field names
     service = db.query(Service).filter(
         Service.id == service_id,
         Service.is_digital == True,
-        Service.is_published == True
+        # Use whatever field indicates the service is active/available
+        # Common field names: is_active, is_available, status, etc.
+        Service.is_active == True  # Change this to your actual field name
     ).first()
     
     if not service:
@@ -1622,8 +1624,12 @@ async def deliver_digital_product(
     
     if not booking:
         # User hasn't purchased this - redirect to service page to purchase
+        # Get mentor's username for the redirect URL
+        mentor = db.query(User).filter(User.id == service.mentor_id).first()
+        mentor_username = mentor.username if mentor else "unknown"
+        
         return RedirectResponse(
-            url=f"/{service.mentor.username}/service/{service_id}",
+            url=f"/{mentor_username}/service/{service_id}",
             status_code=303
         )
     
