@@ -774,8 +774,8 @@ async def dashboard(
             Booking.learner_id == current_user.id
         ).order_by(Booking.created_at.desc()).all()
         
-        # Get digital product purchases
-        digital_products = db.query(Booking).filter(
+        # Get digital product purchases - FIXED: using correct variable name
+        digital_product_purchases = db.query(Booking).filter(
             Booking.learner_id == current_user.id,
             Booking.service.has(is_digital=True),
             Booking.payment_status.in_(["paid", "free"]),
@@ -787,19 +787,21 @@ async def dashboard(
         pending_bookings = []
         upcoming_sessions = []
         free_sessions = []
-        digital_product_purchases = []
+        digital_product_list = []  # Renamed for clarity
         session_bookings = []  # Non-digital bookings
         
         today = datetime.now().date()
         
         for booking in all_bookings:
-            # Check if this is a digital product
-            is_digital = booking.service.is_digital if booking.service else False
+            # Safely check if service exists and is digital
+            is_digital = False
+            if booking.service:
+                is_digital = booking.service.is_digital
             
             if is_digital:
                 # Digital product booking
                 if booking.payment_status in ["paid", "free"] and booking.status == "completed":
-                    digital_product_purchases.append(booking)
+                    digital_product_list.append(booking)
                     # Add to confirmed bookings for consistency
                     confirmed_bookings.append(booking)
                 elif booking.payment_status == "pending":
@@ -828,19 +830,21 @@ async def dashboard(
         total_sessions = len([b for b in session_bookings if b.payment_status in ["paid", "free"] and b.status == "confirmed"])
         completed_sessions = len([b for b in session_bookings if b.status == "completed"])
         pending_payments = len([b for b in pending_bookings if b.payment_status == "pending"])
-        total_digital_products = len(digital_product_purchases)
+        total_digital_products = len(digital_product_list)
         
         # Get recent sessions (last 5)
-        recent_sessions = session_bookings[:5]
+        recent_sessions = session_bookings[:5] if session_bookings else []
         
         # Get upcoming sessions (next 7 days)
         next_week = today + timedelta(days=7)
-        upcoming_next_week = [b for b in upcoming_sessions if b.booking_date <= next_week][:3]
+        upcoming_next_week = [b for b in upcoming_sessions if hasattr(b, 'booking_date') and b.booking_date and b.booking_date <= next_week][:3]
         
+        # FIXED: Use correct variable names
         context.update({
             "all_bookings": all_bookings,
             "session_bookings": session_bookings,
-            "digital_products": digital_product_purchases,
+            "digital_bookings": digital_product_list,  # FIXED: Changed from digital_bookings to digital_product_list
+            "digital_product_purchases": digital_product_purchases,  # Add this if needed
             "upcoming_sessions": upcoming_sessions,
             "upcoming_next_week": upcoming_next_week,
             "confirmed_bookings": confirmed_bookings,
@@ -880,7 +884,9 @@ async def dashboard(
             
             for booking in all_bookings:
                 # Check if this is a digital product
-                is_digital = booking.service.is_digital if booking.service else False
+                is_digital = False
+                if booking.service:
+                    is_digital = booking.service.is_digital
                 
                 if is_digital:
                     # Digital product sale
@@ -892,7 +898,7 @@ async def dashboard(
                 else:
                     # Session booking
                     if booking.payment_status in ["paid", "free"] and booking.status == "confirmed" and booking.meeting_link:
-                        if booking.booking_date >= today:
+                        if hasattr(booking, 'booking_date') and booking.booking_date and booking.booking_date >= today:
                             upcoming_sessions.append(booking)
                         confirmed_bookings.append(booking)
                         
@@ -930,7 +936,7 @@ async def dashboard(
             upcoming_count = len(upcoming_sessions)
             
             # Get recent sales (last 5)
-            recent_sales = all_bookings[:5]
+            recent_sales = all_bookings[:5] if all_bookings else []
             
             # Get top services
             top_services = db.query(
