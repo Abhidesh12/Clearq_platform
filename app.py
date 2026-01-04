@@ -1568,6 +1568,7 @@ async def create_service(
     
     # Validate digital product
     if is_digital:
+        duration_minutes = 0
         if not digital_product_url or not digital_product_url.strip():
             # Redirect back with error
             return RedirectResponse(
