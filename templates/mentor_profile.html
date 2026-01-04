@@ -242,6 +242,48 @@
         100% { transform: translateX(100%); }
     }
 
+    /* Social Links in Header Top Right */
+    .profile-header-top-bar {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        display: flex;
+        gap: 0.375rem;
+        z-index: 10;
+    }
+
+    .header-social-link {
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        text-decoration: none;
+        transition: var(--transition);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .header-social-link.linkedin {
+        background: linear-gradient(135deg, var(--linkedin), #005582);
+    }
+
+    .header-social-link.instagram {
+        background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+    }
+
+    .header-social-link:hover {
+        transform: translateY(-2px) scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-social-link i {
+        font-size: 0.75rem;
+    }
+
     .profile-avatar {
         width: 4rem;
         height: 4rem;
@@ -361,11 +403,12 @@
         font-size: 0.875rem;
     }
 
-    /* Social Links */
+    /* Social Links (Center-aligned below) */
     .social-links {
         display: flex;
         gap: 0.5rem;
         margin-bottom: 1.25rem;
+        justify-content: center;
     }
 
     .social-link {
@@ -1047,6 +1090,29 @@
     <div class="profile-sidebar animate-fadeIn">
         <!-- Profile Header -->
         <div class="profile-header">
+            <!-- Social Links in Top Right Corner -->
+            <div class="profile-header-top-bar">
+                {% if mentor.linkedin_url %}
+                <a href="{{ mentor.linkedin_url }}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="header-social-link linkedin"
+                   title="LinkedIn Profile">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                {% endif %}
+                
+                {% if mentor.github_url %}
+                <a href="https://instagram.com/{{ mentor.github_url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="header-social-link instagram"
+                   title="Instagram Profile">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                {% endif %}
+            </div>
+            
             <div class="profile-avatar">
                 {% if mentor.user.profile_image %}
                 <img src="/static/{{ mentor.user.profile_image }}" 
@@ -1082,37 +1148,6 @@
 
         <!-- Profile Content -->
         <div class="profile-content">
-            <!-- Social Links -->
-            {% if mentor.linkedin_url or mentor.github_url %}
-            <div class="profile-section">
-                <h3 class="section-title">
-                    <i class="fas fa-share-alt"></i>
-                    Connect with me
-                </h3>
-                <div class="social-links">
-                    {% if mentor.linkedin_url %}
-                    <a href="{{ mentor.linkedin_url }}" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="social-link linkedin"
-                       title="LinkedIn Profile">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                    {% endif %}
-                    
-                    {% if mentor.github_url %}
-                    <a href="https://instagram.com/{{ mentor.github_url }}"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="social-link instagram"
-                       title="Instagram Profile">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
-
             <!-- Quick Stats -->
             <div class="quick-stats">
                 <div class="quick-stat">
@@ -1171,7 +1206,47 @@
             </div>
 
             <!-- Contact Info -->
-           
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="fas fa-envelope"></i>
+                    Contact Info
+                </h3>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="label">Email</div>
+                            <a href="mailto:{{ mentor.user.email }}" class="value">
+                                {{ mentor.user.email }}
+                            </a>
+                        </div>
+                    </div>
+                    {% if mentor.phone %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="label">Phone</div>
+                            <div class="value">{{ mentor.phone }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if mentor.location %}
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <div class="label">Location</div>
+                            <div class="value">{{ mentor.location }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
 
             <!-- Copy Link Button -->
             <button onclick="copyProfileUrl()" class="copy-btn">
@@ -1405,9 +1480,10 @@ function showNotification(message, type) {
 
 // Add hover effects to social links
 document.addEventListener('DOMContentLoaded', function() {
-    const socialLinks = document.querySelectorAll('.social-link');
+    // Header social links
+    const headerSocialLinks = document.querySelectorAll('.header-social-link');
     
-    socialLinks.forEach(link => {
+    headerSocialLinks.forEach(link => {
         link.addEventListener('mouseenter', function() {
             const icon = this.querySelector('i');
             icon.style.transform = 'scale(1.2)';
