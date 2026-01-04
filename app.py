@@ -2233,6 +2233,7 @@ async def create_booking(
     else:
         # Paid services
         if is_digital_service:
+
             # Paid digital product - create Razorpay order
             order_amount = service.price * 100  # Convert to paise
             order_currency = "INR"
@@ -2258,8 +2259,8 @@ async def create_booking(
                     learner_id=current_user.id,
                     mentor_id=service.mentor_id,
                     service_id=service_id,
-                    booking_date=datetime.now().date(),
-                    selected_time=datetime.now().strftime("%H:%M"),
+                    booking_date=None,
+                    selected_time=None,
                     razorpay_order_id=razorpay_order["id"],
                     amount_paid=service.price,
                     status="pending",  # Will be completed after payment
@@ -2314,8 +2315,8 @@ async def create_booking(
                     learner_id=current_user.id,
                     mentor_id=service.mentor_id,
                     service_id=service_id,
-                    booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
-                    selected_time=time_slot,
+                    booking_date=None,
+                    selected_time=None,
                     razorpay_order_id=razorpay_order["id"],
                     amount_paid=service.price,
                     status="pending",
