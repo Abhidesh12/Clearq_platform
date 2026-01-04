@@ -174,7 +174,7 @@ class Service(Base):
     price = Column(Integer, nullable=False)  # in INR
     duration_minutes = Column(Integer, default=60)
     is_digital = Column(Boolean, default=False)
-    digital_product_url = Column(String)
+    digital_product_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
@@ -1626,14 +1626,20 @@ async def deliver_digital_product(
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
     
-    # Get the service - check your Service model for correct field names
+    # Debug logging
+    print(f"DEBUG: User {current_user.id} accessing digital product {service_id}")
+    
+    # Get the service
     service = db.query(Service).filter(
         Service.id == service_id,
         Service.is_digital == True,
-        # Use whatever field indicates the service is active/available
-        # Common field names: is_active, is_available, status, etc.
-        Service.is_active == True  # Change this to your actual field name
+        Service.is_active == True
     ).first()
+    
+    print(f"DEBUG: Service found: {service is not None}")
+    if service:
+        print(f"DEBUG: Service details - id: {service.id}, name: {service.name}, is_digital: {service.is_digital}, is_active: {service.is_active}")
+        print(f"DEBUG: Digital product URL: {service.digital_product_url}")
     
     if not service:
         raise HTTPException(status_code=404, detail="Digital product not found")
@@ -1646,11 +1652,18 @@ async def deliver_digital_product(
         Booking.status.in_(["confirmed", "completed", "delivered"])
     ).first()
     
+    print(f"DEBUG: Booking found: {booking is not None}")
+    if booking:
+        print(f"DEBUG: Booking details - id: {booking.id}, payment_status: {booking.payment_status}, status: {booking.status}")
+    
     if not booking:
         # User hasn't purchased this - redirect to service page to purchase
         # Get mentor's username for the redirect URL
         mentor = db.query(User).filter(User.id == service.mentor_id).first()
         mentor_username = mentor.username if mentor else "unknown"
+        
+        print(f"DEBUG: No valid booking found, redirecting to purchase page")
+        print(f"DEBUG: Mentor username: {mentor_username}")
         
         return RedirectResponse(
             url=f"/{mentor_username}/service/{service_id}",
@@ -1660,19 +1673,25 @@ async def deliver_digital_product(
     # Get mentor
     mentor = db.query(User).filter(User.id == service.mentor_id).first()
     
+    print(f"DEBUG: Mentor found: {mentor is not None}")
+    if mentor:
+        print(f"DEBUG: Mentor details - id: {mentor.id}, username: {mentor.username}, full_name: {mentor.full_name}")
+    
     # Update booking status if needed
     if booking.status != "completed":
         booking.status = "completed"
         db.commit()
+        print(f"DEBUG: Updated booking {booking.id} status to completed")
     
     return templates.TemplateResponse("digital_product_delivery.html", {
         "request": request,
         "current_user": current_user,
         "service": service,
         "mentor": mentor,
-        "booking": booking,  # Still pass booking for reference
+        "booking": booking,
         "digital_product_url": service.digital_product_url
     })
+    
 @app.get("/mentor/availability", response_class=HTMLResponse)
 async def mentor_availability_page(
     request: Request,
