@@ -1,269 +1,98 @@
-<!-- templates/digital_product_delivery.html -->
+<!-- templates/digital_product.html -->
 {% extends "base.html" %}
 
-{% block title %}Download Your Digital Product - {{ service.name }}{% endblock %}
+{% block title %}{{ service.name }} - Digital Product{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8 max-w-4xl">
-    <!-- Success Header -->
-    <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-            <i class="fas fa-download text-green-600 text-2xl"></i>
-        </div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">
-            Your Digital Product is Ready!
-        </h1>
-        <p class="text-gray-600">
-            Thank you for purchasing "{{ service.name }}"
-        </p>
-    </div>
-    
-    <!-- Product Card -->
-    <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
-        <div class="flex flex-col md:flex-row gap-6">
-            <!-- Product Image/Icon -->
-            <div class="md:w-1/3">
-                <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-8 text-center">
-                    <i class="fas fa-file-pdf text-5xl text-blue-500 mb-4"></i>
-                    <h3 class="font-bold text-gray-900 text-lg">{{ service.name }}</h3>
-                    <p class="text-sm text-gray-500 mt-2">By {{ mentor.username }}</p>
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="p-8">
+            <!-- Success message -->
+            <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700">
+                            You now own this digital product!
+                        </p>
+                    </div>
                 </div>
             </div>
             
-            <!-- Product Details -->
-            <div class="md:w-2/3">
-                <div class="mb-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-2">Product Details</h2>
-                    <p class="text-gray-700 mb-4">{{ service.description }}</p>
-                    
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div>
-                            <span class="text-sm text-gray-500">Purchase Date</span>
-                            <p class="font-medium">
-                                {% if booking and booking.created_at %}
-                                    {{ booking.created_at.strftime('%B %d, %Y') }}
-                                {% else %}
-                                    Today
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            <span class="text-sm text-gray-500">Order ID</span>
-                            <p class="font-medium">#{{ booking.id if booking else 'N/A' }}</p>
-                        </div>
-                        <div>
-                            <span class="text-sm text-gray-500">Price Paid</span>
-                            <p class="font-medium text-green-600">
-                                ₹{{ booking.amount_paid if booking and booking.amount_paid else service.price }}
-                            </p>
-                        </div>
-                        <div>
-                            <span class="text-sm text-gray-500">Access Status</span>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                <i class="fas fa-check-circle mr-1"></i>
-                                Access Granted
-                            </span>
-                        </div>
-                    </div>
-                </div>
+            <!-- Product info -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ service.name }}</h1>
+                <p class="text-gray-600 mb-4">by {{ mentor.full_name }}</p>
+                <p class="text-gray-700">{{ service.description }}</p>
+            </div>
+            
+            <!-- Download section -->
+            <div class="border-t border-gray-200 pt-8">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Download Your Product</h2>
                 
-                <!-- Download Section -->
-                <div class="border-t pt-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Download Your Product</h3>
-                    
-                    {% if service.digital_product_url %}
-                    <!-- Direct URL Download -->
-                    <div class="mb-6">
-                        <p class="text-gray-600 mb-4">
-                            Click the button below to download your digital product:
-                        </p>
-                        <a href="{{ service.digital_product_url }}" 
-                           target="_blank"
-                           class="inline-flex items-center justify-center w-full md:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl">
-                            <i class="fas fa-download mr-2"></i>
-                            Download Now
-                        </a>
-                        <p class="text-sm text-gray-500 mt-2">
-                            <i class="fas fa-external-link-alt mr-1"></i>
-                            Opens in new tab
-                        </p>
-                    </div>
-                    
-                    <!-- Alternative Download Instructions -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h4 class="font-medium text-blue-900 mb-2">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Download Instructions
-                        </h4>
-                        <ul class="text-sm text-blue-800 space-y-1">
-                            <li>• Click "Download Now" button above</li>
-                            <li>• The file will open in a new tab/window</li>
-                            <li>• Look for the download icon or "Save" option</li>
-                            <li>• Save the file to your device</li>
-                            {% if service.digital_product_url and "drive.google.com" in service.digital_product_url %}
-                            <li>• For Google Drive: Click "Download" button at top right</li>
-                            {% endif %}
-                            {% if service.digital_product_url and "dropbox.com" in service.digital_product_url %}
-                            <li>• For Dropbox: Click "Download" button at top right</li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                    {% else %}
-                    <!-- No download available -->
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <h4 class="font-medium text-yellow-900 mb-2">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>
-                            Download Link Not Available
-                        </h4>
-                        <p class="text-sm text-yellow-800">
-                            The download link for this product is not available. Please contact {{ mentor.username }} for assistance.
-                        </p>
-                        <a href="/{{ mentor.username }}" 
-                           class="inline-flex items-center text-sm text-yellow-700 hover:text-yellow-900 font-medium mt-2">
-                            <i class="fas fa-envelope mr-1"></i>
-                            Contact Mentor
-                        </a>
-                    </div>
-                    {% endif %}
+                {% if service.digital_product_url %}
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-800 mb-2">
+                        Click the button below to download your product. The link will remain active.
+                    </p>
+                    <a href="{{ service.digital_product_url }}" 
+                       target="_blank"
+                       class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                       onclick="trackDownload({{ service.id }})">
+                        <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Download Now
+                    </a>
+                    <p class="mt-2 text-xs text-gray-500">
+                        Downloads: {{ booking.download_count }}
+                    </p>
                 </div>
+                {% else %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <p class="text-sm text-yellow-800">
+                        Download link not yet available. Please contact the creator.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Purchase info -->
+            <div class="border-t border-gray-200 pt-6 mt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Purchase Information</h3>
+                <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                    <div class="sm:col-span-1">
+                        <dt class="text-sm font-medium text-gray-500">Purchased On</dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ booking.created_at.strftime('%B %d, %Y at %I:%M %p') }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                        <dt class="text-sm font-medium text-gray-500">Amount Paid</dt>
+                        <dd class="mt-1 text-sm text-gray-900">
+                            {% if booking.payment_status == 'free' %}
+                            Free
+                            {% else %}
+                            ₹{{ booking.amount_paid }}
+                            {% endif %}
+                        </dd>
+                    </div>
+                </dl>
             </div>
         </div>
-    </div>
-    
-    <!-- Additional Information -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Access Information -->
-        <div class="bg-gray-50 rounded-lg p-5">
-            <h4 class="font-bold text-gray-900 mb-3">
-                <i class="fas fa-key text-blue-500 mr-2"></i>
-                Access Information
-            </h4>
-            <ul class="text-sm text-gray-600 space-y-2">
-                <li>• Lifetime access to this product</li>
-                <li>• Unlimited downloads</li>
-                <li>• Access from any device</li>
-                <li>• Link never expires</li>
-            </ul>
-        </div>
-        
-        <!-- Need Help? -->
-        <div class="bg-gray-50 rounded-lg p-5">
-            <h4 class="font-bold text-gray-900 mb-3">
-                <i class="fas fa-question-circle text-green-500 mr-2"></i>
-                Need Help?
-            </h4>
-            <p class="text-sm text-gray-600 mb-3">
-                Having trouble downloading? Here are some solutions:
-            </p>
-            <ul class="text-sm text-gray-600 space-y-1">
-                <li>• Try a different browser</li>
-                <li>• Check your internet connection</li>
-                <li>• Disable ad-blockers temporarily</li>
-            </ul>
-        </div>
-        
-        <!-- More from Mentor -->
-        <div class="bg-gray-50 rounded-lg p-5">
-            <h4 class="font-bold text-gray-900 mb-3">
-                <i class="fas fa-user-tie text-purple-500 mr-2"></i>
-                More from {{ mentor.username }}
-            </h4>
-            <p class="text-sm text-gray-600 mb-3">
-                Check out other products from this mentor:
-            </p>
-            <a href="/{{ mentor.username }}" 
-               class="text-sm text-purple-600 hover:text-purple-800 font-medium inline-flex items-center">
-                <i class="fas fa-store mr-1"></i>
-                Visit Mentor Profile
-            </a>
-        </div>
-    </div>
-    
-    <!-- Important Notes -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-6">
-        <h4 class="font-bold text-blue-900 mb-3">
-            <i class="fas fa-exclamation-circle text-blue-500 mr-2"></i>
-            Important Notes
-        </h4>
-        <ul class="text-sm text-blue-800 space-y-2">
-            <li>• This is a digital product - no physical item will be shipped</li>
-            <li>• All sales are final - no refunds for digital products</li>
-            <li>• Please save/download the file immediately</li>
-            <li>• For any issues, contact {{ mentor.username }} directly</li>
-        </ul>
-    </div>
-    
-    <!-- Back to Dashboard -->
-    <div class="text-center">
-        <a href="/dashboard" 
-           class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
-            <i class="fas fa-arrow-left mr-2"></i>
-            Back to Dashboard
-        </a>
-        <span class="mx-4 text-gray-400">|</span>
-        <a href="/explore" 
-           class="inline-flex items-center text-purple-600 hover:text-purple-800 font-medium">
-            <i class="fas fa-search mr-2"></i>
-            Browse More Products
-        </a>
     </div>
 </div>
 
 <script>
-    // Track download click
-    document.querySelectorAll('a[href="{{ service.digital_product_url }}"]').forEach(link => {
-        link.addEventListener('click', function(e) {
-            // Send analytics if needed
-            fetch('/api/track-download/{{ service.id }}', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'}
-            }).catch(() => {});
-            
-            // Show loading state
-            const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Opening...';
-            this.disabled = true;
-            
-            // Reset after 3 seconds
-            setTimeout(() => {
-                this.innerHTML = originalText;
-                this.disabled = false;
-            }, 3000);
-        });
-    });
-    
-    // Copy link functionality
-    function copyDownloadLink() {
-        const link = "{{ service.digital_product_url }}";
-        navigator.clipboard.writeText(link).then(() => {
-            alert('Download link copied to clipboard!');
-        });
-    }
-    
-    // Auto-scroll to download section if URL has #download
-    document.addEventListener('DOMContentLoaded', function() {
-        if (window.location.hash === '#download') {
-            const downloadSection = document.querySelector('.border-t');
-            if (downloadSection) {
-                setTimeout(() => {
-                    downloadSection.scrollIntoView({ behavior: 'smooth' });
-                }, 500);
-            }
-        }
-        
-        // Add copy button if needed
-        const downloadSection = document.querySelector('.border-t');
-        if (downloadSection && "{{ service.digital_product_url }}") {
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'ml-3 inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors';
-            copyBtn.innerHTML = '<i class="fas fa-copy mr-2"></i>Copy Link';
-            copyBtn.onclick = copyDownloadLink;
-            
-            const downloadBtn = downloadSection.querySelector('a[href="{{ service.digital_product_url }}"]');
-            if (downloadBtn && downloadBtn.parentNode) {
-                downloadBtn.parentNode.appendChild(copyBtn);
-            }
+function trackDownload(serviceId) {
+    fetch(`/api/track-download/${serviceId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
         }
     });
+}
 </script>
 {% endblock %}
