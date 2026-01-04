@@ -239,6 +239,7 @@
         align-items: flex-start;
     }
 
+    /* Updated Avatar Styles */
     .mentor-avatar {
         width: 3.5rem;
         height: 3.5rem;
@@ -246,24 +247,20 @@
         overflow: hidden;
         flex-shrink: 0;
         position: relative;
-    }
-
-    .avatar-image {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .avatar-initials {
-        width: 100%;
-        height: 100%;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border: 3px solid rgba(255, 255, 255, 0.8);
+        box-shadow: var(--shadow-sm);
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .avatar-initials {
+        font-size: 1.25rem;
+        font-weight: 700;
         color: var(--white);
-        font-weight: 600;
-        font-size: 1.125rem;
+        text-transform: uppercase;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 
     .mentor-details {
@@ -802,17 +799,22 @@
                 <!-- Card Header -->
                 <div class="card-header">
                     <div class="mentor-info">
-                        <!-- Avatar -->
+                        <!-- Avatar with Initials -->
                         <div class="mentor-avatar">
-                            {% if mentor.user.profile_image %}
-                            <img src="/static/{{ mentor.user.profile_image }}" 
-                                 alt="{{ mentor.user.full_name }}"
-                                 class="avatar-image">
-                            {% else %}
                             <div class="avatar-initials">
-                                {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
+                                {% if mentor.user.full_name %}
+                                    {% set name = mentor.user.full_name %}
+                                    {% set words = name.strip().split() %}
+                                    {% if words|length == 1 %}
+                                        {{ words[0][:2]|upper }}
+                                    {% else %}
+                                        {{ (words[0][0] + words[-1][0])|upper }}
+                                    {% endif %}
+                                {% else %}
+                                    {% set name = mentor.user.username %}
+                                    {{ name[:2]|upper }}
+                                {% endif %}
                             </div>
-                            {% endif %}
                         </div>
                         
                         <!-- Details -->
@@ -891,21 +893,19 @@
                 </div>
                 
                 <!-- Card Footer -->
-                          <!-- Card Footer -->
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
-                    <div class="flex justify-between items-center">
-                        <a href="/{{ mentor.user.username }}" 
-                           class="text-primary hover:text-primary-dark font-medium text-sm">
+                <div class="card-footer">
+                    <div class="card-actions">
+                        <a href="/{{ mentor.user.username }}" class="view-profile-btn">
                             View Profile →
                         </a>
-                        <a href="/{{ mentor.user.username }}" 
-                           class="px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all">
-                            Book Session
+                        <a href="/{{ mentor.user.username }}" class="book-btn">
+                            <i class="fas fa-calendar-alt"></i> Book Session
                         </a>
                     </div>
                 </div>
-            </div>  
-        {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
         
         {% else %}
         <!-- Empty State -->
