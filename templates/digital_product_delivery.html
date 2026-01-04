@@ -113,13 +113,13 @@
             <h3 class="text-xl font-bold text-gray-900 mb-4">Mentor Information</h3>
             <div class="flex items-center gap-4">
                 <img src="{{ url_for('static', path=mentor.profile_image) if mentor and mentor.profile_image else '/static/images/default-avatar.png' }}" 
-                     alt="{{ mentor.user.full_name }}" 
+                     alt="{{ mentor.full_name }}" 
                      class="w-16 h-16 rounded-full object-cover border-2 border-primary">
                 <div>
-                    <h4 class="font-bold text-gray-900">{{ mentor.user.full_name }}</h4>
+                    <h4 class="font-bold text-gray-900">{{ mentor.full_name }}</h4>
                     <p class="text-gray-600 text-sm">{{ mentor.job_title }} at {{ mentor.company }}</p>
                     <div class="flex items-center gap-3 mt-2">
-                        <a href="/{{ mentor.user.username }}"
+                        <a href="/{{ mentor.username }}"
                            class="text-sm text-primary hover:text-secondary font-medium">
                             <i class="fas fa-user mr-1"></i> View Profile
                         </a>
