@@ -217,6 +217,7 @@ class Booking(Base):
     learner_id = Column(Integer, ForeignKey("users.id"))
     mentor_id = Column(Integer, ForeignKey("mentors.id"))
     service_id = Column(Integer, ForeignKey("services.id"))
+    booking_type = Column(String, default="session")
     booking_date = Column(Date, nullable=True)
     selected_time = Column(String, nullable=True)
     status = Column(String, default="pending")  # pending, confirmed, completed, cancelled
@@ -228,6 +229,7 @@ class Booking(Base):
     meeting_id = Column(String)
     meeting_password = Column(String)
     notes = Column(Text)
+    download_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
