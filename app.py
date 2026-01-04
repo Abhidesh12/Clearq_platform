@@ -843,7 +843,7 @@ async def dashboard(
         context.update({
             "all_bookings": all_bookings,
             "session_bookings": session_bookings,
-            "digital_bookings": digital_product_list,  # FIXED: Changed from digital_bookings to digital_product_list
+            "digital_products": digital_product_list,  # FIXED: Changed from digital_bookings to digital_product_list
             "digital_product_purchases": digital_product_purchases,  # Add this if needed
             "upcoming_sessions": upcoming_sessions,
             "upcoming_next_week": upcoming_next_week,
