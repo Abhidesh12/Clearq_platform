@@ -175,6 +175,7 @@ class Service(Base):
     duration_minutes = Column(Integer, default=60)
     is_digital = Column(Boolean, default=False)
     digital_product_url = Column(String, nullable=True)
+    digital_product_file = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
@@ -1615,6 +1616,9 @@ async def create_service(
 from fastapi import Request, HTTPException, Depends
 from fastapi.responses import RedirectResponse
 
+from fastapi.responses import FileResponse, StreamingResponse
+import os
+
 @app.get("/digital-product/{service_id}")
 async def deliver_digital_product(
     request: Request,
@@ -1622,12 +1626,9 @@ async def deliver_digital_product(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Deliver digital product using permanent service link"""
+    """Deliver digital product to user after purchase"""
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
-    
-    # Debug logging
-    print(f"DEBUG: User {current_user.id} accessing digital product {service_id}")
     
     # Get the service
     service = db.query(Service).filter(
@@ -1636,15 +1637,10 @@ async def deliver_digital_product(
         Service.is_active == True
     ).first()
     
-    print(f"DEBUG: Service found: {service is not None}")
-    if service:
-        print(f"DEBUG: Service details - id: {service.id}, name: {service.name}, is_digital: {service.is_digital}, is_active: {service.is_active}")
-        print(f"DEBUG: Digital product URL: {service.digital_product_url}")
-    
     if not service:
         raise HTTPException(status_code=404, detail="Digital product not found")
     
-    # Check if current user has purchased this service
+    # Check if user has purchased this service
     booking = db.query(Booking).filter(
         Booking.service_id == service_id,
         Booking.learner_id == current_user.id,
@@ -1652,19 +1648,10 @@ async def deliver_digital_product(
         Booking.status.in_(["confirmed", "completed", "delivered"])
     ).first()
     
-    print(f"DEBUG: Booking found: {booking is not None}")
-    if booking:
-        print(f"DEBUG: Booking details - id: {booking.id}, payment_status: {booking.payment_status}, status: {booking.status}")
-    
     if not booking:
-        # User hasn't purchased this - redirect to service page to purchase
-        # Get mentor's username for the redirect URL
+        # User hasn't purchased - redirect to service page
         mentor = db.query(User).filter(User.id == service.mentor_id).first()
         mentor_username = mentor.username if mentor else "unknown"
-        
-        print(f"DEBUG: No valid booking found, redirecting to purchase page")
-        print(f"DEBUG: Mentor username: {mentor_username}")
-        
         return RedirectResponse(
             url=f"/{mentor_username}/service/{service_id}",
             status_code=303
@@ -1673,15 +1660,11 @@ async def deliver_digital_product(
     # Get mentor
     mentor = db.query(User).filter(User.id == service.mentor_id).first()
     
-    print(f"DEBUG: Mentor found: {mentor is not None}")
-    if mentor:
-        print(f"DEBUG: Mentor details - id: {mentor.id}, username: {mentor.username}, full_name: {mentor.full_name}")
-    
-    # Update booking status if needed
+    # Mark booking as delivered
     if booking.status != "completed":
         booking.status = "completed"
+        booking.delivered_at = datetime.utcnow()
         db.commit()
-        print(f"DEBUG: Updated booking {booking.id} status to completed")
     
     return templates.TemplateResponse("digital_product_delivery.html", {
         "request": request,
@@ -1689,7 +1672,9 @@ async def deliver_digital_product(
         "service": service,
         "mentor": mentor,
         "booking": booking,
-        "digital_product_url": service.digital_product_url
+        "digital_product_url": service.digital_product_url,
+        "digital_product_file": service.digital_product_file,
+        "now": datetime.utcnow()
     })
     
 @app.get("/mentor/availability", response_class=HTMLResponse)
