@@ -226,8 +226,8 @@
                     
                     <div class="mb-4">
                         <div id="currentMonth" class="text-center text-lg font-bold text-gray-900 mb-4">
-                            {% set current_date = now() if now is callable else now %} {{ current_date.strftime('%B %Y') }}
-                        </div>
+    {{ now.strftime('%Y-%m-%d') }}
+</div>
                         
                         <div class="grid grid-cols-7 gap-1 mb-4">
                             {% for day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] %}
