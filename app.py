@@ -1591,52 +1591,56 @@ async def create_service(
 from fastapi import Request, HTTPException, Depends
 from fastapi.responses import RedirectResponse
 
-@app.get("/digital-product/{booking_id}")
+@app.get("/digital-product/{service_id}")
 async def deliver_digital_product(
-    request: Request,  # Add this parameter
-    booking_id: int,
+    request: Request,
+    service_id: int,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Deliver digital product to the buyer"""
+    """Deliver digital product using permanent service link"""
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
     
-    # Get booking
+    # Get the service
+    service = db.query(Service).filter(
+        Service.id == service_id,
+        Service.is_digital == True,
+        Service.is_published == True
+    ).first()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Digital product not found")
+    
+    # Check if current user has purchased this service
     booking = db.query(Booking).filter(
-        Booking.id == booking_id,
+        Booking.service_id == service_id,
         Booking.learner_id == current_user.id,
-        Booking.payment_status.in_(["paid", "free"])
+        Booking.payment_status.in_(["paid", "free"]),
+        Booking.status.in_(["confirmed", "completed", "delivered"])
     ).first()
     
     if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
-    
-    # Get service with mentor relationship
-    service = db.query(Service).filter(Service.id == booking.service_id).first()
-    if not service or not service.is_digital:
-        raise HTTPException(status_code=404, detail="Digital product not found")
-    
-    # Get mentor (the service creator)
-    mentor = db.query(User).filter(User.id == service.mentor_id).first()
-    
-    # Check if user has access
-    if booking.status != "completed" and booking.payment_status not in ["paid", "free"]:
-        raise HTTPException(
-            status_code=403, 
-            detail="You don't have access to this product yet. Please wait for confirmation."
+        # User hasn't purchased this - redirect to service page to purchase
+        return RedirectResponse(
+            url=f"/{service.mentor.username}/service/{service_id}",
+            status_code=303
         )
     
-    # Mark booking as completed
-    booking.status = "completed"
-    db.commit()
+    # Get mentor
+    mentor = db.query(User).filter(User.id == service.mentor_id).first()
+    
+    # Update booking status if needed
+    if booking.status != "completed":
+        booking.status = "completed"
+        db.commit()
     
     return templates.TemplateResponse("digital_product_delivery.html", {
-        "request": request,  # FIX: Use request (parameter) not Request (class)
+        "request": request,
         "current_user": current_user,
-        "booking": booking,
         "service": service,
-        "mentor": mentor,  # Add mentor to template context
+        "mentor": mentor,
+        "booking": booking,  # Still pass booking for reference
         "digital_product_url": service.digital_product_url
     })
 @app.get("/mentor/availability", response_class=HTMLResponse)
