@@ -217,8 +217,8 @@ class Booking(Base):
     learner_id = Column(Integer, ForeignKey("users.id"))
     mentor_id = Column(Integer, ForeignKey("mentors.id"))
     service_id = Column(Integer, ForeignKey("services.id"))
-    booking_date = Column(Date, nullable=False)
-    selected_time = Column(String, nullable=False)
+    booking_date = Column(Date, nullable=True)
+    selected_time = Column(String, nullable=True)
     status = Column(String, default="pending")  # pending, confirmed, completed, cancelled
     payment_status = Column(String, default="pending")  # pending, paid, failed, refunded, free
     razorpay_order_id = Column(String)
