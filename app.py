@@ -533,6 +533,19 @@ async def index(request: Request, current_user = Depends(get_current_user)):
         "now": datetime.now()
     })
 
+@app.get("/debug/mentor/{mentor_id}/social")
+async def debug_social_links(mentor_id: int, db: Session = Depends(get_db)):
+    mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
+    if not mentor:
+        return {"error": "Mentor not found"}
+    
+    return {
+        "linkedin": mentor.linkedin_url,
+        "github": mentor.github_url,
+        "twitter": mentor.twitter_url,
+        "website": mentor.website_url
+    }
+    
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request, current_user = Depends(get_current_user)):
     if current_user:
