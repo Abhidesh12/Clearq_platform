@@ -1588,8 +1588,12 @@ async def create_service(
         status_code=303
     )
 
+from fastapi import Request, HTTPException, Depends
+from fastapi.responses import RedirectResponse
+
 @app.get("/digital-product/{booking_id}")
 async def deliver_digital_product(
+    request: Request,  # Add this parameter
     booking_id: int,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -1608,10 +1612,13 @@ async def deliver_digital_product(
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
     
-    # Get service
+    # Get service with mentor relationship
     service = db.query(Service).filter(Service.id == booking.service_id).first()
     if not service or not service.is_digital:
         raise HTTPException(status_code=404, detail="Digital product not found")
+    
+    # Get mentor (the service creator)
+    mentor = db.query(User).filter(User.id == service.mentor_id).first()
     
     # Check if user has access
     if booking.status != "completed" and booking.payment_status not in ["paid", "free"]:
@@ -1625,13 +1632,13 @@ async def deliver_digital_product(
     db.commit()
     
     return templates.TemplateResponse("digital_product_delivery.html", {
-        "request": Request,
+        "request": request,  # FIX: Use request (parameter) not Request (class)
         "current_user": current_user,
         "booking": booking,
         "service": service,
+        "mentor": mentor,  # Add mentor to template context
         "digital_product_url": service.digital_product_url
     })
-    
 @app.get("/mentor/availability", response_class=HTMLResponse)
 async def mentor_availability_page(
     request: Request,
