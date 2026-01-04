@@ -1171,43 +1171,7 @@
             </div>
 
             <!-- Contact Info -->
-            {% if mentor.email or mentor.phone %}
-            <div class="profile-section">
-                <h3 class="section-title">
-                    <i class="fas fa-envelope"></i>
-                    Contact Information
-                </h3>
-                <div class="contact-info">
-                    {% if mentor.email %}
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="contact-details">
-                            <div class="label">Email</div>
-                            <a href="mailto:{{ mentor.email }}" class="value">
-                                {{ mentor.email }}
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    {% if mentor.phone %}
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div class="contact-details">
-                            <div class="label">Phone</div>
-                            <a href="tel:{{ mentor.phone }}" class="value">
-                                {{ mentor.phone }}
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
+           
 
             <!-- Copy Link Button -->
             <button onclick="copyProfileUrl()" class="copy-btn">
