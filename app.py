@@ -546,7 +546,122 @@ async def debug_social_links(mentor_id: int, db: Session = Depends(get_db)):
         "twitter": mentor.twitter_url,
         "website": mentor.website_url
     }
+
+@app.post("/api/purchase-digital-product")
+async def purchase_digital_product(
+    request: Request,
+    service_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Simplified digital product purchase (no dates/times)"""
+    if not current_user or current_user.role != "learner":
+        raise HTTPException(status_code=403, detail="Only learners can purchase")
     
+    service = db.query(Service).filter(
+        Service.id == service_id,
+        Service.is_digital == True,
+        Service.is_active == True
+    ).first()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Digital product not found")
+    
+    # Check if already purchased
+    existing_booking = db.query(Booking).filter(
+        Booking.service_id == service_id,
+        Booking.learner_id == current_user.id,
+        Booking.payment_status.in_(["paid", "free"])
+    ).first()
+    
+    if existing_booking:
+        return JSONResponse({
+            "success": False,
+            "message": "You already own this product",
+            "redirect_url": f"/digital-product/{service_id}"
+        })
+    
+    mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
+    
+    # FREE digital product
+    if service.price == 0:
+        booking = Booking(
+            learner_id=current_user.id,
+            mentor_id=service.mentor_id,
+            service_id=service_id,
+            booking_type="digital",
+            booking_date=datetime.now().date(),
+            selected_time=datetime.now().strftime("%H:%M"),
+            razorpay_order_id=None,
+            amount_paid=0,
+            status="completed",
+            payment_status="free",
+            meeting_link=None,
+            meeting_id=None,
+            notes=f"Free digital product: {service.name}",
+            download_count=0
+        )
+        
+        db.add(booking)
+        db.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "redirect_url": f"/digital-product/{service_id}",
+            "message": "Product added to your library!"
+        })
+    
+    # PAID digital product
+    else:
+        try:
+            # Create Razorpay order
+            order_amount = service.price * 100
+            order_data = {
+                "amount": order_amount,
+                "currency": "INR",
+                "payment_capture": 1,
+                "notes": {
+                    "service_id": service_id,
+                    "learner_id": current_user.id,
+                    "type": "digital_product"
+                }
+            }
+            
+            razorpay_order = razorpay_client.order.create(order_data)
+            
+            # Create pending booking
+            booking = Booking(
+                learner_id=current_user.id,
+                mentor_id=service.mentor_id,
+                service_id=service_id,
+                booking_type="digital",
+                booking_date=datetime.now().date(),
+                selected_time=datetime.now().strftime("%H:%M"),
+                razorpay_order_id=razorpay_order["id"],
+                amount_paid=service.price,
+                status="pending",
+                payment_status="pending",
+                meeting_link=None,
+                meeting_id=None,
+                notes=f"Digital product: {service.name}",
+                download_count=0
+            )
+            
+            db.add(booking)
+            db.commit()
+            
+            return JSONResponse({
+                "success": True,
+                "booking_id": booking.id,
+                "redirect_url": f"/payment/{booking.id}",
+                "razorpay_order_id": razorpay_order["id"],
+                "message": "Please complete payment"
+            })
+            
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+            
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request, current_user = Depends(get_current_user)):
     if current_user:
@@ -1629,52 +1744,50 @@ from fastapi.responses import FileResponse, StreamingResponse
 import os
 
 @app.get("/digital-product/{service_id}")
-async def deliver_digital_product(
-    request: Request,
+async def digital_product_page(
     service_id: int,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Deliver digital product"""
+    """Digital product delivery page"""
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
     
-    # Get the service
     service = db.query(Service).filter(
         Service.id == service_id,
-        Service.is_digital == True,
-        Service.is_active == True
+        Service.is_digital == True
     ).first()
     
     if not service:
-        raise HTTPException(status_code=404, detail="Digital product not found")
+        raise HTTPException(status_code=404, detail="Product not found")
     
-    # Get mentor's user info
-    mentor_profile = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
-    mentor_user = db.query(User).filter(User.id == mentor_profile.user_id).first() if mentor_profile else None
-    
-    # Check if user has purchased this service
+    # Check ownership
     booking = db.query(Booking).filter(
         Booking.service_id == service_id,
         Booking.learner_id == current_user.id,
-        Booking.payment_status.in_(["paid", "free"])
+        Booking.payment_status.in_(["paid", "free"]),
+        Booking.status == "completed"
     ).first()
     
     if not booking:
-        # User hasn't purchased - redirect to purchase page
-        mentor_username = mentor_user.username if mentor_user else "unknown"
+        # Redirect to purchase page
+        mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
+        mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
         return RedirectResponse(
-            url=f"/{mentor_username}/service/{service_id}",
+            url=f"/{mentor_user.username}/service/{service_id}",
             status_code=303
         )
+    
+    # Get mentor info
+    mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
+    mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
     
     return templates.TemplateResponse("digital_product_delivery.html", {
         "request": request,
         "current_user": current_user,
         "service": service,
-        "mentor": mentor_user,
         "booking": booking,
-        "digital_product_url": service.digital_product_url
+        "mentor": mentor_user
     })
     
 @app.get("/mentor/availability", response_class=HTMLResponse)
