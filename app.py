@@ -3,6 +3,7 @@ import re
 import uuid
 import requests
 from datetime import datetime, timedelta
+from passlib.context import CryptContext
 import time  # Add this import
 from sqlalchemy import or_
 from sqlalchemy.pool import QueuePool
@@ -79,15 +80,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["now"] = datetime.now()
 
-from passlib.context import CryptContext
-
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto"
 )
 
 # Security
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Razorpay configuration
@@ -1097,6 +1095,14 @@ async def dashboard(
     context["now"] = datetime.now()
     
     return templates.TemplateResponse("dashboard.html", context)
+
+def generate_jitsi_meeting_link(booking_id: int, mentor_name: str, learner_name: str):
+    """Generate Jitsi meeting link"""
+    # Simple Jitsi meeting link with booking ID and random string
+    import uuid
+    meeting_id = f"clearq-{booking_id}-{uuid.uuid4().hex[:8]}"
+    return f"https://meet.jit.si/{meeting_id}", meeting_id
+    
 @app.post("/mentor/services/{service_id}/update-digital-url")
 async def update_digital_product_url(
     service_id: int,
@@ -1627,7 +1633,7 @@ async def deliver_digital_product(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Deliver digital product - SAME link for all buyers"""
+    """Deliver digital product"""
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
     
@@ -1641,6 +1647,10 @@ async def deliver_digital_product(
     if not service:
         raise HTTPException(status_code=404, detail="Digital product not found")
     
+    # Get mentor's user info
+    mentor_profile = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
+    mentor_user = db.query(User).filter(User.id == mentor_profile.user_id).first() if mentor_profile else None
+    
     # Check if user has purchased this service
     booking = db.query(Booking).filter(
         Booking.service_id == service_id,
@@ -1650,23 +1660,19 @@ async def deliver_digital_product(
     
     if not booking:
         # User hasn't purchased - redirect to purchase page
-        mentor = db.query(User).filter(User.id == service.mentor_id).first()
-        mentor_username = mentor.username if mentor else "unknown"
+        mentor_username = mentor_user.username if mentor_user else "unknown"
         return RedirectResponse(
             url=f"/{mentor_username}/service/{service_id}",
             status_code=303
         )
     
-    # Get mentor
-    mentor = db.query(User).filter(User.id == service.mentor_id).first()
-    
     return templates.TemplateResponse("digital_product_delivery.html", {
         "request": request,
         "current_user": current_user,
         "service": service,
-        "mentor": mentor,
+        "mentor": mentor_user,
         "booking": booking,
-        "digital_product_url": service.digital_product_url  # SAME link for all users
+        "digital_product_url": service.digital_product_url
     })
     
 @app.get("/mentor/availability", response_class=HTMLResponse)
@@ -1816,6 +1822,34 @@ async def debug_availability(
             } for t in time_slots
         ]
     }
+
+@app.post("/api/track-download/{product_id}")
+async def track_download(
+    product_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Track when a user downloads a digital product"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    # Check if user has purchased this product
+    booking = db.query(Booking).filter(
+        Booking.service_id == product_id,
+        Booking.learner_id == current_user.id,
+        Booking.payment_status.in_(["paid", "free"])
+    ).first()
+    
+    if not booking:
+        raise HTTPException(status_code=403, detail="You haven't purchased this product")
+    
+    # Update download count or track download
+    # You could add a download_logs table here
+    
+    return JSONResponse({
+        "success": True,
+        "message": "Download tracked"
+    })
     
 @app.post("/mentor/availability/create")
 async def create_availability(
@@ -2148,7 +2182,7 @@ async def create_booking(
                 learner_id=current_user.id,
                 mentor_id=service.mentor_id,
                 service_id=service_id,
-                booking_date=datetime.now().date(),
+                booking_date=datetime.now().date() if not is_digital_service else None,
                 selected_time=datetime.now().strftime("%H:%M"),
                 razorpay_order_id=None,
                 amount_paid=0,
@@ -3206,6 +3240,10 @@ async def get_time_slots(
         
 @app.exception_handler(404)
 async def not_found_exception_handler(request: Request, exc: HTTPException):
+    path = request.url.path
+    # Check if it's a service URL pattern
+    if re.match(r'^/[A-Za-z0-9_-]+/service/\d+$', path):
+        return templates.TemplateResponse("404_service.html", {"request": request}, status_code=404)
     return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
 @app.exception_handler(500)
