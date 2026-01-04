@@ -1521,7 +1521,12 @@
             <div class="flex items-start justify-between mb-3">
                 <div class="flex-1">
                     <h4 class="font-bold text-gray-900">{{ booking.service.name }}</h4>
-                    <p class="text-sm text-gray-600 truncate">{{ booking.service.description }}</p>
+                    <p class="text-sm text-gray-600 truncate">
+                        {% if booking.service and booking.service.description %}
+                            {{ booking.service.description }}
+                        {% else %}
+                            Digital product purchase
+                        {% endif %}</p>
                 </div>
                 <span class="ml-2 inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
                     Digital
@@ -1531,8 +1536,9 @@
                 <span class="text-sm text-gray-500">
                     Purchased: {{ booking.created_at.strftime('%b %d') }}
                 </span>
-                <a href="/digital-product/{{ service.id }}"
-                   class="px-3 py-1 bg-primary text-white text-sm font-medium rounded-lg hover:bg-secondary transition-colors">
+                <a href="/digital-product/{% if booking.service %}{{ booking.service.id }}{% else %}#{% endif %}"
+                   class="px-3 py-1 bg-primary text-white text-sm font-medium rounded-lg hover:bg-secondary transition-colors"
+                   {% if not booking.service %}style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
                     Access
                 </a>
             </div>
