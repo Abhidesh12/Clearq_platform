@@ -1626,7 +1626,7 @@ async def deliver_digital_product(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Deliver digital product to user after purchase"""
+    """Deliver digital product - SAME link for all buyers"""
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
     
@@ -1644,12 +1644,11 @@ async def deliver_digital_product(
     booking = db.query(Booking).filter(
         Booking.service_id == service_id,
         Booking.learner_id == current_user.id,
-        Booking.payment_status.in_(["paid", "free"]),
-        Booking.status.in_(["confirmed", "completed", "delivered"])
+        Booking.payment_status.in_(["paid", "free"])
     ).first()
     
     if not booking:
-        # User hasn't purchased - redirect to service page
+        # User hasn't purchased - redirect to purchase page
         mentor = db.query(User).filter(User.id == service.mentor_id).first()
         mentor_username = mentor.username if mentor else "unknown"
         return RedirectResponse(
@@ -1660,21 +1659,13 @@ async def deliver_digital_product(
     # Get mentor
     mentor = db.query(User).filter(User.id == service.mentor_id).first()
     
-    # Mark booking as delivered
-    if booking.status != "completed":
-        booking.status = "completed"
-        booking.delivered_at = datetime.utcnow()
-        db.commit()
-    
     return templates.TemplateResponse("digital_product_delivery.html", {
         "request": request,
         "current_user": current_user,
         "service": service,
         "mentor": mentor,
         "booking": booking,
-        "digital_product_url": service.digital_product_url,
-        "digital_product_file": service.digital_product_file,
-        "now": datetime.utcnow()
+        "digital_product_url": service.digital_product_url  # SAME link for all users
     })
     
 @app.get("/mentor/availability", response_class=HTMLResponse)
