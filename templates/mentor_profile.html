@@ -1014,6 +1014,58 @@
         }
     }
 
+    /* Social icon container for tooltips */
+.social-icon-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Tooltip styles */
+.social-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.social-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-bottom-color: rgba(0, 0, 0, 0.8);
+}
+
+.header-social-link:hover + .social-tooltip,
+.header-social-link:active + .social-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(8px);
+}
+
+/* Alternative: Always show icons with hover effect */
+.header-social-link.no-link {
+    cursor: default;
+}
+
+.header-social-link.no-link:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
     /* Quick Stats Bar */
     .quick-stats {
         display: flex;
@@ -1091,27 +1143,44 @@
         <!-- Profile Header -->
         <div class="profile-header">
             <!-- Social Links in Top Right Corner -->
-            <div class="profile-header-top-bar">
-                {% if mentor.linkedin_url %}
-                <a href="{{ mentor.linkedin_url }}" 
-                   target="_blank" 
-                   rel="noopener noreferrer" 
-                   class="header-social-link linkedin"
-                   title="LinkedIn Profile">
-                    <i class="fab fa-linkedin-in"></i>
-                </a>
-                {% endif %}
-                
-                {% if mentor.github_url %}
-                <a href="https://instagram.com/{{ mentor.github_url }}"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="header-social-link instagram"
-                   title="Instagram Profile">
-                    <i class="fab fa-instagram"></i>
-                </a>
-                {% endif %}
-            </div>
+           <!-- Alternative: Always clickable but with tooltips -->
+<div class="profile-header-top-bar">
+    <!-- LinkedIn Icon -->
+    <div class="social-icon-container">
+        {% if mentor.linkedin_url %}
+        <a href="{{ mentor.linkedin_url }}" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="header-social-link linkedin"
+           title="Visit LinkedIn Profile">
+            <i class="fab fa-linkedin-in"></i>
+        </a>
+        {% else %}
+        <div class="header-social-link linkedin" onclick="showSocialTooltip('LinkedIn')">
+            <i class="fab fa-linkedin-in"></i>
+            <div class="social-tooltip">Profile not linked</div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Instagram Icon -->
+    <div class="social-icon-container">
+        {% if mentor.github_url %}
+        <a href="https://instagram.com/{{ mentor.github_url }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="header-social-link instagram"
+           title="Visit Instagram Profile">
+            <i class="fab fa-instagram"></i>
+        </a>
+        {% else %}
+        <div class="header-social-link instagram" onclick="showSocialTooltip('Instagram')">
+            <i class="fab fa-instagram"></i>
+            <div class="social-tooltip">Profile not linked</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
             
             <div class="profile-avatar">
                 {% if mentor.user.profile_image %}
@@ -1477,6 +1546,10 @@ function showNotification(message, type) {
         }, 300);
     }, 3000);
 }
+ // Add to your existing JavaScript
+function showSocialTooltip(platform) {
+    showNotification(`${platform} profile is not linked by this mentor`, 'error');
+}   
 
 // Add hover effects to social links
 document.addEventListener('DOMContentLoaded', function() {
