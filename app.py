@@ -1754,15 +1754,21 @@ async def digital_product_page(
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
     
+    # 1. Find the service
     service = db.query(Service).filter(
         Service.id == service_id,
-        Service.is_digital == True
+        Service.is_digital == True,
+        Service.is_active == True  # Make sure it's active
     ).first()
     
     if not service:
-        raise HTTPException(status_code=404, detail="Product not found")
+        # Debug: Check if service exists but isn't digital
+        check_service = db.query(Service).filter(Service.id == service_id).first()
+        if check_service:
+            print(f"Service {service_id} exists but is_digital={check_service.is_digital}")
+        raise HTTPException(status_code=404, detail="Digital product not found")
     
-    # Check ownership
+    # 2. Check if user has purchased this product
     booking = db.query(Booking).filter(
         Booking.service_id == service_id,
         Booking.learner_id == current_user.id,
@@ -1771,18 +1777,22 @@ async def digital_product_page(
     ).first()
     
     if not booking:
-        # Redirect to purchase page
+        # User hasn't purchased - redirect to purchase page
         mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
-        mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
-        return RedirectResponse(
-            url=f"/{mentor_user.username}/service/{service_id}",
-            status_code=303
-        )
+        if mentor:
+            mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
+            return RedirectResponse(
+                url=f"/{mentor_user.username}/service/{service_id}",
+                status_code=303
+            )
+        else:
+            raise HTTPException(status_code=404, detail="Mentor not found")
     
-    # Get mentor info
+    # 3. Get mentor info
     mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
     mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
     
+    # 4. Render the template
     return templates.TemplateResponse("digital_product_delivery.html", {
         "request": request,
         "current_user": current_user,
