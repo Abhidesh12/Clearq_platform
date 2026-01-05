@@ -560,9 +560,6 @@ async def purchase_digital_product(
     data = await request.json()
     service_id = data.get("service_id")
     
-    if not service_id:
-        raise HTTPException(status_code=400, detail="Service ID required")
-    
     service = db.query(Service).filter(
         Service.id == service_id,
         Service.is_digital == True,
@@ -583,10 +580,8 @@ async def purchase_digital_product(
         return JSONResponse({
             "success": False,
             "message": "You already own this product",
-            "redirect_url": f"/digital-product/{service_id}"
+            "redirect_url": f"/digital-product/{service_id}"  # Use service_id
         })
-    
-    mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
     
     # FREE digital product
     if service.price == 0:
@@ -612,7 +607,7 @@ async def purchase_digital_product(
         
         return JSONResponse({
             "success": True,
-            "redirect_url": f"/digital-product/{service_id}",
+            "redirect_url": f"/digital-product/{service_id}",  # Use service_id
             "message": "Product added to your library!"
         })
     
@@ -2333,7 +2328,7 @@ async def create_booking(
             return JSONResponse({
                 "success": True,
                 "booking_id": booking.id,
-                "redirect_url": f"/digital-product/{booking.id}",
+                "redirect_url": f"/digital-product/{service_id}",  # FIXED: Use service_id, not booking.id
                 "is_digital": True,
                 "is_free": True,
                 "message": "Free digital product added to your account!"
@@ -2528,7 +2523,6 @@ async def create_booking(
                 print(f"Error creating booking: {str(e)}")
                 db.rollback()
                 raise HTTPException(status_code=500, detail=str(e))
-
 # Add this new API endpoint for generating time slots
 @app.post("/api/generate-time-slots")
 async def generate_time_slots(
