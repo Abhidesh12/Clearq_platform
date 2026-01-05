@@ -569,18 +569,19 @@ async def purchase_digital_product(
     if not service:
         raise HTTPException(status_code=404, detail="Digital product not found")
     
-    # Check if already purchased
+    # Check if already purchased - FIXED: Remove status check
     existing_booking = db.query(Booking).filter(
         Booking.service_id == service_id,
         Booking.learner_id == current_user.id,
-        Booking.payment_status.in_(["paid", "free"])
+        Booking.payment_status.in_(["paid", "free"])  # No status check here
     ).first()
     
     if existing_booking:
+        print(f"DEBUG: User already owns product {service_id}")
         return JSONResponse({
             "success": False,
             "message": "You already own this product",
-            "redirect_url": f"/digital-product/{service_id}"  # Use service_id
+            "redirect_url": f"/digital-product/{service_id}"  # Still redirect to product page
         })
     
     # FREE digital product
@@ -1775,22 +1776,23 @@ async def digital_product_page(
     
     mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
     
-    # FIXED: Check if user has purchased this product - REMOVED status check
+    # FIXED: Check if user has purchased this product (more flexible query)
     booking = db.query(Booking).filter(
         Booking.service_id == service_id,
         Booking.learner_id == current_user.id,
-        Booking.payment_status.in_(["paid", "free"])  # Removed Booking.status == "completed"
+        Booking.payment_status.in_(["paid", "free"])
+        # Removed: Booking.status == "completed"
     ).first()
     
-    # DEBUG LOG - Add this to see what's happening
-    print(f"DEBUG - User {current_user.id} checking service {service_id}")
-    print(f"DEBUG - Found booking: {booking}")
+    # Debug logging
+    print(f"DEBUG: User {current_user.id} checking service {service_id}")
+    print(f"DEBUG: Found booking: {booking}")
     if booking:
-        print(f"DEBUG - Booking status: {booking.status}, payment: {booking.payment_status}")
-        print(f"DEBUG - Service digital: {service.is_digital}, URL: {service.digital_product_url}")
+        print(f"DEBUG: Booking status: {booking.status}, payment: {booking.payment_status}")
     
     # If user has NOT purchased, show purchase page
     if not booking:
+        print(f"DEBUG: No booking found for user {current_user.id}")
         return templates.TemplateResponse("digital_product_purchase.html", {
             "request": request,
             "current_user": current_user,
@@ -1800,6 +1802,7 @@ async def digital_product_page(
         })
     
     # If user HAS purchased, show delivery page
+    print(f"DEBUG: Booking found! Showing delivery page")
     return templates.TemplateResponse("digital_product_delivery.html", {
         "request": request,
         "current_user": current_user,
@@ -1808,7 +1811,6 @@ async def digital_product_page(
         "mentor": mentor_user,
         "is_owner": True
     })
-
 
 @app.get("/debug/my-digital-products")
 async def debug_my_digital_products(
