@@ -7,16 +7,7 @@
 <div class="max-w-4xl mx-auto py-8 px-4">
     <!-- DEBUG INFO (remove in production) -->
     <div class="bg-yellow-50 p-4 mb-4 rounded border border-yellow-200">
-        <h3 class="font-bold text-yellow-800">DEBUG INFO:</h3>
-        <pre class="text-sm">
-Service ID: {{ service.id }}
-Service Name: {{ service.name }}
-Is Digital: {{ service.is_digital }}
-Digital Product URL: {{ service.digital_product_url }}
-Has URL: {% if service.digital_product_url %}YES{% else %}NO{% endif %}
-Booking Status: {{ booking.status }}
-Payment Status: {{ booking.payment_status }}
-        </pre>
+        <h3 class="font-bold text-yellow-800">
     </div>
     
     <div class="bg-white shadow rounded-lg overflow-hidden">
