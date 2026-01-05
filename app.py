@@ -1746,6 +1746,7 @@ import os
 @app.get("/digital-product/{service_id}")
 async def digital_product_page(
     service_id: int,
+    request: Request,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
