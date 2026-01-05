@@ -550,13 +550,18 @@ async def debug_social_links(mentor_id: int, db: Session = Depends(get_db)):
 @app.post("/api/purchase-digital-product")
 async def purchase_digital_product(
     request: Request,
-    service_id: int,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Simplified digital product purchase (no dates/times)"""
     if not current_user or current_user.role != "learner":
         raise HTTPException(status_code=403, detail="Only learners can purchase")
+    
+    data = await request.json()
+    service_id = data.get("service_id")
+    
+    if not service_id:
+        raise HTTPException(status_code=400, detail="Service ID required")
     
     service = db.query(Service).filter(
         Service.id == service_id,
@@ -661,7 +666,8 @@ async def purchase_digital_product(
         except Exception as e:
             db.rollback()
             raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
-            
+
+
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request, current_user = Depends(get_current_user)):
     if current_user:
@@ -1750,25 +1756,31 @@ async def digital_product_page(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Digital product delivery page"""
+    """Digital product delivery page - This is the UNIQUE URL for all digital products"""
+    # Check authentication
     if not current_user:
-        return RedirectResponse(url="/login", status_code=303)
+        return RedirectResponse(
+            url=f"/login?next=/digital-product/{service_id}",
+            status_code=303
+        )
     
-    # 1. Find the service
+    # Find the service (must be digital and active)
     service = db.query(Service).filter(
         Service.id == service_id,
-        Service.is_digital == True,
-        Service.is_active == True  # Make sure it's active
+        Service.is_active == True
     ).first()
     
     if not service:
-        # Debug: Check if service exists but isn't digital
-        check_service = db.query(Service).filter(Service.id == service_id).first()
-        if check_service:
-            print(f"Service {service_id} exists but is_digital={check_service.is_digital}")
-        raise HTTPException(status_code=404, detail="Digital product not found")
+        raise HTTPException(status_code=404, detail="Product not found")
     
-    # 2. Check if user has purchased this product
+    # Get mentor info
+    mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Creator not found")
+    
+    mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
+    
+    # Check if user has purchased this product
     booking = db.query(Booking).filter(
         Booking.service_id == service_id,
         Booking.learner_id == current_user.id,
@@ -1776,29 +1788,24 @@ async def digital_product_page(
         Booking.status == "completed"
     ).first()
     
+    # If user has NOT purchased, show purchase page
     if not booking:
-        # User hasn't purchased - redirect to purchase page
-        mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
-        if mentor:
-            mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
-            return RedirectResponse(
-                url=f"/{mentor_user.username}/service/{service_id}",
-                status_code=303
-            )
-        else:
-            raise HTTPException(status_code=404, detail="Mentor not found")
+        return templates.TemplateResponse("digital_product_purchase.html", {
+            "request": request,
+            "current_user": current_user,
+            "service": service,
+            "mentor": mentor_user,
+            "is_owner": False
+        })
     
-    # 3. Get mentor info
-    mentor = db.query(Mentor).filter(Mentor.id == service.mentor_id).first()
-    mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
-    
-    # 4. Render the template
+    # If user HAS purchased, show delivery page
     return templates.TemplateResponse("digital_product_delivery.html", {
         "request": request,
         "current_user": current_user,
         "service": service,
         "booking": booking,
-        "mentor": mentor_user
+        "mentor": mentor_user,
+        "is_owner": True
     })
     
 @app.get("/mentor/availability", response_class=HTMLResponse)
@@ -2703,7 +2710,7 @@ async def verify_payment(
                 return JSONResponse({
                     "success": True, 
                     "message": "Payment verified successfully! Your digital product is ready.",
-                    "redirect_url": f"/digital-product/{booking.id}",
+                    "redirect_url": f"/digital-product/{booking.service_id}",  # Changed from booking.id to service_id
                     "is_digital": True
                 })
             else:
@@ -2738,7 +2745,7 @@ async def verify_payment(
         print(f"Payment verification error: {e}")
         db.rollback()
         return JSONResponse({"success": False, "message": f"Payment verification failed: {str(e)}"})
-
+        
 # ============ ADMIN ROUTES ============
 
 @app.get("/admin/dashboard", response_class=HTMLResponse)
