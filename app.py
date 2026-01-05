@@ -1775,13 +1775,19 @@ async def digital_product_page(
     
     mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
     
-    # Check if user has purchased this product
+    # FIXED: Check if user has purchased this product - REMOVED status check
     booking = db.query(Booking).filter(
         Booking.service_id == service_id,
         Booking.learner_id == current_user.id,
-        Booking.payment_status.in_(["paid", "free"]),
-        Booking.status == "completed"
+        Booking.payment_status.in_(["paid", "free"])  # Removed Booking.status == "completed"
     ).first()
+    
+    # DEBUG LOG - Add this to see what's happening
+    print(f"DEBUG - User {current_user.id} checking service {service_id}")
+    print(f"DEBUG - Found booking: {booking}")
+    if booking:
+        print(f"DEBUG - Booking status: {booking.status}, payment: {booking.payment_status}")
+        print(f"DEBUG - Service digital: {service.is_digital}, URL: {service.digital_product_url}")
     
     # If user has NOT purchased, show purchase page
     if not booking:
@@ -1802,6 +1808,40 @@ async def digital_product_page(
         "mentor": mentor_user,
         "is_owner": True
     })
+
+
+@app.get("/debug/my-digital-products")
+async def debug_my_digital_products(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Debug endpoint to check user's digital product purchases"""
+    if not current_user:
+        return {"error": "Not logged in"}
+    
+    # Get all digital product purchases
+    purchases = db.query(Booking).join(Service).filter(
+        Booking.learner_id == current_user.id,
+        Service.is_digital == True
+    ).all()
+    
+    result = []
+    for booking in purchases:
+        service = db.query(Service).filter(Service.id == booking.service_id).first()
+        result.append({
+            "booking_id": booking.id,
+            "service_id": booking.service_id,
+            "service_name": service.name if service else "Unknown",
+            "service_is_digital": service.is_digital if service else False,
+            "service_url": service.digital_product_url if service else None,
+            "payment_status": booking.payment_status,
+            "status": booking.status,
+            "amount_paid": booking.amount_paid,
+            "created_at": str(booking.created_at)
+        })
+    
+    return {"user_id": current_user.id, "purchases": result}
+    
     
 @app.get("/mentor/availability", response_class=HTMLResponse)
 async def mentor_availability_page(
