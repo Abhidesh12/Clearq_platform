@@ -2449,14 +2449,11 @@ async def create_booking(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "learner":
-        raise HTTPException(status_code=403, detail="Only learners can book sessions")
+        raise HTTPException(status_code=403, detail="Only learners can purchase services")
     
     service_id = booking_data.get("service_id")
-    date_str = booking_data.get("date")
-    time_slot = booking_data.get("time")  # This is the start time selected by learner
-    
-    if not all([service_id, date_str, time_slot]):
-        raise HTTPException(status_code=400, detail="Missing required booking data")
+    date_str = booking_data.get("date")  # May be None for digital products
+    time_slot = booking_data.get("time")  # May be None for digital products
     
     service = db.query(Service).filter(Service.id == service_id).first()
     if not service:
@@ -2470,17 +2467,20 @@ async def create_booking(
     # Check if service is digital
     is_digital_service = service.is_digital
     
-    # Check if the selected time is in the past (for non-digital services)
+    # For live sessions, date and time are required
     if not is_digital_service:
+        if not date_str or not time_slot:
+            raise HTTPException(status_code=400, detail="Date and time required for live sessions")
+        
+        # Check if the selected time is in the past
         try:
             selected_datetime = datetime.strptime(f"{date_str} {time_slot}", "%Y-%m-%d %H:%M")
             if selected_datetime < datetime.now():
                 raise HTTPException(status_code=400, detail="Cannot book sessions in the past")
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid date or time format")
-    
-    # Calculate end time based on service duration (for non-digital)
-    if not is_digital_service:
+        
+        # Calculate end time based on service duration
         start_time = datetime.strptime(time_slot, "%H:%M")
         end_time = start_time + timedelta(minutes=service.duration_minutes)
         end_time_str = end_time.strftime("%H:%M")
@@ -2496,7 +2496,7 @@ async def create_booking(
                 learner_id=current_user.id,
                 mentor_id=service.mentor_id,
                 service_id=service_id,
-                booking_date=datetime.now().date() if not is_digital_service else None,
+                booking_date=datetime.now().date(),
                 selected_time=datetime.now().strftime("%H:%M"),
                 razorpay_order_id=None,
                 amount_paid=0,
@@ -2514,7 +2514,7 @@ async def create_booking(
             return JSONResponse({
                 "success": True,
                 "booking_id": booking.id,
-                "redirect_url": f"/digital-product/{service_id}",  # FIXED: Use service_id, not booking.id
+                "redirect_url": f"/digital-product/{service_id}",
                 "is_digital": True,
                 "is_free": True,
                 "message": "Free digital product added to your account!"
@@ -2581,7 +2581,6 @@ async def create_booking(
     else:
         # Paid services
         if is_digital_service:
-
             # Paid digital product - create Razorpay order
             order_amount = service.price * 100  # Convert to paise
             order_currency = "INR"
@@ -2607,8 +2606,8 @@ async def create_booking(
                     learner_id=current_user.id,
                     mentor_id=service.mentor_id,
                     service_id=service_id,
-                    booking_date=None,
-                    selected_time=None,
+                    booking_date=datetime.now().date(),
+                    selected_time=datetime.now().strftime("%H:%M"),
                     razorpay_order_id=razorpay_order["id"],
                     amount_paid=service.price,
                     status="pending",  # Will be completed after payment
@@ -2663,8 +2662,8 @@ async def create_booking(
                     learner_id=current_user.id,
                     mentor_id=service.mentor_id,
                     service_id=service_id,
-                    booking_date=None,
-                    selected_time=None,
+                    booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
+                    selected_time=time_slot,
                     razorpay_order_id=razorpay_order["id"],
                     amount_paid=service.price,
                     status="pending",
