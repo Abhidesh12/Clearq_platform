@@ -1225,17 +1225,67 @@
         return;
     {% endif %}
     
+    const pathParts = window.location.pathname.split('/');
+    const serviceId = pathParts[3];
+    
+    // Prepare booking data
+    let bookingData = {};
+    
     {% if service.is_digital %}
-        // For digital products - no date/time needed
-        const pathParts = window.location.pathname.split('/');
-        const serviceId = pathParts[3];
+        // For digital products - use the simplified API
+        try {
+            // Show loading state
+            const bookButton = document.querySelector('.book-button');
+            const originalText = bookButton.innerHTML;
+            bookButton.innerHTML = `
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Processing Purchase...</span>
+            `;
+            bookButton.disabled = true;
+            
+            // Call the digital product purchase API
+            const response = await fetch('/api/purchase-digital-product', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    service_id: parseInt(serviceId)
+                })
+            });
+            
+            const data = await response.json();
+            console.log('Digital product purchase response:', data);
+            
+            if (data.success) {
+                showNotification('Product purchased successfully!', 'success');
+                
+                // Redirect based on response
+                if (data.redirect_url) {
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 1500);
+                } else {
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                }
+            } else {
+                showNotification(data.message || 'Failed to purchase product. Please try again.', 'error');
+                // Reset button
+                bookButton.innerHTML = originalText;
+                bookButton.disabled = false;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification('Failed to process purchase. Please try again.', 'error');
+            // Reset button
+            const bookButton = document.querySelector('.book-button');
+            bookButton.innerHTML = originalText;
+            bookButton.disabled = false;
+        }
+        return; // Exit function for digital products
         
-        const bookingData = {
-            service_id: parseInt(serviceId),
-            date: null,
-            time: null,
-            is_digital: true
-        };
     {% else %}
         // For live sessions - require date/time
         if (!selectedDate || !selectedTime) {
@@ -1243,8 +1293,6 @@
             return;
         }
         
-        const pathParts = window.location.pathname.split('/');
-        const serviceId = pathParts[3];
         const mentorId = {{ mentor.id if mentor else (service.mentor_id if service else 0) }};
         
         if (!mentorId) {
@@ -1252,81 +1300,65 @@
             return;
         }
         
-        const bookingData = {
+        bookingData = {
             service_id: parseInt(serviceId),
             date: selectedDate,
             time: selectedTime,
-            mentor_id: mentorId,
-            is_digital: false
+            mentor_id: mentorId
         };
-    {% endif %}
-    
-    console.log('Sending booking data:', bookingData);
-    
-    // Show loading state
-    const bookButton = document.querySelector('.book-button');
-    const originalText = bookButton.innerHTML;
-    const originalBg = bookButton.style.background;
-    bookButton.innerHTML = `
-        <i class="fas fa-spinner fa-spin"></i>
-        <span>{% if service.is_digital %}Processing Purchase...{% else %}Processing Booking...{% endif %}</span>
-    `;
-    bookButton.disabled = true;
-    bookButton.style.background = 'linear-gradient(135deg, var(--gray-500), var(--gray-600))';
-    
-    try {
-        const response = await fetch('/api/create-booking', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(bookingData)
-        });
         
-        const data = await response.json();
-        console.log('Booking response:', data);
+        console.log('Sending booking data for live session:', bookingData);
         
-        if (data.success) {
-            showNotification(
-                {% if service.is_digital %}
-                    'Product added to cart! Redirecting to checkout...'
-                {% else %}
-                    'Booking created successfully! Redirecting to payment...'
-                {% endif %},
-                'success'
-            );
+        // Show loading state for live session
+        const bookButton = document.querySelector('.book-button');
+        const originalText = bookButton.innerHTML;
+        bookButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Booking...';
+        bookButton.disabled = true;
+        
+        try {
+            const response = await fetch('/api/create-booking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(bookingData)
+            });
             
-            // Redirect based on response
-            if (data.redirect_url) {
-                setTimeout(() => {
-                    window.location.href = data.redirect_url;
-                }, 1500);
-            } else if (data.booking_id) {
-                setTimeout(() => {
-                    window.location.href = '/payment/' + data.booking_id;
-                }, 1500);
+            const data = await response.json();
+            console.log('Booking response:', data);
+            
+            if (data.success) {
+                showNotification('Booking created successfully! Redirecting to payment...', 'success');
+                
+                // Redirect based on response
+                if (data.redirect_url) {
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 1500);
+                } else if (data.booking_id) {
+                    setTimeout(() => {
+                        window.location.href = '/payment/' + data.booking_id;
+                    }, 1500);
+                } else {
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1500);
+                }
             } else {
-                setTimeout(() => {
-                    window.location.href = '/dashboard';
-                }, 1500);
+                showNotification(data.message || 'Failed to create booking. Please try again.', 'error');
+                // Reset button
+                bookButton.innerHTML = originalText;
+                bookButton.disabled = false;
             }
-        } else {
-            showNotification(data.message || 'Failed to process request. Please try again.', 'error');
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification('Failed to create booking. Please try again.', 'error');
             // Reset button
             bookButton.innerHTML = originalText;
             bookButton.disabled = false;
-            bookButton.style.background = originalBg;
         }
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('Failed to process request. Please try again.', 'error');
-        // Reset button
-        bookButton.innerHTML = originalText;
-        bookButton.disabled = false;
-        bookButton.style.background = originalBg;
-    }
+    {% endif %}
 }
-
     // Initialize first date selection
     // Initialize first date selection
 document.addEventListener('DOMContentLoaded', function() {
