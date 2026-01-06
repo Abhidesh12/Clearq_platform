@@ -1,0 +1,241 @@
+<!-- templates/payout.html -->
+{% extends "base.html" %}
+
+{% block title %}Withdraw Earnings - ClearQ{% endblock %}
+
+{% block content %}
+<style>
+    .payout-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .payout-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .payout-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .earnings-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .earnings-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .earnings-card h3 {
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.9;
+    }
+    
+    .earnings-card .amount {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .withdraw-form {
+        margin-top: 2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+    
+    .withdraw-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: transform 0.2s;
+    }
+    
+    .withdraw-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .withdraw-history {
+        margin-top: 2rem;
+    }
+    
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    
+    .history-table th {
+        background: #f8f9fa;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid #ddd;
+    }
+    
+    .history-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .status-approved {
+        color: #10b981;
+        font-weight: 600;
+    }
+    
+    .status-pending {
+        color: #f59e0b;
+        font-weight: 600;
+    }
+    
+    .status-rejected {
+        color: #ef4444;
+        font-weight: 600;
+    }
+</style>
+
+<div class="payout-container">
+    <div class="payout-header">
+        <h1>Withdraw Earnings</h1>
+        <p>Manage your payouts and track withdrawal history</p>
+    </div>
+    
+    <!-- Earnings Summary -->
+    <div class="earnings-summary">
+        <div class="earnings-card">
+            <h3>Total Earnings</h3>
+            <div class="amount">₹{{ total_earnings }}</div>
+        </div>
+        <div class="earnings-card">
+            <h3>Available Balance</h3>
+            <div class="amount">₹{{ available_balance }}</div>
+        </div>
+        <div class="earnings-card">
+            <h3>Pending Payouts</h3>
+            <div class="amount">₹{{ pending_payouts }}</div>
+        </div>
+        <div class="earnings-card">
+            <h3>Total Paid</h3>
+            <div class="amount">₹{{ total_paid }}</div>
+        </div>
+    </div>
+    
+    <!-- Withdraw Button and Form -->
+    <div class="payout-card">
+        <h2>Withdraw Funds</h2>
+        
+        {% if available_balance > 0 %}
+        <button onclick="showWithdrawForm()" class="withdraw-btn" id="withdrawButton">
+            Withdraw ₹{{ available_balance }}
+        </button>
+        
+        <div class="withdraw-form" id="withdrawForm" style="display: none;">
+            <form action="/mentor/withdraw" method="POST">
+                <div class="form-group">
+                    <label class="form-label">Amount to Withdraw (₹)</label>
+                    <input type="number" name="amount" class="form-input" 
+                           max="{{ available_balance }}" min="100" 
+                           value="{{ available_balance }}" required>
+                    <small>Minimum withdrawal: ₹100</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Payment Method</label>
+                    <select name="payment_method" class="form-input" required>
+                        <option value="">Select Method</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="upi">UPI</option>
+                        <option value="paypal">PayPal</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Account Details</label>
+                    <textarea name="account_details" class="form-input" rows="4" 
+                              placeholder="Enter your bank account number, IFSC code, or UPI ID" required></textarea>
+                </div>
+                
+                <button type="submit" class="withdraw-btn">Submit Withdrawal Request</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <p>No funds available for withdrawal. Minimum balance required: ₹100</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Withdrawal History -->
+    <div class="withdraw-history">
+        <h2>Withdrawal History</h2>
+        {% if withdrawals %}
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Reference</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for withdrawal in withdrawals %}
+                <tr>
+                    <td>{{ withdrawal.created_at.strftime('%d %b %Y') }}</td>
+                    <td>₹{{ withdrawal.amount }}</td>
+                    <td>{{ withdrawal.payment_method|replace('_', ' ')|title }}</td>
+                    <td class="status-{{ withdrawal.status }}">
+                        {{ withdrawal.status|title }}
+                    </td>
+                    <td>{{ withdrawal.reference_id or 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No withdrawal history found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function showWithdrawForm() {
+        document.getElementById('withdrawButton').style.display = 'none';
+        document.getElementById('withdrawForm').style.display = 'block';
+    }
+</script>
+{% endblock %}
