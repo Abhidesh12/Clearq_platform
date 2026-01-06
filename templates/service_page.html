@@ -795,17 +795,27 @@
                 </div>
             </div>
             
-            <div class="header-price-card">
-                <div class="price-display">
-    <div class="price-amount">₹{{ service.price }}</div>
-    <div class="price-label">
-        {% if service.is_digital %}one-time purchase{% else %}per session{% endif %}
+            <!-- In the header-price-card div -->
+<!-- In the header-price-card div -->
+<div class="header-price-card">
+    <div class="price-display">
+        <div class="price-amount">₹{{ service.price }}</div>
+        <div class="price-label">Instant Digital Access</div>
     </div>
+    <button onclick="downloadProduct()" class="book-now-btn">
+        Download Now
+    </button>
 </div>
-<button onclick="scrollToBooking()" class="book-now-btn">
-    {% if service.is_digital %}Purchase Now{% else %}Book Now{% endif %}
-</button>
-            </div>
+    {% if service.is_digital %}
+        <a href="/checkout/{{ service.id }}" class="book-now-btn">
+            Purchase Now - ₹{{ service.price }}
+        </a>
+    {% else %}
+        <button onclick="scrollToBooking()" class="book-now-btn">
+            Book Now
+        </button>
+    {% endif %}
+</div>
         </div>
     </div>
 
@@ -1005,13 +1015,18 @@
     
     <!-- Book/Purchase Button -->
     <button onclick="bookService()" class="book-button">
-        <i class="fas {% if service.is_digital %}fa-shopping-cart{% else %}fa-calendar-check{% endif %}"></i>
-        <span>
-            {% if service.is_digital %}
-                Purchase Now - ₹{{ service.price }}
-            {% else %}
-                Book Now - ₹{{ service.price }}
-            {% endif %}
+        <i class="fas <!-- Book/Purchase Button -->
+{% if service.is_digital %}
+    <a href="/checkout/{{ service.id }}" class="book-button">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Purchase Now - ₹{{ service.price }}</span>
+    </a>
+{% else %}
+    <button onclick="bookService()" class="book-button">
+        <i class="fas fa-calendar-check"></i>
+        <span>Book Now - ₹{{ service.price }}</span>
+    </button>
+{% endif %}
         </span>
     </button>
 </div>
@@ -1213,6 +1228,25 @@
         }
     }
 
+
+
+    function downloadProduct() {
+    // For free digital products
+    showNotification('Preparing your download...', 'success');
+    
+    // You might want to trigger an API call to record the download
+    fetch('/api/download-product/{{ service.id }}', {
+        method: 'POST'
+    }).then(response => response.json())
+      .then(data => {
+          if (data.download_url) {
+              // Open download in new tab
+              window.open(data.download_url, '_blank');
+          } else {
+              showNotification('Download started!', 'success');
+          }
+      });
+}
     async function bookService() {
     // Check authentication
     {% if not current_user %}
