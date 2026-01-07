@@ -80,33 +80,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["now"] = datetime.now()
 
-def time_ago_filter(dt):
-    """Calculate time ago from datetime"""
-    if not dt:
-        return ""
-    
-    now = datetime.now()
-    diff = now - dt
-    
-    if diff.days > 365:
-        years = diff.days // 365
-        return f"{years} year{'s' if years > 1 else ''} ago"
-    elif diff.days > 30:
-        months = diff.days // 30
-        return f"{months} month{'s' if months > 1 else ''} ago"
-    elif diff.days > 0:
-        return f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
-    elif diff.seconds > 3600:
-        hours = diff.seconds // 3600
-        return f"{hours} hour{'s' if hours > 1 else ''} ago"
-    elif diff.seconds > 60:
-        minutes = diff.seconds // 60
-        return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
-    else:
-        return "just now"
-
-templates.env.filters["time_ago"] = time_ago_filter
-
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto"
@@ -222,24 +195,6 @@ class Availability(Base):
     
     # Relationships
     mentor = relationship("Mentor", back_populates="availabilities")
-
-# Add to DATABASE MODELS section
-class Withdrawal(Base):
-    __tablename__ = "withdrawals"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    mentor_id = Column(Integer, ForeignKey("mentors.id"))
-    amount = Column(Integer, nullable=False)
-    payment_method = Column(String)  # bank_transfer, upi, paypal
-    account_details = Column(Text)
-    status = Column(String, default="pending")  # pending, approved, rejected, processed
-    reference_id = Column(String)
-    admin_notes = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    processed_at = Column(DateTime, nullable=True)
-    
-    # Relationship
-    mentor = relationship("Mentor")
 
 class TimeSlot(Base):
     __tablename__ = "time_slots"
@@ -1310,133 +1265,7 @@ async def update_digital_product_url(
         "success": True,
         "message": "Digital product URL updated successfully"
     })
-
-# Add after other mentor routes
-@app.get("/mentor/payout", response_class=HTMLResponse)
-async def mentor_payout(
-    request: Request,
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Mentor payout page"""
-    if not current_user or current_user.role != "mentor":
-        raise HTTPException(status_code=403, detail="Access denied")
     
-    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
-    if not mentor:
-        raise HTTPException(status_code=404, detail="Mentor profile not found")
-    
-    # Calculate earnings
-    total_earnings_query = db.query(Booking).filter(
-        Booking.mentor_id == mentor.id,
-        Booking.payment_status == "paid"
-    ).with_entities(func.sum(Booking.amount_paid))
-    
-    total_earnings = total_earnings_query.scalar() or 0
-    
-    # Calculate pending withdrawals
-    pending_withdrawals_query = db.query(Withdrawal).filter(
-        Withdrawal.mentor_id == mentor.id,
-        Withdrawal.status == "pending"
-    ).with_entities(func.sum(Withdrawal.amount))
-    
-    pending_payouts = pending_withdrawals_query.scalar() or 0
-    
-    # Calculate total paid
-    processed_withdrawals_query = db.query(Withdrawal).filter(
-        Withdrawal.mentor_id == mentor.id,
-        Withdrawal.status.in_(["approved", "processed"])
-    ).with_entities(func.sum(Withdrawal.amount))
-    
-    total_paid = processed_withdrawals_query.scalar() or 0
-    
-    # Available balance = total earnings - (pending + processed withdrawals)
-    available_balance = total_earnings - (pending_payouts + total_paid)
-    if available_balance < 0:
-        available_balance = 0
-    
-    # Get withdrawal history
-    withdrawals = db.query(Withdrawal).filter(
-        Withdrawal.mentor_id == mentor.id
-    ).order_by(Withdrawal.created_at.desc()).limit(20).all()
-    
-    return templates.TemplateResponse("payout.html", {
-        "request": request,
-        "current_user": current_user,
-        "mentor": mentor,
-        "total_earnings": total_earnings,
-        "available_balance": available_balance,
-        "pending_payouts": pending_payouts,
-        "total_paid": total_paid,
-        "withdrawals": withdrawals
-    })
-
-@app.post("/mentor/withdraw")
-async def create_withdrawal(
-    request: Request,
-    amount: int = Form(...),
-    payment_method: str = Form(...),
-    account_details: str = Form(...),
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Create withdrawal request"""
-    if not current_user or current_user.role != "mentor":
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
-    if not mentor:
-        raise HTTPException(status_code=404, detail="Mentor profile not found")
-    
-    # Validate minimum amount
-    if amount < 100:
-        return RedirectResponse(
-            url="/mentor/payout?error=Minimum%20withdrawal%20amount%20is%20₹100",
-            status_code=303
-        )
-    
-    # Calculate available balance
-    total_earnings = db.query(Booking).filter(
-        Booking.mentor_id == mentor.id,
-        Booking.payment_status == "paid"
-    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-    
-    pending_withdrawals = db.query(Withdrawal).filter(
-        Withdrawal.mentor_id == mentor.id,
-        Withdrawal.status == "pending"
-    ).with_entities(func.sum(Withdrawal.amount)).scalar() or 0
-    
-    processed_withdrawals = db.query(Withdrawal).filter(
-        Withdrawal.mentor_id == mentor.id,
-        Withdrawal.status.in_(["approved", "processed"])
-    ).with_entities(func.sum(Withdrawal.amount)).scalar() or 0
-    
-    available_balance = total_earnings - (pending_withdrawals + processed_withdrawals)
-    
-    if amount > available_balance:
-        return RedirectResponse(
-            url="/mentor/payout?error=Insufficient%20balance",
-            status_code=303
-        )
-    
-    # Create withdrawal request
-    withdrawal = Withdrawal(
-        mentor_id=mentor.id,
-        amount=amount,
-        payment_method=payment_method,
-        account_details=account_details,
-        status="pending",
-        created_at=datetime.utcnow()
-    )
-    
-    db.add(withdrawal)
-    db.commit()
-    
-    return RedirectResponse(
-        url="/mentor/payout?success=Withdrawal%20request%20submitted%20successfully",
-        status_code=303
-    )
-
 @app.get("/profile/edit", response_class=HTMLResponse)
 async def edit_profile_page(
     request: Request,
@@ -2476,11 +2305,14 @@ async def create_booking(
     db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "learner":
-        raise HTTPException(status_code=403, detail="Only learners can purchase services")
+        raise HTTPException(status_code=403, detail="Only learners can book sessions")
     
     service_id = booking_data.get("service_id")
-    date_str = booking_data.get("date")  # May be None for digital products
-    time_slot = booking_data.get("time")  # May be None for digital products
+    date_str = booking_data.get("date")
+    time_slot = booking_data.get("time")  # This is the start time selected by learner
+    
+    if not all([service_id, date_str, time_slot]):
+        raise HTTPException(status_code=400, detail="Missing required booking data")
     
     service = db.query(Service).filter(Service.id == service_id).first()
     if not service:
@@ -2494,20 +2326,17 @@ async def create_booking(
     # Check if service is digital
     is_digital_service = service.is_digital
     
-    # For live sessions, date and time are required
+    # Check if the selected time is in the past (for non-digital services)
     if not is_digital_service:
-        if not date_str or not time_slot:
-            raise HTTPException(status_code=400, detail="Date and time required for live sessions")
-        
-        # Check if the selected time is in the past
         try:
             selected_datetime = datetime.strptime(f"{date_str} {time_slot}", "%Y-%m-%d %H:%M")
             if selected_datetime < datetime.now():
                 raise HTTPException(status_code=400, detail="Cannot book sessions in the past")
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid date or time format")
-        
-        # Calculate end time based on service duration
+    
+    # Calculate end time based on service duration (for non-digital)
+    if not is_digital_service:
         start_time = datetime.strptime(time_slot, "%H:%M")
         end_time = start_time + timedelta(minutes=service.duration_minutes)
         end_time_str = end_time.strftime("%H:%M")
@@ -2523,7 +2352,7 @@ async def create_booking(
                 learner_id=current_user.id,
                 mentor_id=service.mentor_id,
                 service_id=service_id,
-                booking_date=datetime.now().date(),
+                booking_date=datetime.now().date() if not is_digital_service else None,
                 selected_time=datetime.now().strftime("%H:%M"),
                 razorpay_order_id=None,
                 amount_paid=0,
@@ -2541,7 +2370,7 @@ async def create_booking(
             return JSONResponse({
                 "success": True,
                 "booking_id": booking.id,
-                "redirect_url": f"/digital-product/{service_id}",
+                "redirect_url": f"/digital-product/{service_id}",  # FIXED: Use service_id, not booking.id
                 "is_digital": True,
                 "is_free": True,
                 "message": "Free digital product added to your account!"
@@ -2608,6 +2437,7 @@ async def create_booking(
     else:
         # Paid services
         if is_digital_service:
+
             # Paid digital product - create Razorpay order
             order_amount = service.price * 100  # Convert to paise
             order_currency = "INR"
@@ -2633,8 +2463,8 @@ async def create_booking(
                     learner_id=current_user.id,
                     mentor_id=service.mentor_id,
                     service_id=service_id,
-                    booking_date=datetime.now().date(),
-                    selected_time=datetime.now().strftime("%H:%M"),
+                    booking_date=None,
+                    selected_time=None,
                     razorpay_order_id=razorpay_order["id"],
                     amount_paid=service.price,
                     status="pending",  # Will be completed after payment
@@ -2689,8 +2519,8 @@ async def create_booking(
                     learner_id=current_user.id,
                     mentor_id=service.mentor_id,
                     service_id=service_id,
-                    booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
-                    selected_time=time_slot,
+                    booking_date=None,
+                    selected_time=None,
                     razorpay_order_id=razorpay_order["id"],
                     amount_paid=service.price,
                     status="pending",
@@ -2958,345 +2788,34 @@ async def verify_payment(
 async def admin_dashboard(
     request: Request,
     current_user = Depends(get_current_user),
-    db: Session = Depends(get_db),
-    q: Optional[str] = None,  # Search query
-    role: Optional[str] = None,  # Role filter
-    verification_status: Optional[str] = None,  # Mentor verification status filter
-    page: int = 1,  # Pagination for users
-    mentor_page: int = 1,  # Pagination for mentors
-    limit: int = 10  # Items per page
+    db: Session = Depends(get_db)
 ):
     if not current_user or current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Access denied")
     
-    # ============ USERS DATA ============
-    # Build users query
-    users_query = db.query(User)
+    pending_mentors = db.query(Mentor).filter(
+        Mentor.verification_status == "pending"
+    ).all()
     
-    # Apply search filter if provided
-    if q and q.strip():
-        search_term = f"%{q.strip()}%"
-        users_query = users_query.filter(
-            or_(
-                User.email.ilike(search_term),
-                User.username.ilike(search_term),
-                User.full_name.ilike(search_term)
-            )
-        )
-    
-    # Apply role filter if provided
-    if role and role in ["learner", "mentor", "admin"]:
-        users_query = users_query.filter(User.role == role)
-    
-    # Get total users count for pagination
-    total_users_count = users_query.count()
-    total_users_pages = (total_users_count + limit - 1) // limit if limit > 0 else 1
-    
-    # Apply pagination
-    users_offset = (page - 1) * limit
-    all_users = users_query.order_by(User.created_at.desc()).offset(users_offset).limit(limit).all()
-    
-    # Get additional stats for each user
-    for user in all_users:
-        # Count bookings for learners
-        if user.role == "learner":
-            user.total_bookings = db.query(Booking).filter(
-                Booking.learner_id == user.id
-            ).count()
-            user.total_spent = db.query(Booking).filter(
-                Booking.learner_id == user.id,
-                Booking.payment_status == "paid"
-            ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-        
-        # Get mentor profile and stats for mentors
-        elif user.role == "mentor":
-            mentor = db.query(Mentor).filter(Mentor.user_id == user.id).first()
-            user.mentor_profile = mentor
-            if mentor:
-                user.total_sessions = mentor.total_sessions or 0
-                user.earnings = db.query(Booking).filter(
-                    Booking.mentor_id == mentor.id,
-                    Booking.payment_status == "paid"
-                ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-                user.pending_earnings = db.query(Booking).filter(
-                    Booking.mentor_id == mentor.id,
-                    Booking.payment_status == "pending"
-                ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-            else:
-                user.total_sessions = 0
-                user.earnings = 0
-                user.pending_earnings = 0
-        
-        # For admins
-        elif user.role == "admin":
-            user.total_actions = 0  # You can track admin actions if needed
-    
-    # ============ MENTORS DATA ============
-    # Build mentors query
-    mentors_query = db.query(Mentor).join(User).filter(
-        User.is_active == True
-    )
-    
-    # Apply verification status filter
-    if verification_status and verification_status in ["pending", "approved", "rejected"]:
-        mentors_query = mentors_query.filter(Mentor.verification_status == verification_status)
-    
-    # Apply search filter if provided
-    if q and q.strip():
-        search_term = f"%{q.strip()}%"
-        mentors_query = mentors_query.filter(
-            or_(
-                User.full_name.ilike(search_term),
-                User.username.ilike(search_term),
-                User.email.ilike(search_term),
-                Mentor.industry.ilike(search_term),
-                Mentor.job_title.ilike(search_term),
-                Mentor.company.ilike(search_term)
-            )
-        )
-    
-    # Get total mentors count for pagination
-    total_mentors_count = mentors_query.count()
-    total_mentors_pages = (total_mentors_count + limit - 1) // limit if limit > 0 else 1
-    
-    # Apply pagination
-    mentors_offset = (mentor_page - 1) * limit
-    all_mentors = mentors_query.order_by(Mentor.created_at.desc()).offset(mentors_offset).limit(limit).all()
-    
-    # Get additional data for each mentor
-    for mentor in all_mentors:
-        # Get user data
-        mentor.user_data = db.query(User).filter(User.id == mentor.user_id).first()
-        
-        # Calculate earnings
-        mentor.total_earnings = db.query(Booking).filter(
-            Booking.mentor_id == mentor.id,
-            Booking.payment_status == "paid"
-        ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-        
-        # Get service count
-        mentor.service_count = db.query(Service).filter(
-            Service.mentor_id == mentor.id,
-            Service.is_active == True
-        ).count()
-        
-        # Get active bookings count
-        mentor.active_bookings = db.query(Booking).filter(
-            Booking.mentor_id == mentor.id,
-            Booking.status.in_(["confirmed", "pending"])
-        ).count()
-        
-        # Get completed sessions
-        mentor.completed_sessions = db.query(Booking).filter(
-            Booking.mentor_id == mentor.id,
-            Booking.status == "completed"
-        ).count()
-    
-    # ============ STATISTICS ============
-    # Basic stats
     total_users = db.query(User).count()
     total_mentors = db.query(Mentor).count()
     total_bookings = db.query(Booking).count()
-    total_revenue = db.query(Booking).filter(
+    revenue = db.query(Booking).filter(
         Booking.payment_status == "paid"
     ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
     
-    # Role-wise counts
-    learner_count = db.query(User).filter(User.role == "learner").count()
-    mentor_count = db.query(User).filter(User.role == "mentor").count()
-    admin_count = db.query(User).filter(User.role == "admin").count()
-    
-    # Verification status counts
-    pending_mentors_count = db.query(Mentor).filter(Mentor.verification_status == "pending").count()
-    approved_mentors_count = db.query(Mentor).filter(Mentor.verification_status == "approved").count()
-    rejected_mentors_count = db.query(Mentor).filter(Mentor.verification_status == "rejected").count()
-    
-    # Booking status counts
-    pending_bookings = db.query(Booking).filter(Booking.status == "pending").count()
-    confirmed_bookings = db.query(Booking).filter(Booking.status == "confirmed").count()
-    completed_bookings = db.query(Booking).filter(Booking.status == "completed").count()
-    cancelled_bookings = db.query(Booking).filter(Booking.status == "cancelled").count()
-    
-    # Payment status counts
-    paid_bookings = db.query(Booking).filter(Booking.payment_status == "paid").count()
-    free_bookings = db.query(Booking).filter(Booking.payment_status == "free").count()
-    pending_payments = db.query(Booking).filter(Booking.payment_status == "pending").count()
-    
-    # Digital vs Live stats
-    digital_bookings = db.query(Booking).join(Service).filter(
-        Service.is_digital == True
-    ).count()
-    
-    live_bookings = total_bookings - digital_bookings
-    
-    # Today's stats
-    today = datetime.now().date()
-    today_bookings = db.query(Booking).filter(
-        func.date(Booking.created_at) == today
-    ).count()
-    
-    today_revenue = db.query(Booking).filter(
-        func.date(Booking.created_at) == today,
-        Booking.payment_status == "paid"
-    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-    
-    # Monthly revenue (last 30 days)
-    thirty_days_ago = today - timedelta(days=30)
-    monthly_revenue = db.query(Booking).filter(
-        Booking.created_at >= thirty_days_ago,
-        Booking.payment_status == "paid"
-    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-    
-    # Weekly stats (last 7 days)
-    weekly_bookings = db.query(Booking).filter(
-        Booking.created_at >= today - timedelta(days=7)
-    ).count()
-    
-    weekly_revenue = db.query(Booking).filter(
-        Booking.created_at >= today - timedelta(days=7),
-        Booking.payment_status == "paid"
-    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-    
-    # New users this month
-    new_users_month = db.query(User).filter(
-        User.created_at >= thirty_days_ago
-    ).count()
-    
-    # New mentors this month
-    new_mentors_month = db.query(Mentor).filter(
-        Mentor.created_at >= thirty_days_ago
-    ).count()
-    
-    # Top earning mentors (top 5)
-    top_earning_mentors = db.query(
-        Mentor.id,
-        User.full_name,
-        func.sum(Booking.amount_paid).label('total_earnings')
-    ).join(User, Mentor.user_id == User.id
-    ).join(Booking, Booking.mentor_id == Mentor.id
-    ).filter(
-        Booking.payment_status == "paid"
-    ).group_by(Mentor.id, User.full_name
-    ).order_by(func.sum(Booking.amount_paid).desc()
-    ).limit(5).all()
-    
-    # Most popular services (top 5)
-    popular_services = db.query(
-        Service.name,
-        Service.category,
-        func.count(Booking.id).label('booking_count'),
-        func.sum(Booking.amount_paid).label('revenue')
-    ).join(Booking, Booking.service_id == Service.id
-    ).group_by(Service.id, Service.name, Service.category
-    ).order_by(func.count(Booking.id).desc()
-    ).limit(5).all()
-    
-    # Recent bookings (last 10)
-    recent_bookings = db.query(Booking).order_by(
-        Booking.created_at.desc()
-    ).limit(10).all()
-    
-    # Recent digital product sales
-    recent_digital_sales = db.query(Booking).filter(
-        Booking.service.has(is_digital=True),
-        Booking.payment_status == "paid"
-    ).order_by(Booking.created_at.desc()).limit(10).all()
-    
-    # Pending mentor verifications
-    pending_mentors = db.query(Mentor).filter(
-        Mentor.verification_status == "pending"
-    ).join(User).all()
-    
-    # Recent user registrations (last 10)
-    recent_users = db.query(User).order_by(
-        User.created_at.desc()
-    ).limit(10).all()
-    
-    # ============ PREPARE RESPONSE ============
     return templates.TemplateResponse("admin_dashboard.html", {
         "request": request,
         "current_user": current_user,
-        
-        # Users data
-        "all_users": all_users,
-        "total_users_count": total_users_count,
-        "total_users_pages": total_users_pages,
-        "users_page": page,
-        "user_search_query": q,
-        "user_role_filter": role,
-        
-        # Mentors data
-        "all_mentors": all_mentors,
-        "total_mentors_count": total_mentors_count,
-        "total_mentors_pages": total_mentors_pages,
-        "mentors_page": mentor_page,
-        "mentor_verification_filter": verification_status,
-        
-        # Statistics
+        "pending_mentors": pending_mentors,
         "stats": {
-            # Basic stats
             "total_users": total_users,
             "total_mentors": total_mentors,
             "total_bookings": total_bookings,
-            "total_revenue": total_revenue,
-            
-            # Role stats
-            "learner_count": learner_count,
-            "mentor_count": mentor_count,
-            "admin_count": admin_count,
-            
-            # Verification stats
-            "pending_mentors": pending_mentors_count,
-            "approved_mentors": approved_mentors_count,
-            "rejected_mentors": rejected_mentors_count,
-            
-            # Booking status stats
-            "pending_bookings": pending_bookings,
-            "confirmed_bookings": confirmed_bookings,
-            "completed_bookings": completed_bookings,
-            "cancelled_bookings": cancelled_bookings,
-            
-            # Payment stats
-            "paid_bookings": paid_bookings,
-            "free_bookings": free_bookings,
-            "pending_payments": pending_payments,
-            
-            # Service type stats
-            "digital_bookings": digital_bookings,
-            "live_bookings": live_bookings,
-            
-            # Time-based stats
-            "today_bookings": today_bookings,
-            "today_revenue": today_revenue,
-            "weekly_bookings": weekly_bookings,
-            "weekly_revenue": weekly_revenue,
-            "monthly_revenue": monthly_revenue,
-            "new_users_month": new_users_month,
-            "new_mentors_month": new_mentors_month,
-        },
-        
-        # Additional data
-        "top_earning_mentors": top_earning_mentors,
-        "popular_services": popular_services,
-        "recent_bookings": recent_bookings,
-        "recent_digital_sales": recent_digital_sales,
-        "pending_mentors": pending_mentors,
-        "recent_users": recent_users,
-        
-        # Counts for UI
-        "user_counts": {
-            "all": total_users,
-            "learners": learner_count,
-            "mentors": mentor_count,
-            "admins": admin_count
-        },
-        "mentor_counts": {
-            "all": total_mentors,
-            "pending": pending_mentors_count,
-            "approved": approved_mentors_count,
-            "rejected": rejected_mentors_count
+            "revenue": revenue
         }
     })
+
 @app.post("/admin/mentor/{mentor_id}/verify")
 async def verify_mentor(
     mentor_id: int,
