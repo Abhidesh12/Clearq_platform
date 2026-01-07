@@ -1012,40 +1012,39 @@
     <div class="profile-sidebar animate-fadeIn">
         <!-- Profile Header -->
         <div class="profile-header">
-            <!-- Social Links in Top Right Corner - ALWAYS VISIBLE -->
-            <div class="profile-header-top-bar">
-                <!-- LinkedIn Icon - Always Visible -->
-                {% if mentor.linkedin_url %}
-                <a href="{{ mentor.linkedin_url }}" 
-                   target="_blank" 
-                   rel="noopener noreferrer" 
-                   class="header-social-link linkedin"
-                   title="LinkedIn Profile">
-                    <i class="fab fa-linkedin-in"></i>
-                </a>
-                {% else %}
-                <span class="header-social-link linkedin disabled" title="LinkedIn not available">
-                    <i class="fab fa-linkedin-in"></i>
-                </span>
-                {% endif %}
-                
-                <!-- Instagram Icon - Always Visible -->
-                {% if mentor.github_url %}
-                <a href="https://instagram.com/{{ mentor.github_url }}"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="header-social-link instagram"
-                   title="Instagram Profile">
-                    <i class="fab fa-instagram"></i>
-                </a>
-                {% else %}
-                <span class="header-social-link instagram disabled" title="Instagram not available">
-                    <i class="fab fa-instagram"></i>
-                </span>
-                {% endif %}
-            </div>
-            
-            <!-- User Avatar (Always shows initials) -->
+           <!-- Social Links in Top Right Corner - ALWAYS VISIBLE -->
+<div class="profile-header-top-bar">
+    <!-- LinkedIn Icon - Always Visible -->
+    {% if mentor.linkedin_url %}
+    <a href="{{ mentor.linkedin_url }}" 
+       target="_blank" 
+       rel="noopener noreferrer" 
+       class="header-social-link linkedin"
+       title="LinkedIn Profile">
+        <i class="fab fa-linkedin-in"></i>
+    </a>
+    {% else %}
+    <span class="header-social-link linkedin disabled" title="LinkedIn not available">
+        <i class="fab fa-linkedin-in"></i>
+    </span>
+    {% endif %}
+    
+    <!-- Instagram Icon - Always Visible -->
+    {% if mentor.github_url %}
+    {% set instagram_username = mentor.github_url|replace('@', '')|trim %}
+    <a href="https://instagram.com/{{ instagram_username }}"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="header-social-link instagram"
+       title="Instagram Profile (@{{ instagram_username }})">
+        <i class="fab fa-instagram"></i>
+    </a>
+    {% else %}
+    <span class="header-social-link instagram disabled" title="Instagram not available">
+        <i class="fab fa-instagram"></i>
+    </span>
+    {% endif %}
+</div>
            <!-- User Avatar (Always shows initials) -->
 <div class="profile-avatar">
     <div class="avatar-initial">
