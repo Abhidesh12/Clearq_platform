@@ -3471,13 +3471,12 @@ async def mentor_profile(
 @app.get("/mentor/username/{username}")
 async def redirect_old_mentor_url(username: str):
     """Redirect old /mentor/username/{username} URLs to new /{username} format"""
-    return RedirectResponse(url=f"/{username}", status_code=301)
+    return RedirectResponse(url=f"https://www.clearq.in/{username}", status_code=301)
 
 @app.get("/mentor/username/{username}/service/{service_id}")
 async def redirect_old_service_url(username: str, service_id: int):
     """Redirect old service URLs to new format"""
-    return RedirectResponse(url=f"/{username}/service/{service_id}", status_code=301)
-
+    return RedirectResponse(url=f"https://www.clearq.in/{username}/service/{service_id}", status_code=301)
 # Then your API endpoint
 
     
