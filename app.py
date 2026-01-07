@@ -867,7 +867,7 @@ async def login_page(request: Request, current_user = Depends(get_current_user))
 
 
 @app.get("/mentor/withdraw", response_class=HTMLResponse)
-async mentor_withdrawal_page(
+async def mentor_withdrawal_page(
     request: Request,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
