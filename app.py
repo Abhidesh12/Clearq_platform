@@ -286,21 +286,6 @@ class Payment(Base):
 # Create tables
 Base.metadata.create_all(bind=engine)
 
-class MentorPayout(Base):
-    __tablename__ = "mentor_payouts"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    mentor_id = Column(Integer, ForeignKey("mentors.id"))
-    amount = Column(DECIMAL(10, 2), nullable=False)  # in INR
-    status = Column(String, default="pending")  # pending, processing, completed, failed
-    request_date = Column(DateTime, default=datetime.utcnow)
-    processed_date = Column(DateTime, nullable=True)
-    payment_method = Column(String)  # bank_transfer, upi, etc.
-    account_details = Column(Text, nullable=True)  # Store encrypted account details
-    notes = Column(Text, nullable=True)
-    
-    # Relationships
-    mentor = relationship("Mentor")
 
 class MentorBalance(Base):
     __tablename__ = "mentor_balances"
@@ -335,11 +320,7 @@ class MentorWithdrawal(Base):
     admin_user = relationship("User", foreign_keys=[processed_by])
 
 # Add Pydantic schemas after existing schemas
-class WithdrawalRequest(BaseModel):
-    amount: Decimal
-    payment_method: str
-    account_details: str
-    notes: Optional[str] = None
+
 
 class WithdrawalUpdate(BaseModel):
     status: str
@@ -425,9 +406,7 @@ class WithdrawalRequest(BaseModel):
     payment_method: str
     account_details: Optional[str] = None
 
-class PayoutUpdate(BaseModel):
-    status: str
-    notes: Optional[str] = None
+
 # ============ DEPENDENCIES ============
 # Add this function after your database models
 
