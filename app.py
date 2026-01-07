@@ -283,17 +283,20 @@ class Payment(Base):
     payment_method = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+# Create tables
+Base.metadata.create_all(bind=engine)
+
 class MentorPayout(Base):
     __tablename__ = "mentor_payouts"
     
     id = Column(Integer, primary_key=True, index=True)
     mentor_id = Column(Integer, ForeignKey("mentors.id"))
-    amount = Column(DECIMAL(10, 2), nullable=False)
-    status = Column(String, default="pending")
+    amount = Column(DECIMAL(10, 2), nullable=False)  # in INR
+    status = Column(String, default="pending")  # pending, processing, completed, failed
     request_date = Column(DateTime, default=datetime.utcnow)
     processed_date = Column(DateTime, nullable=True)
-    payment_method = Column(String)
-    account_details = Column(Text, nullable=True)
+    payment_method = Column(String)  # bank_transfer, upi, etc.
+    account_details = Column(Text, nullable=True)  # Store encrypted account details
     notes = Column(Text, nullable=True)
     
     # Relationships
@@ -313,63 +316,6 @@ class MentorBalance(Base):
     # Relationships
     mentor = relationship("Mentor")
 
-class MentorWithdrawal(Base):
-    __tablename__ = "mentor_withdrawals"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    mentor_id = Column(Integer, ForeignKey("mentors.id"))
-    amount = Column(DECIMAL(10, 2), nullable=False)  # in INR
-    status = Column(String, default="pending")  # pending, processing, approved, completed, rejected
-    payment_method = Column(String)  # bank_transfer, upi, etc.
-    account_details = Column(Text)  # Bank details or UPI ID
-    requested_at = Column(DateTime, default=datetime.utcnow)
-    processed_at = Column(DateTime, nullable=True)
-    processed_by = Column(Integer, ForeignKey("users.id"), nullable=True)  # Admin who processed
-    notes = Column(Text, nullable=True)
-    
-    # Relationships
-    mentor = relationship("Mentor")
-    admin_user = relationship("User", foreign_keys=[processed_by])
-
-# Add Pydantic schemas after existing schemas
-
-
-class WithdrawalUpdate(BaseModel):
-    status: str
-    notes: Optional[str] = None
-
-# Add this function to calculate mentor's withdrawable balance
-def get_mentor_withdrawable_balance(mentor_id: int, db: Session) -> Decimal:
-    """Calculate mentor's available balance for withdrawal"""
-    # Get total paid earnings from bookings
-    total_paid = db.query(func.sum(Booking.amount_paid)).filter(
-        Booking.mentor_id == mentor_id,
-        Booking.payment_status == "paid"
-    ).scalar() or 0
-    
-    # Get total withdrawals (completed + pending)
-    total_withdrawn_completed = db.query(func.sum(MentorWithdrawal.amount)).filter(
-        MentorWithdrawal.mentor_id == mentor_id,
-        MentorWithdrawal.status.in_(["completed", "approved", "processing"])
-    ).scalar() or 0
-    
-    # Get pending withdrawals
-    pending_withdrawals = db.query(func.sum(MentorWithdrawal.amount)).filter(
-        MentorWithdrawal.mentor_id == mentor_id,
-        MentorWithdrawal.status == "pending"
-    ).scalar() or 0
-    
-    # Calculate available balance
-    total_paid_decimal = Decimal(str(total_paid))
-    total_withdrawn_decimal = Decimal(str(total_withdrawn_completed))
-    pending_withdrawals_decimal = Decimal(str(pending_withdrawals))
-    
-    # Available = total paid - (completed withdrawals + pending withdrawals)
-    available = total_paid_decimal - (total_withdrawn_decimal + pending_withdrawals_decimal)
-    
-    # Ensure non-negative
-    return max(available, Decimal('0'))
-    
 # ============ PYDANTIC SCHEMAS ============
 
 class UserCreate(BaseModel):
@@ -418,10 +364,9 @@ class WithdrawalRequest(BaseModel):
     payment_method: str
     account_details: Optional[str] = None
 
-
-Base.metadata.create_all(bind=engine)
-
-
+class PayoutUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
 # ============ DEPENDENCIES ============
 # Add this function after your database models
 
@@ -531,7 +476,21 @@ def cleanup_past_availabilities(db: Session):
     except Exception as e:
         db.rollback()
         print(f"Error cleaning up past availabilities: {e}")
-
+        
+@app.on_event("startup")
+async def startup_event():
+    db = SessionLocal()
+    try:
+        create_admin_user(db)
+    finally:
+        db.close()
+        
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
         
 def load_availabilities_with_retry(mentor_id, db, retries=3):
     for i in range(retries):
@@ -544,35 +503,6 @@ def load_availabilities_with_retry(mentor_id, db, retries=3):
             if i == retries - 1:
                 raise e
             time.sleep(1)
-            
-@app.on_event("startup")
-async def startup_event():
-    """Application startup - create tables and admin user"""
-    print("🚀 Starting application...")
-    
-    # Create tables if they don't exist
-    try:
-        Base.metadata.create_all(bind=engine)
-        print("✅ Database tables created/verified")
-    except Exception as e:
-        print(f"⚠️ Error creating tables: {e}")
-    
-    # Create admin user
-    db = SessionLocal()
-    try:
-        create_admin_user(db)
-        print("✅ Admin user checked/created")
-    finally:
-        db.close()
-    
-    print("✅ Startup completed")
-    
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
             
 def get_current_user(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
@@ -656,17 +586,8 @@ def save_profile_image(file: UploadFile, user_id: int) -> str:
     print(f"Returning relative path: {relative_path}")
     return relative_path
 
-
-
-
-        
-
-    
-
-
 # ============ ROUTES ============
 
-    
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, current_user = Depends(get_current_user)):
     return templates.TemplateResponse("index.html", {
@@ -882,239 +803,6 @@ async def login_page(request: Request, current_user = Depends(get_current_user))
         "request": request,
         "google_auth_url": google_auth_url
     })
-
-
-@app.get("/mentor/withdraw", response_class=HTMLResponse)
-async def mentor_withdrawal_page(
-    request: Request,
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Mentor withdrawal request page"""
-    if not current_user or current_user.role != "mentor":
-        return RedirectResponse(url="/login", status_code=303)
-    
-    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
-    if not mentor:
-        raise HTTPException(status_code=404, detail="Mentor profile not found")
-    
-    # Calculate available balance
-    available_balance = get_mentor_withdrawable_balance(mentor.id, db)
-    
-    # Get withdrawal history
-    withdrawals = db.query(MentorWithdrawal).filter(
-        MentorWithdrawal.mentor_id == mentor.id
-    ).order_by(MentorWithdrawal.requested_at.desc()).limit(10).all()
-    
-    # Get recent earnings (last 30 days)
-    thirty_days_ago = datetime.now() - timedelta(days=30)
-    recent_earnings = db.query(Booking).filter(
-        Booking.mentor_id == mentor.id,
-        Booking.payment_status == "paid",
-        Booking.created_at >= thirty_days_ago
-    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-    
-    return templates.TemplateResponse("mentor_withdraw.html", {
-        "request": request,
-        "current_user": current_user,
-        "mentor": mentor,
-        "available_balance": available_balance,
-        "recent_earnings": recent_earnings,
-        "withdrawals": withdrawals,
-        "min_withdrawal": Decimal('500.00'),  # Minimum withdrawal amount
-        "max_withdrawal": available_balance,
-        "now": datetime.now()
-    })
-
-@app.post("/api/admin/withdrawals/{withdrawal_id}/update")
-async def update_withdrawal_status(
-    withdrawal_id: int,
-    status: str = Form(...),
-    notes: Optional[str] = Form(None),
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Update withdrawal status (admin only)"""
-    if not current_user or current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    withdrawal = db.query(MentorWithdrawal).filter(MentorWithdrawal.id == withdrawal_id).first()
-    if not withdrawal:
-        raise HTTPException(status_code=404, detail="Withdrawal request not found")
-    
-    try:
-        old_status = withdrawal.status
-        withdrawal.status = status
-        withdrawal.notes = notes if notes else withdrawal.notes
-        
-        if status in ["approved", "processing", "completed"]:
-            withdrawal.processed_at = datetime.utcnow()
-            withdrawal.processed_by = current_user.id
-        
-        if status == "rejected":
-            withdrawal.processed_at = datetime.utcnow()
-            withdrawal.processed_by = current_user.id
-        
-        db.commit()
-        
-        # Optional: Send notification to mentor
-        # You can implement notification system here
-        
-        return JSONResponse({
-            "success": True,
-            "message": f"Withdrawal status updated to {status}"
-        })
-        
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error updating withdrawal: {str(e)}")
-
-@app.post("/api/mentor/withdraw/request")
-async def request_withdrawal(
-    request: Request,
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Handle withdrawal request from mentor"""
-    if not current_user or current_user.role != "mentor":
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    try:
-        data = await request.json()
-        amount = Decimal(str(data.get("amount")))
-        payment_method = data.get("payment_method")
-        account_details = data.get("account_details")
-        notes = data.get("notes", "")
-        
-        # Validate amount
-        if amount <= 0:
-            return JSONResponse({
-                "success": False,
-                "message": "Invalid withdrawal amount"
-            }, status_code=400)
-        
-        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
-        if not mentor:
-            return JSONResponse({
-                "success": False,
-                "message": "Mentor profile not found"
-            }, status_code=404)
-        
-        # Calculate available balance
-        available_balance = get_mentor_withdrawable_balance(mentor.id, db)
-        
-        # Check minimum withdrawal amount
-        if amount < Decimal('500.00'):
-            return JSONResponse({
-                "success": False,
-                "message": "Minimum withdrawal amount is ₹500"
-            }, status_code=400)
-        
-        # Check if sufficient balance
-        if amount > available_balance:
-            return JSONResponse({
-                "success": False,
-                "message": f"Insufficient balance. Available: ₹{available_balance}"
-            }, status_code=400)
-        
-        # Create withdrawal request
-        withdrawal = MentorWithdrawal(
-            mentor_id=mentor.id,
-            amount=amount,
-            payment_method=payment_method,
-            account_details=account_details,
-            notes=notes,
-            status="pending",
-            requested_at=datetime.utcnow()
-        )
-        
-        db.add(withdrawal)
-        db.commit()
-        db.refresh(withdrawal)
-        
-        # Optional: Send notification to admin
-        # You can implement notification system here
-        
-        return JSONResponse({
-            "success": True,
-            "message": "Withdrawal request submitted successfully!",
-            "withdrawal_id": withdrawal.id,
-            "redirect_url": "/dashboard"
-        })
-        
-    except Exception as e:
-        db.rollback()
-        return JSONResponse({
-            "success": False,
-            "message": f"Error processing withdrawal: {str(e)}"
-        }, status_code=500)
-
-@app.get("/admin/withdrawals", response_class=HTMLResponse)
-async def admin_withdrawals_page(
-    request: Request,
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db),
-    status: Optional[str] = "pending",
-    page: int = 1,
-    limit: int = 20
-):
-    """Admin withdrawal management page"""
-    if not current_user or current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    # Build query based on status filter
-    query = db.query(MentorWithdrawal).join(Mentor).join(User)
-    
-    if status and status != "all":
-        query = query.filter(MentorWithdrawal.status == status)
-    
-    # Get total count for pagination
-    total_withdrawals = query.count()
-    total_pages = (total_withdrawals + limit - 1) // limit if limit > 0 else 1
-    
-    # Apply pagination
-    offset = (page - 1) * limit
-    withdrawals = query.order_by(MentorWithdrawal.requested_at.desc()).offset(offset).limit(limit).all()
-    
-    # Calculate statistics
-    total_pending = db.query(func.sum(MentorWithdrawal.amount)).filter(
-        MentorWithdrawal.status == "pending"
-    ).scalar() or 0
-    
-    total_approved = db.query(func.sum(MentorWithdrawal.amount)).filter(
-        MentorWithdrawal.status == "approved"
-    ).scalar() or 0
-    
-    total_completed = db.query(func.sum(MentorWithdrawal.amount)).filter(
-        MentorWithdrawal.status == "completed"
-    ).scalar() or 0
-    
-    # Calculate total for current month
-    start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    total_this_month = db.query(func.sum(MentorWithdrawal.amount)).filter(
-        MentorWithdrawal.status == "completed",
-        MentorWithdrawal.processed_at >= start_of_month
-    ).scalar() or 0
-    
-    return templates.TemplateResponse("admin_withdrawals.html", {
-        "request": request,
-        "current_user": current_user,
-        "withdrawals": withdrawals,
-        "status": status,
-        "page": page,
-        "total_pages": total_pages,
-        "total_withdrawals": total_withdrawals,
-        "stats": {
-            "total_pending": total_pending,
-            "total_approved": total_approved,
-            "total_completed": total_completed,
-            "total_this_month": total_this_month,
-            "pending_count": db.query(MentorWithdrawal).filter(MentorWithdrawal.status == "pending").count(),
-            "approved_count": db.query(MentorWithdrawal).filter(MentorWithdrawal.status == "approved").count(),
-            "completed_count": db.query(MentorWithdrawal).filter(MentorWithdrawal.status == "completed").count(),
-        }
-    })
-    
 
 @app.post("/login")
 async def login_user(
@@ -1565,18 +1253,6 @@ async def dashboard(
             func.date(Booking.created_at) == today,
             Booking.payment_status == "paid"
         ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
-
-        withdrawal_stats = {
-        "pending_withdrawals": db.query(MentorWithdrawal).filter(
-            MentorWithdrawal.status == "pending"
-        ).count(),
-        "pending_withdrawal_amount": db.query(func.sum(MentorWithdrawal.amount)).filter(
-            MentorWithdrawal.status == "pending"
-        ).scalar() or 0,
-        "recent_withdrawals": db.query(MentorWithdrawal).order_by(
-            MentorWithdrawal.requested_at.desc()
-        ).limit(5).all()
-        }
         
         context.update({
             "pending_mentors": pending_mentors,
@@ -1592,8 +1268,7 @@ async def dashboard(
                 "session_revenue": session_revenue,
                 "pending_bookings": pending_bookings_count,
                 "today_bookings": today_bookings,
-                "today_revenue": today_revenue,
-                "withdrawal_stats": withdrawal_stats
+                "today_revenue": today_revenue
             }
         })
     
@@ -2709,7 +2384,59 @@ async def create_availability(
         )
 # ============ BOOKING & PAYMENT ROUTES ============
 
-
+def generate_meeting_link(booking_id: int, db: Session):
+    """Generate or retrieve meeting link for a confirmed booking"""
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # If meeting link already exists, return it
+    if booking.meeting_link and booking.meeting_id:
+        return booking.meeting_link, booking.meeting_id
+    
+    # Get user details for the meeting
+    mentor = db.query(User).filter(User.id == booking.mentor.user_id).first()
+    learner = db.query(User).filter(User.id == booking.learner_id).first()
+    
+    mentor_name = mentor.full_name or mentor.username
+    learner_name = learner.full_name or learner.username
+    
+    # Generate Jitsi meeting link
+    meeting_link, meeting_id = generate_jitsi_meeting_link(
+        booking_id=booking.id,
+        mentor_name=mentor_name,
+        learner_name=learner_name
+    )
+    
+    # Update booking with meeting details
+    booking.meeting_link = meeting_link
+    booking.meeting_id = meeting_id
+    booking.status = "confirmed"
+    
+    # Also mark the time slot/availability as booked
+    target_date = booking.booking_date
+    
+    # Find and mark the availability as booked
+    availability = db.query(Availability).filter(
+        Availability.mentor_id == booking.mentor_id,
+        Availability.date == target_date
+    ).first()
+    
+    if availability:
+        availability.is_booked = True
+    
+    # Also update all TimeSlot records for this booking
+    time_slots = db.query(TimeSlot).filter(TimeSlot.booking_id == booking.id).all()
+    for time_slot in time_slots:
+        time_slot.is_booked = True
+    
+    db.commit()
+    
+    # Send notification (optional)
+    send_meeting_notification(booking, meeting_link, db)
+    
+    return meeting_link, meeting_id
 
 def send_meeting_notification(booking: Booking, meeting_link: str, db: Session):
     """Send meeting details to both users"""
