@@ -283,9 +283,21 @@ class Payment(Base):
     payment_method = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
+class MentorPayout(Base):
+    __tablename__ = "mentor_payouts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    mentor_id = Column(Integer, ForeignKey("mentors.id"))
+    amount = Column(DECIMAL(10, 2), nullable=False)
+    status = Column(String, default="pending")
+    request_date = Column(DateTime, default=datetime.utcnow)
+    processed_date = Column(DateTime, nullable=True)
+    payment_method = Column(String)
+    account_details = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+    
+    # Relationships
+    mentor = relationship("Mentor")
 
 class MentorBalance(Base):
     __tablename__ = "mentor_balances"
@@ -407,6 +419,9 @@ class WithdrawalRequest(BaseModel):
     account_details: Optional[str] = None
 
 
+Base.metadata.create_all(bind=engine)
+
+
 # ============ DEPENDENCIES ============
 # Add this function after your database models
 
@@ -516,21 +531,7 @@ def cleanup_past_availabilities(db: Session):
     except Exception as e:
         db.rollback()
         print(f"Error cleaning up past availabilities: {e}")
-        
-@app.on_event("startup")
-async def startup_event():
-    db = SessionLocal()
-    try:
-        create_admin_user(db)
-    finally:
-        db.close()
-        
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
         
 def load_availabilities_with_retry(mentor_id, db, retries=3):
     for i in range(retries):
@@ -626,8 +627,42 @@ def save_profile_image(file: UploadFile, user_id: int) -> str:
     print(f"Returning relative path: {relative_path}")
     return relative_path
 
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Application startup - create tables and admin user"""
+    print("🚀 Starting application...")
+    
+    # Create tables if they don't exist
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created/verified")
+    except Exception as e:
+        print(f"⚠️ Error creating tables: {e}")
+    
+    # Create admin user
+    db = SessionLocal()
+    try:
+        create_admin_user(db)
+        print("✅ Admin user checked/created")
+    finally:
+        db.close()
+    
+    print("✅ Startup completed")
+        
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+    
+
+
 # ============ ROUTES ============
 
+    
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, current_user = Depends(get_current_user)):
     return templates.TemplateResponse("index.html", {
@@ -2670,59 +2705,7 @@ async def create_availability(
         )
 # ============ BOOKING & PAYMENT ROUTES ============
 
-def generate_meeting_link(booking_id: int, db: Session):
-    """Generate or retrieve meeting link for a confirmed booking"""
-    booking = db.query(Booking).filter(Booking.id == booking_id).first()
-    
-    if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
-    
-    # If meeting link already exists, return it
-    if booking.meeting_link and booking.meeting_id:
-        return booking.meeting_link, booking.meeting_id
-    
-    # Get user details for the meeting
-    mentor = db.query(User).filter(User.id == booking.mentor.user_id).first()
-    learner = db.query(User).filter(User.id == booking.learner_id).first()
-    
-    mentor_name = mentor.full_name or mentor.username
-    learner_name = learner.full_name or learner.username
-    
-    # Generate Jitsi meeting link
-    meeting_link, meeting_id = generate_jitsi_meeting_link(
-        booking_id=booking.id,
-        mentor_name=mentor_name,
-        learner_name=learner_name
-    )
-    
-    # Update booking with meeting details
-    booking.meeting_link = meeting_link
-    booking.meeting_id = meeting_id
-    booking.status = "confirmed"
-    
-    # Also mark the time slot/availability as booked
-    target_date = booking.booking_date
-    
-    # Find and mark the availability as booked
-    availability = db.query(Availability).filter(
-        Availability.mentor_id == booking.mentor_id,
-        Availability.date == target_date
-    ).first()
-    
-    if availability:
-        availability.is_booked = True
-    
-    # Also update all TimeSlot records for this booking
-    time_slots = db.query(TimeSlot).filter(TimeSlot.booking_id == booking.id).all()
-    for time_slot in time_slots:
-        time_slot.is_booked = True
-    
-    db.commit()
-    
-    # Send notification (optional)
-    send_meeting_notification(booking, meeting_link, db)
-    
-    return meeting_link, meeting_id
+
 
 def send_meeting_notification(booking: Booking, meeting_link: str, db: Session):
     """Send meeting details to both users"""
