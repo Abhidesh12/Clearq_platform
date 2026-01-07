@@ -1,6 +1,8 @@
 import os
 import re
 import uuid
+from sqlalchemy import DECIMAL
+from decimal import Decimal
 import requests
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
@@ -283,6 +285,36 @@ class Payment(Base):
 # Create tables
 Base.metadata.create_all(bind=engine)
 
+class MentorPayout(Base):
+    __tablename__ = "mentor_payouts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    mentor_id = Column(Integer, ForeignKey("mentors.id"))
+    amount = Column(DECIMAL(10, 2), nullable=False)  # in INR
+    status = Column(String, default="pending")  # pending, processing, completed, failed
+    request_date = Column(DateTime, default=datetime.utcnow)
+    processed_date = Column(DateTime, nullable=True)
+    payment_method = Column(String)  # bank_transfer, upi, etc.
+    account_details = Column(Text, nullable=True)  # Store encrypted account details
+    notes = Column(Text, nullable=True)
+    
+    # Relationships
+    mentor = relationship("Mentor")
+
+class MentorBalance(Base):
+    __tablename__ = "mentor_balances"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    mentor_id = Column(Integer, ForeignKey("mentors.id"), unique=True)
+    total_earnings = Column(DECIMAL(10, 2), default=0.00)  # Total earnings (paid + pending)
+    available_balance = Column(DECIMAL(10, 2), default=0.00)  # Available for withdrawal
+    pending_withdrawal = Column(DECIMAL(10, 2), default=0.00)  # Amount in pending withdrawals
+    total_withdrawn = Column(DECIMAL(10, 2), default=0.00)  # Total withdrawn amount
+    last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    mentor = relationship("Mentor")
+
 # ============ PYDANTIC SCHEMAS ============
 
 class UserCreate(BaseModel):
@@ -326,6 +358,14 @@ class BookingCreate(BaseModel):
     date: str
     time_slot: str
 
+class WithdrawalRequest(BaseModel):
+    amount: Decimal
+    payment_method: str
+    account_details: Optional[str] = None
+
+class PayoutUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
 # ============ DEPENDENCIES ============
 # Add this function after your database models
 
@@ -2296,6 +2336,274 @@ def send_meeting_notification(booking: Booking, meeting_link: str, db: Session):
     print(f"Date: {booking.booking_date}")
     print(f"Time: {booking.selected_time}")
     print(f"Participants: Learner {booking.learner_id}, Mentor {booking.mentor_id}")
+
+# ============ MENTOR PAYOUT ROUTES ============
+
+@app.get("/mentor/payout", response_class=HTMLResponse)
+async def mentor_payout_page(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Mentor payout dashboard"""
+    if not current_user or current_user.role != "mentor":
+        return RedirectResponse(url="/login", status_code=303)
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    # Get or create mentor balance
+    balance = db.query(MentorBalance).filter(MentorBalance.mentor_id == mentor.id).first()
+    if not balance:
+        balance = MentorBalance(
+            mentor_id=mentor.id,
+            total_earnings=0,
+            available_balance=0,
+            pending_withdrawal=0,
+            total_withdrawn=0
+        )
+        db.add(balance)
+        db.commit()
+        db.refresh(balance)
+    
+    # Calculate actual earnings from paid bookings
+    earnings_query = db.query(Booking).filter(
+        Booking.mentor_id == mentor.id,
+        Booking.payment_status == "paid"
+    ).with_entities(func.sum(Booking.amount_paid))
+    
+    total_earnings = earnings_query.scalar() or 0
+    
+    # Update balance with actual earnings
+    if Decimal(str(total_earnings)) != balance.total_earnings:
+        balance.total_earnings = Decimal(str(total_earnings))
+        
+        # Calculate available balance (total earnings - pending withdrawals - already withdrawn)
+        total_withdrawn_query = db.query(func.sum(MentorPayout.amount)).filter(
+            MentorPayout.mentor_id == mentor.id,
+            MentorPayout.status == "completed"
+        ).scalar() or 0
+        
+        pending_withdrawal_query = db.query(func.sum(MentorPayout.amount)).filter(
+            MentorPayout.mentor_id == mentor.id,
+            MentorPayout.status.in_(["pending", "processing"])
+        ).scalar() or 0
+        
+        balance.available_balance = Decimal(str(total_earnings)) - Decimal(str(total_withdrawn_query)) - Decimal(str(pending_withdrawal_query))
+        balance.total_withdrawn = Decimal(str(total_withdrawn_query))
+        balance.pending_withdrawal = Decimal(str(pending_withdrawal_query))
+        db.commit()
+    
+    # Get withdrawal history
+    withdrawal_history = db.query(MentorPayout).filter(
+        MentorPayout.mentor_id == mentor.id
+    ).order_by(MentorPayout.request_date.desc()).limit(20).all()
+    
+    # Get recent earnings (last 30 days)
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    recent_earnings = db.query(Booking).filter(
+        Booking.mentor_id == mentor.id,
+        Booking.payment_status == "paid",
+        Booking.created_at >= thirty_days_ago
+    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+    
+    # Get upcoming payouts (bookings that will be eligible for withdrawal)
+    # Assuming 7-day clearing period
+    seven_days_ago = datetime.now() - timedelta(days=7)
+    upcoming_payouts = db.query(Booking).filter(
+        Booking.mentor_id == mentor.id,
+        Booking.payment_status == "paid",
+        Booking.created_at >= seven_days_ago
+    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+    
+    return templates.TemplateResponse("mentor_payout.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor": mentor,
+        "balance": balance,
+        "withdrawal_history": withdrawal_history,
+        "recent_earnings": recent_earnings,
+        "upcoming_payouts": upcoming_payouts,
+        "min_withdrawal_amount": 500,  # Minimum withdrawal amount in INR
+        "now": datetime.now()
+    })
+
+@app.post("/api/mentor/request-withdrawal")
+async def request_withdrawal(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Handle withdrawal request"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    data = await request.json()
+    amount = Decimal(str(data.get("amount")))
+    payment_method = data.get("payment_method")
+    account_details = data.get("account_details")
+    
+    # Validate amount
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Invalid withdrawal amount")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    # Get mentor balance
+    balance = db.query(MentorBalance).filter(MentorBalance.mentor_id == mentor.id).first()
+    if not balance:
+        raise HTTPException(status_code=400, detail="Balance not found")
+    
+    # Check minimum withdrawal amount
+    if amount < 500:  # Minimum 500 INR
+        raise HTTPException(status_code=400, detail="Minimum withdrawal amount is ₹500")
+    
+    # Check if sufficient balance
+    if amount > balance.available_balance:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+    
+    try:
+        # Create withdrawal request
+        withdrawal = MentorPayout(
+            mentor_id=mentor.id,
+            amount=amount,
+            status="pending",
+            payment_method=payment_method,
+            account_details=account_details,
+            request_date=datetime.utcnow()
+        )
+        
+        db.add(withdrawal)
+        
+        # Update mentor balance
+        balance.available_balance -= amount
+        balance.pending_withdrawal += amount
+        balance.last_updated = datetime.utcnow()
+        
+        db.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "message": "Withdrawal request submitted successfully!",
+            "withdrawal_id": withdrawal.id
+        })
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error processing withdrawal: {str(e)}")
+
+# ============ ADMIN PAYOUT ROUTES ============
+
+@app.get("/admin/payouts", response_class=HTMLResponse)
+async def admin_payouts_page(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    status: Optional[str] = "pending",
+    page: int = 1,
+    limit: int = 20
+):
+    """Admin payout management page"""
+    if not current_user or current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Build query based on status filter
+    query = db.query(MentorPayout).join(Mentor).join(User)
+    
+    if status and status != "all":
+        query = query.filter(MentorPayout.status == status)
+    
+    # Get total count for pagination
+    total_payouts = query.count()
+    total_pages = (total_payouts + limit - 1) // limit if limit > 0 else 1
+    
+    # Apply pagination
+    offset = (page - 1) * limit
+    payouts = query.order_by(MentorPayout.request_date.desc()).offset(offset).limit(limit).all()
+    
+    # Calculate total pending amount
+    total_pending = db.query(func.sum(MentorPayout.amount)).filter(
+        MentorPayout.status == "pending"
+    ).scalar() or 0
+    
+    # Calculate total processed this month
+    start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    total_this_month = db.query(func.sum(MentorPayout.amount)).filter(
+        MentorPayout.status == "completed",
+        MentorPayout.processed_date >= start_of_month
+    ).scalar() or 0
+    
+    return templates.TemplateResponse("admin_payouts.html", {
+        "request": request,
+        "current_user": current_user,
+        "payouts": payouts,
+        "status": status,
+        "page": page,
+        "total_pages": total_pages,
+        "total_payouts": total_payouts,
+        "total_pending": total_pending,
+        "total_this_month": total_this_month,
+        "stats": {
+            "pending_count": db.query(MentorPayout).filter(MentorPayout.status == "pending").count(),
+            "processing_count": db.query(MentorPayout).filter(MentorPayout.status == "processing").count(),
+            "completed_count": db.query(MentorPayout).filter(MentorPayout.status == "completed").count(),
+            "failed_count": db.query(MentorPayout).filter(MentorPayout.status == "failed").count(),
+        }
+    })
+
+@app.post("/admin/payouts/{payout_id}/update")
+async def update_payout_status(
+    payout_id: int,
+    status: str = Form(...),
+    notes: Optional[str] = Form(None),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update payout status (admin only)"""
+    if not current_user or current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    payout = db.query(MentorPayout).filter(MentorPayout.id == payout_id).first()
+    if not payout:
+        raise HTTPException(status_code=404, detail="Payout not found")
+    
+    # Get mentor balance
+    balance = db.query(MentorBalance).filter(MentorBalance.mentor_id == payout.mentor_id).first()
+    if not balance:
+        raise HTTPException(status_code=404, detail="Mentor balance not found")
+    
+    try:
+        old_status = payout.status
+        payout.status = status
+        payout.notes = notes
+        
+        if status == "completed":
+            payout.processed_date = datetime.utcnow()
+            # Update mentor balance
+            balance.pending_withdrawal -= payout.amount
+            balance.total_withdrawn += payout.amount
+            
+        elif status == "failed" and old_status in ["pending", "processing"]:
+            # Refund the amount to available balance
+            balance.available_balance += payout.amount
+            balance.pending_withdrawal -= payout.amount
+            
+        elif status == "processing":
+            payout.processed_date = None
+        
+        db.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "message": f"Payout status updated to {status}"
+        })
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating payout: {str(e)}")
 
 @app.post("/api/create-booking")
 async def create_booking(
