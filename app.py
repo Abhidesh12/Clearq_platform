@@ -544,6 +544,13 @@ def load_availabilities_with_retry(mentor_id, db, retries=3):
             if i == retries - 1:
                 raise e
             time.sleep(1)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
             
 def get_current_user(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")
