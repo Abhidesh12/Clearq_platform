@@ -166,6 +166,13 @@
         transform: translateY(-1px);
     }
 
+    /* Fix for anchor tags in header */
+    .book-now-btn[href] {
+        display: block;
+        text-decoration: none;
+        color: var(--primary);
+    }
+
     /* Main Content */
     .service-main {
         padding: 1.25rem;
@@ -539,7 +546,7 @@
         color: var(--primary);
     }
 
-    /* Book/Purchase Button Styles */
+    /* Book/Purchase Button Styles - FIXED */
     .book-button {
         display: block;
         width: 100%;
@@ -552,11 +559,26 @@
         font-size: 1rem;
         cursor: pointer;
         transition: var(--transition);
+        text-decoration: none;
+        text-align: center;
+    }
+
+    /* When it's an anchor tag */
+    .book-button[href] {
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
         text-decoration: none;
+        color: var(--white);
+    }
+
+    /* When it's a button */
+    .book-button:not([href]) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
     }
 
     .book-button:hover {
@@ -796,28 +818,35 @@
                 </div>
             </div>
             
-            <!-- In the header-price-card div -->
+            <!-- Header Price Card - SIMPLIFIED VERSION -->
             <div class="header-price-card">
                 <div class="price-display">
                     <div class="price-amount">₹{{ service.price }}</div>
-                    {% if service.is_digital %}
-                    <div class="price-label">Instant Digital Access</div>
-                    {% else %}
-                    <div class="price-label">Live Session</div>
-                    {% endif %}
+                    <div class="price-label">
+                        {% if service.is_digital %}
+                            Instant Digital Access
+                        {% else %}
+                            Live Session
+                        {% endif %}
+                    </div>
                 </div>
-                {% if service.price == 0 and service.is_digital %}
-                <button onclick="downloadProduct()" class="book-now-btn">
-                    Download Now
-                </button>
-                {% elif service.is_digital %}
-                <a href="/checkout/{{ service.id }}" class="book-now-btn">
-                    Purchase Now - ₹{{ service.price }}
-                </a>
+                
+                {% if service.is_digital %}
+                    {% if service.price == 0 %}
+                        <button onclick="downloadProduct()" class="book-now-btn">
+                            Download Now
+                        </button>
+                    {% else %}
+                        <!-- FIXED: Simple anchor tag for purchase -->
+                        <a href="/checkout/{{ service.id }}" class="book-now-btn" 
+                           style="display: block; text-decoration: none; color: var(--primary);">
+                            Purchase Now - ₹{{ service.price }}
+                        </a>
+                    {% endif %}
                 {% else %}
-                <button onclick="scrollToBooking()" class="book-now-btn">
-                    Book Now
-                </button>
+                    <button onclick="scrollToBooking()" class="book-now-btn">
+                        Book Now
+                    </button>
                 {% endif %}
             </div>
         </div>
@@ -954,7 +983,7 @@
                             </div>
                             {% endfor %}
                         {% else %}
-                            <div class="text-center w-full py-4 text-gray-500">
+                            <div style="text-align: center; width: 100%; padding: 1rem; color: var(--gray-500);">
                                 No dates available
                             </div>
                         {% endif %}
@@ -1016,24 +1045,25 @@
                     </div>
                 </div>
                 
-                <!-- Book/Purchase Button -->
+                <!-- Book/Purchase Button - SIMPLIFIED AND CORRECTED -->
                 {% if service.is_digital %}
                     {% if service.price == 0 %}
-                    <button onclick="downloadProduct()" class="book-button">
-                        <i class="fas fa-download"></i>
-                        <span>Download Now - Free</span>
-                    </button>
+                        <button onclick="downloadProduct()" class="book-button">
+                            <i class="fas fa-download"></i>
+                            <span>Download Now - Free</span>
+                        </button>
                     {% else %}
-                    <a href="/checkout/{{ service.id }}" class="book-button">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>Purchase Now - ₹{{ service.price }}</span>
-                    </a>
+                        <!-- FIXED: Simple anchor tag that will definitely work -->
+                        <a href="/checkout/{{ service.id }}" class="book-button">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Purchase Now - ₹{{ service.price }}</span>
+                        </a>
                     {% endif %}
                 {% else %}
-                <button onclick="bookService()" class="book-button">
-                    <i class="fas fa-calendar-check"></i>
-                    <span>Book Now - ₹{{ service.price }}</span>
-                </button>
+                    <button onclick="bookService()" class="book-button">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Book Now - ₹{{ service.price }}</span>
+                    </button>
                 {% endif %}
             </div>
 
@@ -1068,6 +1098,8 @@
     <p>Mentor Username: {{ mentor.user.username if mentor and mentor.user else 'Not found' }}</p>
     <p>Service ID: {{ service.id if service else 'Not found' }}</p>
     <p>Service Mentor ID: {{ service.mentor_id if service else 'Not found' }}</p>
+    <p>Is Digital: {{ service.is_digital if service else 'Not found' }}</p>
+    <p>Price: {{ service.price if service else 'Not found' }}</p>
 </div>
 
 <script>
@@ -1079,9 +1111,9 @@
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.innerHTML = `
-            <div class="flex items-center justify-between">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
                 <span>${message}</span>
-                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white opacity-80 hover:opacity-100">
+                <button onclick="this.parentElement.parentElement.remove()" style="margin-left: 1rem; color: white; opacity: 0.8; background: none; border: none; cursor: pointer;">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -1173,7 +1205,7 @@
             
             if (data.success && data.slots && data.slots.length > 0) {
                 container.innerHTML = `
-                    <div class="mb-2 text-sm text-gray-600">
+                    <div style="margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--gray-600);">
                         ${data.slots.length} slot${data.slots.length > 1 ? 's' : ''} available
                     </div>
                     <div class="time-slots-grid">
@@ -1340,17 +1372,11 @@
         }
     }
 
-    // Initialize first date selection
+    // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('=== Service Page Debug ===');
-        console.log('Mentor ID:', {{ mentor.id if mentor else 'null' }});
-        console.log('Mentor Username:', "{{ mentor.user.username if mentor and mentor.user else 'null' }}");
-        console.log('Service ID:', {{ service.id if service else 'null' }});
-        console.log('Service Mentor ID:', {{ service.mentor_id if service else 'null' }});
-        console.log('Is Digital Product:', {{ 'true' if service.is_digital else 'false' }});
-        console.log('Available Dates:', {{ available_dates|length if available_dates else 0 }});
-        console.log('Current User:', {% if current_user %}"{{ current_user.username }}"{% else %}null{% endif %});
-        console.log('Current User Role:', {% if current_user %}"{{ current_user.role }}"{% else %}null{% endif %});
+        console.log('=== Service Page Loaded ===');
+        console.log('Service is digital:', {% if service.is_digital %}true{% else %}false{% endif %});
+        console.log('Service price:', {{ service.price if service else 0 }});
         
         // Initialize date selection only for live sessions
         {% if not service.is_digital %}
@@ -1374,20 +1400,6 @@
                 </div>
             `;
         }
-        {% endif %}
-        
-        // Add scroll indicator for date selector on mobile
-        const dateSelector = document.getElementById('dateContainer');
-        if (dateSelector && dateSelector.scrollWidth > dateSelector.clientWidth) {
-            dateSelector.style.position = 'relative';
-            dateSelector.style.background = 'linear-gradient(to right, transparent 90%, rgba(0,0,0,0.05))';
-        }
-        
-        // Check if user is authenticated
-        {% if not current_user %}
-            console.log('User not logged in');
-        {% elif current_user.role != 'learner' %}
-            console.log('User role is not learner:', "{{ current_user.role }}");
         {% endif %}
     });
 </script>
