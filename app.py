@@ -3096,31 +3096,121 @@ async def verify_payment(
 async def admin_dashboard(
     request: Request,
     current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user_type: Optional[str] = None,
+    page: int = 1,
+    limit: int = 20
 ):
     if not current_user or current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Access denied")
     
+    # Build user query
+    user_query = db.query(User)
+    
+    if user_type and user_type != "all":
+        user_query = user_query.filter(User.role == user_type)
+    
+    # Get total users count
+    total_users = user_query.count()
+    total_pages = (total_users + limit - 1) // limit if limit > 0 else 1
+    
+    # Apply pagination
+    offset = (page - 1) * limit
+    all_users = user_query.order_by(User.created_at.desc()).offset(offset).limit(limit).all()
+    
+    # Get all mentors with user info
+    all_mentors = db.query(Mentor).join(User).order_by(Mentor.created_at.desc()).all()
+    
+    # Existing pending mentors for approval
     pending_mentors = db.query(Mentor).filter(
         Mentor.verification_status == "pending"
-    ).all()
+    ).join(User).all()
     
-    total_users = db.query(User).count()
-    total_mentors = db.query(Mentor).count()
-    total_bookings = db.query(Booking).count()
-    revenue = db.query(Booking).filter(
+    # Recent bookings
+    recent_bookings = db.query(Booking).order_by(
+        Booking.created_at.desc()
+    ).limit(20).all()
+    
+    # Recent digital sales
+    recent_digital_sales = db.query(Booking).filter(
+        Booking.service.has(is_digital=True),
+        Booking.payment_status == "paid"
+    ).order_by(Booking.created_at.desc()).limit(10).all()
+    
+    # Calculate statistics
+    total_users_count = db.query(User).count()
+    total_mentors_count = db.query(Mentor).filter(
+        Mentor.is_verified_by_admin == True
+    ).count()
+    total_bookings_count = db.query(Booking).count()
+    total_digital_sales_count = db.query(Booking).filter(
+        Booking.service.has(is_digital=True),
+        Booking.payment_status == "paid"
+    ).count()
+    
+    # Revenue calculations
+    total_revenue = db.query(Booking).filter(
         Booking.payment_status == "paid"
     ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+    
+    digital_revenue = db.query(Booking).filter(
+        Booking.service.has(is_digital=True),
+        Booking.payment_status == "paid"
+    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+    
+    session_revenue = total_revenue - digital_revenue
+    
+    # Pending bookings
+    pending_bookings_count = db.query(Booking).filter(
+        Booking.payment_status == "pending"
+    ).count()
+    
+    # Today's stats
+    today = datetime.now().date()
+    today_bookings = db.query(Booking).filter(
+        func.date(Booking.created_at) == today
+    ).count()
+    
+    today_revenue = db.query(Booking).filter(
+        func.date(Booking.created_at) == today,
+        Booking.payment_status == "paid"
+    ).with_entities(func.sum(Booking.amount_paid)).scalar() or 0
+    
+    # User growth (last 30 days)
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    new_users_30_days = db.query(User).filter(
+        User.created_at >= thirty_days_ago
+    ).count()
+    
+    new_mentors_30_days = db.query(Mentor).filter(
+        Mentor.created_at >= thirty_days_ago
+    ).count()
     
     return templates.TemplateResponse("admin_dashboard.html", {
         "request": request,
         "current_user": current_user,
+        "all_users": all_users,
+        "all_mentors": all_mentors,
         "pending_mentors": pending_mentors,
+        "recent_bookings": recent_bookings,
+        "recent_digital_sales": recent_digital_sales,
+        "user_type": user_type,
+        "page": page,
+        "total_pages": total_pages,
+        "total_users": total_users_count,
         "stats": {
-            "total_users": total_users,
-            "total_mentors": total_mentors,
-            "total_bookings": total_bookings,
-            "revenue": revenue
+            "total_users": total_users_count,
+            "total_mentors": total_mentors_count,
+            "total_bookings": total_bookings_count,
+            "total_digital_sales": total_digital_sales_count,
+            "total_revenue": total_revenue,
+            "digital_revenue": digital_revenue,
+            "session_revenue": session_revenue,
+            "pending_bookings": pending_bookings_count,
+            "today_bookings": today_bookings,
+            "today_revenue": today_revenue,
+            "new_users_30_days": new_users_30_days,
+            "new_mentors_30_days": new_mentors_30_days
         }
     })
 
