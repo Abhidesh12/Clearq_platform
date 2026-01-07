@@ -292,7 +292,7 @@
 
     .related-service-item:hover {
         border-color: var(--primary);
-        background: var(--blue-50);
+        background: var(--gray-50);
     }
 
     .related-service-header {
@@ -407,7 +407,7 @@
 
     .date-item.selected {
         border-color: var(--primary);
-        background: var(--blue-50);
+        background: var(--gray-50);
     }
 
     .day {
@@ -489,7 +489,7 @@
 
     .time-slot-btn.selected {
         border-color: var(--primary);
-        background: var(--blue-50);
+        background: var(--gray-50);
         color: var(--primary-dark);
         font-weight: 600;
     }
@@ -539,7 +539,7 @@
         color: var(--primary);
     }
 
-    /* Book Button */
+    /* Book/Purchase Button Styles */
     .book-button {
         display: block;
         width: 100%;
@@ -556,6 +556,7 @@
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
+        text-decoration: none;
     }
 
     .book-button:hover {
@@ -626,7 +627,7 @@
     }
 
     .view-profile-btn:hover {
-        background: var(--blue-50);
+        background: var(--gray-50);
     }
 
     /* Notification System */
@@ -648,7 +649,7 @@
     }
 
     .notification-error {
-        background: var(--danger);
+        background: #EF4444;
         color: white;
     }
 
@@ -779,13 +780,13 @@
                             <i class="fas fa-user-circle"></i>
                             {{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}
                         </span>
-                       {% if not service.is_digital %}
-<span class="meta-divider">•</span>
-<span class="meta-item">
-    <i class="fas fa-clock"></i>
-    {{ service.duration_minutes }} minutes
-</span>
-{% endif %}
+                        {% if not service.is_digital %}
+                        <span class="meta-divider">•</span>
+                        <span class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            {{ service.duration_minutes }} minutes
+                        </span>
+                        {% endif %}
                         <span class="meta-divider">•</span>
                         <span class="meta-item meta-rating">
                             <i class="fas fa-star"></i>
@@ -796,26 +797,29 @@
             </div>
             
             <!-- In the header-price-card div -->
-<!-- In the header-price-card div -->
-<div class="header-price-card">
-    <div class="price-display">
-        <div class="price-amount">₹{{ service.price }}</div>
-        <div class="price-label">Instant Digital Access</div>
-    </div>
-    <button onclick="downloadProduct()" class="book-now-btn">
-        Download Now
-    </button>
-</div>
-    {% if service.is_digital %}
-        <a href="/checkout/{{ service.id }}" class="book-now-btn">
-            Purchase Now - ₹{{ service.price }}
-        </a>
-    {% else %}
-        <button onclick="scrollToBooking()" class="book-now-btn">
-            Book Now
-        </button>
-    {% endif %}
-</div>
+            <div class="header-price-card">
+                <div class="price-display">
+                    <div class="price-amount">₹{{ service.price }}</div>
+                    {% if service.is_digital %}
+                    <div class="price-label">Instant Digital Access</div>
+                    {% else %}
+                    <div class="price-label">Live Session</div>
+                    {% endif %}
+                </div>
+                {% if service.price == 0 and service.is_digital %}
+                <button onclick="downloadProduct()" class="book-now-btn">
+                    Download Now
+                </button>
+                {% elif service.is_digital %}
+                <a href="/checkout/{{ service.id }}" class="book-now-btn">
+                    Purchase Now - ₹{{ service.price }}
+                </a>
+                {% else %}
+                <button onclick="scrollToBooking()" class="book-now-btn">
+                    Book Now
+                </button>
+                {% endif %}
+            </div>
         </div>
     </div>
 
@@ -901,12 +905,12 @@
                                 <div>
                                     <div class="related-service-price">₹{{ other_service.price }}</div>
                                     <div class="related-service-duration">
-    {% if other_service.is_digital %}
-        Instant Access
-    {% else %}
-        {{ other_service.duration_minutes }} min
-    {% endif %}
-</div>
+                                        {% if other_service.is_digital %}
+                                        Instant Access
+                                        {% else %}
+                                        {{ other_service.duration_minutes }} min
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                             <div class="related-service-description">
@@ -923,113 +927,116 @@
         <!-- Right Column -->
         <div>
             <!-- Booking Section -->
-           <!-- Booking Section -->
-<div id="booking-section" class="booking-section">
-    <div class="booking-header">
-        <h3>
-            {% if service.is_digital %}
-                Purchase This Product
-            {% else %}
-                Book This Service
-            {% endif %}
-        </h3>
-    </div>
-    
-    {% if not service.is_digital %}
-    <!-- Date Selection - Only for live sessions -->
-    <div class="date-selection">
-        <label>Select Date</label>
-        <div class="date-selector" id="dateContainer">
-            {% if available_dates and available_dates|length > 0 %}
-                {% for date_info in available_dates %}
-                <div class="date-item {% if loop.first %}selected{% endif %}" 
-                     data-date="{{ date_info.full_date }}"
-                     onclick="selectDate(this, '{{ date_info.full_date }}')">
-                    <div class="day">{{ date_info.day_name[:3] }}</div>
-                    <div class="date">{{ date_info.day_num }}</div>
-                    <div class="month">{{ date_info.month[:3] }}</div>
+            <div id="booking-section" class="booking-section">
+                <div class="booking-header">
+                    <h3>
+                        {% if service.is_digital %}
+                            Purchase This Product
+                        {% else %}
+                            Book This Service
+                        {% endif %}
+                    </h3>
                 </div>
-                {% endfor %}
-            {% else %}
-                <div class="text-center w-full py-4 text-gray-500">
-                    No dates available
+                
+                {% if not service.is_digital %}
+                <!-- Date Selection - Only for live sessions -->
+                <div class="date-selection">
+                    <label>Select Date</label>
+                    <div class="date-selector" id="dateContainer">
+                        {% if available_dates and available_dates|length > 0 %}
+                            {% for date_info in available_dates %}
+                            <div class="date-item {% if loop.first %}selected{% endif %}" 
+                                 data-date="{{ date_info.full_date }}"
+                                 onclick="selectDate(this, '{{ date_info.full_date }}')">
+                                <div class="day">{{ date_info.day_name[:3] }}</div>
+                                <div class="date">{{ date_info.day_num }}</div>
+                                <div class="month">{{ date_info.month[:3] }}</div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center w-full py-4 text-gray-500">
+                                No dates available
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-            {% endif %}
-        </div>
-    </div>
-    
-    <!-- Time Slots - Only for live sessions -->
-    <div class="time-selection">
-        <label>Select Time</label>
-        <div id="time-slots-container">
-            <div class="loading-spinner">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Select a date to see available times</p>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <!-- Digital Product Information -->
-    <div class="date-selection" style="margin-bottom: 1.5rem;">
-        <div style="background: #E0F2FE; border-radius: var(--radius); padding: 1rem; text-align: center;">
-            <div style="font-size: 2.5rem; color: #0369A1; margin-bottom: 0.5rem;">
-                <i class="fas fa-download"></i>
-            </div>
-            <h4 style="font-size: 1rem; font-weight: 600; color: #0369A1; margin-bottom: 0.5rem;">
-                Instant Digital Access
-            </h4>
-            <p style="font-size: 0.875rem; color: #0C4A6E; margin-bottom: 0;">
-                Get immediate access after purchase. No scheduling needed!
-            </p>
-        </div>
-    </div>
-    {% endif %}
-    
-    <!-- Pricing Summary -->
-    <div class="pricing-summary">
-        <div class="pricing-row">
-            <span class="pricing-label">Product:</span>
-            <span class="pricing-value">{{ service.name }}</span>
-        </div>
-        <div class="pricing-row">
-            <span class="pricing-label">
-                {% if service.is_digital %}
-                    Access Type:
+                
+                <!-- Time Slots - Only for live sessions -->
+                <div class="time-selection">
+                    <label>Select Time</label>
+                    <div id="time-slots-container">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Select a date to see available times</p>
+                        </div>
+                    </div>
+                </div>
                 {% else %}
-                    Duration:
+                <!-- Digital Product Information -->
+                <div class="date-selection" style="margin-bottom: 1.5rem;">
+                    <div style="background: #E0F2FE; border-radius: var(--radius); padding: 1rem; text-align: center;">
+                        <div style="font-size: 2.5rem; color: #0369A1; margin-bottom: 0.5rem;">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h4 style="font-size: 1rem; font-weight: 600; color: #0369A1; margin-bottom: 0.5rem;">
+                            Instant Digital Access
+                        </h4>
+                        <p style="font-size: 0.875rem; color: #0C4A6E; margin-bottom: 0;">
+                            Get immediate access after purchase. No scheduling needed!
+                        </p>
+                    </div>
+                </div>
                 {% endif %}
-            </span>
-            <span class="pricing-value">
+                
+                <!-- Pricing Summary -->
+                <div class="pricing-summary">
+                    <div class="pricing-row">
+                        <span class="pricing-label">Product:</span>
+                        <span class="pricing-value">{{ service.name }}</span>
+                    </div>
+                    <div class="pricing-row">
+                        <span class="pricing-label">
+                            {% if service.is_digital %}
+                                Access Type:
+                            {% else %}
+                                Duration:
+                            {% endif %}
+                        </span>
+                        <span class="pricing-value">
+                            {% if service.is_digital %}
+                                Instant Digital Access
+                            {% else %}
+                                {{ service.duration_minutes }} minutes
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="pricing-row pricing-total">
+                        <span class="pricing-label">Total:</span>
+                        <span class="pricing-value">₹{{ service.price }}</span>
+                    </div>
+                </div>
+                
+                <!-- Book/Purchase Button -->
                 {% if service.is_digital %}
-                    Instant Digital Access
+                    {% if service.price == 0 %}
+                    <button onclick="downloadProduct()" class="book-button">
+                        <i class="fas fa-download"></i>
+                        <span>Download Now - Free</span>
+                    </button>
+                    {% else %}
+                    <a href="/checkout/{{ service.id }}" class="book-button">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Purchase Now - ₹{{ service.price }}</span>
+                    </a>
+                    {% endif %}
                 {% else %}
-                    {{ service.duration_minutes }} minutes
+                <button onclick="bookService()" class="book-button">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Book Now - ₹{{ service.price }}</span>
+                </button>
                 {% endif %}
-            </span>
-        </div>
-        <div class="pricing-row pricing-total">
-            <span class="pricing-label">Total:</span>
-            <span class="pricing-value">₹{{ service.price }}</span>
-        </div>
-    </div>
-    
-    <!-- Book/Purchase Button -->
-    <button onclick="bookService()" class="book-button">
-        <i class="fas <!-- Book/Purchase Button -->
-{% if service.is_digital %}
-    <a href="/checkout/{{ service.id }}" class="book-button">
-        <i class="fas fa-shopping-cart"></i>
-        <span>Purchase Now - ₹{{ service.price }}</span>
-    </a>
-{% else %}
-    <button onclick="bookService()" class="book-button">
-        <i class="fas fa-calendar-check"></i>
-        <span>Book Now - ₹{{ service.price }}</span>
-    </button>
-{% endif %}
-        </span>
-    </button>
-</div>
+            </div>
+
             <!-- Mentor Info -->
             <div class="mentor-info-card">
                 <div class="mentor-header">
@@ -1104,109 +1111,109 @@
         loadTimeSlots(date);
     }
 
-   async function loadTimeSlots(date) {
-    // Skip for digital products
-    {% if service.is_digital %}
-        const container = document.getElementById('time-slots-container');
-        container.innerHTML = `
-            <div style="text-align: center; padding: 1rem;">
-                <div style="font-size: 2.5rem; color: #7C3AED; margin-bottom: 0.5rem;">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <p style="font-size: 0.875rem; color: var(--gray-600);">
-                    Instant digital access<br>No scheduling required
-                </p>
-            </div>
-        `;
-        return;
-    {% endif %}
-    
-    const container = document.getElementById('time-slots-container');
-    container.innerHTML = `
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Loading time slots...</p>
-        </div>
-    `;
-    
-    try {
-        const pathParts = window.location.pathname.split('/');
-        const username = pathParts[1];
-        const serviceId = pathParts[3];
-        
-        // Get mentor ID from template context
-        const mentorId = {{ mentor.id if mentor else (service.mentor_id if service else 0) }};
-        
-        if (!mentorId) {
+    async function loadTimeSlots(date) {
+        // Skip for digital products
+        {% if service.is_digital %}
+            const container = document.getElementById('time-slots-container');
             container.innerHTML = `
-                <div style="text-align: center; padding: 1rem; background: #FEE2E2; border-radius: var(--radius);">
-                    <p style="font-size: 0.875rem; color: #991B1B;">
-                        Error: Mentor information not available
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 2.5rem; color: #7C3AED; margin-bottom: 0.5rem;">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <p style="font-size: 0.875rem; color: var(--gray-600);">
+                        Instant digital access<br>No scheduling required
                     </p>
                 </div>
             `;
             return;
-        }
+        {% endif %}
         
-        console.log('Loading time slots for:', { date, serviceId, mentorId });
+        const container = document.getElementById('time-slots-container');
+        container.innerHTML = `
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading time slots...</p>
+            </div>
+        `;
         
-        const response = await fetch('/api/generate-time-slots', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                date: date,
-                service_id: parseInt(serviceId),
-                mentor_id: mentorId
-            })
-        });
-        
-        const data = await response.json();
-        console.log('Time slots response:', data);
-        
-        if (data.success && data.slots && data.slots.length > 0) {
-            container.innerHTML = `
-                <div class="mb-2 text-sm text-gray-600">
-                    ${data.slots.length} slot${data.slots.length > 1 ? 's' : ''} available
-                </div>
-                <div class="time-slots-grid">
-                    ${data.slots.map(slot => `
-                        <button type="button" onclick="selectTime('${slot.value}', this)" 
-                                class="time-slot-btn">
-                            ${slot.display || slot.value}
-                        </button>
-                    `).join('')}
-                </div>
-            `;
+        try {
+            const pathParts = window.location.pathname.split('/');
+            const serviceId = pathParts[3];
             
-            // Select first time slot by default
-            if (data.slots.length > 0) {
-                const firstBtn = container.querySelector('.time-slot-btn');
-                if (firstBtn) {
-                    selectTime(data.slots[0].value, firstBtn);
-                }
+            // Get mentor ID from template context
+            const mentorId = {{ mentor.id if mentor else (service.mentor_id if service else 0) }};
+            
+            if (!mentorId) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; background: #FEE2E2; border-radius: var(--radius);">
+                        <p style="font-size: 0.875rem; color: #991B1B;">
+                            Error: Mentor information not available
+                        </p>
+                    </div>
+                `;
+                return;
             }
-        } else {
+            
+            console.log('Loading time slots for:', { date, serviceId, mentorId });
+            
+            const response = await fetch('/api/generate-time-slots', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    date: date,
+                    service_id: parseInt(serviceId),
+                    mentor_id: mentorId
+                })
+            });
+            
+            const data = await response.json();
+            console.log('Time slots response:', data);
+            
+            if (data.success && data.slots && data.slots.length > 0) {
+                container.innerHTML = `
+                    <div class="mb-2 text-sm text-gray-600">
+                        ${data.slots.length} slot${data.slots.length > 1 ? 's' : ''} available
+                    </div>
+                    <div class="time-slots-grid">
+                        ${data.slots.map(slot => `
+                            <button type="button" onclick="selectTime('${slot.value}', this)" 
+                                    class="time-slot-btn">
+                                ${slot.display || slot.value}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                
+                // Select first time slot by default
+                if (data.slots.length > 0) {
+                    const firstBtn = container.querySelector('.time-slot-btn');
+                    if (firstBtn) {
+                        selectTime(data.slots[0].value, firstBtn);
+                    }
+                }
+            } else {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; background: #FEE2E2; border-radius: var(--radius);">
+                        <p style="font-size: 0.875rem; color: #991B1B;">
+                            ${data.message || 'No available time slots for this date'}
+                        </p>
+                    </div>
+                `;
+                selectedTime = null;
+            }
+        } catch (error) {
+            console.error('Error loading time slots:', error);
             container.innerHTML = `
                 <div style="text-align: center; padding: 1rem; background: #FEE2E2; border-radius: var(--radius);">
-                    <p style="font-size: 0.875rem; color: #991B1B;">
-                        ${data.message || 'No available time slots for this date'}
-                    </p>
+                    <p style="font-size: 0.875rem; color: #991B1B;">Error loading time slots</p>
                 </div>
             `;
             selectedTime = null;
         }
-    } catch (error) {
-        console.error('Error loading time slots:', error);
-        container.innerHTML = `
-            <div style="text-align: center; padding: 1rem; background: #FEE2E2; border-radius: var(--radius);">
-                <p style="font-size: 0.875rem; color: #991B1B;">Error loading time slots</p>
-            </div>
-        `;
-        selectedTime = null;
     }
-}
+
     function selectTime(time, element) {
         // Remove selected class from all time slots
         document.querySelectorAll('.time-slot-btn').forEach(btn => {
@@ -1228,99 +1235,39 @@
         }
     }
 
-
-
     function downloadProduct() {
-    // For free digital products
-    showNotification('Preparing your download...', 'success');
-    
-    // You might want to trigger an API call to record the download
-    fetch('/api/download-product/{{ service.id }}', {
-        method: 'POST'
-    }).then(response => response.json())
-      .then(data => {
-          if (data.download_url) {
-              // Open download in new tab
-              window.open(data.download_url, '_blank');
-          } else {
-              showNotification('Download started!', 'success');
-          }
-      });
-}
-    async function bookService() {
-    // Check authentication
-    {% if not current_user %}
-        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
-        return;
-    {% endif %}
-    
-    {% if current_user.role != 'learner' %}
-        showNotification('Only learners can purchase services', 'error');
-        return;
-    {% endif %}
-    
-    const pathParts = window.location.pathname.split('/');
-    const serviceId = pathParts[3];
-    
-    // Prepare booking data
-    let bookingData = {};
-    
-    {% if service.is_digital %}
-        // For digital products - use the simplified API
-        try {
-            // Show loading state
-            const bookButton = document.querySelector('.book-button');
-            const originalText = bookButton.innerHTML;
-            bookButton.innerHTML = `
-                <i class="fas fa-spinner fa-spin"></i>
-                <span>Processing Purchase...</span>
-            `;
-            bookButton.disabled = true;
-            
-            // Call the digital product purchase API
-            const response = await fetch('/api/purchase-digital-product', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    service_id: parseInt(serviceId)
-                })
-            });
-            
-            const data = await response.json();
-            console.log('Digital product purchase response:', data);
-            
-            if (data.success) {
-                showNotification('Product purchased successfully!', 'success');
-                
-                // Redirect based on response
-                if (data.redirect_url) {
-                    setTimeout(() => {
-                        window.location.href = data.redirect_url;
-                    }, 1500);
-                } else {
-                    setTimeout(() => {
-                        window.location.href = '/dashboard';
-                    }, 1500);
-                }
-            } else {
-                showNotification(data.message || 'Failed to purchase product. Please try again.', 'error');
-                // Reset button
-                bookButton.innerHTML = originalText;
-                bookButton.disabled = false;
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showNotification('Failed to process purchase. Please try again.', 'error');
-            // Reset button
-            const bookButton = document.querySelector('.book-button');
-            bookButton.innerHTML = originalText;
-            bookButton.disabled = false;
-        }
-        return; // Exit function for digital products
+        // For free digital products
+        showNotification('Preparing your download...', 'success');
         
-    {% else %}
+        // You might want to trigger an API call to record the download
+        fetch('/api/download-product/{{ service.id }}', {
+            method: 'POST'
+        }).then(response => response.json())
+          .then(data => {
+              if (data.download_url) {
+                  // Open download in new tab
+                  window.open(data.download_url, '_blank');
+              } else {
+                  showNotification('Download started!', 'success');
+              }
+          });
+    }
+
+    async function bookService() {
+        // Check authentication
+        {% if not current_user %}
+            window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+            return;
+        {% endif %}
+        
+        {% if current_user.role != 'learner' %}
+            showNotification('Only learners can book services', 'error');
+            return;
+        {% endif %}
+        
+        const pathParts = window.location.pathname.split('/');
+        const serviceId = pathParts[3];
+        
         // For live sessions - require date/time
         if (!selectedDate || !selectedTime) {
             showNotification('Please select a date and time before booking.', 'warning');
@@ -1334,7 +1281,7 @@
             return;
         }
         
-        bookingData = {
+        const bookingData = {
             service_id: parseInt(serviceId),
             date: selectedDate,
             time: selectedTime,
@@ -1391,58 +1338,57 @@
             bookButton.innerHTML = originalText;
             bookButton.disabled = false;
         }
-    {% endif %}
-}
-    // Initialize first date selection
-    // Initialize first date selection
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('=== Service Page Debug ===');
-    console.log('Mentor ID:', {{ mentor.id if mentor else 'null' }});
-    console.log('Mentor Username:', "{{ mentor.user.username if mentor and mentor.user else 'null' }}");
-    console.log('Service ID:', {{ service.id if service else 'null' }});
-    console.log('Service Mentor ID:', {{ service.mentor_id if service else 'null' }});
-    console.log('Is Digital Product:', {{ 'true' if service.is_digital else 'false' }});
-    console.log('Available Dates:', {{ available_dates|length if available_dates else 0 }});
-    console.log('Current User:', {% if current_user %}"{{ current_user.username }}"{% else %}null{% endif %});
-    console.log('Current User Role:', {% if current_user %}"{{ current_user.role }}"{% else %}null{% endif %});
-    
-    // Initialize date selection only for live sessions
-    {% if not service.is_digital %}
-    const firstDate = document.querySelector('.date-item');
-    if (firstDate) {
-        const date = firstDate.dataset.date;
-        selectDate(firstDate, date);
     }
-    {% else %}
-    // For digital products, show instant access message
-    const timeSlotsContainer = document.getElementById('time-slots-container');
-    if (timeSlotsContainer) {
-        timeSlotsContainer.innerHTML = `
-            <div style="text-align: center; padding: 1rem;">
-                <div style="font-size: 2.5rem; color: #7C3AED; margin-bottom: 0.5rem;">
-                    <i class="fas fa-bolt"></i>
+
+    // Initialize first date selection
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== Service Page Debug ===');
+        console.log('Mentor ID:', {{ mentor.id if mentor else 'null' }});
+        console.log('Mentor Username:', "{{ mentor.user.username if mentor and mentor.user else 'null' }}");
+        console.log('Service ID:', {{ service.id if service else 'null' }});
+        console.log('Service Mentor ID:', {{ service.mentor_id if service else 'null' }});
+        console.log('Is Digital Product:', {{ 'true' if service.is_digital else 'false' }});
+        console.log('Available Dates:', {{ available_dates|length if available_dates else 0 }});
+        console.log('Current User:', {% if current_user %}"{{ current_user.username }}"{% else %}null{% endif %});
+        console.log('Current User Role:', {% if current_user %}"{{ current_user.role }}"{% else %}null{% endif %});
+        
+        // Initialize date selection only for live sessions
+        {% if not service.is_digital %}
+        const firstDate = document.querySelector('.date-item');
+        if (firstDate) {
+            const date = firstDate.dataset.date;
+            selectDate(firstDate, date);
+        }
+        {% else %}
+        // For digital products, show instant access message
+        const timeSlotsContainer = document.getElementById('time-slots-container');
+        if (timeSlotsContainer) {
+            timeSlotsContainer.innerHTML = `
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 2.5rem; color: #7C3AED; margin-bottom: 0.5rem;">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <p style="font-size: 0.875rem; color: var(--gray-600);">
+                        Instant digital access<br>No scheduling required
+                    </p>
                 </div>
-                <p style="font-size: 0.875rem; color: var(--gray-600);">
-                    Instant digital access<br>No scheduling required
-                </p>
-            </div>
-        `;
-    }
-    {% endif %}
-    
-    // Add scroll indicator for date selector on mobile
-    const dateSelector = document.getElementById('dateContainer');
-    if (dateSelector && dateSelector.scrollWidth > dateSelector.clientWidth) {
-        dateSelector.style.position = 'relative';
-        dateSelector.style.background = 'linear-gradient(to right, transparent 90%, rgba(0,0,0,0.05))';
-    }
-    
-    // Check if user is authenticated
-    {% if not current_user %}
-        console.log('User not logged in');
-    {% elif current_user.role != 'learner' %}
-        console.log('User role is not learner:', "{{ current_user.role }}");
-    {% endif %}
-});
+            `;
+        }
+        {% endif %}
+        
+        // Add scroll indicator for date selector on mobile
+        const dateSelector = document.getElementById('dateContainer');
+        if (dateSelector && dateSelector.scrollWidth > dateSelector.clientWidth) {
+            dateSelector.style.position = 'relative';
+            dateSelector.style.background = 'linear-gradient(to right, transparent 90%, rgba(0,0,0,0.05))';
+        }
+        
+        // Check if user is authenticated
+        {% if not current_user %}
+            console.log('User not logged in');
+        {% elif current_user.role != 'learner' %}
+            console.log('User role is not learner:', "{{ current_user.role }}");
+        {% endif %}
+    });
 </script>
 {% endblock %}
