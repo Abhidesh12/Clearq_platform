@@ -1147,6 +1147,7 @@
         }
     }
 
+    // Updated bookService function
     async function bookService() {
         // Check authentication
         {% if not current_user %}
@@ -1159,28 +1160,32 @@
             return;
         {% endif %}
         
-        if (!selectedDate || !selectedTime) {
-            showNotification('Please select a date and time before booking.', 'warning');
-            return;
-        }
-        
         const pathParts = window.location.pathname.split('/');
         const serviceId = pathParts[3];
         
-        // Get mentor ID from template context
+        // Get mentor ID and is_digital from template context
         const mentorId = {{ mentor.id if mentor else (service.mentor_id if service else 0) }};
+        const isDigital = {{ service.is_digital|lower if service else 'false' }};
         
         if (!mentorId) {
             showNotification('Error: Mentor information not found. Please refresh the page.', 'error');
             return;
         }
         
-        const bookingData = {
+        let bookingData = {
             service_id: parseInt(serviceId),
-            date: selectedDate,
-            time: selectedTime,
-            mentor_id: mentorId  // This is the key fix!
+            mentor_id: mentorId
         };
+        
+        // Only add date/time for non-digital services
+        if (!isDigital) {
+            if (!selectedDate || !selectedTime) {
+                showNotification('Please select a date and time before booking.', 'warning');
+                return;
+            }
+            bookingData.date = selectedDate;
+            bookingData.time = selectedTime;
+        }
         
         console.log('Sending booking data:', bookingData);
         
@@ -1205,7 +1210,11 @@
             console.log('Booking response:', data);
             
             if (data.success) {
-                showNotification('Booking created successfully! Redirecting to payment...');
+                if (isDigital) {
+                    showNotification('Digital product added to cart! Redirecting to payment...');
+                } else {
+                    showNotification('Booking created successfully! Redirecting to payment...');
+                }
                 
                 // Redirect based on response
                 if (data.redirect_url) {
@@ -1238,28 +1247,50 @@
         }
     }
 
-    // Initialize first date selection
+    // Initialize page with digital service check
     document.addEventListener('DOMContentLoaded', function() {
         console.log('=== Service Page Debug ===');
         console.log('Mentor ID:', {{ mentor.id if mentor else 'null' }});
         console.log('Mentor Username:', "{{ mentor.user.username if mentor and mentor.user else 'null' }}");
         console.log('Service ID:', {{ service.id if service else 'null' }});
         console.log('Service Mentor ID:', {{ service.mentor_id if service else 'null' }});
+        console.log('Is Digital Service:', {{ service.is_digital|lower if service else 'false' }});
         console.log('Available Dates:', {{ available_dates|length if available_dates else 0 }});
         console.log('Current User:', {% if current_user %}"{{ current_user.username }}"{% else %}null{% endif %});
         console.log('Current User Role:', {% if current_user %}"{{ current_user.role }}"{% else %}null{% endif %});
         
-        const firstDate = document.querySelector('.date-item');
-        if (firstDate) {
-            const date = firstDate.dataset.date;
-            selectDate(firstDate, date);
-        }
+        // Handle digital vs live services
+        const isDigital = {{ service.is_digital|lower if service else 'false' }};
+        const isDigitalBool = isDigital === 'true';
         
-        // Add scroll indicator for date selector on mobile
-        const dateSelector = document.getElementById('dateContainer');
-        if (dateSelector && dateSelector.scrollWidth > dateSelector.clientWidth) {
-            dateSelector.style.position = 'relative';
-            dateSelector.style.background = 'linear-gradient(to right, transparent 90%, rgba(0,0,0,0.05))';
+        if (isDigitalBool) {
+            // Hide date/time selection sections for digital products
+            const dateSelection = document.querySelector('.date-selection');
+            const timeSelection = document.querySelector('.time-selection');
+            
+            if (dateSelection) dateSelection.style.display = 'none';
+            if (timeSelection) timeSelection.style.display = 'none';
+            
+            // Update button text for digital products
+            const bookButton = document.querySelector('.book-button');
+            if (bookButton) {
+                const price = {{ service.price if service else 0 }};
+                bookButton.innerHTML = `<i class="fas fa-shopping-cart"></i><span>Purchase Now - ₹${price}</span>`;
+            }
+        } else {
+            // Initialize first date selection for live sessions
+            const firstDate = document.querySelector('.date-item');
+            if (firstDate) {
+                const date = firstDate.dataset.date;
+                selectDate(firstDate, date);
+            }
+            
+            // Add scroll indicator for date selector on mobile
+            const dateSelector = document.getElementById('dateContainer');
+            if (dateSelector && dateSelector.scrollWidth > dateSelector.clientWidth) {
+                dateSelector.style.position = 'relative';
+                dateSelector.style.background = 'linear-gradient(to right, transparent 90%, rgba(0,0,0,0.05))';
+            }
         }
         
         // Check if user is authenticated
