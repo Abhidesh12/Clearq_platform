@@ -362,308 +362,6 @@
         background: #DC2626;
     }
 
-    /* All Users Section */
-    .users-section {
-        margin-top: 2rem;
-    }
-
-    .users-filters {
-        background: var(--white);
-        padding: 1rem;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-sm);
-        margin-bottom: 1rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        align-items: center;
-    }
-
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .filter-label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--gray-700);
-    }
-
-    .filter-select, .filter-input {
-        padding: 0.5rem 0.75rem;
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius);
-        font-size: 0.875rem;
-        color: var(--gray-900);
-        background: var(--white);
-        min-width: 150px;
-    }
-
-    .filter-select:focus, .filter-input:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    .filter-button {
-        padding: 0.5rem 1.5rem;
-        background: var(--primary);
-        color: var(--white);
-        border: none;
-        border-radius: var(--radius);
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-        align-self: flex-end;
-        height: 2.5rem;
-    }
-
-    .filter-button:hover {
-        background: var(--primary-dark);
-    }
-
-    .users-table-container {
-        background: var(--white);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-md);
-        overflow: hidden;
-        margin-bottom: 2rem;
-    }
-
-    .users-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .users-table th {
-        background: var(--gray-50);
-        padding: 1rem;
-        text-align: left;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--gray-700);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        border-bottom: 1px solid var(--gray-200);
-    }
-
-    .users-table td {
-        padding: 1rem;
-        border-bottom: 1px solid var(--gray-100);
-        font-size: 0.875rem;
-        color: var(--gray-700);
-    }
-
-    .users-table tr:hover {
-        background: var(--gray-50);
-    }
-
-    .user-info {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .user-avatar {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 50%;
-        overflow: hidden;
-        flex-shrink: 0;
-    }
-
-    .user-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .user-details {
-        display: flex;
-        flex-direction: column;
-        gap: 0.125rem;
-    }
-
-    .user-name {
-        font-weight: 600;
-        color: var(--gray-900);
-    }
-
-    .user-username {
-        font-size: 0.75rem;
-        color: var(--gray-500);
-    }
-
-    .role-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 1rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .role-learner {
-        background: #DBEAFE;
-        color: #1E40AF;
-    }
-
-    .role-mentor {
-        background: #D1FAE5;
-        color: #065F46;
-    }
-
-    .role-admin {
-        background: #FEF3C7;
-        color: #92400E;
-    }
-
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 1rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .status-active {
-        background: #D1FAE5;
-        color: #065F46;
-    }
-
-    .status-inactive {
-        background: #FEE2E2;
-        color: #991B1B;
-    }
-
-    .user-stats {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .stat-item {
-        font-size: 0.75rem;
-        color: var(--gray-600);
-    }
-
-    .user-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .action-btn {
-        padding: 0.375rem 0.75rem;
-        border: none;
-        border-radius: var(--radius-sm);
-        font-size: 0.75rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .action-view {
-        background: var(--primary);
-        color: var(--white);
-    }
-
-    .action-edit {
-        background: var(--success);
-        color: var(--white);
-    }
-
-    .action-delete {
-        background: var(--danger);
-        color: var(--white);
-    }
-
-    .action-btn:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 3rem 1rem;
-    }
-
-    .empty-icon {
-        width: 4rem;
-        height: 4rem;
-        margin: 0 auto 1rem;
-        background: var(--gray-100);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--gray-400);
-        font-size: 1.5rem;
-    }
-
-    .empty-state h3 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.5rem;
-    }
-
-    .empty-state p {
-        font-size: 0.875rem;
-        color: var(--gray-600);
-    }
-
-    /* Pagination */
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 1rem;
-        background: var(--gray-50);
-        border-top: 1px solid var(--gray-200);
-    }
-
-    .page-btn {
-        padding: 0.5rem 0.75rem;
-        border: 1px solid var(--gray-300);
-        background: var(--white);
-        border-radius: var(--radius-sm);
-        font-size: 0.875rem;
-        color: var(--gray-700);
-        cursor: pointer;
-        transition: var(--transition);
-        min-width: 2.5rem;
-        text-align: center;
-    }
-
-    .page-btn:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-    }
-
-    .page-btn.active {
-        background: var(--primary);
-        border-color: var(--primary);
-        color: var(--white);
-    }
-
-    .page-btn.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .pagination-info {
-        font-size: 0.875rem;
-        color: var(--gray-600);
-        margin: 0 1rem;
-    }
-
     /* Empty State */
     .admin-empty-state {
         text-align: center;
@@ -941,14 +639,6 @@
         .mentor-tags-compact {
             margin-bottom: 0;
         }
-        
-        .users-filters {
-            flex-wrap: nowrap;
-        }
-        
-        .filter-group {
-            flex: 1;
-        }
     }
 
     @media (min-width: 768px) {
@@ -982,10 +672,6 @@
         .mentor-actions-compact {
             width: 100%;
         }
-        
-        .users-table-container {
-            overflow-x: auto;
-        }
     }
 
     @media (min-width: 1024px) {
@@ -1000,10 +686,6 @@
         }
         
         .stats-grid {
-            grid-column: 1 / -1;
-        }
-        
-        .users-section {
             grid-column: 1 / -1;
         }
         
@@ -1044,13 +726,9 @@
             </div>
             
             <div class="admin-header-actions">
-                <a href="#" class="admin-action-btn" onclick="exportUsers()">
+                <a href="#" class="admin-action-btn">
                     <i class="fas fa-download"></i>
-                    <span>Export Users</span>
-                </a>
-                <a href="#" class="admin-action-btn" onclick="refreshUsers()">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Refresh</span>
+                    <span>Export Reports</span>
                 </a>
             </div>
         </div>
@@ -1117,151 +795,6 @@
                     <i class="fas fa-arrow-up growth-up"></i>
                     <span class="growth-up">18%</span>
                     <span class="growth-text">from last month</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- All Users Section -->
-        <div class="users-section">
-            <div class="admin-card">
-                <div class="admin-card-header">
-                    <h2>All Users</h2>
-                    <span class="badge">{{ users|length }} users</span>
-                </div>
-                
-                <div class="admin-card-content">
-                    <!-- Filters -->
-                    <div class="users-filters">
-                        <div class="filter-group">
-                            <label class="filter-label">Search</label>
-                            <input type="text" id="searchInput" class="filter-input" 
-                                   placeholder="Search by name, email, username...">
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label class="filter-label">Role</label>
-                            <select id="roleFilter" class="filter-select">
-                                <option value="">All Roles</option>
-                                <option value="learner">Learner</option>
-                                <option value="mentor">Mentor</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-                        
-                        <div class="filter-group">
-                            <label class="filter-label">Status</label>
-                            <select id="statusFilter" class="filter-select">
-                                <option value="">All Status</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                            </select>
-                        </div>
-                        
-                        <button class="filter-button" onclick="applyFilters()">
-                            <i class="fas fa-filter"></i> Filter
-                        </button>
-                    </div>
-                    
-                    <!-- Users Table -->
-                    <div class="users-table-container">
-                        {% if users and users|length > 0 %}
-                        <table class="users-table">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Email</th>
-                                    <th>Joined</th>
-                                    <th>Status</th>
-                                    <th>Stats</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in users %}
-                                <tr>
-                                    <td>
-                                        <div class="user-info">
-                                            <div class="user-avatar">
-                                                {% if user.profile_image %}
-                                                <img src="/static/{{ user.profile_image }}" 
-                                                     alt="{{ user.full_name or user.username }}">
-                                                {% else %}
-                                                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
-                                                    {{ (user.full_name[0] if user.full_name else user.username[0])|upper }}
-                                                </div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="user-details">
-                                                <div class="user-name">{{ user.full_name or user.username }}</div>
-                                                <div class="user-username">@{{ user.username }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="role-badge role-{{ user.role }}">
-                                            {{ user.role|title }}
-                                        </span>
-                                    </td>
-                                    <td>{{ user.email }}</td>
-                                    <td>{{ user.created_at.strftime('%d %b %Y') }}</td>
-                                    <td>
-                                        <span class="status-badge status-{% if user.is_active %}active{% else %}inactive{% endif %}">
-                                            {{ 'Active' if user.is_active else 'Inactive' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="user-stats">
-                                            {% if user.role == 'learner' %}
-                                            <div class="stat-item">
-                                                Bookings: {{ user_stats[user.id].bookings if user_stats and user.id in user_stats else 0 }}
-                                            </div>
-                                            <div class="stat-item">
-                                                Spent: ₹{{ user_stats[user.id].spent if user_stats and user.id in user_stats else 0 }}
-                                            </div>
-                                            {% elif user.role == 'mentor' %}
-                                            <div class="stat-item">
-                                                Sessions: {{ user_stats[user.id].sessions if user_stats and user.id in user_stats else 0 }}
-                                            </div>
-                                            <div class="stat-item">
-                                                Earnings: ₹{{ user_stats[user.id].earnings if user_stats and user.id in user_stats else 0 }}
-                                            </div>
-                                            {% elif user.role == 'admin' %}
-                                            <div class="stat-item">
-                                                Platform Admin
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="user-actions">
-                                            <button class="action-btn action-view" onclick="viewUser({{ user.id }})">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                            <button class="action-btn action-edit" onclick="editUser({{ user.id }})">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            {% if user.id != current_user.id %}
-                                            <button class="action-btn action-delete" onclick="deleteUser({{ user.id }})">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% else %}
-                        <div class="empty-state">
-                            <div class="empty-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <h3>No Users Found</h3>
-                            <p>No users match your search criteria</p>
-                        </div>
-                        {% endif %}
-                    </div>
                 </div>
             </div>
         </div>
@@ -1339,29 +872,16 @@
                 
                 <div class="admin-card-content">
                     <div class="activity-list">
-                        {% for booking in recent_bookings %}
+                        {% for i in range(5) %}
                         <div class="activity-item">
                             <div class="activity-icon">
-                                <i class="fas fa-calendar-plus"></i>
+                                <i class="fas fa-user-plus"></i>
                             </div>
                             <div class="activity-content">
-                                <h4>New Booking</h4>
-                                <p>{{ booking.learner.full_name if booking.learner else 'User' }} booked {{ booking.service.name if booking.service else 'service' }}</p>
+                                <h4>New User Registration</h4>
+                                <p>John Doe registered as a learner</p>
                             </div>
-                            <div class="activity-time">{{ booking.created_at|time_ago }}</div>
-                        </div>
-                        {% endfor %}
-                        
-                        {% for sale in recent_digital_sales %}
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                            <div class="activity-content">
-                                <h4>Digital Sale</h4>
-                                <p>Digital product sold for ₹{{ sale.amount_paid }}</p>
-                            </div>
-                            <div class="activity-time">{{ sale.created_at|time_ago }}</div>
+                            <div class="activity-time">2 hours ago</div>
                         </div>
                         {% endfor %}
                     </div>
@@ -1429,7 +949,7 @@
                 
                 <div class="admin-card-content">
                     <div class="quick-actions-grid">
-                        <a href="/admin/users" class="quick-action-item">
+                        <a href="#" class="quick-action-item">
                             <div class="quick-action-icon quick-action-users">
                                 <i class="fas fa-user-cog"></i>
                             </div>
@@ -1545,112 +1065,6 @@
                 }
             });
         });
-        
-        // Initialize filters from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const searchParam = urlParams.get('search');
-        const roleParam = urlParams.get('role');
-        const statusParam = urlParams.get('status');
-        
-        if (searchParam) {
-            document.getElementById('searchInput').value = searchParam;
-        }
-        if (roleParam) {
-            document.getElementById('roleFilter').value = roleParam;
-        }
-        if (statusParam) {
-            document.getElementById('statusFilter').value = statusParam;
-        }
-    });
-    
-    // User management functions
-    function applyFilters() {
-        const search = document.getElementById('searchInput').value;
-        const role = document.getElementById('roleFilter').value;
-        const status = document.getElementById('statusFilter').value;
-        
-        let url = '/admin/dashboard';
-        const params = [];
-        
-        if (search) params.push(`search=${encodeURIComponent(search)}`);
-        if (role) params.push(`role=${encodeURIComponent(role)}`);
-        if (status) params.push(`status=${encodeURIComponent(status)}`);
-        
-        if (params.length > 0) {
-            url += '?' + params.join('&');
-        }
-        
-        window.location.href = url;
-    }
-    
-    function viewUser(userId) {
-        window.location.href = `/admin/users/${userId}`;
-    }
-    
-    function editUser(userId) {
-        window.location.href = `/admin/users/${userId}/edit`;
-    }
-    
-    function deleteUser(userId) {
-        if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-            fetch(`/admin/users/${userId}/delete`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('User deleted successfully');
-                    location.reload();
-                } else {
-                    alert('Failed to delete user: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while deleting the user.');
-            });
-        }
-    }
-    
-    function exportUsers() {
-        const search = document.getElementById('searchInput').value;
-        const role = document.getElementById('roleFilter').value;
-        const status = document.getElementById('statusFilter').value;
-        
-        let url = '/admin/users/export';
-        const params = [];
-        
-        if (search) params.push(`search=${encodeURIComponent(search)}`);
-        if (role) params.push(`role=${encodeURIComponent(role)}`);
-        if (status) params.push(`status=${encodeURIComponent(status)}`);
-        
-        if (params.length > 0) {
-            url += '?' + params.join('&');
-        }
-        
-        window.location.href = url;
-    }
-    
-    function refreshUsers() {
-        location.reload();
-    }
-    
-    // Add keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-        // Ctrl/Cmd + F to focus search
-        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-            e.preventDefault();
-            document.getElementById('searchInput').focus();
-        }
-        
-        // Ctrl/Cmd + R to refresh
-        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-            e.preventDefault();
-            refreshUsers();
-        }
     });
 </script>
 {% endblock %}
