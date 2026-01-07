@@ -1479,7 +1479,7 @@
             <div class="profile-share-buttons">
                 <!-- New Tab Button -->
                 {% if current_user.role == 'mentor' %}
-                <a href="/mentor/profile/{{ current_user.username }}" 
+                <a href="/{{ current_user.username }}"> 
                    target="_blank" 
                    class="share-btn"
                    title="Open profile in new tab">
