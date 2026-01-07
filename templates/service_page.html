@@ -118,7 +118,7 @@
 
     .meta-rating i {
         color: #FFD166;
-    }
+    }   
 
     .header-price-card {
         background: rgba(255, 255, 255, 0.1);
@@ -757,6 +757,21 @@
             grid-template-columns: repeat(3, 1fr);
         }
     }
+
+    /* Digital Product Badge */
+    .digital-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        background: linear-gradient(135deg, var(--accent), var(--secondary));
+        color: white;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+        vertical-align: middle;
+    }
 </style>
 
 <div class="service-container">
@@ -773,17 +788,27 @@
                 </nav>
                 
                 <div class="service-title">
-                    <h1>{{ service.name }}</h1>
+                    <h1>
+                        {{ service.name }}
+                        {% if service.is_digital %}
+                        <span class="digital-badge">
+                            <i class="fas fa-download"></i>
+                            Digital Product
+                        </span>
+                        {% endif %}
+                    </h1>
                     <div class="service-meta">
                         <span class="meta-item">
                             <i class="fas fa-user-circle"></i>
                             {{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}
                         </span>
+                        {% if not service.is_digital %}
                         <span class="meta-divider">•</span>
                         <span class="meta-item">
                             <i class="fas fa-clock"></i>
                             {{ service.duration_minutes }} minutes
                         </span>
+                        {% endif %}
                         <span class="meta-divider">•</span>
                         <span class="meta-item meta-rating">
                             <i class="fas fa-star"></i>
@@ -796,10 +821,20 @@
             <div class="header-price-card">
                 <div class="price-display">
                     <div class="price-amount">₹{{ service.price }}</div>
-                    <div class="price-label">per session</div>
+                    <div class="price-label">
+                        {% if service.is_digital %}
+                        one-time purchase
+                        {% else %}
+                        per session
+                        {% endif %}
+                    </div>
                 </div>
                 <button onclick="scrollToBooking()" class="book-now-btn">
+                    {% if service.is_digital %}
+                    Purchase Now
+                    {% else %}
                     Book Now
+                    {% endif %}
                 </button>
             </div>
         </div>
@@ -812,7 +847,7 @@
             <!-- Service Description -->
             <div class="service-card">
                 <div class="card-header">
-                    <h2>Service Description</h2>
+                    <h2>Product Details</h2>
                 </div>
                 <div class="card-content">
                     <div class="service-description">
@@ -828,6 +863,49 @@
                 </div>
                 <div class="card-content">
                     <div class="benefits-grid">
+                        {% if service.is_digital %}
+                        <!-- Digital Product Benefits -->
+                        <div class="benefit-item">
+                            <div class="benefit-icon icon-personalized">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="benefit-content">
+                                <h3>Instant Access</h3>
+                                <p>Download immediately after purchase</p>
+                            </div>
+                        </div>
+                        
+                        <div class="benefit-item">
+                            <div class="benefit-icon icon-session">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="benefit-content">
+                                <h3>Digital Content</h3>
+                                <p>High-quality digital resources and materials</p>
+                            </div>
+                        </div>
+                        
+                        <div class="benefit-item">
+                            <div class="benefit-icon icon-feedback">
+                                <i class="fas fa-sync"></i>
+                            </div>
+                            <div class="benefit-content">
+                                <h3>Lifetime Updates</h3>
+                                <p>Free updates to the product</p>
+                            </div>
+                        </div>
+                        
+                        <div class="benefit-item">
+                            <div class="benefit-icon icon-insights">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="benefit-content">
+                                <h3>Secure Access</h3>
+                                <p>Protected downloads from your account</p>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- Live Service Benefits -->
                         <div class="benefit-item">
                             <div class="benefit-icon icon-personalized">
                                 <i class="fas fa-check"></i>
@@ -867,6 +945,7 @@
                                 <p>Industry insights and best practices from an experienced professional</p>
                             </div>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -886,7 +965,9 @@
                                 <div class="related-service-name">{{ other_service.name }}</div>
                                 <div>
                                     <div class="related-service-price">₹{{ other_service.price }}</div>
+                                    {% if not other_service.is_digital %}
                                     <div class="related-service-duration">{{ other_service.duration_minutes }} min</div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="related-service-description">
@@ -905,10 +986,17 @@
             <!-- Booking Section -->
             <div id="booking-section" class="booking-section">
                 <div class="booking-header">
-                    <h3>Book This Service</h3>
+                    <h3>
+                        {% if service.is_digital %}
+                        Purchase This Product
+                        {% else %}
+                        Book This Service
+                        {% endif %}
+                    </h3>
                 </div>
                 
-                <!-- Date Selection -->
+                {% if not service.is_digital %}
+                <!-- Date Selection (Only for Live Services) -->
                 <div class="date-selection">
                     <label>Select Date</label>
                     <div class="date-selector" id="dateContainer">
@@ -930,7 +1018,7 @@
                     </div>
                 </div>
                 
-                <!-- Time Slots -->
+                <!-- Time Slots (Only for Live Services) -->
                 <div class="time-selection">
                     <label>Select Time</label>
                     <div id="time-slots-container">
@@ -940,27 +1028,41 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
                 
                 <!-- Pricing Summary -->
                 <div class="pricing-summary">
                     <div class="pricing-row">
-                        <span class="pricing-label">Service:</span>
+                        <span class="pricing-label">
+                            {% if service.is_digital %}
+                            Product:
+                            {% else %}
+                            Service:
+                            {% endif %}
+                        </span>
                         <span class="pricing-value">{{ service.name }}</span>
                     </div>
+                    {% if not service.is_digital %}
                     <div class="pricing-row">
                         <span class="pricing-label">Duration:</span>
                         <span class="pricing-value">{{ service.duration_minutes }} minutes</span>
                     </div>
+                    {% endif %}
                     <div class="pricing-row pricing-total">
                         <span class="pricing-label">Total:</span>
                         <span class="pricing-value">₹{{ service.price }}</span>
                     </div>
                 </div>
                 
-                <!-- Book Button -->
-                <button onclick="bookService()" class="book-button">
+                <!-- Book/Purchase Button -->
+                <button onclick="bookService()" class="book-button" id="book-button">
+                    {% if service.is_digital %}
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Purchase Now - ₹{{ service.price }}</span>
+                    {% else %}
                     <i class="fas fa-calendar-check"></i>
                     <span>Book Now - ₹{{ service.price }}</span>
+                    {% endif %}
                 </button>
             </div>
 
@@ -995,11 +1097,13 @@
     <p>Mentor Username: {{ mentor.user.username if mentor and mentor.user else 'Not found' }}</p>
     <p>Service ID: {{ service.id if service else 'Not found' }}</p>
     <p>Service Mentor ID: {{ service.mentor_id if service else 'Not found' }}</p>
+    <p>Is Digital: {{ service.is_digital }}</p>
 </div>
 
 <script>
     let selectedDate = null;
     let selectedTime = null;
+    const isDigital = {{ service.is_digital|tojson|safe }};
 
     // Notification system
     function showNotification(message, type = 'success') {
@@ -1163,9 +1267,8 @@
         const pathParts = window.location.pathname.split('/');
         const serviceId = pathParts[3];
         
-        // Get mentor ID and is_digital from template context
+        // Get mentor ID from template context
         const mentorId = {{ mentor.id if mentor else (service.mentor_id if service else 0) }};
-        const isDigital = {{ service.is_digital|lower if service else 'false' }};
         
         if (!mentorId) {
             showNotification('Error: Mentor information not found. Please refresh the page.', 'error');
@@ -1190,7 +1293,7 @@
         console.log('Sending booking data:', bookingData);
         
         // Show loading state
-        const bookButton = document.querySelector('.book-button');
+        const bookButton = document.getElementById('book-button');
         const originalText = bookButton.innerHTML;
         const originalBg = bookButton.style.background;
         bookButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
@@ -1247,38 +1350,20 @@
         }
     }
 
-    // Initialize page with digital service check
+    // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
         console.log('=== Service Page Debug ===');
         console.log('Mentor ID:', {{ mentor.id if mentor else 'null' }});
         console.log('Mentor Username:', "{{ mentor.user.username if mentor and mentor.user else 'null' }}");
         console.log('Service ID:', {{ service.id if service else 'null' }});
         console.log('Service Mentor ID:', {{ service.mentor_id if service else 'null' }});
-        console.log('Is Digital Service:', {{ service.is_digital|lower if service else 'false' }});
+        console.log('Is Digital Service:', {{ service.is_digital }});
         console.log('Available Dates:', {{ available_dates|length if available_dates else 0 }});
         console.log('Current User:', {% if current_user %}"{{ current_user.username }}"{% else %}null{% endif %});
         console.log('Current User Role:', {% if current_user %}"{{ current_user.role }}"{% else %}null{% endif %});
         
-        // Handle digital vs live services
-        const isDigital = {{ service.is_digital|lower if service else 'false' }};
-        const isDigitalBool = isDigital === 'true';
-        
-        if (isDigitalBool) {
-            // Hide date/time selection sections for digital products
-            const dateSelection = document.querySelector('.date-selection');
-            const timeSelection = document.querySelector('.time-selection');
-            
-            if (dateSelection) dateSelection.style.display = 'none';
-            if (timeSelection) timeSelection.style.display = 'none';
-            
-            // Update button text for digital products
-            const bookButton = document.querySelector('.book-button');
-            if (bookButton) {
-                const price = {{ service.price if service else 0 }};
-                bookButton.innerHTML = `<i class="fas fa-shopping-cart"></i><span>Purchase Now - ₹${price}</span>`;
-            }
-        } else {
-            // Initialize first date selection for live sessions
+        // Initialize first date selection for live sessions
+        if (!isDigital) {
             const firstDate = document.querySelector('.date-item');
             if (firstDate) {
                 const date = firstDate.dataset.date;
