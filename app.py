@@ -544,7 +544,29 @@ def load_availabilities_with_retry(mentor_id, db, retries=3):
             if i == retries - 1:
                 raise e
             time.sleep(1)
-
+            
+@app.on_event("startup")
+async def startup_event():
+    """Application startup - create tables and admin user"""
+    print("🚀 Starting application...")
+    
+    # Create tables if they don't exist
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created/verified")
+    except Exception as e:
+        print(f"⚠️ Error creating tables: {e}")
+    
+    # Create admin user
+    db = SessionLocal()
+    try:
+        create_admin_user(db)
+        print("✅ Admin user checked/created")
+    finally:
+        db.close()
+    
+    print("✅ Startup completed")
+    
 def get_db():
     db = SessionLocal()
     try:
@@ -636,34 +658,9 @@ def save_profile_image(file: UploadFile, user_id: int) -> str:
 
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Application startup - create tables and admin user"""
-    print("🚀 Starting application...")
-    
-    # Create tables if they don't exist
-    try:
-        Base.metadata.create_all(bind=engine)
-        print("✅ Database tables created/verified")
-    except Exception as e:
-        print(f"⚠️ Error creating tables: {e}")
-    
-    # Create admin user
-    db = SessionLocal()
-    try:
-        create_admin_user(db)
-        print("✅ Admin user checked/created")
-    finally:
-        db.close()
-    
-    print("✅ Startup completed")
+
         
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
     
 
 
