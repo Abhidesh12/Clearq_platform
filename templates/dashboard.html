@@ -1776,51 +1776,46 @@
 
         {% elif current_user.role == 'mentor' %}
         <!-- Mentor Dashboard with Sidebar Menu -->
-       <!-- Menu Bar -->
-<div class="dashboard-card">
-    <div class="card-content" style="padding: 0.75rem;">
-        <div class="mentor-menu-bar">
-            <div class="menu-items">
-                <a href="#overview" 
-                   class="menu-item active" 
-                   onclick="showMentorSection('overview')">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Overview</span>
-                </a>
-                <a href="#sessions" 
-                   class="menu-item" 
-                   onclick="showMentorSection('sessions')">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Upcoming Sessions</span>
-                </a>
-                <a href="#services" 
-                   class="menu-item" 
-                   onclick="showMentorSection('services')">
-                    <i class="fas fa-list-alt"></i>
-                    <span>Services & Availability</span>
-                </a>
-                <a href="#earnings" 
-                   class="menu-item" 
-                   onclick="showMentorSection('earnings')">
-                    <i class="fas fa-wallet"></i>
-                    <span>Earnings</span>
-                </a>
-                <!-- Add this new Payouts link -->
-                <a href="/mentor/payout" 
-                   class="menu-item">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <span>Payouts</span>
-                </a>
-                <a href="#profile" 
-                   class="menu-item" 
-                   onclick="showMentorSection('profile')">
-                    <i class="fas fa-user-edit"></i>
-                    <span>Profile</span>
-                </a>
+        <!-- Menu Bar -->
+        <div class="dashboard-card">
+            <div class="card-content" style="padding: 0.75rem;">
+                <div class="mentor-menu-bar">
+                    <div class="menu-items">
+                        <a href="#overview" 
+                           class="menu-item active" 
+                           onclick="showMentorSection('overview')">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Overview</span>
+                        </a>
+                        <a href="#sessions" 
+                           class="menu-item" 
+                           onclick="showMentorSection('sessions')">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Upcoming Sessions</span>
+                        </a>
+                        <a href="#services" 
+                           class="menu-item" 
+                           onclick="showMentorSection('services')">
+                            <i class="fas fa-list-alt"></i>
+                            <span>Services & Availability</span>
+                        </a>
+                        <a href="#earnings" 
+                           class="menu-item" 
+                           onclick="showMentorSection('earnings')">
+                            <i class="fas fa-wallet"></i>
+                            <span>Earnings</span>
+                        </a>
+                        <a href="#profile" 
+                           class="menu-item" 
+                           onclick="showMentorSection('profile')">
+                            <i class="fas fa-user-edit"></i>
+                            <span>Profile</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
+
         <!-- Overview Section -->
         <div id="mentor-overview" class="mentor-section active">
             <!-- Left Column -->
