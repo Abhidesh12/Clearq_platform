@@ -3013,86 +3013,28 @@ async def verify_payment(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    data = await request.json()
-    
+    """Legacy payment verification endpoint - redirects to new API"""
     try:
-        # Verify payment signature
-        razorpay_client.utility.verify_payment_signature({
-            'razorpay_order_id': data['razorpay_order_id'],
-            'razorpay_payment_id': data['razorpay_payment_id'],
-            'razorpay_signature': data['razorpay_signature']
+        data = await request.json()
+        
+        # Call the new API endpoint
+        response = await verify_payment_api(request, db)
+        
+        # If it's a JSONResponse, return it as is
+        if isinstance(response, JSONResponse):
+            return response
+        
+        # Otherwise, return success
+        return JSONResponse({
+            "success": True,
+            "message": "Payment verified"
         })
         
-        # Update booking status
-        booking_id = data.get('booking_id')
-        booking = db.query(Booking).filter(
-            Booking.id == booking_id,
-            Booking.learner_id == current_user.id
-        ).first()
-        
-        if booking:
-            booking.payment_status = "paid"
-            booking.razorpay_payment_id = data['razorpay_payment_id']
-            
-            # Check if this is a digital product
-            is_digital = booking.service.is_digital if booking.service else False
-            
-            if is_digital:
-                # For digital products, mark as completed immediately
-                booking.status = "completed"
-                
-                # Create payment record
-                payment = Payment(
-                    booking_id=booking.id,
-                    razorpay_order_id=data['razorpay_order_id'],
-                    razorpay_payment_id=data['razorpay_payment_id'],
-                    amount=booking.amount_paid,
-                    status="paid",
-                    payment_method="razorpay",
-                    created_at=datetime.utcnow()
-                )
-                db.add(payment)
-                db.commit()
-                
-                return JSONResponse({
-                    "success": True, 
-                    "message": "Payment verified successfully! Your digital product is ready.",
-                    "redirect_url": f"/digital-product/{booking.service_id}",  # Changed from booking.id to service_id
-                    "is_digital": True
-                })
-            else:
-                # For sessions, generate meeting link
-                meeting_link, meeting_id = generate_meeting_link(booking.id, db)
-                
-                # Create payment record
-                payment = Payment(
-                    booking_id=booking.id,
-                    razorpay_order_id=data['razorpay_order_id'],
-                    razorpay_payment_id=data['razorpay_payment_id'],
-                    amount=booking.amount_paid,
-                    status="paid",
-                    payment_method="razorpay",
-                    created_at=datetime.utcnow()
-                )
-                db.add(payment)
-                db.commit()
-                
-                return JSONResponse({
-                    "success": True, 
-                    "message": "Payment verified successfully! Meeting scheduled.",
-                    "meeting_link": meeting_link,
-                    "meeting_id": meeting_id,
-                    "redirect_url": "/dashboard",
-                    "is_digital": False
-                })
-        else:
-            return JSONResponse({"success": False, "message": "Booking not found"})
-        
     except Exception as e:
-        print(f"Payment verification error: {e}")
-        db.rollback()
-        return JSONResponse({"success": False, "message": f"Payment verification failed: {str(e)}"})
-        
+        return JSONResponse({
+            "success": False, 
+            "message": f"Error: {str(e)}"
+        })
 # ============ ADMIN ROUTES ============
 
 @app.get("/admin/dashboard", response_class=HTMLResponse)
@@ -3709,30 +3651,129 @@ async def meeting_page(
         "meeting_id": meeting_id
     })
 @app.post("/api/verify-payment")
-async def verify_payment(request: Request, db: Session = Depends(get_db)):
-    data = await request.json()
-    
-    # Verify payment signature
-    params_dict = {
-        'razorpay_order_id': data['razorpay_order_id'],
-        'razorpay_payment_id': data['razorpay_payment_id'],
-        'razorpay_signature': data['razorpay_signature']
-    }
-    
+async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
+    """Verify Razorpay payment - called from frontend"""
     try:
-        # Verify signature
-        razorpay_client.utility.verify_payment_signature(params_dict)
+        data = await request.json()
+        print(f"=== Payment Verification Started ===")
+        print(f"Data received: {data}")
         
-        # Update booking status
-        booking = db.query(Booking).filter(Booking.id == data['booking_id']).first()
-        if booking:
-            booking.payment_status = "paid"
-            db.commit()
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_signature = data.get('razorpay_signature')
+        booking_id = data.get('booking_id')
         
-        return {"success": True, "message": "Payment verified"}
+        if not all([razorpay_payment_id, razorpay_order_id, razorpay_signature, booking_id]):
+            print("Missing required payment data")
+            return JSONResponse({
+                "success": False, 
+                "message": "Missing required payment data"
+            })
+        
+        # Verify payment signature
+        try:
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+            print(f"Verifying signature for order: {razorpay_order_id}")
+            
+            razorpay_client.utility.verify_payment_signature(params_dict)
+            print("✅ Payment signature verified successfully")
+            
+        except Exception as e:
+            print(f"❌ Signature verification failed: {str(e)}")
+            return JSONResponse({
+                "success": False, 
+                "message": f"Payment verification failed: {str(e)}"
+            })
+        
+        # Find the booking
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if not booking:
+            print(f"❌ Booking not found: {booking_id}")
+            return JSONResponse({
+                "success": False, 
+                "message": "Booking not found"
+            })
+        
+        print(f"✅ Booking found: ID={booking.id}, Current Status={booking.status}, Payment Status={booking.payment_status}")
+        
+        # Check if already paid
+        if booking.payment_status == "paid":
+            print("⚠️ Payment already marked as paid")
+            return JSONResponse({
+                "success": True, 
+                "message": "Payment already verified",
+                "redirect_url": "/dashboard"
+            })
+        
+        # Update booking with payment details
+        booking.payment_status = "paid"
+        booking.razorpay_payment_id = razorpay_payment_id
+        
+        # Check if this is a digital product
+        service = db.query(Service).filter(Service.id == booking.service_id).first()
+        is_digital = service.is_digital if service else False
+        
+        if is_digital:
+            # For digital products, mark as completed immediately
+            booking.status = "completed"
+            print("✅ Digital product purchase completed")
+        else:
+            # For live sessions, generate meeting link
+            try:
+                meeting_link, meeting_id = generate_meeting_link(booking.id, db)
+                print(f"✅ Meeting link generated: {meeting_link}")
+            except Exception as e:
+                print(f"⚠️ Error generating meeting link: {str(e)}")
+                # Still mark as paid even if meeting link fails
+                booking.status = "confirmed"
+        
+        # Create payment record
+        try:
+            payment = Payment(
+                booking_id=booking.id,
+                razorpay_order_id=razorpay_order_id,
+                razorpay_payment_id=razorpay_payment_id,
+                amount=booking.amount_paid,
+                status="paid",
+                payment_method="razorpay",
+                created_at=datetime.utcnow()
+            )
+            db.add(payment)
+            print("✅ Payment record created")
+        except Exception as e:
+            print(f"⚠️ Error creating payment record: {str(e)}")
+        
+        # Commit all changes
+        db.commit()
+        print("✅ Database changes committed")
+        
+        # Determine redirect URL
+        redirect_url = "/dashboard"
+        if is_digital and service:
+            redirect_url = f"/digital-product/{service.id}"
+        
+        print(f"=== Payment Verification Complete ===")
+        print(f"✅ Success! Redirecting to: {redirect_url}")
+        
+        return JSONResponse({
+            "success": True, 
+            "message": "Payment verified successfully!",
+            "redirect_url": redirect_url,
+            "is_digital": is_digital
+        })
+        
     except Exception as e:
-        return {"success": False, "error": str(e)}
-        
+        db.rollback()
+        print(f"❌ Error in verify_payment_api: {str(e)}")
+        print(traceback.format_exc())
+        return JSONResponse({
+            "success": False, 
+            "message": f"Payment verification failed: {str(e)}"
+        })
 # Update the time-slots API to support both ID and username
 @app.post("/api/time-slots/{identifier}")
 async def get_time_slots(
