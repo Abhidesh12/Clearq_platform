@@ -541,28 +541,49 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 # ============ HELPER FUNCTIONS ============
 
 def allowed_file(filename: str) -> bool:
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    if not filename or '.' not in filename:
+        return False
+    
+    ext = filename.rsplit('.', 1)[1].lower()
+    return ext in ALLOWED_EXTENSIONS
 
-def save_profile_image(file: UploadFile, user_id: int) -> str:
+async def save_profile_image(file: UploadFile, user_id: int) -> str:
     """Save uploaded profile image and return filename"""
+    print(f"Saving profile image for user {user_id}: {file.filename}")
+    
     if not allowed_file(file.filename):
         raise HTTPException(status_code=400, detail="Invalid file type")
     
     # Create uploads/profile_images directory if it doesn't exist
     profile_images_dir = UPLOAD_DIR / "profile_images"
     profile_images_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Upload directory: {profile_images_dir}")
     
     # Generate unique filename
     ext = file.filename.rsplit('.', 1)[1].lower()
     filename = f"profile_{user_id}_{uuid.uuid4().hex[:8]}.{ext}"
     file_path = profile_images_dir / filename
     
+    print(f"Saving file to: {file_path}")
+    
     # Save file
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    try:
+        # Read file content
+        content = await file.read()
+        
+        # Write to file
+        with open(file_path, "wb") as buffer:
+            buffer.write(content)
+        
+        print(f"File saved successfully: {filename} ({len(content)} bytes)")
+    except Exception as e:
+        print(f"Error saving file: {str(e)}")
+        raise
     
     # Return relative path for database storage
-    return f"uploads/profile_images/{filename}"
+    relative_path = f"uploads/profile_images/{filename}"
+    print(f"Returning relative path: {relative_path}")
+    return relative_path
 
 # ============ ROUTES ============
 
@@ -1450,6 +1471,9 @@ async def update_profile(
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
+        print(f"Updating profile for user: {current_user.id}")
+        print(f"Profile photo received: {profile_photo.filename if profile_photo else 'None'}")
+        
         # Update user info
         user = db.query(User).filter(User.id == current_user.id).first()
         
@@ -1458,15 +1482,52 @@ async def update_profile(
         
         # Handle profile photo upload
         if profile_photo and profile_photo.filename:
-            # Delete old profile image if exists and not default
-            if user.profile_image and user.profile_image != "default-avatar.png":
-                old_image_path = UPLOAD_DIR / user.profile_image
-                if old_image_path.exists():
-                    old_image_path.unlink()
+            print(f"Processing profile photo: {profile_photo.filename}")
             
-            # Save new profile image
-            filename = save_profile_image(profile_photo, current_user.id)
-            user.profile_image = filename
+            # Validate file type
+            if not allowed_file(profile_photo.filename):
+                error_msg = "Invalid file type. Allowed: PNG, JPG, JPEG, GIF"
+                print(error_msg)
+                return RedirectResponse(
+                    url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
+                    status_code=303
+                )
+            
+            # Check file size (max 5MB)
+            try:
+                content = await profile_photo.read()
+                file_size = len(content)
+                print(f"File size: {file_size} bytes")
+                
+                if file_size > 5 * 1024 * 1024:  # 5MB
+                    error_msg = "File size must be less than 5MB"
+                    print(error_msg)
+                    return RedirectResponse(
+                        url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
+                        status_code=303
+                    )
+                
+                # Reset file pointer
+                profile_photo.file.seek(0)
+                
+                # Delete old profile image if exists and not default
+                if user.profile_image and user.profile_image != "default-avatar.png":
+                    old_image_path = UPLOAD_DIR / user.profile_image
+                    if old_image_path.exists():
+                        print(f"Deleting old image: {old_image_path}")
+                        old_image_path.unlink()
+                
+                # Save new profile image
+                filename = save_profile_image(profile_photo, current_user.id)
+                user.profile_image = filename
+                print(f"New profile image saved: {filename}")
+                
+            except Exception as e:
+                print(f"Error processing profile photo: {str(e)}")
+                return RedirectResponse(
+                    url=f"/profile/edit?error=Error%20processing%20profile%20photo",
+                    status_code=303
+                )
         
         # Update mentor profile if exists
         if current_user.role == "mentor":
@@ -1513,6 +1574,7 @@ async def update_profile(
                     mentor.company = company
         
         db.commit()
+        print("Profile updated successfully")
         
         # Redirect with success in query parameter
         response = RedirectResponse(
@@ -1524,6 +1586,9 @@ async def update_profile(
         
     except Exception as e:
         db.rollback()
+        print(f"Error updating profile: {str(e)}")
+        print(traceback.format_exc())
+        
         # Redirect with error in query parameter
         error_message = f"Error updating profile: {str(e)}"
         encoded_error = error_message.replace(" ", "%20").replace(":", "%3A")
@@ -1531,6 +1596,27 @@ async def update_profile(
             url=f"/profile/edit?error={encoded_error}",
             status_code=303
         )
+
+@app.get("/debug/upload-dir")
+async def debug_upload_dir():
+    """Debug endpoint to check upload directory"""
+    try:
+        profile_images_dir = UPLOAD_DIR / "profile_images"
+        exists = profile_images_dir.exists()
+        files = []
+        
+        if exists:
+            files = [f.name for f in profile_images_dir.iterdir() if f.is_file()]
+        
+        return {
+            "upload_dir": str(UPLOAD_DIR),
+            "profile_images_dir": str(profile_images_dir),
+            "exists": exists,
+            "files": files,
+            "permissions": oct(os.stat(profile_images_dir).st_mode) if exists else "N/A"
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.post("/profile/upload-photo")
 async def upload_profile_photo_api(
