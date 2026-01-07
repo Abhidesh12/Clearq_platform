@@ -407,34 +407,62 @@
 </div>
 
 <!-- Profile Photo Preview Script -->
+<!-- Replace the entire JavaScript section at the bottom of edit_profile.html -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Profile photo preview
     const profilePhotoInput = document.getElementById('profile_photo');
     const profilePreview = document.getElementById('profile-preview');
     const avatarPreview = document.getElementById('avatar-preview');
+    const form = document.getElementById('profile-form');
     
+    // Profile photo preview handler
     if (profilePhotoInput) {
         profilePhotoInput.addEventListener('change', function() {
+            console.log('Profile photo selected:', this.files[0]?.name);
             if (this.files && this.files[0]) {
+                const file = this.files[0];
                 const reader = new FileReader();
+                
+                // Validate file
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                
+                if (!allowedTypes.includes(file.type)) {
+                    showNotification('Please select a valid image file (JPEG, PNG, GIF)', 'error');
+                    this.value = '';
+                    return;
+                }
+                
+                if (file.size > maxSize) {
+                    showNotification('File size must be less than 5MB', 'error');
+                    this.value = '';
+                    return;
+                }
                 
                 reader.onload = function(e) {
                     if (profilePreview) {
                         profilePreview.src = e.target.result;
+                        profilePreview.style.display = 'block';
                     } else if (avatarPreview) {
                         avatarPreview.style.display = 'none';
-                        if (!profilePreview) {
-                            const img = document.createElement('img');
-                            img.id = 'profile-preview';
-                            img.src = e.target.result;
-                            img.className = 'w-20 h-20 rounded-xl object-cover border-2 border-white shadow-md';
-                            avatarPreview.parentNode.appendChild(img);
-                        }
+                        const img = document.createElement('img');
+                        img.id = 'profile-preview';
+                        img.src = e.target.result;
+                        img.className = 'w-20 h-20 rounded-xl object-cover border-2 border-white shadow-md';
+                        avatarPreview.parentNode.appendChild(img);
+                    }
+                    
+                    // Add a visual indicator that file is selected
+                    const uploadButton = profilePhotoInput.closest('label').querySelector('span');
+                    if (uploadButton) {
+                        uploadButton.innerHTML = '<i class="fas fa-check mr-2"></i> Photo Selected';
+                        uploadButton.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
+                        uploadButton.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
                     }
                 }
                 
-                reader.readAsDataURL(this.files[0]);
+                reader.readAsDataURL(file);
             }
         });
     }
@@ -442,7 +470,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Remove photo button
     const removePhotoBtn = document.getElementById('remove-photo-btn');
     if (removePhotoBtn) {
-        removePhotoBtn.addEventListener('click', async function() {
+        removePhotoBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
             if (confirm('Are you sure you want to remove your profile photo?')) {
                 try {
                     const originalText = this.innerHTML;
@@ -452,7 +482,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const response = await fetch('/profile/remove-photo', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': getCSRFToken()
                         }
                     });
                     
@@ -475,58 +506,155 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Form validation
-    const form = document.getElementById('profile-form');
+    // Form submission handler
     if (form) {
-        form.addEventListener('submit', function(e) {
-            const fileInput = document.getElementById('profile_photo');
-            if (fileInput && fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const maxSize = 5 * 1024 * 1024; // 5MB
-                
-                if (file.size > maxSize) {
-                    e.preventDefault();
-                    showNotification('File size must be less than 5MB', 'error');
-                    return false;
-                }
-                
-                if (!file.type.match('image.*')) {
-                    e.preventDefault();
-                    showNotification('Please select an image file (PNG, JPG, JPEG, GIF)', 'error');
-                    return false;
-                }
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            console.log('Form submission started...');
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Validate form data
+            const fullName = formData.get('full_name');
+            if (!fullName || fullName.trim() === '') {
+                showNotification('Full name is required', 'error');
+                return;
             }
             
             // Show loading state
             const submitBtns = document.querySelectorAll('button[type="submit"]');
             submitBtns.forEach(btn => {
+                const originalText = btn.innerHTML;
+                btn.dataset.originalText = originalText;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
                 btn.disabled = true;
+            });
+            
+            try {
+                // Submit form via AJAX
+                const response = await fetch('/profile/edit', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Check if response is a redirect
+                if (response.redirected) {
+                    // Get the redirect URL
+                    const redirectUrl = response.url;
+                    
+                    // Check if there are success/error messages in the URL
+                    const urlParams = new URL(redirectUrl).searchParams;
+                    
+                    if (urlParams.has('success')) {
+                        showNotification(decodeURIComponent(urlParams.get('success')), 'success');
+                    }
+                    
+                    if (urlParams.has('error')) {
+                        showNotification(decodeURIComponent(urlParams.get('error')), 'error');
+                    }
+                    
+                    // Redirect after a short delay
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 1500);
+                    
+                    return;
+                }
+                
+                // If not redirected, try to parse as JSON
+                try {
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showNotification(data.message || 'Profile updated successfully!', 'success');
+                        
+                        // Clear localStorage
+                        clearLocalStorage();
+                        
+                        // Reload after success
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        throw new Error(data.message || 'Failed to update profile');
+                    }
+                } catch (jsonError) {
+                    // If not JSON, assume it's HTML and reload
+                    showNotification('Profile updated successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                }
+                
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showNotification('Error: ' + error.message, 'error');
+                
+                // Reset buttons
+                submitBtns.forEach(btn => {
+                    if (btn.dataset.originalText) {
+                        btn.innerHTML = btn.dataset.originalText;
+                        btn.disabled = false;
+                    }
+                });
+            }
+        });
+    }
+    
+    // Auto-save form data to localStorage
+    if (form) {
+        const formInputs = form.querySelectorAll('input[name], textarea[name], select[name]');
+        
+        // Load saved data
+        formInputs.forEach(input => {
+            if (input.type === 'file') return; // Skip file inputs
+            
+            const savedValue = localStorage.getItem(`profile_${input.name}`);
+            if (savedValue !== null && (!input.value || input.value.trim() === '')) {
+                input.value = savedValue;
+            }
+            
+            // Save on input
+            input.addEventListener('input', function() {
+                localStorage.setItem(`profile_${this.name}`, this.value);
+            });
+        });
+        
+        // Save radio buttons
+        const radioButtons = form.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(radio => {
+            const savedValue = localStorage.getItem(`profile_${radio.name}`);
+            if (savedValue === radio.value) {
+                radio.checked = true;
+            }
+            
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    localStorage.setItem(`profile_${this.name}`, this.value);
+                }
             });
         });
     }
     
-    // Auto-save form data to localStorage to prevent data loss
-    const formInputs = form.querySelectorAll('input, textarea');
-    formInputs.forEach(input => {
-        // Load saved data
-        const savedValue = localStorage.getItem(`profile_${input.name}`);
-        if (savedValue && !input.value) {
-            input.value = savedValue;
+    // Clear localStorage function
+    function clearLocalStorage() {
+        const keys = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('profile_')) {
+                keys.push(key);
+            }
         }
-        
-        // Save on input
-        input.addEventListener('input', function() {
-            localStorage.setItem(`profile_${this.name}`, this.value);
-        });
-    });
+        keys.forEach(key => localStorage.removeItem(key));
+    }
     
-    // Clear localStorage on successful form submission
-    form.addEventListener('submit', function() {
-        formInputs.forEach(input => {
-            localStorage.removeItem(`profile_${input.name}`);
-        });
-    });
+    // Get CSRF token function
+    function getCSRFToken() {
+        const csrfInput = document.querySelector('input[name="csrf_token"]');
+        return csrfInput ? csrfInput.value : '';
+    }
 });
 
 // Notification function
@@ -538,15 +666,20 @@ function showNotification(message, type = 'info') {
     // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification-toast fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 ${
-        type === 'success' ? 'bg-emerald-500 text-white' :
-        type === 'error' ? 'bg-rose-500 text-white' :
-        'bg-blue-500 text-white'
+        type === 'success' ? 'bg-emerald-500 text-white border border-emerald-600' :
+        type === 'error' ? 'bg-rose-500 text-white border border-rose-600' :
+        'bg-blue-500 text-white border border-blue-600'
     }`;
     
     notification.innerHTML = `
-        <div class="flex items-center">
-            <span class="mr-3">${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</span>
-            <span>${message}</span>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-3"></i>
+                <span class="font-medium">${message}</span>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white opacity-80 hover:opacity-100">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     `;
     
@@ -554,22 +687,129 @@ function showNotification(message, type = 'info') {
     
     // Auto-remove after 5 seconds
     setTimeout(() => {
+        notification.style.opacity = '0';
         notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
     }, 5000);
 }
 
 // Enhance form inputs with focus effects
-document.querySelectorAll('input, textarea').forEach(input => {
-    input.addEventListener('focus', function() {
-        this.parentElement.classList.add('ring-2', 'ring-blue-200', 'rounded-xl');
-    });
-    
-    input.addEventListener('blur', function() {
-        this.parentElement.classList.remove('ring-2', 'ring-blue-200', 'rounded-xl');
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input, textarea, select').forEach(input => {
+        const parent = input.closest('div');
+        if (!parent) return;
+        
+        input.addEventListener('focus', function() {
+            parent.classList.add('ring-2', 'ring-blue-200');
+        });
+        
+        input.addEventListener('blur', function() {
+            parent.classList.remove('ring-2', 'ring-blue-200');
+        });
     });
 });
+
+// Form validation helper
+function validateFile(file) {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    
+    if (!allowedTypes.includes(file.type)) {
+        return {
+            valid: false,
+            message: 'Please select a valid image file (JPEG, PNG, GIF, WebP)'
+        };
+    }
+    
+    if (file.size > maxSize) {
+        return {
+            valid: false,
+            message: 'File size must be less than 5MB'
+        };
+    }
+    
+    return { valid: true };
+}
 </script>
+
+<style>
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .notification-toast {
+        top: auto;
+        bottom: 80px;
+        left: 1rem;
+        right: 1rem;
+        transform: none;
+        min-width: auto;
+    }
+}
+
+/* Form input animations */
+input, textarea, select {
+    transition: all 0.2s ease-in-out;
+}
+
+input:focus, textarea:focus, select:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+}
+
+/* File input styling */
+input[type="file"] {
+    border: 0;
+    clip: rect(0,0,0,0);
+    height: 1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute !important;
+    white-space: nowrap;
+    width: 1px;
+}
+
+/* Custom scrollbar for textareas */
+textarea::-webkit-scrollbar {
+    width: 6px;
+}
+
+textarea::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Loading animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* Preview image styling */
+#profile-preview, #avatar-preview {
+    transition: all 0.3s ease;
+}
+
+#profile-preview:hover, #avatar-preview:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+</style>
 
 <style>
 /* Mobile optimizations */
