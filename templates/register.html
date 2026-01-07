@@ -248,29 +248,416 @@ document.addEventListener('DOMContentLoaded', function() {
     learnerRadio.addEventListener('change', toggleMentorFields);
     mentorRadio.addEventListener('change', toggleMentorFields);
     
-    // Form validation for mentor fields (make required when mentor is selected)
-    const form = document.getElementById('register-form');
-    form.addEventListener('submit', function(e) {
-        if (mentorRadio.checked) {
-            // You can add validation here if needed
-            // Currently mentor fields are optional
+    // Smooth scrolling to mentor fields when selected (mobile friendly)
+    function scrollToMentorFields() {
+        if (document.getElementById('mentor').checked) {
+            const mentorFields = document.getElementById('mentor-fields');
+            mentorFields.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
         }
-    });
+    }
+    
+    // Add scroll event when mentor is selected
+    mentorRadio.addEventListener('change', scrollToMentorFields);
 });
 
-// Smooth scrolling to mentor fields when selected (mobile friendly)
-function scrollToMentorFields() {
-    if (document.getElementById('mentor').checked) {
-        const mentorFields = document.getElementById('mentor-fields');
-        mentorFields.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
+// ================== DATA STORAGE JAVASCRIPT ==================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the form
+    const form = document.querySelector('#register-form');
+    
+    if (!form) {
+        console.error('Registration form not found!');
+        return;
+    }
+
+    // Get the three specific fields
+    const industryField = document.getElementById('industry');
+    const linkedinField = document.getElementById('linkedin_url');
+    const instagramField = document.getElementById('github_url'); // Note: This is using github_url field for Instagram
+    const bioField = document.getElementById('bio');
+    const roleRadios = document.querySelectorAll('input[name="role"]');
+    
+    // Load saved data from localStorage
+    loadSavedFormData();
+    
+    // Save data to localStorage on input
+    if (industryField) {
+        industryField.addEventListener('input', function() {
+            localStorage.setItem('registration_industry', this.value);
         });
     }
-}
+    
+    if (linkedinField) {
+        linkedinField.addEventListener('input', function() {
+            localStorage.setItem('registration_linkedin_url', this.value);
+        });
+    }
+    
+    if (instagramField) {
+        instagramField.addEventListener('input', function() {
+            localStorage.setItem('registration_instagram_url', this.value);
+        });
+    }
+    
+    if (bioField) {
+        bioField.addEventListener('input', function() {
+            localStorage.setItem('registration_bio', this.value);
+        });
+    }
+    
+    // Save role selection
+    roleRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            localStorage.setItem('registration_role', this.value);
+        });
+    });
+    
+    // Form submission handler
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        console.log('Registration form submission started...');
+        
+        // Get form data
+        const formData = new FormData(this);
+        
+        // Validate required fields
+        const fullName = formData.get('full_name');
+        const email = formData.get('email');
+        const username = formData.get('username');
+        const password = formData.get('password');
+        const role = formData.get('role');
+        
+        // Basic validation
+        if (!fullName || fullName.trim() === '') {
+            showNotification('Full name is required', 'error');
+            return;
+        }
+        
+        if (!email || email.trim() === '') {
+            showNotification('Email is required', 'error');
+            return;
+        }
+        
+        if (!username || username.trim() === '') {
+            showNotification('Username is required', 'error');
+            return;
+        }
+        
+        if (!password) {
+            showNotification('Password is required', 'error');
+            return;
+        }
+        
+        if (!role) {
+            showNotification('Please select a role', 'error');
+            return;
+        }
+        
+        // Validate LinkedIn URL format if provided
+        const linkedinUrl = linkedinField ? linkedinField.value : '';
+        if (linkedinUrl && !isValidLinkedInUrl(linkedinUrl)) {
+            showNotification('Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)', 'warning');
+            linkedinField.focus();
+            return;
+        }
+        
+        // Validate Instagram username if provided
+        const instagramUsername = instagramField ? instagramField.value : '';
+        if (instagramUsername && !isValidInstagramUsername(instagramUsername)) {
+            showNotification('Instagram username should not contain special characters except underscore', 'warning');
+            instagramField.focus();
+            return;
+        }
+        
+        // Clean Instagram username (remove @ if present)
+        if (instagramUsername) {
+            const cleanedUsername = instagramUsername.replace('@', '').trim();
+            if (instagramField) {
+                formData.set('github_url', cleanedUsername);
+            }
+        }
+        
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating Account...';
+        submitBtn.disabled = true;
+        
+        try {
+            // Submit form via AJAX
+            const response = await fetch('/register', {
+                method: 'POST',
+                body: formData
+            });
+            
+            // Check if response is a redirect
+            if (response.redirected) {
+                // Clear localStorage on successful submission
+                clearRegistrationLocalStorage();
+                
+                // Get the redirect URL
+                const redirectUrl = response.url;
+                
+                // Check if there are success/error messages in the URL
+                const urlParams = new URL(redirectUrl).searchParams;
+                
+                if (urlParams.has('error')) {
+                    showNotification(decodeURIComponent(urlParams.get('error')), 'error');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                // Redirect to login or dashboard
+                showNotification('Account created successfully! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 2000);
+                
+                return;
+            }
+            
+            // Try to parse as JSON
+            try {
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Clear localStorage on successful registration
+                    clearRegistrationLocalStorage();
+                    
+                    showNotification(data.message || 'Account created successfully!', 'success');
+                    
+                    // Redirect after success
+                    setTimeout(() => {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            window.location.href = '/login';
+                        }
+                    }, 2000);
+                } else {
+                    throw new Error(data.message || 'Failed to create account');
+                }
+            } catch (jsonError) {
+                // If response is HTML and not JSON, assume success and redirect
+                clearRegistrationLocalStorage();
+                showNotification('Account created successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            }
+            
+        } catch (error) {
+            console.error('Registration error:', error);
+            showNotification('Error: ' + error.message, 'error');
+            
+            // Reset button
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+    
+    // LinkedIn URL validation
+    if (linkedinField) {
+        linkedinField.addEventListener('blur', function() {
+            const url = this.value.trim();
+            if (url && !isValidLinkedInUrl(url)) {
+                showNotification('Please enter a valid LinkedIn URL format', 'warning');
+                this.classList.add('border-red-300');
+            } else {
+                this.classList.remove('border-red-300');
+            }
+        });
+    }
+    
+    // Instagram username validation
+    if (instagramField) {
+        instagramField.addEventListener('blur', function() {
+            const username = this.value.trim();
+            if (username && !isValidInstagramUsername(username)) {
+                showNotification('Instagram username can only contain letters, numbers, periods and underscores', 'warning');
+                this.classList.add('border-red-300');
+            } else {
+                this.classList.remove('border-red-300');
+            }
+        });
+        
+        // Auto-remove @ symbol
+        instagramField.addEventListener('input', function() {
+            this.value = this.value.replace('@', '');
+        });
+    }
+    
+    // Auto-save all form fields to localStorage
+    const allFormInputs = form.querySelectorAll('input[name], textarea[name], select[name]');
+    allFormInputs.forEach(input => {
+        if (input.type === 'file' || input.type === 'password') return;
+        
+        const savedValue = localStorage.getItem(`registration_${input.name}`);
+        if (savedValue !== null && (!input.value || input.value.trim() === '')) {
+            input.value = savedValue;
+        }
+        
+        input.addEventListener('input', function() {
+            localStorage.setItem(`registration_${this.name}`, this.value);
+        });
+    });
+    
+    // Functions
+    
+    function loadSavedFormData() {
+        // Load saved role
+        const savedRole = localStorage.getItem('registration_role');
+        if (savedRole) {
+            const roleRadio = document.querySelector(`input[name="role"][value="${savedRole}"]`);
+            if (roleRadio) {
+                roleRadio.checked = true;
+                // Trigger change event to show/hide mentor fields
+                roleRadio.dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // Load saved bio
+        if (bioField) {
+            const savedBio = localStorage.getItem('registration_bio');
+            if (savedBio) {
+                bioField.value = savedBio;
+            }
+        }
+        
+        // Load saved industry
+        if (industryField) {
+            const savedIndustry = localStorage.getItem('registration_industry');
+            if (savedIndustry) {
+                industryField.value = savedIndustry;
+            }
+        }
+        
+        // Load saved LinkedIn
+        if (linkedinField) {
+            const savedLinkedIn = localStorage.getItem('registration_linkedin_url');
+            if (savedLinkedIn) {
+                linkedinField.value = savedLinkedIn;
+            }
+        }
+        
+        // Load saved Instagram
+        if (instagramField) {
+            const savedInstagram = localStorage.getItem('registration_instagram_url');
+            if (savedInstagram) {
+                instagramField.value = savedInstagram;
+            }
+        }
+    }
+    
+    function clearRegistrationLocalStorage() {
+        const registrationKeys = [
+            'registration_industry',
+            'registration_linkedin_url', 
+            'registration_instagram_url',
+            'registration_bio',
+            'registration_role',
+            'registration_full_name',
+            'registration_email',
+            'registration_username',
+            'registration_terms'
+        ];
+        
+        registrationKeys.forEach(key => {
+            localStorage.removeItem(key);
+        });
+        
+        // Also clear any other registration-related data
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('registration_')) {
+                localStorage.removeItem(key);
+            }
+        }
+    }
+    
+    function isValidLinkedInUrl(url) {
+        if (!url) return true; // Optional field
+        const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/(in|company)\/[a-zA-Z0-9-]+$/;
+        return linkedinRegex.test(url.trim());
+    }
+    
+    function isValidInstagramUsername(username) {
+        if (!username) return true; // Optional field
+        const instagramRegex = /^[a-zA-Z0-9._]+$/;
+        return instagramRegex.test(username.trim());
+    }
+    
+    // Notification function
+    function showNotification(message, type = 'info') {
+        // Remove any existing notifications
+        const existingNotifications = document.querySelectorAll('.notification-toast');
+        existingNotifications.forEach(n => n.remove());
+        
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification-toast fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 ${
+            type === 'success' ? 'bg-emerald-500 text-white border border-emerald-600' :
+            type === 'error' ? 'bg-rose-500 text-white border border-rose-600' :
+            type === 'warning' ? 'bg-amber-500 text-white border border-amber-600' :
+            'bg-blue-500 text-white border border-blue-600'
+        }`;
+        
+        notification.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'} mr-3"></i>
+                    <span class="font-medium">${message}</span>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white opacity-80 hover:opacity-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 5000);
+    }
+    
+    // Enhance form inputs with focus effects
+    document.querySelectorAll('input, textarea, select').forEach(input => {
+        const parent = input.closest('div');
+        if (!parent) return;
+        
+        input.addEventListener('focus', function() {
+            parent.classList.add('ring-2', 'ring-blue-200');
+        });
+        
+        input.addEventListener('blur', function() {
+            parent.classList.remove('ring-2', 'ring-blue-200');
+        });
+    });
+    
+    // Make functions available globally
+    window.showNotification = showNotification;
+    window.clearRegistrationLocalStorage = clearRegistrationLocalStorage;
+});
+
+// ================== CSS STYLES ==================
 </script>
 
 <style>
+    /* Radio button styling */
     input[type="radio"]:checked + label {
         border-color: #2563eb;
         background-color: rgba(37, 99, 235, 0.05);
@@ -305,6 +692,43 @@ function scrollToMentorFields() {
         text-align: center;
     }
     
+    /* Notification toast styling */
+    .notification-toast {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Validation styles */
+    .border-red-300 {
+        border-color: #fca5a5 !important;
+    }
+    
+    /* Loading spinner animation */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .fa-spinner {
+        animation: spin 1s linear infinite;
+    }
+    
+    /* Form input focus effects */
+    input:focus, textarea:focus, select:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: #3b82f6 !important;
+    }
+    
     /* Responsive adjustments */
     @media (max-width: 640px) {
         .grid-cols-2 {
@@ -320,6 +744,29 @@ function scrollToMentorFields() {
             grid-template-columns: 1fr;
             gap: 0.75rem;
         }
+        
+        .notification-toast {
+            top: auto;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) !important;
+            right: auto;
+            min-width: 90%;
+            max-width: 400px;
+        }
+    }
+    
+    /* Mobile Header Fix */
+    @media (max-width: 768px) {
+        .min-h-screen {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+    }
+    
+    /* Form field spacing */
+    .space-y-4 > div {
+        margin-bottom: 1rem;
     }
 </style>
 {% endblock %}
