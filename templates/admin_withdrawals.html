@@ -1,0 +1,1104 @@
+{% extends "base.html" %}
+
+{% block title %}Withdrawal Management - ClearQ{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3B82F6;
+        --primary-dark: #2563EB;
+        --success: #10B981;
+        --warning: #F59E0B;
+        --danger: #EF4444;
+        --gray-900: #0F172A;
+        --gray-800: #1E293B;
+        --gray-700: #334155;
+        --gray-600: #475569;
+        --gray-500: #64748B;
+        --gray-400: #94A3B8;
+        --gray-300: #CBD5E1;
+        --gray-200: #E2E8F0;
+        --gray-100: #F1F5F9;
+        --gray-50: #F8FAFC;
+        --white: #FFFFFF;
+    }
+
+    .admin-withdrawals-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    /* Header */
+    .admin-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .admin-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .admin-header h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .admin-header p {
+        opacity: 0.9;
+        font-size: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 640px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .stats-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    .stat-card {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .icon-pending { background: #FEF3C7; color: #92400E; }
+    .icon-approved { background: #D1FAE5; color: #065F46; }
+    .icon-completed { background: #BBF7D0; color: #047857; }
+    .icon-total { background: #EFF6FF; color: #1E40AF; }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-subtext {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+    }
+
+    /* Tabs */
+    .admin-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        padding: 0.5rem;
+        background: var(--gray-100);
+        border-radius: 0.75rem;
+        overflow-x: auto;
+    }
+
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        background: transparent;
+        color: var(--gray-600);
+        font-weight: 500;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .tab-button:hover {
+        background: rgba(255, 255, 255, 0.5);
+        color: var(--gray-900);
+    }
+
+    .tab-button.active {
+        background: var(--white);
+        color: var(--primary);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Data Table */
+    .data-card {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .data-card h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .table-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 200px;
+        max-width: 300px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--gray-900);
+        transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+
+    .filter-select {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--gray-900);
+        background: var(--white);
+        min-width: 150px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .data-table thead {
+        background: var(--gray-50);
+    }
+
+    .data-table th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .data-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .data-table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+        color: var(--gray-700);
+        vertical-align: middle;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .user-avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .user-avatar-initial {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .user-name {
+        font-weight: 500;
+        color: var(--gray-900);
+        margin-bottom: 0.125rem;
+    }
+
+    .user-email {
+        font-size: 0.875rem;
+        color: var(--gray-500);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .status-pending { background: #FEF3C7; color: #92400E; }
+    .status-processing { background: #DBEAFE; color: #1E40AF; }
+    .status-approved { background: #D1FAE5; color: #065F46; }
+    .status-completed { background: #BBF7D0; color: #047857; }
+    .status-rejected { background: #FEE2E2; color: #991B1B; }
+
+    .amount-cell {
+        font-weight: 600;
+        color: var(--gray-900);
+    }
+
+    .account-details {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .account-details:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        left: 0;
+        background: var(--gray-900);
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        white-space: pre-wrap;
+        z-index: 10;
+        max-width: 300px;
+        word-wrap: break-word;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .action-approve {
+        background: linear-gradient(135deg, var(--success), #059669);
+        color: white;
+    }
+
+    .action-approve:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    }
+
+    .action-reject {
+        background: linear-gradient(135deg, var(--danger), #DC2626);
+        color: white;
+    }
+
+    .action-reject:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+    }
+
+    .action-complete {
+        background: linear-gradient(135deg, #10B981, #059669);
+        color: white;
+    }
+
+    .action-complete:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    }
+
+    .action-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .action-view {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+    }
+
+    .action-view:hover {
+        background: var(--gray-200);
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: var(--white);
+        margin: 10% auto;
+        padding: 2rem;
+        border-radius: 1rem;
+        width: 90%;
+        max-width: 600px;
+        position: relative;
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+    }
+
+    .close-button {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--gray-500);
+        cursor: pointer;
+        padding: 0.25rem;
+    }
+
+    .close-button:hover {
+        color: var(--gray-700);
+    }
+
+    .modal-body {
+        margin-bottom: 1.5rem;
+    }
+
+    .withdrawal-details {
+        background: var(--gray-50);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-row {
+        display: flex;
+        margin-bottom: 0.75rem;
+    }
+
+    .detail-label {
+        width: 150px;
+        font-weight: 500;
+        color: var(--gray-600);
+    }
+
+    .detail-value {
+        flex: 1;
+        color: var(--gray-900);
+    }
+
+    .notes-section {
+        margin-top: 1.5rem;
+    }
+
+    .notes-label {
+        display: block;
+        font-weight: 500;
+        color: var(--gray-600);
+        margin-bottom: 0.5rem;
+    }
+
+    .notes-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--gray-900);
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .notes-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    .modal-button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .modal-button.confirm {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+    }
+
+    .modal-button.confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+    }
+
+    .modal-button.cancel {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+    }
+
+    .modal-button.cancel:hover {
+        background: var(--gray-200);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--gray-500);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .pagination-button {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--gray-300);
+        background: var(--white);
+        color: var(--gray-700);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .pagination-button:hover:not(:disabled) {
+        background: var(--gray-50);
+        border-color: var(--gray-400);
+    }
+
+    .pagination-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .pagination-button.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+</style>
+
+<div class="admin-withdrawals-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <h1>Withdrawal Management</h1>
+        <p>Review and process mentor withdrawal requests</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-label">Pending Requests</div>
+                <div class="stat-icon icon-pending">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="stat-value">₹{{ "%.2f"|format(stats.total_pending) }}</div>
+            <div class="stat-subtext">{{ stats.pending_count }} requests awaiting approval</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-label">Approved</div>
+                <div class="stat-icon icon-approved">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+            </div>
+            <div class="stat-value">₹{{ "%.2f"|format(stats.total_approved) }}</div>
+            <div class="stat-subtext">{{ stats.approved_count }} requests approved</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-label">Completed</div>
+                <div class="stat-icon icon-completed">
+                    <i class="fas fa-check-double"></i>
+                </div>
+            </div>
+            <div class="stat-value">₹{{ "%.2f"|format(stats.total_completed) }}</div>
+            <div class="stat-subtext">{{ stats.completed_count }} requests completed</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-label">This Month</div>
+                <div class="stat-icon icon-total">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+            </div>
+            <div class="stat-value">₹{{ "%.2f"|format(stats.total_this_month) }}</div>
+            <div class="stat-subtext">Total processed this month</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+        <button class="tab-button {% if status == 'pending' %}active{% endif %}" onclick="filterWithdrawals('pending')">
+            <i class="fas fa-clock mr-2"></i>Pending ({{ stats.pending_count }})
+        </button>
+        <button class="tab-button {% if status == 'approved' %}active{% endif %}" onclick="filterWithdrawals('approved')">
+            <i class="fas fa-check-circle mr-2"></i>Approved ({{ stats.approved_count }})
+        </button>
+        <button class="tab-button {% if status == 'completed' %}active{% endif %}" onclick="filterWithdrawals('completed')">
+            <i class="fas fa-check-double mr-2"></i>Completed ({{ stats.completed_count }})
+        </button>
+        <button class="tab-button {% if status == 'all' %}active{% endif %}" onclick="filterWithdrawals('all')">
+            <i class="fas fa-list mr-2"></i>All Requests
+        </button>
+    </div>
+
+    <!-- Withdrawal Requests Table -->
+    <div class="data-card">
+        <div class="table-controls">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Search mentor or ID..." id="searchInput">
+            </div>
+            <div>
+                <select class="filter-select" id="amountFilter">
+                    <option value="">All Amounts</option>
+                    <option value="0-1000">₹0 - ₹1,000</option>
+                    <option value="1000-5000">₹1,000 - ₹5,000</option>
+                    <option value="5000+">₹5,000+</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="data-table" id="withdrawalsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Mentor</th>
+                        <th>Amount</th>
+                        <th>Payment Method</th>
+                        <th>Account Details</th>
+                        <th>Requested</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for withdrawal in withdrawals %}
+                    <tr>
+                        <td>#{{ withdrawal.id }}</td>
+                        <td>
+                            <div class="user-info">
+                                {% if withdrawal.mentor.user.profile_image %}
+                                <img src="/static/{{ withdrawal.mentor.user.profile_image }}" 
+                                     alt="{{ withdrawal.mentor.user.full_name }}"
+                                     class="user-avatar">
+                                {% else %}
+                                <div class="user-avatar-initial">
+                                    {{ (withdrawal.mentor.user.full_name[0] if withdrawal.mentor.user.full_name else withdrawal.mentor.user.username[0])|upper }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="user-name">{{ withdrawal.mentor.user.full_name or withdrawal.mentor.user.username }}</div>
+                                    <div class="user-email">{{ withdrawal.mentor.user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="amount-cell">₹{{ "%.2f"|format(withdrawal.amount) }}</td>
+                        <td>{{ withdrawal.payment_method|replace('_', ' ')|title }}</td>
+                        <td class="account-details" title="{{ withdrawal.account_details }}">
+                            {{ withdrawal.account_details|truncate(30) }}
+                        </td>
+                        <td>{{ withdrawal.requested_at.strftime('%d %b %Y') }}</td>
+                        <td>
+                            <span class="status-badge status-{{ withdrawal.status }}">
+                                {{ withdrawal.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-button action-view" 
+                                        onclick="viewWithdrawal({{ withdrawal.id }})"
+                                        title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                
+                                {% if withdrawal.status == 'pending' %}
+                                <button class="action-button action-approve"
+                                        onclick="updateWithdrawalStatus({{ withdrawal.id }}, 'approved')"
+                                        title="Approve">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="action-button action-reject"
+                                        onclick="updateWithdrawalStatus({{ withdrawal.id }}, 'rejected')"
+                                        title="Reject">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% elif withdrawal.status == 'approved' %}
+                                <button class="action-button action-complete"
+                                        onclick="updateWithdrawalStatus({{ withdrawal.id }}, 'completed')"
+                                        title="Mark as Completed">
+                                    <i class="fas fa-check-double"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <p>No withdrawal requests found</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            <button class="pagination-button" {% if page <= 1 %}disabled{% endif %} 
+                    onclick="changePage({{ page - 1 }})">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            
+            {% for p in range(1, total_pages + 1) %}
+            <button class="pagination-button {% if p == page %}active{% endif %}" 
+                    onclick="changePage({{ p }})">
+                {{ p }}
+            </button>
+            {% endfor %}
+            
+            <button class="pagination-button" {% if page >= total_pages %}disabled{% endif %}
+                    onclick="changePage({{ page + 1 }})">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- View Details Modal -->
+<div id="viewModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Withdrawal Details</h3>
+            <button class="close-button" onclick="closeViewModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="withdrawalDetails" class="withdrawal-details">
+                <!-- Details will be loaded here -->
+            </div>
+            
+            <div class="notes-section">
+                <label class="notes-label">Update Notes (Optional)</label>
+                <textarea id="updateNotes" class="notes-textarea" placeholder="Add notes about this withdrawal..."></textarea>
+            </div>
+        </div>
+        <div id="modalFooter" class="modal-footer">
+            <!-- Action buttons will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentWithdrawalId = null;
+    
+    // Filter withdrawals
+    function filterWithdrawals(status) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('status', status);
+        url.searchParams.set('page', '1');
+        window.location.href = url.toString();
+    }
+    
+    // Change page
+    function changePage(page) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', page);
+        window.location.href = url.toString();
+    }
+    
+    // View withdrawal details
+    async function viewWithdrawal(withdrawalId) {
+        currentWithdrawalId = withdrawalId;
+        
+        try {
+            // In a real implementation, you would fetch details from API
+            // For now, we'll use the data from the table row
+            const row = document.querySelector(`tr:has(td:first-child:contains("#${withdrawalId}"))`);
+            if (!row) return;
+            
+            const cells = row.querySelectorAll('td');
+            const mentorName = cells[1].querySelector('.user-name').textContent;
+            const mentorEmail = cells[1].querySelector('.user-email').textContent;
+            const amount = cells[2].textContent;
+            const paymentMethod = cells[3].textContent;
+            const accountDetails = cells[4].getAttribute('title');
+            const requestedDate = cells[5].textContent;
+            const status = cells[6].querySelector('.status-badge').textContent.trim();
+            
+            // Format status for display
+            const statusDisplay = {
+                'pending': '🟡 Pending Review',
+                'approved': '🟢 Approved - Processing',
+                'processing': '🟠 Processing Payment',
+                'completed': '✅ Completed',
+                'rejected': '🔴 Rejected'
+            }[status.toLowerCase()] || status;
+            
+            // Build details HTML
+            const detailsHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">Mentor:</div>
+                    <div class="detail-value">${mentorName} (${mentorEmail})</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Amount:</div>
+                    <div class="detail-value">${amount}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Payment Method:</div>
+                    <div class="detail-value">${paymentMethod}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Account Details:</div>
+                    <div class="detail-value" style="white-space: pre-wrap;">${accountDetails}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Requested:</div>
+                    <div class="detail-value">${requestedDate}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Status:</div>
+                    <div class="detail-value">${statusDisplay}</div>
+                </div>
+            `;
+            
+            document.getElementById('withdrawalDetails').innerHTML = detailsHTML;
+            
+            // Build action buttons based on status
+            let actionButtons = '';
+            if (status === 'pending') {
+                actionButtons = `
+                    <button class="modal-button cancel" onclick="closeViewModal()">Close</button>
+                    <button class="modal-button confirm" onclick="updateWithdrawalStatusFromModal('rejected')" style="background: linear-gradient(135deg, var(--danger), #DC2626);">
+                        <i class="fas fa-times mr-2"></i> Reject
+                    </button>
+                    <button class="modal-button confirm" onclick="updateWithdrawalStatusFromModal('approved')">
+                        <i class="fas fa-check mr-2"></i> Approve
+                    </button>
+                `;
+            } else if (status === 'approved') {
+                actionButtons = `
+                    <button class="modal-button cancel" onclick="closeViewModal()">Close</button>
+                    <button class="modal-button confirm" onclick="updateWithdrawalStatusFromModal('completed')" style="background: linear-gradient(135deg, #10B981, #059669);">
+                        <i class="fas fa-check-double mr-2"></i> Mark as Completed
+                    </button>
+                `;
+            } else {
+                actionButtons = `
+                    <button class="modal-button confirm" onclick="closeViewModal()">Close</button>
+                `;
+            }
+            
+            document.getElementById('modalFooter').innerHTML = actionButtons;
+            document.getElementById('viewModal').style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error loading withdrawal details:', error);
+            alert('Error loading withdrawal details');
+        }
+    }
+    
+    // Close view modal
+    function closeViewModal() {
+        document.getElementById('viewModal').style.display = 'none';
+        document.getElementById('updateNotes').value = '';
+        currentWithdrawalId = null;
+    }
+    
+    // Update withdrawal status from modal
+    function updateWithdrawalStatusFromModal(status) {
+        if (!currentWithdrawalId) return;
+        
+        const notes = document.getElementById('updateNotes').value;
+        updateWithdrawalStatus(currentWithdrawalId, status, notes);
+    }
+    
+    // Update withdrawal status
+    async function updateWithdrawalStatus(withdrawalId, status, notes = '') {
+        let confirmMessage = '';
+        let confirmButton = '';
+        
+        switch(status) {
+            case 'approved':
+                confirmMessage = 'Are you sure you want to approve this withdrawal request?';
+                confirmButton = 'Approve';
+                break;
+            case 'rejected':
+                confirmMessage = 'Are you sure you want to reject this withdrawal request?';
+                confirmButton = 'Reject';
+                break;
+            case 'completed':
+                confirmMessage = 'Mark this withdrawal as completed? This means payment has been sent to the mentor.';
+                confirmButton = 'Mark as Completed';
+                break;
+            default:
+                confirmMessage = `Are you sure you want to update status to ${status}?`;
+                confirmButton = 'Update';
+        }
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+        
+        try {
+            // Create form data
+            const formData = new FormData();
+            formData.append('status', status);
+            if (notes) {
+                formData.append('notes', notes);
+            }
+            
+            // Send update request
+            const response = await fetch(`/api/admin/withdrawals/${withdrawalId}/update`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.message);
+                closeViewModal();
+                location.reload();
+            } else {
+                alert('Error: ' + (data.message || 'Failed to update status'));
+            }
+            
+        } catch (error) {
+            console.error('Error updating withdrawal:', error);
+            alert('An error occurred. Please try again.');
+        }
+    }
+    
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#withdrawalsTable tbody tr');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+    
+    // Amount filter
+    document.getElementById('amountFilter').addEventListener('change', function(e) {
+        const filter = e.target.value;
+        const rows = document.querySelectorAll('#withdrawalsTable tbody tr');
+        
+        rows.forEach(row => {
+            if (!filter) {
+                row.style.display = '';
+                return;
+            }
+            
+            const amountCell = row.querySelector('.amount-cell');
+            if (!amountCell) {
+                row.style.display = 'none';
+                return;
+            }
+            
+            const amountText = amountCell.textContent;
+            const amount = parseFloat(amountText.replace('₹', '').replace(',', ''));
+            
+            let show = false;
+            switch(filter) {
+                case '0-1000':
+                    show = amount >= 0 && amount <= 1000;
+                    break;
+                case '1000-5000':
+                    show = amount > 1000 && amount <= 5000;
+                    break;
+                case '5000+':
+                    show = amount > 5000;
+                    break;
+            }
+            
+            row.style.display = show ? '' : 'none';
+        });
+    });
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('viewModal');
+        if (event.target === modal) {
+            closeViewModal();
+        }
+    };
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Escape to close modal
+        if (e.key === 'Escape') {
+            closeViewModal();
+        }
+        
+        // Ctrl/Cmd + F to focus search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            document.getElementById('searchInput').focus();
+        }
+    });
+    
+    // Auto-refresh every 60 seconds if there are pending requests
+    {% if stats.pending_count > 0 %}
+    setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            location.reload();
+        }
+    }, 60000);
+    {% endif %}
+</script>
+{% endblock %}
