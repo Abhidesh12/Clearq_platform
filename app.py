@@ -2619,9 +2619,6 @@ async def create_booking(
     date_str = booking_data.get("date")
     time_slot = booking_data.get("time")  # This is the start time selected by learner
     
-    if not all([service_id, date_str, time_slot]):
-        raise HTTPException(status_code=400, detail="Missing required booking data")
-    
     service = db.query(Service).filter(Service.id == service_id).first()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
@@ -2634,20 +2631,23 @@ async def create_booking(
     # Check if service is digital
     is_digital_service = service.is_digital
     
-    # Check if the selected time is in the past (for non-digital services)
+    # Skip date/time validation for digital products
     if not is_digital_service:
+        # For live sessions, validate date and time
+        if not all([date_str, time_slot]):
+            raise HTTPException(status_code=400, detail="Missing required booking data")
+        
+        # Validate date and time for live sessions
         try:
             selected_datetime = datetime.strptime(f"{date_str} {time_slot}", "%Y-%m-%d %H:%M")
             if selected_datetime < datetime.now():
                 raise HTTPException(status_code=400, detail="Cannot book sessions in the past")
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid date or time format")
-    
-    # Calculate end time based on service duration (for non-digital)
-    if not is_digital_service:
-        start_time = datetime.strptime(time_slot, "%H:%M")
-        end_time = start_time + timedelta(minutes=service.duration_minutes)
-        end_time_str = end_time.strftime("%H:%M")
+    else:
+        # For digital products, set date and time to current
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        time_slot = datetime.now().strftime("%H:%M")
     
     # Check if service is free (price = 0)
     is_free_service = service.price == 0
@@ -2660,15 +2660,16 @@ async def create_booking(
                 learner_id=current_user.id,
                 mentor_id=service.mentor_id,
                 service_id=service_id,
-                booking_date=datetime.now().date() if not is_digital_service else None,
+                booking_date=datetime.now().date(),
                 selected_time=datetime.now().strftime("%H:%M"),
                 razorpay_order_id=None,
                 amount_paid=0,
-                status="completed",  # Immediately completed for digital
+                status="completed",
                 payment_status="free",
                 meeting_link=None,
                 meeting_id=None,
-                notes=f"Free digital product: {service.name}"
+                notes=f"Free digital product: {service.name}",
+                download_count=0
             )
             
             db.add(booking)
@@ -2678,7 +2679,7 @@ async def create_booking(
             return JSONResponse({
                 "success": True,
                 "booking_id": booking.id,
-                "redirect_url": f"/digital-product/{service_id}",  # FIXED: Use service_id, not booking.id
+                "redirect_url": f"/digital-product/{service_id}",
                 "is_digital": True,
                 "is_free": True,
                 "message": "Free digital product added to your account!"
@@ -2687,6 +2688,11 @@ async def create_booking(
             # Free session - generate meeting link
             meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
             meeting_link = f"https://meet.jit.si/{meeting_id}"
+            
+            # Calculate end time based on service duration
+            start_time = datetime.strptime(time_slot, "%H:%M")
+            end_time = start_time + timedelta(minutes=service.duration_minutes)
+            end_time_str = end_time.strftime("%H:%M")
             
             # Create booking record
             booking = Booking(
@@ -2708,7 +2714,7 @@ async def create_booking(
             db.commit()
             db.refresh(booking)
             
-            # Mark the time slot as booked
+            # Mark the time slot as booked (only for live sessions)
             target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
             
             # Find and mark the availability as booked
@@ -2720,7 +2726,7 @@ async def create_booking(
             if availability:
                 availability.is_booked = True
             
-            # Create a time slot record
+            # Create a time slot record (only for live sessions)
             time_slot_record = TimeSlot(
                 booking_id=booking.id,
                 start_time=time_slot,
@@ -2745,9 +2751,8 @@ async def create_booking(
     else:
         # Paid services
         if is_digital_service:
-
             # Paid digital product - create Razorpay order
-            order_amount = service.price * 100  # Convert to paise
+            order_amount = service.price * 100
             order_currency = "INR"
             
             try:
@@ -2762,24 +2767,23 @@ async def create_booking(
                     }
                 }
                 
-                print(f"Creating Razorpay order for digital product: {order_amount}")
                 razorpay_order = razorpay_client.order.create(order_data)
-                print(f"Razorpay order created: {razorpay_order['id']}")
                 
                 # Create booking record for digital product
                 booking = Booking(
                     learner_id=current_user.id,
                     mentor_id=service.mentor_id,
                     service_id=service_id,
-                    booking_date=None,
-                    selected_time=None,
+                    booking_date=datetime.now().date(),
+                    selected_time=datetime.now().strftime("%H:%M"),
                     razorpay_order_id=razorpay_order["id"],
                     amount_paid=service.price,
-                    status="pending",  # Will be completed after payment
+                    status="pending",
                     payment_status="pending",
                     meeting_link=None,
                     meeting_id=None,
-                    notes=f"Digital product purchase: {service.name}"
+                    notes=f"Digital product purchase: {service.name}",
+                    download_count=0
                 )
                 
                 db.add(booking)
@@ -2797,11 +2801,10 @@ async def create_booking(
                 })
                 
             except Exception as e:
-                print(f"Error creating digital product order: {str(e)}")
                 raise HTTPException(status_code=500, detail=str(e))
         else:
             # Paid session - create Razorpay order
-            order_amount = service.price * 100  # Convert to paise
+            order_amount = service.price * 100
             order_currency = "INR"
             
             try:
@@ -2818,42 +2821,43 @@ async def create_booking(
                     }
                 }
                 
-                print(f"Creating Razorpay order for session: {order_amount}")
                 razorpay_order = razorpay_client.order.create(order_data)
-                print(f"Razorpay order created: {razorpay_order['id']}")
+                
+                # Calculate end time based on service duration
+                start_time = datetime.strptime(time_slot, "%H:%M")
+                end_time = start_time + timedelta(minutes=service.duration_minutes)
+                end_time_str = end_time.strftime("%H:%M")
                 
                 # Create booking record for session
                 booking = Booking(
                     learner_id=current_user.id,
                     mentor_id=service.mentor_id,
                     service_id=service_id,
-                    booking_date=None,
-                    selected_time=None,
+                    booking_date=datetime.strptime(date_str, "%Y-%m-%d").date(),
+                    selected_time=time_slot,
                     razorpay_order_id=razorpay_order["id"],
                     amount_paid=service.price,
                     status="pending",
                     payment_status="pending",
                     meeting_link=None,
                     meeting_id=None,
-                    notes=f"Session scheduled for {date_str} at {time_slot} (Pending Payment)"
+                    notes=f"Session scheduled for {date_str} at {time_slot} (Pending Payment)",
+                    download_count=0
                 )
                 
                 db.add(booking)
                 db.commit()
                 db.refresh(booking)
                 
-                print(f"Paid booking created with ID: {booking.id}, Payment pending")
-                
-                # Create a TimeSlot record to temporarily reserve the slot
+                # Create a TimeSlot record to temporarily reserve the slot (only for live sessions)
                 target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
                 
-                # Create a time slot record to reserve this slot
                 time_slot_record = TimeSlot(
                     booking_id=booking.id,
                     start_time=time_slot,
                     end_time=end_time_str,
                     date=target_date,
-                    is_booked=False,  # Not booked yet, just reserved
+                    is_booked=False,
                     created_at=datetime.utcnow()
                 )
                 db.add(time_slot_record)
@@ -2870,7 +2874,6 @@ async def create_booking(
                 })
                 
             except Exception as e:
-                print(f"Error creating booking: {str(e)}")
                 db.rollback()
                 raise HTTPException(status_code=500, detail=str(e))
 # Add this new API endpoint for generating time slots
