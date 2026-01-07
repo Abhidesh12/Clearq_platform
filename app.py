@@ -548,7 +548,7 @@ def allowed_file(filename: str) -> bool:
     ext = filename.rsplit('.', 1)[1].lower()
     return ext in ALLOWED_EXTENSIONS
 
-async def save_profile_image(file: UploadFile, user_id: int) -> str:
+def save_profile_image(file: UploadFile, user_id: int) -> str:
     """Save uploaded profile image and return filename"""
     print(f"Saving profile image for user {user_id}: {file.filename}")
     
@@ -569,14 +569,14 @@ async def save_profile_image(file: UploadFile, user_id: int) -> str:
     
     # Save file
     try:
-        # Read file content
-        content = await file.read()
+        # Reset file pointer (important!)
+        file.file.seek(0)
         
-        # Write to file
+        # Copy file content
         with open(file_path, "wb") as buffer:
-            buffer.write(content)
+            shutil.copyfileobj(file.file, buffer)
         
-        print(f"File saved successfully: {filename} ({len(content)} bytes)")
+        print(f"File saved successfully: {filename}")
     except Exception as e:
         print(f"Error saving file: {str(e)}")
         raise
@@ -1472,14 +1472,18 @@ async def update_profile(
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
-        print(f"Updating profile for user: {current_user.id}")
+        print(f"=== UPDATING PROFILE FOR USER ID: {current_user.id} ===")
         print(f"Profile photo received: {profile_photo.filename if profile_photo else 'None'}")
         
-        # Update user info
+        # Get the user from database
         user = db.query(User).filter(User.id == current_user.id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
         
+        # Update full name if provided
         if full_name:
             user.full_name = full_name
+            print(f"Updated full_name: {full_name}")
         
         # Handle profile photo upload
         if profile_photo and profile_photo.filename:
@@ -1494,10 +1498,11 @@ async def update_profile(
                     status_code=303
                 )
             
-            # Check file size (max 5MB)
+            # Check file size (max 5MB) without consuming the file
             try:
-                content = await profile_photo.read()
-                file_size = len(content)
+                # Read a small chunk to check size
+                chunk = await profile_photo.read(5 * 1024 * 1024 + 1)  # Read 5MB + 1 byte
+                file_size = len(chunk)
                 print(f"File size: {file_size} bytes")
                 
                 if file_size > 5 * 1024 * 1024:  # 5MB
@@ -1508,8 +1513,8 @@ async def update_profile(
                         status_code=303
                     )
                 
-                # Reset file pointer
-                profile_photo.file.seek(0)
+                # Reset file pointer for save_profile_image
+                await profile_photo.seek(0)
                 
                 # Delete old profile image if exists and not default
                 if user.profile_image and user.profile_image != "default-avatar.png":
@@ -1518,15 +1523,15 @@ async def update_profile(
                         print(f"Deleting old image: {old_image_path}")
                         old_image_path.unlink()
                 
-                # Save new profile image
-                filename = save_profile_image(profile_photo, current_user.id)
+                # Save new profile image (use await if function is async, remove await if sync)
+                filename = save_profile_image(profile_photo, current_user.id)  # No await needed now
                 user.profile_image = filename
-                print(f"New profile image saved: {filename}")
+                print(f"✅ New profile image saved: {filename}")
                 
             except Exception as e:
-                print(f"Error processing profile photo: {str(e)}")
+                print(f"❌ Error processing profile photo: {str(e)}")
                 return RedirectResponse(
-                    url=f"/profile/edit?error=Error%20processing%20profile%20photo",
+                    url=f"/profile/edit?error=Error%20processing%20profile%20photo%20-%20{str(e).replace(' ', '%20')}",
                     status_code=303
                 )
         
@@ -1551,53 +1556,72 @@ async def update_profile(
                     created_at=datetime.utcnow()
                 )
                 db.add(mentor)
+                print("Created new mentor profile")
             else:
                 # Update existing mentor profile
-                if bio is not None:
+                updates = []
+                if bio is not None: 
                     mentor.bio = bio
-                if skills is not None:
+                    updates.append("bio")
+                if skills is not None: 
                     mentor.skills = skills
-                if linkedin_url is not None:
+                    updates.append("skills")
+                if linkedin_url is not None: 
                     mentor.linkedin_url = linkedin_url
-                if github_url is not None:
+                    updates.append("linkedin_url")
+                if github_url is not None: 
                     mentor.github_url = github_url
-                if twitter_url is not None:
+                    updates.append("github_url")
+                if twitter_url is not None: 
                     mentor.twitter_url = twitter_url
-                if website_url is not None:
+                    updates.append("twitter_url")
+                if website_url is not None: 
                     mentor.website_url = website_url
-                if experience_years is not None:
+                    updates.append("website_url")
+                if experience_years is not None: 
                     mentor.experience_years = experience_years
-                if industry is not None:
+                    updates.append("experience_years")
+                if industry is not None: 
                     mentor.industry = industry
-                if job_title is not None:
+                    updates.append("industry")
+                if job_title is not None: 
                     mentor.job_title = job_title
-                if company is not None:
+                    updates.append("job_title")
+                if company is not None: 
                     mentor.company = company
+                    updates.append("company")
+                
+                if updates:
+                    print(f"Updated mentor fields: {updates}")
         
+        # COMMIT TO DATABASE
         db.commit()
-        print("Profile updated successfully")
+        print(f"✅ Database commit successful!")
+        print(f"Final profile_image value: {user.profile_image}")
         
-        # Redirect with success in query parameter
-        response = RedirectResponse(
+        # Verify the file exists
+        if user.profile_image and user.profile_image != "default-avatar.png":
+            file_path = UPLOAD_DIR / user.profile_image
+            print(f"Checking if file exists: {file_path}")
+            print(f"File exists: {file_path.exists()}")
+        
+        # Redirect with success
+        return RedirectResponse(
             url="/profile/edit?success=Profile%20updated%20successfully!",
             status_code=303
         )
         
-        return response
-        
     except Exception as e:
         db.rollback()
-        print(f"Error updating profile: {str(e)}")
-        print(traceback.format_exc())
+        print(f"❌ Error updating profile: {str(e)}")
+        import traceback
+        traceback.print_exc()
         
-        # Redirect with error in query parameter
         error_message = f"Error updating profile: {str(e)}"
-        encoded_error = error_message.replace(" ", "%20").replace(":", "%3A")
         return RedirectResponse(
-            url=f"/profile/edit?error={encoded_error}",
+            url=f"/profile/edit?error={error_message.replace(' ', '%20').replace(':', '%3A')}",
             status_code=303
         )
-
 @app.get("/debug/upload-dir")
 async def debug_upload_dir():
     """Debug endpoint to check upload directory"""
