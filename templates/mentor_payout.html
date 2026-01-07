@@ -1,0 +1,691 @@
+{% extends "base.html" %}
+
+{% block title %}Payout Dashboard - ClearQ{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3B82F6;
+        --primary-dark: #2563EB;
+        --success: #10B981;
+        --warning: #F59E0B;
+        --danger: #EF4444;
+        --gray-900: #0F172A;
+        --gray-800: #1E293B;
+        --gray-700: #334155;
+        --gray-600: #475569;
+        --gray-500: #64748B;
+        --gray-400: #94A3B8;
+        --gray-300: #CBD5E1;
+        --gray-200: #E2E8F0;
+        --gray-100: #F1F5F9;
+        --gray-50: #F8FAFC;
+        --white: #FFFFFF;
+    }
+
+    .payout-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .payout-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .payout-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .payout-header h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .payout-header p {
+        opacity: 0.9;
+        font-size: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Balance Cards */
+    .balance-cards {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 768px) {
+        .balance-cards {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    .balance-card {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .balance-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .balance-card h3 {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+
+    .balance-amount {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.5rem;
+    }
+
+    .balance-change {
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .balance-change.positive {
+        color: var(--success);
+    }
+
+    .balance-change.negative {
+        color: var(--danger);
+    }
+
+    /* Withdrawal Form */
+    .withdrawal-card {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+        margin-bottom: 2rem;
+    }
+
+    .withdrawal-card h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+    }
+
+    .withdrawal-form {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .withdrawal-form {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        color: var(--gray-900);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: var(--gray-400);
+    }
+
+    .amount-input {
+        position: relative;
+    }
+
+    .amount-prefix {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-500);
+        font-weight: 500;
+    }
+
+    .amount-input .form-input {
+        padding-left: 2.5rem;
+    }
+
+    .form-select {
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        color: var(--gray-900);
+        background: var(--white);
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .withdraw-button {
+        grid-column: 1 / -1;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .withdraw-button:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .withdraw-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .form-info {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+        margin-top: 0.5rem;
+    }
+
+    /* History Table */
+    .history-card {
+        background: var(--white);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--gray-200);
+    }
+
+    .history-card h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 1.5rem;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .history-table thead {
+        background: var(--gray-50);
+    }
+
+    .history-table th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .history-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .history-table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    .history-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--gray-200);
+        color: var(--gray-700);
+    }
+
+    .history-table td:first-child {
+        border-top-left-radius: 0.5rem;
+        border-bottom-left-radius: 0.5rem;
+    }
+
+    .history-table td:last-child {
+        border-top-right-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .status-pending {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .status-processing {
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+
+    .status-completed {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .status-failed {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--gray-500);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    /* Responsive Table */
+    @media (max-width: 768px) {
+        .history-table {
+            display: block;
+            overflow-x: auto;
+        }
+        
+        .history-table th,
+        .history-table td {
+            min-width: 120px;
+        }
+    }
+
+    /* Flash Messages */
+    .flash-messages {
+        margin-bottom: 1.5rem;
+    }
+
+    .flash-message {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .flash-success {
+        background: #D1FAE5;
+        color: #065F46;
+        border: 1px solid #A7F3D0;
+    }
+
+    .flash-error {
+        background: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FECACA;
+    }
+
+    .flash-warning {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FDE68A;
+    }
+</style>
+
+<div class="payout-container">
+    <!-- Header -->
+    <div class="payout-header">
+        <h1>Payout Dashboard</h1>
+        <p>Withdraw your earnings and track payout history</p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% if request.query_params.get('success') %}
+    <div class="flash-messages">
+        <div class="flash-message flash-success">
+            <i class="fas fa-check-circle"></i>
+            <span>{{ request.query_params.get('success') }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if request.query_params.get('error') %}
+    <div class="flash-messages">
+        <div class="flash-message flash-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>{{ request.query_params.get('error') }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Balance Overview -->
+    <div class="balance-cards">
+        <div class="balance-card">
+            <h3>Available Balance</h3>
+            <div class="balance-amount">₹{{ "%.2f"|format(balance.available_balance) }}</div>
+            <div class="balance-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span>₹{{ "%.2f"|format(recent_earnings) }} earned last 30 days</span>
+            </div>
+        </div>
+        
+        <div class="balance-card">
+            <h3>Pending Withdrawal</h3>
+            <div class="balance-amount">₹{{ "%.2f"|format(balance.pending_withdrawal) }}</div>
+            <div class="balance-change negative">
+                <i class="fas fa-clock"></i>
+                <span>Processing time: 3-5 business days</span>
+            </div>
+        </div>
+        
+        <div class="balance-card">
+            <h3>Total Withdrawn</h3>
+            <div class="balance-amount">₹{{ "%.2f"|format(balance.total_withdrawn) }}</div>
+            <div class="balance-change positive">
+                <i class="fas fa-history"></i>
+                <span>Lifetime withdrawals</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Form -->
+    <div class="withdrawal-card">
+        <h2>Request Withdrawal</h2>
+        
+        <form id="withdrawal-form" class="withdrawal-form">
+            <!-- Amount -->
+            <div class="form-group">
+                <label class="form-label">Amount to Withdraw (₹)</label>
+                <div class="amount-input">
+                    <span class="amount-prefix">₹</span>
+                    <input type="number" 
+                           id="withdrawal-amount" 
+                           class="form-input" 
+                           placeholder="500"
+                           min="500"
+                           step="100"
+                           required>
+                </div>
+                <div class="form-info">
+                    Minimum withdrawal: ₹500. Available: ₹{{ "%.2f"|format(balance.available_balance) }}
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="form-group">
+                <label class="form-label">Payment Method</label>
+                <select id="payment-method" class="form-select" required>
+                    <option value="">Select method</option>
+                    <option value="bank_transfer">Bank Transfer (NEFT/IMPS)</option>
+                    <option value="upi">UPI</option>
+                </select>
+            </div>
+
+            <!-- Account Details -->
+            <div class="form-group full-width">
+                <label class="form-label">Account Details</label>
+                <textarea id="account-details" 
+                          class="form-input" 
+                          rows="3"
+                          placeholder="Bank Name: \nAccount Number: \nIFSC Code: \nAccount Holder Name:"
+                          required></textarea>
+                <div class="form-info">
+                    Please provide complete and accurate details for seamless processing
+                </div>
+            </div>
+
+            <!-- Terms -->
+            <div class="form-group full-width">
+                <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                    <input type="checkbox" id="terms-agreement" required>
+                    <label for="terms-agreement" style="font-size: 0.875rem; color: var(--gray-600);">
+                        I agree to the payout terms. Processing time is 3-5 business days. 
+                        A 2% transaction fee may apply for amounts below ₹1000.
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="withdraw-button" id="submit-withdrawal">
+                <i class="fas fa-paper-plane"></i>
+                <span>Request Withdrawal</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Withdrawal History -->
+    <div class="history-card">
+        <h2>Withdrawal History</h2>
+        
+        {% if withdrawal_history %}
+        <div class="history-table-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for withdrawal in withdrawal_history %}
+                    <tr>
+                        <td>{{ withdrawal.request_date.strftime('%d %b %Y') }}</td>
+                        <td>₹{{ "%.2f"|format(withdrawal.amount) }}</td>
+                        <td>{{ withdrawal.payment_method|replace('_', ' ')|title }}</td>
+                        <td>
+                            <span class="status-badge status-{{ withdrawal.status }}">
+                                {{ withdrawal.status }}
+                            </span>
+                        </td>
+                        <td>{{ withdrawal.notes or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-history"></i>
+            <p>No withdrawal history yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('withdrawal-form');
+    const amountInput = document.getElementById('withdrawal-amount');
+    const submitButton = document.getElementById('submit-withdrawal');
+    const availableBalance = {{ balance.available_balance|float }};
+    const minWithdrawal = 500;
+
+    // Format amount input
+    amountInput.addEventListener('input', function() {
+        let value = parseFloat(this.value) || 0;
+        
+        if (value < minWithdrawal) {
+            this.setCustomValidity(`Minimum withdrawal amount is ₹${minWithdrawal}`);
+        } else if (value > availableBalance) {
+            this.setCustomValidity(`Cannot withdraw more than available balance (₹${availableBalance.toFixed(2)})`);
+        } else {
+            this.setCustomValidity('');
+        }
+        
+        // Round to nearest 100
+        if (value > 0) {
+            this.value = Math.round(value / 100) * 100;
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const amount = parseFloat(amountInput.value);
+        const paymentMethod = document.getElementById('payment-method').value;
+        const accountDetails = document.getElementById('account-details').value;
+        
+        if (amount < minWithdrawal) {
+            alert(`Minimum withdrawal amount is ₹${minWithdrawal}`);
+            return;
+        }
+        
+        if (amount > availableBalance) {
+            alert('Insufficient balance for this withdrawal');
+            return;
+        }
+        
+        if (!paymentMethod) {
+            alert('Please select a payment method');
+            return;
+        }
+        
+        if (!accountDetails.trim()) {
+            alert('Please provide account details');
+            return;
+        }
+        
+        // Confirm withdrawal
+        if (!confirm(`Request withdrawal of ₹${amount.toFixed(2)}?\n\nThis will take 3-5 business days to process.`)) {
+            return;
+        }
+        
+        // Disable button and show loading
+        const originalText = submitButton.innerHTML;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Processing...</span>';
+        submitButton.disabled = true;
+        
+        try {
+            const response = await fetch('/api/mentor/request-withdrawal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: amount,
+                    payment_method: paymentMethod,
+                    account_details: accountDetails
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show success message and reload
+                alert('Withdrawal request submitted successfully!');
+                window.location.reload();
+            } else {
+                throw new Error(data.message || 'Failed to submit withdrawal request');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+        }
+    });
+
+    // Auto-fill maximum amount
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'm' && e.ctrlKey) {
+            e.preventDefault();
+            amountInput.value = Math.floor(availableBalance / 100) * 100;
+            amountInput.dispatchEvent(new Event('input'));
+        }
+    });
+
+    // Add validation styling
+    const inputs = form.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('invalid', function() {
+            this.style.borderColor = 'var(--danger)';
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.checkValidity()) {
+                this.style.borderColor = 'var(--gray-300)';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
