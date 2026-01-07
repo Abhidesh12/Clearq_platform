@@ -4,6 +4,7 @@ import uuid
 from sqlalchemy import DECIMAL
 from decimal import Decimal
 import requests
+import traceback
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import time  # Add this import
