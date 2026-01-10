@@ -6,6 +6,7 @@
     <div class="mx-auto max-w-7xl">
         <div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-center">
             <div class="flex flex-col items-start gap-6 lg:gap-8 max-w-2xl">
+                <!-- Add the badges from old UI -->
                 <div class="flex items-center gap-3 mb-6">
                     <span class="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary font-semibold text-sm">
                         🚀 #1 Mentorship Platform
@@ -15,6 +16,7 @@
                         🎯 Mentorship Program
                     </a>
                 </div>
+                
                 <h1 class="text-4xl sm:text-5xl font-extrabold leading-[1.1] tracking-tight text-text-light dark:text-text-dark lg:text-7xl">
                     Accelerate Your Career with <span class="relative whitespace-nowrap text-accent">
                         Expert
@@ -36,13 +38,13 @@
                 </div>
                 <div class="flex w-full flex-col sm:flex-row gap-4 mt-2">
                     <a href="/create-page" 
-                       class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-secondary px-8 py-4 text-base font-bold text-white shadow-xl shadow-primary/20 transition-all hover:bg-primary-hover hover:scale-[1.02] transform hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-1">
+                       class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-4 text-base font-bold text-white shadow-xl shadow-primary/20 transition-all hover:bg-primary-hover hover:scale-[1.02] transform">
                         Start My Page
                         <span class="material-symbols-outlined text-lg bg-white/20 rounded-full p-0.5 group-hover:bg-white/30 transition-colors">arrow_forward</span>
                     </a>
                     
                     <a href="/explore" 
-                       class="group inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-orange-400 bg-white dark:bg-card-dark px-8 py-4 text-base font-medium text-text-light dark:text-text-dark shadow-sm hover:scale-[1.02] hover:shadow-md transition-all hover:border-orange-500 transform hover:-translate-y-1">
+                       class="group inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-orange-400 bg-white dark:bg-card-dark px-8 py-4 text-base font-medium text-text-light dark:text-text-dark shadow-sm hover:scale-[1.02] hover:shadow-md transition-all hover:border-orange-500 transform">
                         <span class="material-symbols-outlined text-lg">search</span>
                         Find an expert
                     </a>
@@ -55,7 +57,7 @@
                     {% endif %}
                 </div>
                 
-                <!-- Stats -->
+                <!-- Stats from old UI -->
                 <div class="flex flex-wrap gap-8 mt-8">
                     <div class="text-center">
                         <div class="text-2xl font-bold text-text-light dark:text-text-dark mb-1 stat-number" data-target="600">600+</div>
@@ -120,213 +122,95 @@
     </div>
 </section>
 
-<!-- Categories Section -->
-<section id="categories" class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16 reveal">
-            <h2 class="text-3xl md:text-4xl font-bold text-dark mb-4">Find Mentors by Domain</h2>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Specialized guidance for every career path. Browse our most popular categories.
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Engineering -->
-            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
-                <div class="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-6">
-                    <i class="fas fa-code text-primary text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-dark mb-4">Engineering</h3>
-                <ul class="space-y-3">
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Frontend & Backend
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        System Design
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        DevOps & Cloud
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Data Structures
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Data & AI -->
-            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
-                <div class="w-14 h-14 rounded-xl bg-purple-50 flex items-center justify-center mb-6">
-                    <i class="fas fa-database text-secondary text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-dark mb-4">Data & AI</h3>
-                <ul class="space-y-3">
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Data Science
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Machine Learning
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Data Engineering
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Business Analytics
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Business -->
-            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
-                <div class="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center mb-6">
-                    <i class="fas fa-briefcase text-indigo-600 text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-dark mb-4">Business</h3>
-                <ul class="space-y-3">
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Product Management
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Digital Marketing
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Consulting & Strategy
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Finance & Sales
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Design -->
-            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
-                <div class="w-14 h-14 rounded-xl bg-orange-50 flex items-center justify-center mb-6">
-                    <i class="fas fa-pen-nib text-orange-500 text-2xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-dark mb-4">Design</h3>
-                <ul class="space-y-3">
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        UI/UX Design
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Product Design
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Graphic Design
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        User Research
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- How It Works Section -->
-<section id="how-it-works" class="py-16 sm:py-24 bg-background-light dark:bg-[#111111] relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-    <div class="absolute bottom-0 left-0 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-accent/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-20">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-white/10 border border-gray-200 dark:border-gray-800 shadow-sm mb-6">
-                <span class="flex h-2 w-2 rounded-full bg-accent"></span>
-                <span class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Simple Process</span>
-            </div>
-            <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-text-light dark:text-text-dark tracking-tight mb-6">
-                From curiosity to mastery in three simple steps
-            </h2>
-            <p class="text-lg sm:text-xl text-text-secondary-light dark:text-text-secondary-dark">
-                We've removed the friction so you can focus on learning.
-            </p>
-        </div>
-        <div class="grid gap-8 md:grid-cols-3">
-            <div class="relative group bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 border border-gray-100 dark:border-gray-800 transition-all duration-300">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <span class="text-6xl sm:text-8xl font-black text-accent">1</span>
-                </div>
-                <div class="relative z-10">
-                    <div class="mb-6 inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 group-hover:scale-110 transition-transform duration-300">
-                        <span class="material-symbols-outlined text-2xl sm:text-3xl">search</span>
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="py-16 sm:py-24 bg-background-light dark:bg-[#111111] relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-accent/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-20">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-white/10 border border-gray-200 dark:border-gray-800 shadow-sm mb-6">
+                        <span class="flex h-2 w-2 rounded-full bg-accent"></span>
+                        <span class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Simple Process</span>
                     </div>
-                    <h4 class="text-xl sm:text-2xl font-bold text-text-light dark:text-text-dark mb-3">Find your mentor</h4>
-                    <p class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-6">
-                        Explore a curated list of industry leaders. Filter by role, company, or expertise to find the perfect match.
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-text-light dark:text-text-dark tracking-tight mb-6">
+                        From curiosity to mastery in three simple steps
+                    </h2>
+                    <p class="text-lg sm:text-xl text-text-secondary-light dark:text-text-secondary-dark">
+                        We've removed the friction so you can focus on learning.
                     </p>
-                    <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div class="h-full bg-orange-500 w-1/3 rounded-full"></div>
+                </div>
+                <div class="grid gap-8 md:grid-cols-3">
+                    <div class="relative group bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 border border-gray-100 dark:border-gray-800 transition-all duration-300">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="text-6xl sm:text-8xl font-black text-accent">1</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="mb-6 inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 group-hover:scale-110 transition-transform duration-300">
+                                <span class="material-symbols-outlined text-2xl sm:text-3xl">search</span>
+                            </div>
+                            <h4 class="text-xl sm:text-2xl font-bold text-text-light dark:text-text-dark mb-3">Find your mentor</h4>
+                            <p class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-6">
+                                Explore a curated list of industry leaders. Filter by role, company, or expertise to find the perfect match.
+                            </p>
+                            <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-orange-500 w-1/3 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative group bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 border border-gray-100 dark:border-gray-800 transition-all duration-300 translate-y-0 md:translate-y-4">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="text-6xl sm:text-8xl font-black text-accent">2</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="mb-6 inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300">
+                                <span class="material-symbols-outlined text-2xl sm:text-3xl">event_available</span>
+                            </div>
+                            <h4 class="text-xl sm:text-2xl font-bold text-text-light dark:text-text-dark mb-3">Book a session</h4>
+                            <p class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-6">
+                                Pick a time that works for you. Whether it's a 15-min chat or an hour deep-dive, scheduling is seamless.
+                            </p>
+                            <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-purple-500 w-2/3 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative group bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 border border-gray-100 dark:border-gray-800 transition-all duration-300 translate-y-0 md:translate-y-8">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <span class="text-6xl sm:text-8xl font-black text-accent">3</span>
+                        </div>
+                        <div class="relative z-10">
+                            <div class="mb-6 inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 group-hover:scale-110 transition-transform duration-300">
+                                <span class="material-symbols-outlined text-2xl sm:text-3xl">video_camera_front</span>
+                            </div>
+                            <h4 class="text-xl sm:text-2xl font-bold text-text-light dark:text-text-dark mb-3">Level up</h4>
+                            <p class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-6">
+                                Join the video call on our platform. Get personalized advice, actionable feedback, and clear next steps.
+                            </p>
+                            <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-green-500 w-full rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-12 sm:mt-20 flex flex-col items-center justify-center text-center">
+                    <p class="mb-6 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Ready to accelerate your growth?</p>
+                    <a href="/explore" class="group flex items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 sm:px-10 sm:py-5 text-base sm:text-lg font-bold text-white shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                        <span>Browse Experts</span>
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </a>
+                    <div class="mt-8 flex items-center gap-2">
+                        <div class="flex -space-x-3">
+                            <img alt="User" class="h-8 w-8 rounded-full border-2 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZfxHAp-HIrfzr_lnHs8fQwRfojViVa7JT1tTtHGwoux3QMyE7w3IOP57gqlMgwIzROCYMk-yGHt_B7hNff9rkzeKTIaYJYQODDtUQdmy82TxVd4xlah7ZEc09Kv06jRCAd3S9EY6IB301UM4RKEvvBtNB5DrVXh6BVmnhAK8BdpIfo8Vh8gk9OAVTee7mjspP4uMkqoIm3fs9r7z_zz4wsFSCQzPE6CYK3Ipu9-DJxpynIJyjV7ghTZ17tF4tiDyKs2HcQ_ju_kk"/>
+                            <img alt="User" class="h-8 w-8 rounded-full border-2 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6r-TFqOEl7ECzfvV2gxToBI7YWCH013HuprV3DqEek_5IiBeoc8GUs22FUxjtEzA_o3j678v5uazLQ_84ADpMjXHco8udXPpTpWmzORm9KGXaIWG51FgxHlpXsHzw8z7GO7v6VFZAE7thEL31P9UE07EYstAioNs9XSzLImx4vSY2-Bsawi0ESginLi8D9xvuzUpy_cYEKbkzk9QVOtHflyUYuM7iT79CVxzjiziS-WIN57SH8d2ZQW4pzv16tgdu-pBLX69k5lw"/>
+                            <img alt="User" class="h-8 w-8 rounded-full border-2 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdwt5HGb3DHXRyLqR6n_ZLldrB1ZTdhrA-3kgQu772ioE3-Ij-vczYiUUTszEd1nldpAr0yXOP2tWYsyYxlOV9uc6Nb1xDaUhTdiUb_bystsH0ycg1AEyw5kV_mfdz7Ov_E-Stnv2R95IfmGf6q1XorjGCJGy0weOBDP079FLgjqpi84N1m8Nv_yg-yF7o3-LArMEdFQyHRyignqHxcNesfOoQHhCQihLAErCz-X1RcyubcnOEUUnv8XrUDQNCb8okfoXv8rzrVik"/>
+                        </div>
+                        <span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Join 10,000+ others</span>
                     </div>
                 </div>
             </div>
-            <div class="relative group bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 border border-gray-100 dark:border-gray-800 transition-all duration-300 translate-y-0 md:translate-y-4">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <span class="text-6xl sm:text-8xl font-black text-accent">2</span>
-                </div>
-                <div class="relative z-10">
-                    <div class="mb-6 inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300">
-                        <span class="material-symbols-outlined text-2xl sm:text-3xl">event_available</span>
-                    </div>
-                    <h4 class="text-xl sm:text-2xl font-bold text-text-light dark:text-text-dark mb-3">Book a session</h4>
-                    <p class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-6">
-                        Pick a time that works for you. Whether it's a 15-min chat or an hour deep-dive, scheduling is seamless.
-                    </p>
-                    <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div class="h-full bg-purple-500 w-2/3 rounded-full"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="relative group bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 border border-gray-100 dark:border-gray-800 transition-all duration-300 translate-y-0 md:translate-y-8">
-                <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <span class="text-6xl sm:text-8xl font-black text-accent">3</span>
-                </div>
-                <div class="relative z-10">
-                    <div class="mb-6 inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 group-hover:scale-110 transition-transform duration-300">
-                        <span class="material-symbols-outlined text-2xl sm:text-3xl">video_camera_front</span>
-                    </div>
-                    <h4 class="text-xl sm:text-2xl font-bold text-text-light dark:text-text-dark mb-3">Level up</h4>
-                    <p class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-6">
-                        Join the video call on our platform. Get personalized advice, actionable feedback, and clear next steps.
-                    </p>
-                    <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div class="h-full bg-green-500 w-full rounded-full"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="mt-12 sm:mt-20 flex flex-col items-center justify-center text-center">
-            <p class="mb-6 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Ready to accelerate your growth?</p>
-            <a href="/explore" class="group flex items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 sm:px-10 sm:py-5 text-base sm:text-lg font-bold text-white shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-                <span>Browse Experts</span>
-                <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-            </a>
-            <div class="mt-8 flex items-center gap-2">
-                <div class="flex -space-x-3">
-                    <img alt="User" class="h-8 w-8 rounded-full border-2 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZfxHAp-HIrfzr_lnHs8fQwRfojViVa7JT1tTtHGwoux3QMyE7w3IOP57gqlMgwIzROCYMk-yGHt_B7hNff9rkzeKTIaYJYQODDtUQdmy82TxVd4xlah7ZEc09Kv06jRCAd3S9EY6IB301UM4RKEvvBtNB5DrVXh6BVmnhAK8BdpIfo8Vh8gk9OAVTee7mjspP4uMkqoIm3fs9r7z_zz4wsFSCQzPE6CYK3Ipu9-DJxpynIJyjV7ghTZ17tF4tiDyKs2HcQ_ju_kk"/>
-                    <img alt="User" class="h-8 w-8 rounded-full border-2 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6r-TFqOEl7ECzfvV2gxToBI7YWCH013HuprV3DqEek_5IiBeoc8GUs22FUxjtEzA_o3j678v5uazLQ_84ADpMjXHco8udXPpTpWmzORm9KGXaIWG51FgxHlpXsHzw8z7GO7v6VFZAE7thEL31P9UE07EYstAioNs9XSzLImx4vSY2-Bsawi0ESginLi8D9xvuzUpy_cYEKbkzk9QVOtHflyUYuM7iT79CVxzjiziS-WIN57SH8d2ZQW4pzv16tgdu-pBLX69k5lw"/>
-                    <img alt="User" class="h-8 w-8 rounded-full border-2 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdwt5HGb3DHXRyLqR6n_ZLldrB1ZTdhrA-3kgQu772ioE3-Ij-vczYiUUTszEd1nldpAr0yXOP2tWYsyYxlOV9uc6Nb1xDaUhTdiUb_bystsH0ycg1AEyw5kV_mfdz7Ov_E-Stnv2R95IfmGf6q1XorjGCJGy0weOBDP079FLgjqpi84N1m8Nv_yg-yF7o3-LArMEdFQyHRyignqHxcNesfOoQHhCQihLAErCz-X1RcyubcnOEUUnv8XrUDQNCb8okfoXv8rzrVik"/>
-                </div>
-                <span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Join 10,000+ others</span>
-            </div>
-        </div>
-    </div>
-</section>
+        </section>
 
-<!-- Experts Section -->
+        <!-- Experts Section -->
 <section id="experts" class="py-16 sm:py-24 bg-white dark:bg-background-dark">
     <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col items-center text-center gap-3 max-w-3xl mx-auto mb-8 sm:mb-12">
@@ -723,257 +607,257 @@
     </div>
 </section>
 
-<!-- Earn & Convert More Section -->
-<section id="earn-more" class="py-16 sm:py-24 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Title Section -->
-        <div class="text-center mb-12 sm:mb-16">
-            <h2 class="text-3xl sm:text-4xl font-bold mb-3">Earn & Convert more with ClearQ.in</h2>
-            <p class="text-gray-600 dark:text-gray-400 text-base sm:text-lg">Powerful features to maximize your earnings</p>
-        </div>
+                        <!-- Earn & Convert More Section -->
+        <section id="earn-more" class="py-16 sm:py-24 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Title Section -->
+                <div class="text-center mb-12 sm:mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold mb-3">Earn & Convert more with ClearQ.in</h2>
+                    <p class="text-gray-600 dark:text-gray-400 text-base sm:text-lg">Powerful features to maximize your earnings</p>
+                </div>
 
-        <!-- Desktop Grid (3 columns) -->
-        <div class="hidden md:grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            <!-- Left Column -->
-            <div class="space-y-6">
-                <!-- 2X Card -->
-                <div class="bg-[#F6D0CE] dark:bg-pink-900/40 rounded-2xl p-6 h-64">
-                    <div class="flex flex-col h-full">
-                        <div class="flex-1 flex items-start">
-                            <div class="w-10 h-10 border-2 border-black rounded-lg flex items-center justify-center bg-white/50">
-                                <i class="fas fa-bolt text-base"></i>
+                <!-- Desktop Grid (3 columns) -->
+                <div class="hidden md:grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                    <!-- Left Column -->
+                    <div class="space-y-6">
+                        <!-- 2X Card -->
+                        <div class="bg-[#F6D0CE] dark:bg-pink-900/40 rounded-2xl p-6 h-64">
+                            <div class="flex flex-col h-full">
+                                <div class="flex-1 flex items-start">
+                                    <div class="w-10 h-10 border-2 border-black rounded-lg flex items-center justify-center bg-white/50">
+                                        <i class="fas fa-bolt text-base"></i>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-4xl font-bold mb-2">2X</div>
+                                    <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">convert better with</p>
+                                    <p class="text-sm font-bold text-gray-800 dark:text-gray-200">localised currency</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-4xl font-bold mb-2">2X</div>
-                            <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">convert better with</p>
-                            <p class="text-sm font-bold text-gray-800 dark:text-gray-200">localised currency</p>
+
+                        <!-- 40% Card -->
+                        <div class="bg-[#E0DBFC] dark:bg-purple-900/40 rounded-2xl p-6 h-64">
+                            <div class="relative h-full">
+                                <div class="absolute top-4 left-4 bg-white/90 rounded-full px-3 py-1.5 text-xs flex items-center gap-2 max-w-[75%]">
+                                    <img alt="User" class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
+                                    <span class="truncate">5/5 "Loved session"</span>
+                                </div>
+                                <div class="absolute top-16 left-6 bg-white/90 rounded-full px-3 py-1.5 text-xs flex items-center gap-2 max-w-[75%]">
+                                    <img alt="User" class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
+                                    <span class="truncate">5/5 "Best advice"</span>
+                                </div>
+                                <div class="h-full flex flex-col justify-end">
+                                    <div class="text-right">
+                                        <div class="text-4xl font-bold mb-2">40%</div>
+                                        <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">increase in conversion</p>
+                                        <p class="text-sm font-bold text-gray-800 dark:text-gray-200">with testimonial showcase</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Middle Column -->
+                    <div class="space-y-6">
+                        <!-- upto 4X Card -->
+                        <div class="bg-[#9CCB5C] dark:bg-green-900/40 rounded-2xl p-6 h-[calc(128px+1.5rem+64px)] relative">
+                            <div class="absolute top-6 right-6 bg-white shadow-md rounded-full px-3 py-1.5 text-sm flex items-center gap-2">
+                                <div class="w-3 h-2.5 bg-gradient-to-b from-orange-400 via-white to-green-500 rounded-sm"></div>
+                                <span class="font-bold">100$</span>
+                            </div>
+                            <div class="absolute bottom-6 left-6 bg-white shadow-md rounded-full px-3 py-1.5 text-sm flex items-center gap-2">
+                                <div class="w-3 h-2.5 bg-blue-500 rounded-sm"></div>
+                                <span class="font-bold">400$</span>
+                            </div>
+                            <div class="h-full flex flex-col justify-end">
+                                <div class="text-right">
+                                    <div class="text-3xl font-bold mb-2">upto 4X</div>
+                                    <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">your earnings with</p>
+                                    <p class="text-sm font-bold text-gray-800 dark:text-gray-200">country based pricing</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Instant Payouts Card -->
+                        <div class="bg-[#85C3EA] dark:bg-blue-900/40 rounded-2xl p-6 h-64">
+                            <div class="flex flex-col h-full justify-center">
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <div class="bg-white rounded-full px-3 py-1.5 text-xs font-bold italic text-blue-800">PayPal</div>
+                                        <div class="bg-white rounded-full px-3 py-1.5 text-xs font-medium flex items-center gap-1.5">
+                                            <i class="fas fa-university text-xs"></i> Bank
+                                        </div>
+                                    </div>
+                                    <h3 class="text-lg font-bold mt-2">Instant payouts</h3>
+                                    <p class="text-sm text-gray-800 dark:text-gray-200">Withdraw directly to bank account</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="space-y-6">
+                        <!-- 13% Card -->
+                        <div class="bg-[#EEE3CD] dark:bg-yellow-900/20 rounded-2xl p-6 h-64">
+                            <div class="flex flex-col h-full justify-center items-center text-center">
+                                <i class="fas fa-shopping-cart text-2xl text-yellow-600 mb-3 opacity-60"></i>
+                                <div class="text-4xl font-bold mb-2">13%</div>
+                                <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">uplift in bookings with</p>
+                                <p class="text-sm font-bold text-gray-800 dark:text-gray-200">abandon cart emails</p>
+                            </div>
+                        </div>
+
+                        <!-- Get Discovered Card -->
+                        <div class="bg-[#A8E1E1] dark:bg-teal-900/40 rounded-2xl p-6 h-64">
+                            <div class="flex flex-col h-full">
+                                <div class="flex items-start gap-2 mb-4">
+                                    <div class="flex items-center gap-1.5 bg-white/60 rounded-full px-3 py-1.5 text-xs">
+                                        <img class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
+                                        <span>User</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 bg-white/60 rounded-full px-3 py-1.5 text-xs">
+                                        <img class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
+                                        <span>Booking</span>
+                                    </div>
+                                </div>
+                                <div class="bg-white/80 rounded px-3 py-1.5 text-xs font-mono w-fit mb-2">ClearQ.in</div>
+                                <div class="w-20 h-px bg-gray-400 mb-3"></div>
+                                <div class="flex-1 flex flex-col justify-center">
+                                    <h3 class="text-lg font-bold mb-1.5">Get Discovered</h3>
+                                    <p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-bold">Automated funnels</span> bring new bookings</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 40% Card -->
-                <div class="bg-[#E0DBFC] dark:bg-purple-900/40 rounded-2xl p-6 h-64">
-                    <div class="relative h-full">
-                        <div class="absolute top-4 left-4 bg-white/90 rounded-full px-3 py-1.5 text-xs flex items-center gap-2 max-w-[75%]">
-                            <img alt="User" class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
-                            <span class="truncate">5/5 "Loved session"</span>
+                <!-- Mobile Layout (Single column with different arrangement) -->
+                <div class="md:hidden space-y-4">
+                    <!-- Row 1: 2X and 40% side by side -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- 2X Card -->
+                        <div class="bg-[#F6D0CE] dark:bg-pink-900/40 rounded-2xl p-4 h-48">
+                            <div class="flex flex-col h-full">
+                                <div class="flex-1 flex items-start">
+                                    <div class="w-8 h-8 border-2 border-black rounded-lg flex items-center justify-center bg-white/50">
+                                        <i class="fas fa-bolt text-sm"></i>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold mb-1">2X</div>
+                                    <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">convert better with</p>
+                                    <p class="text-xs font-bold text-gray-800 dark:text-gray-200">localised currency</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="absolute top-16 left-6 bg-white/90 rounded-full px-3 py-1.5 text-xs flex items-center gap-2 max-w-[75%]">
-                            <img alt="User" class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
-                            <span class="truncate">5/5 "Best advice"</span>
+
+                        <!-- 40% Card -->
+                        <div class="bg-[#E0DBFC] dark:bg-purple-900/40 rounded-2xl p-4 h-48">
+                            <div class="relative h-full">
+                                <div class="absolute top-2 left-2 bg-white/90 rounded-full px-2 py-1 text-xxs flex items-center gap-1 max-w-[70%]">
+                                    <img alt="User" class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
+                                    <span class="truncate">5/5 "Loved"</span>
+                                </div>
+                                <div class="absolute top-10 left-3 bg-white/90 rounded-full px-2 py-1 text-xxs flex items-center gap-1 max-w-[70%]">
+                                    <img alt="User" class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
+                                    <span class="truncate">5/5 "Best"</span>
+                                </div>
+                                <div class="h-full flex flex-col justify-end">
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold mb-1">40%</div>
+                                        <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">increase in conversion</p>
+                                        <p class="text-xs font-bold text-gray-800 dark:text-gray-200">with testimonials</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: upto 4X (full width) -->
+                    <div class="bg-[#9CCB5C] dark:bg-green-900/40 rounded-2xl p-4 h-32 relative">
+                        <div class="absolute top-3 right-3 bg-white shadow-sm rounded-full px-2 py-1 text-xs flex items-center gap-1">
+                            <div class="w-2.5 h-2 bg-gradient-to-b from-orange-400 via-white to-green-500 rounded-sm"></div>
+                            <span class="font-bold">100$</span>
+                        </div>
+                        <div class="absolute bottom-3 left-3 bg-white shadow-sm rounded-full px-2 py-1 text-xs flex items-center gap-1">
+                            <div class="w-2.5 h-2 bg-blue-500 rounded-sm"></div>
+                            <span class="font-bold">400$</span>
                         </div>
                         <div class="h-full flex flex-col justify-end">
                             <div class="text-right">
-                                <div class="text-4xl font-bold mb-2">40%</div>
-                                <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">increase in conversion</p>
-                                <p class="text-sm font-bold text-gray-800 dark:text-gray-200">with testimonial showcase</p>
+                                <div class="text-2xl font-bold mb-1">upto 4X</div>
+                                <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">your earnings with</p>
+                                <p class="text-xs font-bold text-gray-800 dark:text-gray-200">country based pricing</p>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Middle Column -->
-            <div class="space-y-6">
-                <!-- upto 4X Card -->
-                <div class="bg-[#9CCB5C] dark:bg-green-900/40 rounded-2xl p-6 h-[calc(128px+1.5rem+64px)] relative">
-                    <div class="absolute top-6 right-6 bg-white shadow-md rounded-full px-3 py-1.5 text-sm flex items-center gap-2">
-                        <div class="w-3 h-2.5 bg-gradient-to-b from-orange-400 via-white to-green-500 rounded-sm"></div>
-                        <span class="font-bold">100$</span>
-                    </div>
-                    <div class="absolute bottom-6 left-6 bg-white shadow-md rounded-full px-3 py-1.5 text-sm flex items-center gap-2">
-                        <div class="w-3 h-2.5 bg-blue-500 rounded-sm"></div>
-                        <span class="font-bold">400$</span>
-                    </div>
-                    <div class="h-full flex flex-col justify-end">
-                        <div class="text-right">
-                            <div class="text-3xl font-bold mb-2">upto 4X</div>
-                            <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">your earnings with</p>
-                            <p class="text-sm font-bold text-gray-800 dark:text-gray-200">country based pricing</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Instant Payouts Card -->
-                <div class="bg-[#85C3EA] dark:bg-blue-900/40 rounded-2xl p-6 h-64">
-                    <div class="flex flex-col h-full justify-center">
-                        <div class="space-y-3">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <div class="bg-white rounded-full px-3 py-1.5 text-xs font-bold italic text-blue-800">PayPal</div>
-                                <div class="bg-white rounded-full px-3 py-1.5 text-xs font-medium flex items-center gap-1.5">
-                                    <i class="fas fa-university text-xs"></i> Bank
+                    <!-- Row 3: Instant Payouts and 13% side by side -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Instant Payouts -->
+                        <div class="bg-[#85C3EA] dark:bg-blue-900/40 rounded-2xl p-4 h-48">
+                            <div class="flex flex-col h-full justify-center">
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-1 flex-wrap">
+                                        <div class="bg-white rounded-full px-2 py-1 text-xxs font-bold italic text-blue-800">PayPal</div>
+                                        <div class="bg-white rounded-full px-2 py-1 text-xxs font-medium flex items-center gap-1">
+                                            <i class="fas fa-university text-xxs"></i> Bank
+                                        </div>
+                                    </div>
+                                    <h3 class="text-sm font-bold mt-2">Instant payouts</h3>
+                                    <p class="text-xxs text-gray-800 dark:text-gray-200">Withdraw directly to bank account</p>
                                 </div>
                             </div>
-                            <h3 class="text-lg font-bold mt-2">Instant payouts</h3>
-                            <p class="text-sm text-gray-800 dark:text-gray-200">Withdraw directly to bank account</p>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Right Column -->
-            <div class="space-y-6">
-                <!-- 13% Card -->
-                <div class="bg-[#EEE3CD] dark:bg-yellow-900/20 rounded-2xl p-6 h-64">
-                    <div class="flex flex-col h-full justify-center items-center text-center">
-                        <i class="fas fa-shopping-cart text-2xl text-yellow-600 mb-3 opacity-60"></i>
-                        <div class="text-4xl font-bold mb-2">13%</div>
-                        <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">uplift in bookings with</p>
-                        <p class="text-sm font-bold text-gray-800 dark:text-gray-200">abandon cart emails</p>
-                    </div>
-                </div>
-
-                <!-- Get Discovered Card -->
-                <div class="bg-[#A8E1E1] dark:bg-teal-900/40 rounded-2xl p-6 h-64">
-                    <div class="flex flex-col h-full">
-                        <div class="flex items-start gap-2 mb-4">
-                            <div class="flex items-center gap-1.5 bg-white/60 rounded-full px-3 py-1.5 text-xs">
-                                <img class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
-                                <span>User</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 bg-white/60 rounded-full px-3 py-1.5 text-xs">
-                                <img class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
-                                <span>Booking</span>
-                            </div>
-                        </div>
-                        <div class="bg-white/80 rounded px-3 py-1.5 text-xs font-mono w-fit mb-2">ClearQ.in</div>
-                        <div class="w-20 h-px bg-gray-400 mb-3"></div>
-                        <div class="flex-1 flex flex-col justify-center">
-                            <h3 class="text-lg font-bold mb-1.5">Get Discovered</h3>
-                            <p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-bold">Automated funnels</span> bring new bookings</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mobile Layout (Single column with different arrangement) -->
-        <div class="md:hidden space-y-4">
-            <!-- Row 1: 2X and 40% side by side -->
-            <div class="grid grid-cols-2 gap-4">
-                <!-- 2X Card -->
-                <div class="bg-[#F6D0CE] dark:bg-pink-900/40 rounded-2xl p-4 h-48">
-                    <div class="flex flex-col h-full">
-                        <div class="flex-1 flex items-start">
-                            <div class="w-8 h-8 border-2 border-black rounded-lg flex items-center justify-center bg-white/50">
-                                <i class="fas fa-bolt text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-2xl font-bold mb-1">2X</div>
-                            <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">convert better with</p>
-                            <p class="text-xs font-bold text-gray-800 dark:text-gray-200">localised currency</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 40% Card -->
-                <div class="bg-[#E0DBFC] dark:bg-purple-900/40 rounded-2xl p-4 h-48">
-                    <div class="relative h-full">
-                        <div class="absolute top-2 left-2 bg-white/90 rounded-full px-2 py-1 text-xxs flex items-center gap-1 max-w-[70%]">
-                            <img alt="User" class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
-                            <span class="truncate">5/5 "Loved"</span>
-                        </div>
-                        <div class="absolute top-10 left-3 bg-white/90 rounded-full px-2 py-1 text-xxs flex items-center gap-1 max-w-[70%]">
-                            <img alt="User" class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
-                            <span class="truncate">5/5 "Best"</span>
-                        </div>
-                        <div class="h-full flex flex-col justify-end">
-                            <div class="text-right">
-                                <div class="text-2xl font-bold mb-1">40%</div>
-                                <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">increase in conversion</p>
-                                <p class="text-xs font-bold text-gray-800 dark:text-gray-200">with testimonials</p>
+                        <!-- 13% Card -->
+                        <div class="bg-[#EEE3CD] dark:bg-yellow-900/20 rounded-2xl p-4 h-48">
+                            <div class="flex flex-col h-full justify-center items-center text-center">
+                                <i class="fas fa-shopping-cart text-lg text-yellow-600 mb-2 opacity-60"></i>
+                                <div class="text-2xl font-bold mb-1">13%</div>
+                                <p class="text-xxs text-gray-800 dark:text-gray-200 leading-tight">uplift in bookings with</p>
+                                <p class="text-xxs font-bold text-gray-800 dark:text-gray-200">abandon cart emails</p>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Row 2: upto 4X (full width) -->
-            <div class="bg-[#9CCB5C] dark:bg-green-900/40 rounded-2xl p-4 h-32 relative">
-                <div class="absolute top-3 right-3 bg-white shadow-sm rounded-full px-2 py-1 text-xs flex items-center gap-1">
-                    <div class="w-2.5 h-2 bg-gradient-to-b from-orange-400 via-white to-green-500 rounded-sm"></div>
-                    <span class="font-bold">100$</span>
-                </div>
-                <div class="absolute bottom-3 left-3 bg-white shadow-sm rounded-full px-2 py-1 text-xs flex items-center gap-1">
-                    <div class="w-2.5 h-2 bg-blue-500 rounded-sm"></div>
-                    <span class="font-bold">400$</span>
-                </div>
-                <div class="h-full flex flex-col justify-end">
-                    <div class="text-right">
-                        <div class="text-2xl font-bold mb-1">upto 4X</div>
-                        <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">your earnings with</p>
-                        <p class="text-xs font-bold text-gray-800 dark:text-gray-200">country based pricing</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Row 3: Instant Payouts and 13% side by side -->
-            <div class="grid grid-cols-2 gap-4">
-                <!-- Instant Payouts -->
-                <div class="bg-[#85C3EA] dark:bg-blue-900/40 rounded-2xl p-4 h-48">
-                    <div class="flex flex-col h-full justify-center">
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-1 flex-wrap">
-                                <div class="bg-white rounded-full px-2 py-1 text-xxs font-bold italic text-blue-800">PayPal</div>
-                                <div class="bg-white rounded-full px-2 py-1 text-xxs font-medium flex items-center gap-1">
-                                    <i class="fas fa-university text-xxs"></i> Bank
+                    <!-- Row 4: Get Discovered (full width) -->
+                    <div class="bg-[#A8E1E1] dark:bg-teal-900/40 rounded-2xl p-4">
+                        <div class="flex flex-col">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="flex items-center gap-1 bg-white/60 rounded-full px-2 py-1 text-xxs">
+                                    <img class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
+                                    <span>User</span>
+                                </div>
+                                <div class="flex items-center gap-1 bg-white/60 rounded-full px-2 py-1 text-xxs">
+                                    <img class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
+                                    <span>Booking</span>
                                 </div>
                             </div>
-                            <h3 class="text-sm font-bold mt-2">Instant payouts</h3>
-                            <p class="text-xxs text-gray-800 dark:text-gray-200">Withdraw directly to bank account</p>
+                            <div class="bg-white/80 rounded px-2 py-1 text-xxs font-mono w-fit mb-2">ClearQ.in</div>
+                            <div class="w-16 h-px bg-gray-400 mb-3"></div>
+                            <div>
+                                <h3 class="text-base font-bold mb-1">Get Discovered</h3>
+                                <p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-bold">Automated funnels</span> bring new bookings</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 13% Card -->
-                <div class="bg-[#EEE3CD] dark:bg-yellow-900/20 rounded-2xl p-4 h-48">
-                    <div class="flex flex-col h-full justify-center items-center text-center">
-                        <i class="fas fa-shopping-cart text-lg text-yellow-600 mb-2 opacity-60"></i>
-                        <div class="text-2xl font-bold mb-1">13%</div>
-                        <p class="text-xxs text-gray-800 dark:text-gray-200 leading-tight">uplift in bookings with</p>
-                        <p class="text-xxs font-bold text-gray-800 dark:text-gray-200">abandon cart emails</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Row 4: Get Discovered (full width) -->
-            <div class="bg-[#A8E1E1] dark:bg-teal-900/40 rounded-2xl p-4">
-                <div class="flex flex-col">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="flex items-center gap-1 bg-white/60 rounded-full px-2 py-1 text-xxs">
-                            <img class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
-                            <span>User</span>
-                        </div>
-                        <div class="flex items-center gap-1 bg-white/60 rounded-full px-2 py-1 text-xxs">
-                            <img class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
-                            <span>Booking</span>
-                        </div>
-                    </div>
-                    <div class="bg-white/80 rounded px-2 py-1 text-xxs font-mono w-fit mb-2">ClearQ.in</div>
-                    <div class="w-16 h-px bg-gray-400 mb-3"></div>
-                    <div>
-                        <h3 class="text-base font-bold mb-1">Get Discovered</h3>
-                        <p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-bold">Automated funnels</span> bring new bookings</p>
-                    </div>
+                <!-- CTA Section -->
+                <div class="mt-12 sm:mt-16 text-center">
+                    <a href="/create-page" class="w-full max-w-sm mx-auto bg-black dark:bg-white dark:text-black text-white font-semibold py-4 rounded-xl hover:opacity-90 flex items-center justify-center gap-2 transition-all text-base">
+                        Start My Page
+                        <i class="fas fa-arrow-right text-sm"></i>
+                    </a>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm sm:text-base mt-4">Join 1000 professionals already using ExpertConnect</p>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- CTA Section -->
-        <div class="mt-12 sm:mt-16 text-center">
-            <a href="/create-page" class="w-full max-w-sm mx-auto bg-black dark:bg-white dark:text-black text-white font-semibold py-4 rounded-xl hover:opacity-90 flex items-center justify-center gap-2 transition-all text-base">
-                Start My Page
-                <i class="fas fa-arrow-right text-sm"></i>
-            </a>
-            <p class="text-gray-600 dark:text-gray-400 text-sm sm:text-base mt-4">Join 1000 professionals already using ExpertConnect</p>
-        </div>
-    </div>
-</section>
-
-<!-- FAQ section-->
-<section class="py-16 px-6 max-w-7xl mx-auto">
+        <!-- FAQ section-->
+        <section class="py-16 px-6 max-w-7xl mx-auto">
     <div class="grid md:grid-cols-2 gap-12 items-start">
         <!-- Booking Interface Section -->
         <div class="bg-card-pink dark:bg-pink-900/30 p-6 rounded-2xl flex items-center justify-center min-h-[400px]">
@@ -1058,105 +942,101 @@
     </div>
 </section>
 
-<!-- Community CTA Section -->
-<section id="community" class="py-16 sm:py-24 bg-background-light dark:bg-background-dark">
-    <div class="layout-container flex w-full flex-col items-center">
-        <div class="w-full px-4 py-8 sm:py-12 md:py-16">
-            <div class="relative mx-auto flex max-w-5xl flex-col items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-[#fff5eb] to-[#ffeadd] px-6 py-8 sm:py-12 text-center dark:from-[#1c1917] dark:to-[#292524] sm:px-8 md:px-12 shadow-xl shadow-orange-900/5 dark:shadow-black/40 border border-[#ffdcc2] dark:border-white/10">
-                <div class="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-orange-400/20 blur-3xl opacity-60 mix-blend-multiply dark:mix-blend-screen"></div>
-                <div class="pointer-events-none absolute -right-16 -bottom-16 h-64 w-64 rounded-full bg-rose-400/20 blur-3xl opacity-60 mix-blend-multiply dark:mix-blend-screen"></div>
-                <div class="relative z-10 flex flex-col items-center gap-6 sm:gap-8 max-w-3xl">
-                    <div class="flex items-center justify-center">
-                        <div class="flex -space-x-3 hover:space-x-1 transition-all duration-300">
-                            <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
-                                <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwsFahihzH36unU1u7gMZ7YZeSTcbnyOiphyTNuhv7bwveWFJe1EVXhl2Gc3_uhItQmUZNObshm_IW9uVIIZjTuf6d-xspX4jzfJ0EhIOnnT5x7KguQrz6_5GKd1moM0DXSFHxhslPz6Nqb1t_-ygw513mLkGF3wqQlq_i8AWeRVu_va2F4O3uBKdDZINA2GA0az018KcegW2D5w1BDjb-vBbMGJx87MtHhniWDv6W6zakOMtbzHH-iRQH2F5uMEcXZ53zb1p5aM0");'></div>
+        <!-- Community CTA Section -->
+        <section id="community" class="py-16 sm:py-24 bg-background-light dark:bg-background-dark">
+            <div class="layout-container flex w-full flex-col items-center">
+                <div class="w-full px-4 py-8 sm:py-12 md:py-16">
+                    <div class="relative mx-auto flex max-w-5xl flex-col items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-[#fff5eb] to-[#ffeadd] px-6 py-8 sm:py-12 text-center dark:from-[#1c1917] dark:to-[#292524] sm:px-8 md:px-12 shadow-xl shadow-orange-900/5 dark:shadow-black/40 border border-[#ffdcc2] dark:border-white/10">
+                        <div class="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-orange-400/20 blur-3xl opacity-60 mix-blend-multiply dark:mix-blend-screen"></div>
+                        <div class="pointer-events-none absolute -right-16 -bottom-16 h-64 w-64 rounded-full bg-rose-400/20 blur-3xl opacity-60 mix-blend-multiply dark:mix-blend-screen"></div>
+                        <div class="relative z-10 flex flex-col items-center gap-6 sm:gap-8 max-w-3xl">
+                            <div class="flex items-center justify-center">
+                                <div class="flex -space-x-3 hover:space-x-1 transition-all duration-300">
+                                    <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
+                                        <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwsFahihzH36unU1u7gMZ7YZeSTcbnyOiphyTNuhv7bwveWFJe1EVXhl2Gc3_uhItQmUZNObshm_IW9uVIIZjTuf6d-xspX4jzfJ0EhIOnnT5x7KguQrz6_5GKd1moM0DXSFHxhslPz6Nqb1t_-ygw513mLkGF3wqQlq_i8AWeRVu_va2F4O3uBKdDZINA2GA0az018KcegW2D5w1BDjb-vBbMGJx87MtHhniWDv6W6zakOMtbzHH-iRQH2F5uMEcXZ53zb1p5aM0");'></div>
+                                    </div>
+                                    <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
+                                        <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAWMSOJ4k_dr5tNgEGUGnr2_3ZELuA4XynQm5oF0EaqNlE9332P2TA44Z35lNKJxFi8vht8cAvrFJ74feRnt6sRFNELW4rQEprBreqtOj63ezb_k3ea3-A3oIZlksF62mnxlT2H35hk6cW8YBWVHuEdzgm632Fl4sEq-XyYa27qcXFHkyLWbsiyTRl3ccQdr5JKeGfa9QfNSygIpw5IbaojcS0FVgxQC-vSDViNb1pQBNIGzkY4N46YrdG829iFLmElIt2NfkTDxeQ");'></div>
+                                    </div>
+                                    <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
+                                        <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCDfKpdoW9ebPmKE5srEez3-ME0QCavAE8O25DcZNfvv7Z1vtpS9MYMDFIEHZyIz1a1ypatTeXOHwkPfYGIXSpJRuXkjo_petGmrRPnEjaE-L3ysWRdj4jmkJFiKQ3BqUjKqmYs8BArkuqK9oE7woMPfylyyS9iovrqLYzXEhu7LnrmbauEKXgP7bj9hya8E-CL4IPKJSmoM8iO2Np3AguOdz3M-Dz3hpGWPkdi7ceo_y48Hf-TDdEK2H5KAZ6XgYBtPs96bFWIdXg");'></div>
+                                    </div>
+                                    <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
+                                        <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuARHzKt2bdDc5uo1oS42m55B-3Bq2kZGSTj-WD2nN3oquGhfwGJHOmBv969FAJVzCiN5iTikk8qumKHY3srZukcQpRZYJdZVaUrnaCDYX8ALsy-qb_kxszlwfupmUNcVUavyrwoSmVRK2w_pGZmugbgcRU3rc6gdmUjJutZBGyD6-xwALGCVgEdyw_h80WuP_T8T2Frnjo795SkGm-0R3E1YqEeTcAzzHwIsFJntCzk9WYpVWbABQkJxhCkEbel-uJKy7lEdV32A0o");'></div>
+                                    </div>
+                                    <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-accent text-white text-xs font-bold ring-2 ring-orange-200/50 dark:ring-orange-500/20 z-0">
+                                        +2k
+                                    </div>
+                                </div>
                             </div>
-                            <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
-                                <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAWMSOJ4k_dr5tNgEGUGnr2_3ZELuA4XynQm5oF0EaqNlE9332P2TA44Z35lNKJxFi8vht8cAvrFJ74feRnt6sRFNELW4rQEprBreqtOj63ezb_k3ea3-A3oIZlksF62mnxlT2H35hk6cW8YBWVHuEdzgm632Fl4sEq-XyYa27qcXFHkyLWbsiyTRl3ccQdr5JKeGfa9QfNSygIpw5IbaojcS0FVgxQC-vSDViNb1pQBNIGzkY4N46YrdG829iFLmElIt2NfkTDxeQ");'></div>
+                            <div class="flex flex-col gap-4 text-center">
+                                <h2 class="text-gray-900 dark:text-white tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+                                    Ready to find your mentor?
+                                </h2>
+                                <p class="text-gray-600 dark:text-gray-300 text-base md:text-lg font-normal leading-relaxed max-w-2xl mx-auto">
+                                    Join thousands of experts and learners connecting daily. Whether you want to learn a new skill or share your expertise, it takes less than 2 minutes to get started.
+                                </p>
                             </div>
-                            <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
-                                <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCDfKpdoW9ebPmKE5srEez3-ME0QCavAE8O25DcZNfvv7Z1vtpS9MYMDFIEHZyIz1a1ypatTeXOHwkPfYGIXSpJRuXkjo_petGmrRPnEjaE-L3ysWRdj4jmkJFiKQ3BqUjKqmYs8BArkuqK9oE7woMPfylyyS9iovrqLYzXEhu7LnrmbauEKXgP7bj9hya8E-CL4IPKJSmoM8iO2Np3AguOdz3M-Dz3hpGWPkdi7ceo_y48Hf-TDdEK2H5KAZ6XgYBtPs96bFWIdXg");'></div>
+                            <div class="flex flex-col w-full sm:w-auto sm:flex-row gap-4 justify-center mt-4">
+                                <a href="/register" class="group flex items-center justify-center gap-2 rounded-lg bg-gray-900 hover:bg-black text-white dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-3.5 text-base font-semibold transition-all duration-200 shadow-xl shadow-gray-900/10 hover:shadow-gray-900/20 w-full sm:w-auto">
+                                    <span>Get Started for Free</span>
+                                    <span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                </a>
+                                <a href="/explore" class="flex items-center justify-center gap-2 rounded-lg bg-white dark:bg-white/5 border border-orange-200 dark:border-white/10 hover:bg-orange-50 dark:hover:bg-white/10 text-gray-900 dark:text-white px-6 sm:px-8 py-3 sm:py-3.5 text-base font-semibold transition-all duration-200 w-full sm:w-auto shadow-sm shadow-orange-900/5">
+                                    <span class="material-symbols-outlined text-[20px] text-accent">search</span>
+                                    <span>Browse Experts</span>
+                                </a>
                             </div>
-                            <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
-                                <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuARHzKt2bdDc5uo1oS42m55B-3Bq2kZGSTj-WD2nN3oquGhfwGJHOmBv969FAJVzCiN5iTikk8qumKHY3srZukcQpRZYJdZVaUrnaCDYX8ALsy-qb_kxszlwfupmUNcVUavyrwoSmVRK2w_pGZmugbgcRU3rc6gdmUjJutZBGyD6-xwALGCVgEdyw_h80WuP_T8T2Frnjo795SkGm-0R3E1YqEeTcAzzHwIsFJntCzk9WYpVWbABQkJxhCkEbel-uJKy7lEdV32A0o");'></div>
-                            </div>
-                            <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-accent text-white text-xs font-bold ring-2 ring-orange-200/50 dark:ring-orange-500/20 z-0">
-                                +2k
+                            <div class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                <span class="material-symbols-outlined text-[16px] text-green-600 dark:text-green-500">check_circle</span>
+                                <span>No credit card required</span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-4 text-center">
-                        <h2 class="text-gray-900 dark:text-white tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-                            Ready to find your mentor?
-                        </h2>
-                        <p class="text-gray-600 dark:text-gray-300 text-base md:text-lg font-normal leading-relaxed max-w-2xl mx-auto">
-                            Join thousands of experts and learners connecting daily. Whether you want to learn a new skill or share your expertise, it takes less than 2 minutes to get started.
-                        </p>
-                    </div>
-                    <div class="flex flex-col w-full sm:w-auto sm:flex-row gap-4 justify-center mt-4">
-                        <a href="/register" class="group flex items-center justify-center gap-2 rounded-lg bg-gray-900 hover:bg-black text-white dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-3.5 text-base font-semibold transition-all duration-200 shadow-xl shadow-gray-900/10 hover:shadow-gray-900/20 w-full sm:w-auto">
-                            <span>Get Started for Free</span>
-                            <span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                        </a>
-                        <a href="/explore" class="flex items-center justify-center gap-2 rounded-lg bg-white dark:bg-white/5 border border-orange-200 dark:border-white/10 hover:bg-orange-50 dark:hover:bg-white/10 text-gray-900 dark:text-white px-6 sm:px-8 py-3 sm:py-3.5 text-base font-semibold transition-all duration-200 w-full sm:w-auto shadow-sm shadow-orange-900/5">
-                            <span class="material-symbols-outlined text-[20px] text-accent">search</span>
-                            <span>Browse Experts</span>
-                        </a>
-                    </div>
-                    <div class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        <span class="material-symbols-outlined text-[16px] text-green-600 dark:text-green-500">check_circle</span>
-                        <span>No credit card required</span>
-                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- Final CTA Section -->
-<section class="py-20 bg-gradient-to-r from-primary to-secondary">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="reveal">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
-                Ready to Transform Your Career?
-            </h2>
-            <p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-                Join thousands who've accelerated their careers with personalized mentorship.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                {% if not current_user %}
-                <a href="/register" 
-                   class="px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
-                    Start Free Trial
-                </a>
-                {% endif %}
-                <a href="/explore" 
-                   class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-bold text-lg hover:bg-white/10 transition-all">
-                    Explore Mentors
-                </a>
-                <a href="/mentorship-program" 
-                   class="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full font-bold text-lg hover:shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:-translate-y-1">
-                    <i class="fas fa-trophy mr-2"></i>
-                    View Program
-                </a>
+        </section>
+        
+        <!-- Final CTA Section (from old UI) -->
+        <section class="py-20 bg-gradient-to-r from-primary to-secondary">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div class="reveal">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                        Ready to Transform Your Career?
+                    </h2>
+                    <p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+                        Join thousands who've accelerated their careers with personalized mentorship.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        {% if not current_user %}
+                        <a href="/register" 
+                           class="px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
+                            Start Free Trial
+                        </a>
+                        {% endif %}
+                        <a href="/explore" 
+                           class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-bold text-lg hover:bg-white/10 transition-all">
+                            Explore Mentors
+                        </a>
+                        <a href="/mentorship-program" 
+                           class="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full font-bold text-lg hover:shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:-translate-y-1">
+                            <i class="fas fa-trophy mr-2"></i>
+                            View Program
+                        </a>
+                    </div>
+                    <p class="text-white/70 mt-6 text-sm">
+                        No credit card required • Free 30-minute trial session
+                    </p>
+                </div>
             </div>
-            <p class="text-white/70 mt-6 text-sm">
-                No credit card required • Free 30-minute trial session
-            </p>
-        </div>
-    </div>
-</section>
+        </section>
+    </main>
+</div>
 
 <script>
 // Initialize animations specific to homepage
 document.addEventListener('DOMContentLoaded', function() {
-    // Add reveal class to all sections that need animation
-    const sections = document.querySelectorAll('.reveal');
-    sections.forEach(section => {
-        section.classList.add('reveal');
-    });
-    
-    // Stats counter animation
+    // Stats counter animation from old UI
     const statNumbers = document.querySelectorAll('.stat-number[data-target]');
     statNumbers.forEach(stat => {
         const target = parseInt(stat.getAttribute('data-target'));
@@ -1208,6 +1088,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
+    });
+
+    // System dark mode detection
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+    }
+    
+    // FAQ functionality
+    const faqButtons = document.querySelectorAll('.space-y-4 button');
+    
+    faqButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const answer = this.nextElementSibling;
+            const icon = this.querySelector('i');
+            
+            // Toggle answer visibility
+            if (answer.style.maxHeight) {
+                answer.style.maxHeight = null;
+                answer.style.opacity = '0';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+                answer.style.opacity = '1';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        });
+    });
+    
+    // Initialize all answers as hidden
+    const answers = document.querySelectorAll('.space-y-4 button + div');
+    answers.forEach(answer => {
+        answer.style.maxHeight = '0';
+        answer.style.opacity = '0';
+        answer.style.overflow = 'hidden';
+        answer.style.transition = 'max-height 0.2s ease, opacity 0.2s ease';
     });
 });
 </script>
