@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-bg min-h-[90vh] flex items-center">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
-            <!-- Left Content -->
-            <div class="text-left reveal active">
-                <div class="flex items-center gap-3 mb-6">
+<section id="hero" class="w-full px-4 pt-12 pb-20 sm:px-6 sm:pt-16 sm:pb-24 lg:px-8 bg-gradient-to-b from-background-light to-white dark:from-background-dark dark:to-card-dark">
+    <div class="mx-auto max-w-7xl">
+        <div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+            <div class="flex flex-col items-start gap-6 lg:gap-8 max-w-2xl">
+                <!-- Badge Section (Preserved from old code) -->
+                <div class="flex items-center gap-3">
                     <span class="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary font-semibold text-sm">
                         🚀 #1 Mentorship Platform
                     </span>
@@ -18,101 +17,143 @@
                     </a>
                 </div>
                 
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6 leading-tight">
+                <h1 class="text-4xl sm:text-5xl font-extrabold leading-[1.1] tracking-tight text-text-light dark:text-text-dark lg:text-7xl">
                     Accelerate Your Career with 
-                    <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                        Expert Mentorship
-                    </span>
+                    <span class="relative whitespace-nowrap text-accent">
+                        Expert
+                        <svg class="absolute -bottom-2 left-0 w-full h-3 text-accent/30" preserveAspectRatio="none" viewBox="0 0 100 10">
+                            <path d="M0 5 Q 50 10 100 5" fill="none" stroke="currentColor" stroke-width="3"></path>
+                        </svg>
+                    </span> Mentorship
                 </h1>
-                <p class="text-lg text-gray-600 mb-8 max-w-lg">
+                <p class="text-lg font-medium leading-relaxed text-text-secondary-light dark:text-text-secondary-dark sm:text-xl max-w-lg">
                     Get 1-on-1 guidance from industry leaders at Google, Amazon, Microsoft, and top startups. 
                     Transform your career with personalized mentorship.
                 </p>
-                <div class="flex flex-wrap gap-4 mb-10">
+                
+                <!-- Trust Badge -->
+                <div class="flex items-center gap-2 bg-orange-100 dark:bg-orange-900/20 px-4 py-2 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <div class="flex -space-x-2">
+                        <span class="flex h-2 w-2 rounded-full bg-accent"></span>
+                        <span class="flex h-2 w-2 rounded-full bg-accent/70"></span>
+                        <span class="flex h-2 w-2 rounded-full bg-accent/40"></span>
+                    </div>
+                    <span class="text-xs font-bold text-orange-800 dark:text-orange-200">1000+ professionals trust us</span>
+                </div>
+                
+                <!-- Buttons Section (Preserved functionality) -->
+                <div class="flex w-full flex-col sm:flex-row gap-4 mt-2">
+                    <!-- Find Your Mentor Button (Replaces Find an expert) -->
                     <a href="/explore" 
-                       class="px-8 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all transform hover:-translate-y-1">
+                       class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-4 text-base font-bold text-white shadow-xl shadow-primary/20 transition-all hover:bg-primary-hover hover:scale-[1.02] transform">
                         Find Your Mentor →
+                        <span class="material-symbols-outlined text-lg bg-white/20 rounded-full p-0.5 group-hover:bg-white/30 transition-colors">arrow_forward</span>
                     </a>
+                    
+                    <!-- Start My Page Button (Conditional logic preserved) -->
                     {% if not current_user %}
-                    <a href="/register" 
-                       class="px-8 py-3 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary/5 transition-colors">
-                        Become a Mentor
+                    <a href="/create-page" 
+                       class="group inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-primary bg-white dark:bg-card-dark px-8 py-4 text-base font-medium text-primary dark:text-primary shadow-sm hover:scale-[1.02] hover:shadow-md transition-all hover:border-primary-hover transform">
+                        <span class="material-symbols-outlined text-lg">person_add</span>
+                        Start My Page
+                    </a>
+                    {% else %}
+                    <!-- If user is logged in, show different button or hide -->
+                    <a href="/dashboard" 
+                       class="group inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-primary bg-white dark:bg-card-dark px-8 py-4 text-base font-medium text-primary dark:text-primary shadow-sm hover:scale-[1.02] hover:shadow-md transition-all hover:border-primary-hover transform">
+                        <span class="material-symbols-outlined text-lg">dashboard</span>
+                        Go to Dashboard
                     </a>
                     {% endif %}
                 </div>
                 
-                <!-- Stats -->
+                <!-- Stats Section (Preserved from old code) -->
                 <div class="flex flex-wrap gap-8 mt-8">
                     <div class="text-center">
                         <div class="text-2xl font-bold text-dark mb-1 stat-number" data-target="600">600+</div>
-                        <div class="text-sm text-gray-500">Expert Mentors</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Expert Mentors</div>
                     </div>
                     <div class="text-center">
                         <div class="text-2xl font-bold text-dark mb-1 stat-number" data-target="94">94%</div>
-                        <div class="text-sm text-gray-500">Success Rate</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Success Rate</div>
                     </div>
                     <div class="text-center">
                         <div class="text-2xl font-bold text-dark mb-1">4x</div>
-                        <div class="text-sm text-gray-500">Faster Growth</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">Faster Growth</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Visual -->
-            <div class="reveal">
-                <div class="relative">
-                    <!-- Floating Cards -->
-                    <div class="absolute -top-6 -left-6 w-64 bg-white p-6 rounded-2xl shadow-lg float-animation border border-gray-100">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                                <i class="fas fa-users text-primary text-xl"></i>
-                            </div>
-                            <div>
-                                <div class="text-xl font-bold text-dark">5000+</div>
-                                <div class="text-sm text-gray-500">Careers Transformed</div>
-                            </div>
+            <!-- Right Visual Section -->
+            <div class="relative flex items-center justify-center lg:justify-end">
+                <!-- Floating Cards from old code -->
+                <div class="absolute -top-6 -left-6 w-64 bg-white dark:bg-card-dark p-6 rounded-2xl shadow-lg float-animation border border-gray-100 dark:border-gray-800 z-10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                            <i class="fas fa-users text-primary text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-dark dark:text-white">5000+</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Careers Transformed</div>
                         </div>
                     </div>
-                    
-                    <div class="absolute -bottom-6 -right-6 w-64 bg-white p-6 rounded-2xl shadow-lg float-animation border border-gray-100" style="animation-delay: 2s;">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
-                                <i class="fas fa-star text-secondary text-xl"></i>
-                            </div>
-                            <div>
-                                <div class="text-xl font-bold text-dark">4.9/5</div>
-                                <div class="text-sm text-gray-500">Average Rating</div>
-                            </div>
+                </div>
+                
+                <div class="absolute -bottom-6 -right-6 w-64 bg-white dark:bg-card-dark p-6 rounded-2xl shadow-lg float-animation border border-gray-100 dark:border-gray-800 z-10" style="animation-delay: 2s;">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                            <i class="fas fa-star text-secondary text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="text-xl font-bold text-dark dark:text-white">4.9/5</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Average Rating</div>
                         </div>
                     </div>
-                    
-                    <!-- Main Card with Mentorship Program CTA -->
-                    <div class="relative bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl p-8 backdrop-blur-sm border border-white/20">
-                        <div class="text-center">
-                            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto mb-6">
-                                <i class="fas fa-video text-white text-3xl"></i>
+                </div>
+                
+                <!-- Background Blur Effect -->
+                <div class="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] sm:h-[500px] sm:w-[500px] rounded-full bg-orange-200/40 blur-[80px] dark:bg-accent/10"></div>
+                
+                <!-- Profile Grid from new code -->
+                <div class="grid grid-cols-2 gap-4 w-full max-w-lg">
+                    <div class="col-span-1 transform translate-y-4 sm:translate-y-8">
+                        <div class="rounded-2xl bg-white dark:bg-card-dark p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 border border-gray-100 dark:border-gray-800">
+                            <div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-green-100 dark:bg-green-900/30 mb-3">
+                                <img alt="Expert profile picture" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpAAKXuMN-NfrcRCTu9yKqSs6znGL61DAV7O0X1xJhOMGjSZspREiyuaPirSZb-SpDIz8brf0y_etS35k33plbajMEUS3ZHEO-M1YtcqBuOd7BzHsBzbvrJuGJ0q7cG6tmcCprUqVFTByCg4W-czOIAC2QEIok_GqMD-YhuHniDjmY4Xew7jG_emGJ_rFnHsw-2rc7UauyWJ6mFEdR7E_h5N7thP-5ITjH3GqhK2MN-UpdOhzi4XTKbdM_gNm0LnBS0cjyeAA99VY"/>
+                                <div class="absolute bottom-2 right-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-green-700 dark:text-green-400">Google</div>
                             </div>
-                            <h3 class="text-xl font-bold text-dark mb-3">Live 1-on-1 Sessions</h3>
-                            <p class="text-gray-600 mb-6">Connect directly with mentors via video calls</p>
-                            
-                            <!-- Mentorship Program Button in Visual Area -->
-                            <div class="mb-6">
-                                <a href="/mentorship-program" 
-                                   class="inline-flex items-center justify-center px-6 py-3 w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:-translate-y-1">
-                                    <i class="fas fa-trophy mr-2"></i>
-                                    Explore Mentorship Program
-                                    <i class="fas fa-arrow-right ml-2"></i>
-                                </a>
+                            <h3 class="font-bold text-sm text-text-light dark:text-text-dark truncate">Vineet Joglekar</h3>
+                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">Engineering Manager</p>
+                        </div>
+                    </div>
+                    <div class="col-span-1">
+                        <div class="rounded-2xl bg-white dark:bg-card-dark p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 border border-gray-100 dark:border-gray-800">
+                            <div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-purple-100 dark:bg-purple-900/30 mb-3">
+                                <img alt="Expert profile picture" class="h-full w-full object-cover" src="https://img.freepik.com/free-photo/impressed-young-pretty-caucasian-girl-looking-camera-isolated-olive-green-background_141793-90124.jpg?semt=ais_hybrid&w=740&q=80"/>
+                                <div class="absolute bottom-2 right-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-purple-700 dark:text-purple-400">Life Coach</div>
                             </div>
-                            
-                            <div class="flex justify-center gap-3">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">G</div>
-                                    <div class="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center text-sm font-bold -ml-2">A</div>
-                                    <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold -ml-2">M</div>
-                                </div>
-                                <span class="text-sm text-gray-500">Mentors from top companies</span>
+                            <h3 class="font-bold text-sm text-text-light dark:text-text-dark truncate">Chiradeep Patra</h3>
+                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">Life Coach (ICF - CCE)</p>
+                        </div>
+                    </div>
+                    <div class="col-span-1">
+                        <div class="rounded-2xl bg-white dark:bg-card-dark p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 border border-gray-100 dark:border-gray-800">
+                            <div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-red-100 dark:bg-red-900/30 mb-3">
+                                <img alt="Expert profile picture" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzmHjm6-7ZYv3MduldC_CVOFo0Vng7x3d69NypAfTZc2N1snBF0gtjoj96FWsbJAhGCb8CIBV0ZiWIpFXmVSoTSqUjwFG0dS6d7dU4S6jEKy7fBo7w6zsldpyP3kx3_wdolpemC110G5dzMWvAR3u0uiZaLI24G-K6gpi71U76JoR5OMc3VCmlZvPBvAtA9IPYdVuxP8Ns8eo5gi6MCy79_xSWKvhDhCrZpRpazJF3r9krWAYiV8zDlJcVVfZswKTcz7IxIog58OY"/>
+                                <div class="absolute bottom-2 right-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-red-600 dark:text-red-400">Netflix</div>
                             </div>
+                            <h3 class="font-bold text-sm text-text-light dark:text-text-dark truncate">Vanesa Fernanda</h3>
+                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">Product Marketing</p>
+                        </div>
+                    </div>
+                    <div class="col-span-1 transform -translate-y-4 sm:-translate-y-8">
+                        <div class="rounded-2xl bg-white dark:bg-card-dark p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 border border-gray-100 dark:border-gray-800">
+                            <div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-orange-100 dark:bg-orange-900/30 mb-3">
+                                <img alt="Expert profile picture" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0fb9vACWI87YfbLIqIHG8knLKldnjTtBJdl9TNNbBaA60vqW4Eb_fLG6Zat8dZm0XcM8V8y5LtYjVjlJDEajnpytnquMiKVrhLV-uX2j_ok3RSvUCH-YZKJKFvcztntIcKS-KUtn6FkvhbCZRZp8nz_y47QccxhbWykFyZgJ_J2kxm2GXkYqlNIZMsCIDaFIPeW5r3gLiyO5YijdceJohLbAAuII7bE-ubtEWS7kE-oCjMKtlkNKc22yLJUNH4ZKw-Boh2DyGkMA"/>
+                                <div class="absolute bottom-2 right-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-orange-600 dark:text-orange-400">Airbnb</div>
+                            </div>
+                            <h3 class="font-bold text-sm text-text-light dark:text-text-dark truncate">Vatsal Nahata</h3>
+                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">Career Guidance</p>
                         </div>
                     </div>
                 </div>
