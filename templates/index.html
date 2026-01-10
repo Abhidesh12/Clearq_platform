@@ -536,6 +536,82 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 20);
     });
+    
+    // Mobile menu toggle - FIXED: Added null check
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (mobileMenuButton && mobileMenu) {
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (event) => {
+            if (mobileMenu && mobileMenuButton && 
+                !mobileMenu.contains(event.target) && 
+                !mobileMenuButton.contains(event.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                // Close mobile menu if open
+                if (mobileMenu) mobileMenu.classList.add('hidden');
+                
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // System dark mode detection
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+    }
+    
+    // FAQ functionality - FIXED: Removed duplicate DOMContentLoaded
+    const faqButtons = document.querySelectorAll('.space-y-4 button');
+    
+    faqButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const answer = this.nextElementSibling;
+            const icon = this.querySelector('i');
+            
+            // Toggle answer visibility
+            if (answer.style.maxHeight) {
+                answer.style.maxHeight = null;
+                answer.style.opacity = '0';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+                answer.style.opacity = '1';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        });
+    });
+    
+    // Initialize all answers as hidden
+    const answers = document.querySelectorAll('.space-y-4 button + div');
+    answers.forEach(answer => {
+        answer.style.maxHeight = '0';
+        answer.style.opacity = '0';
+        answer.style.overflow = 'hidden';
+        answer.style.transition = 'max-height 0.2s ease, opacity 0.2s ease';
+    });
 });
 </script>
 {% endblock %}
