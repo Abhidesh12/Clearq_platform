@@ -162,123 +162,187 @@
     </div>
 </section>
 
-<!-- Categories Section -->
-<section id="categories" class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16 reveal">
-            <h2 class="text-3xl md:text-4xl font-bold text-dark mb-4">Find Mentors by Domain</h2>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Specialized guidance for every career path. Browse our most popular categories.
+<!-- Experts Section -->
+<section id="experts" class="py-16 sm:py-24 bg-white dark:bg-background-dark">
+    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col items-center text-center gap-3 max-w-3xl mx-auto mb-8 sm:mb-12">
+            <h2 class="text-text-light dark:text-text-dark text-3xl sm:text-4xl md:text-[2.75rem] font-bold tracking-tight leading-tight">
+                The <span class="relative inline-block px-1">Go-To Platform<span class="absolute bottom-1 left-0 w-full h-3 bg-yellow-200/50 -z-10 skew-x-[-10deg]"></span></span> for Experts
+            </h2>
+            <p class="text-text-secondary-light dark:text-text-secondary-dark text-lg leading-relaxed max-w-2xl">
+                Experts from every niche use ExpertConnect to build trust, grow revenue, and stay booked.
             </p>
         </div>
+        
+        <!-- Category Filter -->
+        <div class="mobile-horizontal-scroll no-scrollbar mb-8 sm:mb-12 pb-4">
+            <div class="flex flex-nowrap sm:flex-wrap justify-start sm:justify-center gap-3 px-1">
+                <button class="px-5 py-2 rounded-full text-sm font-semibold bg-primary text-white shadow-md transition-transform hover:-translate-y-0.5 whitespace-nowrap">
+                    All Experts
+                </button>
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
+                    Product Management
+                </button>
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
+                    Engineering
+                </button>
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
+                    Design
+                </button>
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
+                    Marketing
+                </button>
+                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
+                    Leadership
+                </button>
+            </div>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Engineering -->
-            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
-                <div class="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-6">
-                    <i class="fas fa-code text-primary text-2xl"></i>
+        <!-- Experts Grid -->
+        <div class="mobile-horizontal-scroll no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+            <!-- Expert 1 -->
+            <div class="group flex flex-col bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-transparent hover:border-border-light dark:border-border-dark transition-all duration-300 overflow-hidden h-full">
+                <div class="p-3 pb-0">
+                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl">
+                        <img alt="Professional woman in business attire smiling" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDW4RkUN_Yk1UyBQbgVLTIXX4266PonP5OKA4yPC2pP6-dsPJ7THylOV9Kx3HlX5_jGZWL1W0yOhY-kW3L4kjHuP0zOAl1GHc5QENultQGlslmP8VPZiKG6Iq4fLk2eCZ6k9EmOE9br2lEzW2rjbrRF1xCmVosPVRgQEOjkJSC2yH-64CW3fgzHjYHlVXERGIt6bPSthCKjRRTUNptpkIlqXhEN7YBFhVX_Sk6S3m204TC3YsCPiT-GcUQUd19WShsxpRb1Ix3A_fU"/>
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold text-dark mb-4">Engineering</h3>
-                <ul class="space-y-3">
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Frontend & Backend
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        System Design
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        DevOps & Cloud
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Data Structures
-                    </li>
-                </ul>
+                <div class="p-4 flex flex-col flex-1 gap-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight">Priya Sharma</h3>
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-1 font-medium">Sr. Product Designer at Google</p>
+                        </div>
+                        <div class="flex items-center gap-1 bg-background-light dark:bg-black/40 px-1.5 py-0.5 rounded text-xs font-bold text-text-light dark:text-text-dark">
+                            <span class="material-symbols-outlined text-yellow-500 text-[14px] fill-1">star</span>
+                            <span>5.0</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">UX Design</span>
+                    </div>
+                    <div class="mt-auto pt-4 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark font-medium">Starting at</span>
+                            <span class="text-text-light dark:text-text-dark font-bold text-sm">₹899</span>
+                        </div>
+                        <button class="bg-primary text-white dark:bg-primary-300 dark:text-black rounded-lg px-6 py-2 text-sm font-bold hover:bg-primary-hover transition-all duration-200 shadow-sm">
+                            Book
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Data & AI -->
-            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
-                <div class="w-14 h-14 rounded-xl bg-purple-50 flex items-center justify-center mb-6">
-                    <i class="fas fa-database text-secondary text-2xl"></i>
+            <!-- Expert 2 -->
+            <div class="group flex flex-col bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-transparent hover:border-border-light dark:border-border-dark transition-all duration-300 overflow-hidden h-full">
+                <div class="p-3 pb-0">
+                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl">
+                        <img alt="Asian man in suit looking confident" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoPrzlwEdtCYBFKTAJJTjBEh574P-UjB3ezgkXW4ni3n_B-tFdeTp6efqrzqUhJe7CzXqDVdBQ3r9JHBAahWQnE-7SCpC6jbQjEgBLyJ5rnFXnKdsL6v3uw8i_jdle3k2nfvGi9JTt8HTAHl4mYqOBPfIHVE3QRaesbhA9N1B5OsDP8dBynl2z-GISxpuaLZk1ISY05Aip_jmOTWZAOTa_5-DjY8FmNou_39B3seAT08U2h1VzOYNL4pxu2BhiLqApM-V155eMhR8"/>
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold text-dark mb-4">Data & AI</h3>
-                <ul class="space-y-3">
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Data Science
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Machine Learning
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Data Engineering
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Business Analytics
-                    </li>
-                </ul>
+                <div class="p-4 flex flex-col flex-1 gap-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight">Arjun Patel</h3>
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-1 font-medium">CTO at StartupX</p>
+                        </div>
+                        <div class="flex items-center gap-1 bg-background-light dark:bg-black/40 px-1.5 py-0.5 rounded text-xs font-bold text-text-light dark:text-text-dark">
+                            <span class="material-symbols-outlined text-yellow-500 text-[14px] fill-1">star</span>
+                            <span>4.9</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">Strategy</span>
+                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">Leadership</span>
+                    </div>
+                    <div class="mt-auto pt-4 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark font-medium">Starting at</span>
+                            <span class="text-text-light dark:text-text-dark font-bold text-sm">₹1199</span>
+                        </div>
+                        <button class="bg-primary text-white dark:bg-primary-300 dark:text-black rounded-lg px-6 py-2 text-sm font-bold hover:bg-primary-hover transition-all duration-200 shadow-sm">
+                            Book
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Business -->
-            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
-                <div class="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center mb-6">
-                    <i class="fas fa-briefcase text-indigo-600 text-2xl"></i>
+            <!-- Expert 3 -->
+            <div class="group flex flex-col bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-transparent hover:border-border-light dark:border-border-dark transition-all duration-300 overflow-hidden h-full">
+                <div class="p-3 pb-0">
+                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl">
+                        <img alt="Young woman with curly hair smiling" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8LVXB4M2hatArpIfxgtz_LxuZ5xgJlwDOi-iqks4GfJ_7OiRHub6U4nTj73IYMeeUk66Tio8pFnaXtQHaKUydeJMIC9KGUKP7AtYpboT3scfLlPK5MNdGLouwJcWnmI4-EnqUKcKd8s36RsGZ3aApky8dYsMB_JNxkoMOREIW7YAe173mbjiF2LhMqUnZyI0nD10L_PCG5_-zfsrFA1prswf8rI7bTECZNgc0T32H-HOPhfowJZBpsMTSY8fM3zQNiR0ftPgVMAs"/>
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold text-dark mb-4">Business</h3>
-                <ul class="space-y-3">
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Product Management
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Digital Marketing
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Consulting & Strategy
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Finance & Sales
-                    </li>
-                </ul>
+                <div class="p-4 flex flex-col flex-1 gap-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight">Ananya Reddy</h3>
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-1 font-medium">Marketing Lead at Spotify</p>
+                        </div>
+                        <div class="flex items-center gap-1 bg-background-light dark:bg-black/40 px-1.5 py-0.5 rounded text-xs font-bold text-text-light dark:text-text-dark">
+                            <span class="material-symbols-outlined text-yellow-500 text-[14px] fill-1">star</span>
+                            <span>4.8</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">Growth</span>
+                    </div>
+                    <div class="mt-auto pt-4 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark font-medium">Starting at</span>
+                            <span class="text-text-light dark:text-text-dark font-bold text-sm">₹999</span>
+                        </div>
+                        <button class="bg-primary text-white dark:bg-primary-300 dark:text-black rounded-lg px-6 py-2 text-sm font-bold hover:bg-primary-hover transition-all duration-200 shadow-sm">
+                            Book
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Design -->
-            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
-                <div class="w-14 h-14 rounded-xl bg-orange-50 flex items-center justify-center mb-6">
-                    <i class="fas fa-pen-nib text-orange-500 text-2xl"></i>
+            <!-- Expert 4 -->
+            <div class="group flex flex-col bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-transparent hover:border-border-light dark:border-border-dark transition-all duration-300 overflow-hidden h-full">
+                <div class="p-3 pb-0">
+                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl">
+                        <img alt="Man with beard in dark shirt smiling" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsvCCNG5GRX_hE7fbJDsVaR8RUVglzGqsWzJnw4XwabsatljdpDii8AqRlVXPQ4tOb7DsLqGVg7XkHD5c08NUdK92XeDZbKUg258cYCYaOHkU1INWFn--MsAEsY2_zTpmK8RsBddjKEIU3w1QqBhpJvNDd71YRnL94mYf3cmRIBb8x169uKFIuRqiZ_TUaXqlg-1jEyj_YKt8cyQSEjBOVBKEof3N-5BwWKvNyo3yotu8v9BEq0Qt-jXY598AJtr2vplQ4EV_RRmE"/>
+                    </div>
                 </div>
-                <h3 class="text-xl font-bold text-dark mb-4">Design</h3>
-                <ul class="space-y-3">
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        UI/UX Design
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Product Design
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        Graphic Design
-                    </li>
-                    <li class="flex items-center text-gray-600">
-                        <i class="fas fa-check text-green-500 mr-3"></i>
-                        User Research
-                    </li>
-                </ul>
+                <div class="p-4 flex flex-col flex-1 gap-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight">Rohan Singh</h3>
+                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-1 font-medium">Ex-McKinsey Consultant</p>
+                        </div>
+                        <div class="flex items-center gap-1 bg-background-light dark:bg-black/40 px-1.5 py-0.5 rounded text-xs font-bold text-text-light dark:text-text-dark">
+                            <span class="material-symbols-outlined text-yellow-500 text-[14px] fill-1">star</span>
+                            <span>5.0</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mt-1">
+                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">Interview Prep</span>
+                    </div>
+                    <div class="mt-auto pt-4 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark font-medium">Starting at</span>
+                            <span class="text-text-light dark:text-text-dark font-bold text-sm">₹200</span>
+                        </div>
+                        <button class="bg-primary text-white dark:bg-primary-300 dark:text-black rounded-lg px-6 py-2 text-sm font-bold hover:bg-primary-hover transition-all duration-200 shadow-sm">
+                            Book
+                        </button>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <div class="flex flex-col items-center justify-center mt-8 sm:mt-12 gap-4">
+            <button class="flex w-full sm:w-auto min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-white dark:bg-card-dark text-text-light dark:text-text-dark border border-border-light dark:border-border-dark shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-[#252033] transition-all text-sm font-bold">
+                View all experts
+            </button>
         </div>
     </div>
 </section>
+
+
 
 <!-- How It Works Section -->
 <section id="how-it-works" class="py-20 bg-gray-50">
