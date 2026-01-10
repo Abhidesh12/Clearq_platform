@@ -2,1015 +2,420 @@
 
 {% block content %}
 <!-- Hero Section -->
-<main class="flex-1">
-    <section id="hero" class="w-full px-4 pt-12 pb-20 sm:px-6 sm:pt-16 sm:pb-24 lg:px-8 bg-gradient-to-b from-background-light to-white dark:from-background-dark dark:to-card-dark">
-        <div class="mx-auto max-w-7xl">
-            <div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-                <div class="flex flex-col items-start gap-6 lg:gap-8 max-w-2xl">
-                    <h1 class="text-4xl sm:text-5xl font-extrabold leading-[1.1] tracking-tight text-text-light dark:text-text-dark lg:text-7xl">
-                        Accelerate Your Career with <span class="relative whitespace-nowrap text-accent">
-                            Expert
-                            <svg class="absolute -bottom-2 left-0 w-full h-3 text-accent/30" preserveAspectRatio="none" viewBox="0 0 100 10">
-                                <path d="M0 5 Q 50 10 100 5" fill="none" stroke="currentColor" stroke-width="3"></path>
-                            </svg>
-                        </span> Mentorship
-                    </h1>
-                    <p class="text-lg font-medium leading-relaxed text-text-secondary-light dark:text-text-secondary-dark sm:text-xl max-w-lg">
-                        Get 1-on-1 guidance from industry leaders at Google, Amazon, Microsoft, and top startups. Transform your career with personalized mentorship.
-                    </p>
-                    <div class="flex items-center gap-2 bg-orange-100 dark:bg-orange-900/20 px-4 py-2 rounded-lg border border-orange-200 dark:border-orange-800">
-                        <div class="flex -space-x-2">
-                            <span class="flex h-2 w-2 rounded-full bg-accent"></span>
-                            <span class="flex h-2 w-2 rounded-full bg-accent/70"></span>
-                            <span class="flex h-2 w-2 rounded-full bg-accent/40"></span>
-                        </div>
-                        <span class="text-xs font-bold text-orange-800 dark:text-orange-200">1000+ professionals trust us</span>
-                    </div>
-                    <div class="flex w-full flex-col sm:flex-row gap-4 mt-2">
-                        <a href="/create-page" 
-                           class="group inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-8 py-4 text-base font-bold text-white shadow-xl shadow-primary/20 transition-all hover:bg-primary-hover hover:scale-[1.02] transform">
-                            Start My Page
-                            <span class="material-symbols-outlined text-lg bg-white/20 rounded-full p-0.5 group-hover:bg-white/30 transition-colors">arrow_forward</span>
-                        </a>
-                        
-                        <a href="/explore" 
-                           class="group inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-orange-400 bg-white dark:bg-card-dark px-8 py-4 text-base font-medium text-text-light dark:text-text-dark shadow-sm hover:scale-[1.02] hover:shadow-md transition-all hover:border-orange-500 transform">
-                            <span class="material-symbols-outlined text-lg">search</span>
-                            Find an expert
-                        </a>
-                        
-                        {% if not current_user %}
-                        <a href="/register" 
-                           class="group inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-primary px-8 py-4 text-base font-medium text-primary hover:bg-primary/5 transition-colors">
-                            Become a Mentor
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="relative flex items-center justify-center lg:justify-end">
-                    <div class="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] sm:h-[500px] sm:w-[500px] rounded-full bg-orange-200/40 blur-[80px] dark:bg-accent/10"></div>
-                    <div class="grid grid-cols-2 gap-4 w-full max-w-lg">
-                        <div class="col-span-1 transform translate-y-4 sm:translate-y-8">
-                            <div class="rounded-2xl bg-white p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 border border-gray-100 dark:bg-card-dark dark:border-gray-800">
-                                <div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-green-100 mb-3">
-                                    <img alt="Expert profile picture" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpAAKXuMN-NfrcRCTu9yKqSs6znGL61DAV7O0X1xJhOMGjSZspREiyuaPirSZb-SpDIz8brf0y_etS35k33plbajMEUS3ZHEO-M1YtcqBuOd7BzHsBzbvrJuGJ0q7cG6tmcCprUqVFTByCg4W-czOIAC2QEIok_GqMD-YhuHniDjmY4Xew7jG_emGJ_rFnHsw-2rc7UauyWJ6mFEdR7E_h5N7thP-5ITjH3GqhK2MN-UpdOhzi4XTKbdM_gNm0LnBS0cjyeAA99VY"/>
-                                    <div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-green-700">Google</div>
-                                </div>
-                                <h3 class="font-bold text-sm text-text-light dark:text-text-dark truncate">Vineet Joglekar</h3>
-                                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">Engineering Manager</p>
-                            </div>
-                        </div>
-                        <div class="col-span-1">
-                            <div class="rounded-2xl bg-white p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 border border-gray-100 dark:bg-card-dark dark:border-gray-800">
-                                <div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-purple-100 mb-3">
-                                    <img alt="Expert profile picture" class="h-full w-full object-cover" src="https://img.freepik.com/free-photo/impressed-young-pretty-caucasian-girl-looking-camera-isolated-olive-green-background_141793-90124.jpg?semt=ais_hybrid&w=740&q=80"/>
-                                    <div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-purple-700">Life Coach</div>
-                                </div>
-                                <h3 class="font-bold text-sm text-text-light dark:text-text-dark truncate">Chiradeep Patra</h3>
-                                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">Life Coach (ICF - CCE)</p>
-                            </div>
-                        </div>
-                        <div class="col-span-1">
-                            <div class="rounded-2xl bg-white p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 border border-gray-100 dark:bg-card-dark dark:border-gray-800">
-                                <div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-red-100 mb-3">
-                                    <img alt="Expert profile picture" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzmHjm6-7ZYv3MduldC_CVOFo0Vng7x3d69NypAfTZc2N1snBF0gtjoj96FWsbJAhGCb8CIBV0ZiWIpFXmVSoTSqUjwFG0dS6d7dU4S6jEKy7fBo7w6zsldpyP3kx3_wdolpemC110G5dzMWvAR3u0uiZaLI24G-K6gpi71U76JoR5OMc3VCmlZvPBvAtA9IPYdVuxP8Ns8eo5gi6MCy79_xSWKvhDhCrZpRpazJF3r9krWAYiV8zDlJcVVfZswKTcz7IxIog58OY"/>
-                                    <div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-red-600">Netflix</div>
-                                </div>
-                                <h3 class="font-bold text-sm text-text-light dark:text-text-dark truncate">Vanesa Fernanda</h3>
-                                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">Product Marketing</p>
-                            </div>
-                        </div>
-                        <div class="col-span-1 transform -translate-y-4 sm:-translate-y-8">
-                            <div class="rounded-2xl bg-white p-3 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 border border-gray-100 dark:bg-card-dark dark:border-gray-800">
-                                <div class="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-orange-100 mb-3">
-                                    <img alt="Expert profile picture" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0fb9vACWI87YfbLIqIHG8knLKldnjTtBJdl9TNNbBaA60vqW4Eb_fLG6Zat8dZm0XcM8V8y5LtYjVjlJDEajnpytnquMiKVrhLV-uX2j_ok3RSvUCH-YZKJKFvcztntIcKS-KUtn6FkvhbCZRZp8nz_y47QccxhbWykFyZgJ_J2kxm2GXkYqlNIZMsCIDaFIPeW5r3gLiyO5YijdceJohLbAAuII7bE-ubtEWS7kE-oCjMKtlkNKc22yLJUNH4ZKw-Boh2DyGkMA"/>
-                                    <div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-orange-600">Airbnb</div>
-                                </div>
-                                <h3 class="font-bold text-sm text-text-light dark:text-text-dark truncate">Vatsal Nahata</h3>
-                                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">Career Guidance</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-        <!-- How It Works Section -->
-        <section id="how-it-works" class="py-16 sm:py-24 bg-background-light dark:bg-[#111111] relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            <div class="absolute bottom-0 left-0 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-accent/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-                <div class="text-center max-w-3xl mx-auto mb-12 sm:mb-20">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-white/10 border border-gray-200 dark:border-gray-800 shadow-sm mb-6">
-                        <span class="flex h-2 w-2 rounded-full bg-accent"></span>
-                        <span class="text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Simple Process</span>
-                    </div>
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-text-light dark:text-text-dark tracking-tight mb-6">
-                        From curiosity to mastery in three simple steps
-                    </h2>
-                    <p class="text-lg sm:text-xl text-text-secondary-light dark:text-text-secondary-dark">
-                        We've removed the friction so you can focus on learning.
-                    </p>
-                </div>
-                <div class="grid gap-8 md:grid-cols-3">
-                    <div class="relative group bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 border border-gray-100 dark:border-gray-800 transition-all duration-300">
-                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <span class="text-6xl sm:text-8xl font-black text-accent">1</span>
-                        </div>
-                        <div class="relative z-10">
-                            <div class="mb-6 inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 group-hover:scale-110 transition-transform duration-300">
-                                <span class="material-symbols-outlined text-2xl sm:text-3xl">search</span>
-                            </div>
-                            <h4 class="text-xl sm:text-2xl font-bold text-text-light dark:text-text-dark mb-3">Find your mentor</h4>
-                            <p class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-6">
-                                Explore a curated list of industry leaders. Filter by role, company, or expertise to find the perfect match.
-                            </p>
-                            <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-orange-500 w-1/3 rounded-full"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="relative group bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 border border-gray-100 dark:border-gray-800 transition-all duration-300 translate-y-0 md:translate-y-4">
-                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <span class="text-6xl sm:text-8xl font-black text-accent">2</span>
-                        </div>
-                        <div class="relative z-10">
-                            <div class="mb-6 inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 group-hover:scale-110 transition-transform duration-300">
-                                <span class="material-symbols-outlined text-2xl sm:text-3xl">event_available</span>
-                            </div>
-                            <h4 class="text-xl sm:text-2xl font-bold text-text-light dark:text-text-dark mb-3">Book a session</h4>
-                            <p class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-6">
-                                Pick a time that works for you. Whether it's a 15-min chat or an hour deep-dive, scheduling is seamless.
-                            </p>
-                            <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-purple-500 w-2/3 rounded-full"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="relative group bg-white dark:bg-dark-card rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 border border-gray-100 dark:border-gray-800 transition-all duration-300 translate-y-0 md:translate-y-8">
-                        <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <span class="text-6xl sm:text-8xl font-black text-accent">3</span>
-                        </div>
-                        <div class="relative z-10">
-                            <div class="mb-6 inline-flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 group-hover:scale-110 transition-transform duration-300">
-                                <span class="material-symbols-outlined text-2xl sm:text-3xl">video_camera_front</span>
-                            </div>
-                            <h4 class="text-xl sm:text-2xl font-bold text-text-light dark:text-text-dark mb-3">Level up</h4>
-                            <p class="text-sm sm:text-base text-text-secondary-light dark:text-text-secondary-dark leading-relaxed mb-6">
-                                Join the video call on our platform. Get personalized advice, actionable feedback, and clear next steps.
-                            </p>
-                            <div class="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-green-500 w-full rounded-full"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-12 sm:mt-20 flex flex-col items-center justify-center text-center">
-                    <p class="mb-6 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Ready to accelerate your growth?</p>
-                    <a href="/explore" class="group flex items-center justify-center gap-3 rounded-full bg-primary px-8 py-4 sm:px-10 sm:py-5 text-base sm:text-lg font-bold text-white shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-                        <span>Browse Experts</span>
-                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+<section class="hero-bg min-h-[90vh] flex items-center">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <!-- Left Content -->
+            <div class="text-left reveal active">
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                        🚀 #1 Mentorship Platform
+                    </span>
+                    <!-- Mentorship Program Badge/Button -->
+                    <a href="/mentorship-program" 
+                       class="inline-block px-4 py-2 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold text-sm hover:shadow-lg hover:shadow-yellow-500/25 transition-all transform hover:-translate-y-0.5">
+                        🎯 Mentorship Program
                     </a>
-                    <div class="mt-8 flex items-center gap-2">
-                        <div class="flex -space-x-3">
-                            <img alt="User" class="h-8 w-8 rounded-full border-2 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZfxHAp-HIrfzr_lnHs8fQwRfojViVa7JT1tTtHGwoux3QMyE7w3IOP57gqlMgwIzROCYMk-yGHt_B7hNff9rkzeKTIaYJYQODDtUQdmy82TxVd4xlah7ZEc09Kv06jRCAd3S9EY6IB301UM4RKEvvBtNB5DrVXh6BVmnhAK8BdpIfo8Vh8gk9OAVTee7mjspP4uMkqoIm3fs9r7z_zz4wsFSCQzPE6CYK3Ipu9-DJxpynIJyjV7ghTZ17tF4tiDyKs2HcQ_ju_kk"/>
-                            <img alt="User" class="h-8 w-8 rounded-full border-2 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6r-TFqOEl7ECzfvV2gxToBI7YWCH013HuprV3DqEek_5IiBeoc8GUs22FUxjtEzA_o3j678v5uazLQ_84ADpMjXHco8udXPpTpWmzORm9KGXaIWG51FgxHlpXsHzw8z7GO7v6VFZAE7thEL31P9UE07EYstAioNs9XSzLImx4vSY2-Bsawi0ESginLi8D9xvuzUpy_cYEKbkzk9QVOtHflyUYuM7iT79CVxzjiziS-WIN57SH8d2ZQW4pzv16tgdu-pBLX69k5lw"/>
-                            <img alt="User" class="h-8 w-8 rounded-full border-2 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdwt5HGb3DHXRyLqR6n_ZLldrB1ZTdhrA-3kgQu772ioE3-Ij-vczYiUUTszEd1nldpAr0yXOP2tWYsyYxlOV9uc6Nb1xDaUhTdiUb_bystsH0ycg1AEyw5kV_mfdz7Ov_E-Stnv2R95IfmGf6q1XorjGCJGy0weOBDP079FLgjqpi84N1m8Nv_yg-yF7o3-LArMEdFQyHRyignqHxcNesfOoQHhCQihLAErCz-X1RcyubcnOEUUnv8XrUDQNCb8okfoXv8rzrVik"/>
-                        </div>
-                        <span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Join 10,000+ others</span>
-                    </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- Experts Section -->
-<section id="experts" class="py-16 sm:py-24 bg-white dark:bg-background-dark">
-    <div class="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col items-center text-center gap-3 max-w-3xl mx-auto mb-8 sm:mb-12">
-            <h2 class="text-text-light dark:text-text-dark text-3xl sm:text-4xl md:text-[2.75rem] font-bold tracking-tight leading-tight">
-                The <span class="relative inline-block px-1">Go-To Platform<span class="absolute bottom-1 left-0 w-full h-3 bg-yellow-200/50 -z-10 skew-x-[-10deg]"></span></span> for Experts
-            </h2>
-            <p class="text-text-secondary-light dark:text-text-secondary-dark text-lg leading-relaxed max-w-2xl">
-                Experts from every niche use ExpertConnect to build trust, grow revenue, and stay booked.
-            </p>
-        </div>
-        
-        <!-- Category Filter -->
-        <div class="mobile-horizontal-scroll no-scrollbar mb-8 sm:mb-12 pb-4">
-            <div class="flex flex-nowrap sm:flex-wrap justify-start sm:justify-center gap-3 px-1">
-                <button class="px-5 py-2 rounded-full text-sm font-semibold bg-primary text-white shadow-md transition-transform hover:-translate-y-0.5 whitespace-nowrap">
-                    All Experts
-                </button>
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
-                    Product Management
-                </button>
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
-                    Engineering
-                </button>
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
-                    Design
-                </button>
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
-                    Marketing
-                </button>
-                <button class="px-5 py-2 rounded-full text-sm font-medium bg-white dark:bg-card-dark border border-border-light dark:border-border-dark text-text-light dark:text-text-secondary-dark hover:border-primary/50 transition-all hover:-translate-y-0.5 whitespace-nowrap">
-                    Leadership
-                </button>
-            </div>
-        </div>
-
-        <!-- Experts Grid -->
-        <div class="mobile-horizontal-scroll no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-            <!-- Expert 1 -->
-            <div class="group flex flex-col bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-transparent hover:border-border-light dark:border-border-dark transition-all duration-300 overflow-hidden h-full">
-                <div class="p-3 pb-0">
-                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl">
-                        <img alt="Professional woman in business attire smiling" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDW4RkUN_Yk1UyBQbgVLTIXX4266PonP5OKA4yPC2pP6-dsPJ7THylOV9Kx3HlX5_jGZWL1W0yOhY-kW3L4kjHuP0zOAl1GHc5QENultQGlslmP8VPZiKG6Iq4fLk2eCZ6k9EmOE9br2lEzW2rjbrRF1xCmVosPVRgQEOjkJSC2yH-64CW3fgzHjYHlVXERGIt6bPSthCKjRRTUNptpkIlqXhEN7YBFhVX_Sk6S3m204TC3YsCPiT-GcUQUd19WShsxpRb1Ix3A_fU"/>
-                    </div>
+                
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6 leading-tight">
+                    Accelerate Your Career with 
+                    <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                        Expert Mentorship
+                    </span>
+                </h1>
+                <p class="text-lg text-gray-600 mb-8 max-w-lg">
+                    Get 1-on-1 guidance from industry leaders at Google, Amazon, Microsoft, and top startups. 
+                    Transform your career with personalized mentorship.
+                </p>
+                <div class="flex flex-wrap gap-4 mb-10">
+                    <a href="/explore" 
+                       class="px-8 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all transform hover:-translate-y-1">
+                        Find Your Mentor →
+                    </a>
+                    {% if not current_user %}
+                    <a href="/register" 
+                       class="px-8 py-3 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary/5 transition-colors">
+                        Become a Mentor
+                    </a>
+                    {% endif %}
                 </div>
-                <div class="p-4 flex flex-col flex-1 gap-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight">Priya Sharma</h3>
-                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-1 font-medium">Sr. Product Designer at Google</p>
-                        </div>
-                        <div class="flex items-center gap-1 bg-background-light dark:bg-black/40 px-1.5 py-0.5 rounded text-xs font-bold text-text-light dark:text-text-dark">
-                            <span class="material-symbols-outlined text-yellow-500 text-[14px] fill-1">star</span>
-                            <span>5.0</span>
-                        </div>
+                
+                <!-- Stats -->
+                <div class="flex flex-wrap gap-8 mt-8">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-dark mb-1 stat-number" data-target="600">600+</div>
+                        <div class="text-sm text-gray-500">Expert Mentors</div>
                     </div>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">UX Design</span>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-dark mb-1 stat-number" data-target="94">94%</div>
+                        <div class="text-sm text-gray-500">Success Rate</div>
                     </div>
-                    <div class="mt-auto pt-4 flex items-center justify-between">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark font-medium">Starting at</span>
-                            <span class="text-text-light dark:text-text-dark font-bold text-sm">₹899</span>
-                        </div>
-                        <a href="/explore" class="bg-primary text-white dark:bg-primary-300 dark:text-black rounded-lg px-6 py-2 text-sm font-bold hover:bg-primary-hover transition-all duration-200 shadow-sm">
-                            Book
-                        </a>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-dark mb-1">4x</div>
+                        <div class="text-sm text-gray-500">Faster Growth</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Expert 2 -->
-            <div class="group flex flex-col bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-transparent hover:border-border-light dark:border-border-dark transition-all duration-300 overflow-hidden h-full">
-                <div class="p-3 pb-0">
-                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl">
-                        <img alt="Asian man in suit looking confident" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoPrzlwEdtCYBFKTAJJTjBEh574P-UjB3ezgkXW4ni3n_B-tFdeTp6efqrzqUhJe7CzXqDVdBQ3r9JHBAahWQnE-7SCpC6jbQjEgBLyJ5rnFXnKdsL6v3uw8i_jdle3k2nfvGi9JTt8HTAHl4mYqOBPfIHVE3QRaesbhA9N1B5OsDP8dBynl2z-GISxpuaLZk1ISY05Aip_jmOTWZAOTa_5-DjY8FmNou_39B3seAT08U2h1VzOYNL4pxu2BhiLqApM-V155eMhR8"/>
-                    </div>
-                </div>
-                <div class="p-4 flex flex-col flex-1 gap-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight">Arjun Patel</h3>
-                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-1 font-medium">CTO at StartupX</p>
-                        </div>
-                        <div class="flex items-center gap-1 bg-background-light dark:bg-black/40 px-1.5 py-0.5 rounded text-xs font-bold text-text-light dark:text-text-dark">
-                            <span class="material-symbols-outlined text-yellow-500 text-[14px] fill-1">star</span>
-                            <span>4.9</span>
+            <!-- Right Visual -->
+            <div class="reveal">
+                <div class="relative">
+                    <!-- Floating Cards -->
+                    <div class="absolute -top-6 -left-6 w-64 bg-white p-6 rounded-2xl shadow-lg float-animation border border-gray-100">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-users text-primary text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold text-dark">5000+</div>
+                                <div class="text-sm text-gray-500">Careers Transformed</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">Strategy</span>
-                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">Leadership</span>
-                    </div>
-                    <div class="mt-auto pt-4 flex items-center justify-between">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark font-medium">Starting at</span>
-                            <span class="text-text-light dark:text-text-dark font-bold text-sm">₹1199</span>
-                        </div>
-                        <a href="/explore" class="bg-primary text-white dark:bg-primary-300 dark:text-black rounded-lg px-6 py-2 text-sm font-bold hover:bg-primary-hover transition-all duration-200 shadow-sm">
-                            Book
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Expert 3 -->
-            <div class="group flex flex-col bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-transparent hover:border-border-light dark:border-border-dark transition-all duration-300 overflow-hidden h-full">
-                <div class="p-3 pb-0">
-                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl">
-                        <img alt="Young woman with curly hair smiling" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8LVXB4M2hatArpIfxgtz_LxuZ5xgJlwDOi-iqks4GfJ_7OiRHub6U4nTj73IYMeeUk66Tio8pFnaXtQHaKUydeJMIC9KGUKP7AtYpboT3scfLlPK5MNdGLouwJcWnmI4-EnqUKcKd8s36RsGZ3aApky8dYsMB_JNxkoMOREIW7YAe173mbjiF2LhMqUnZyI0nD10L_PCG5_-zfsrFA1prswf8rI7bTECZNgc0T32H-HOPhfowJZBpsMTSY8fM3zQNiR0ftPgVMAs"/>
-                    </div>
-                </div>
-                <div class="p-4 flex flex-col flex-1 gap-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight">Ananya Reddy</h3>
-                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-1 font-medium">Marketing Lead at Spotify</p>
-                        </div>
-                        <div class="flex items-center gap-1 bg-background-light dark:bg-black/40 px-1.5 py-0.5 rounded text-xs font-bold text-text-light dark:text-text-dark">
-                            <span class="material-symbols-outlined text-yellow-500 text-[14px] fill-1">star</span>
-                            <span>4.8</span>
+                    
+                    <div class="absolute -bottom-6 -right-6 w-64 bg-white p-6 rounded-2xl shadow-lg float-animation border border-gray-100" style="animation-delay: 2s;">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                                <i class="fas fa-star text-secondary text-xl"></i>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold text-dark">4.9/5</div>
+                                <div class="text-sm text-gray-500">Average Rating</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">Growth</span>
-                    </div>
-                    <div class="mt-auto pt-4 flex items-center justify-between">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark font-medium">Starting at</span>
-                            <span class="text-text-light dark:text-text-dark font-bold text-sm">₹999</span>
+                    
+                    <!-- Main Card with Mentorship Program CTA -->
+                    <div class="relative bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl p-8 backdrop-blur-sm border border-white/20">
+                        <div class="text-center">
+                            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto mb-6">
+                                <i class="fas fa-video text-white text-3xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-dark mb-3">Live 1-on-1 Sessions</h3>
+                            <p class="text-gray-600 mb-6">Connect directly with mentors via video calls</p>
+                            
+                            <!-- Mentorship Program Button in Visual Area -->
+                            <div class="mb-6">
+                                <a href="/mentorship-program" 
+                                   class="inline-flex items-center justify-center px-6 py-3 w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:-translate-y-1">
+                                    <i class="fas fa-trophy mr-2"></i>
+                                    Explore Mentorship Program
+                                    <i class="fas fa-arrow-right ml-2"></i>
+                                </a>
+                            </div>
+                            
+                            <div class="flex justify-center gap-3">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">G</div>
+                                    <div class="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center text-sm font-bold -ml-2">A</div>
+                                    <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold -ml-2">M</div>
+                                </div>
+                                <span class="text-sm text-gray-500">Mentors from top companies</span>
+                            </div>
                         </div>
-                        <a href="/explore" class="bg-primary text-white dark:bg-primary-300 dark:text-black rounded-lg px-6 py-2 text-sm font-bold hover:bg-primary-hover transition-all duration-200 shadow-sm">
-                            Book
-                        </a>
                     </div>
                 </div>
             </div>
-
-            <!-- Expert 4 -->
-            <div class="group flex flex-col bg-card-light dark:bg-card-dark rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] border border-transparent hover:border-border-light dark:border-border-dark transition-all duration-300 overflow-hidden h-full">
-                <div class="p-3 pb-0">
-                    <div class="relative w-full aspect-[4/3] overflow-hidden rounded-xl">
-                        <img alt="Man with beard in dark shirt smiling" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsvCCNG5GRX_hE7fbJDsVaR8RUVglzGqsWzJnw4XwabsatljdpDii8AqRlVXPQ4tOb7DsLqGVg7XkHD5c08NUdK92XeDZbKUg258cYCYaOHkU1INWFn--MsAEsY2_zTpmK8RsBddjKEIU3w1QqBhpJvNDd71YRnL94mYf3cmRIBb8x169uKFIuRqiZ_TUaXqlg-1jEyj_YKt8cyQSEjBOVBKEof3N-5BwWKvNyo3yotu8v9BEq0Qt-jXY598AJtr2vplQ4EV_RRmE"/>
-                    </div>
-                </div>
-                <div class="p-4 flex flex-col flex-1 gap-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight">Rohan Singh</h3>
-                            <p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-1 font-medium">Ex-McKinsey Consultant</p>
-                        </div>
-                        <div class="flex items-center gap-1 bg-background-light dark:bg-black/40 px-1.5 py-0.5 rounded text-xs font-bold text-text-light dark:text-text-dark">
-                            <span class="material-symbols-outlined text-yellow-500 text-[14px] fill-1">star</span>
-                            <span>5.0</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                        <span class="px-2 py-1 bg-accent-beige dark:bg-[#252033] text-text-light dark:text-gray-300 text-[10px] font-semibold rounded uppercase tracking-wide">Interview Prep</span>
-                    </div>
-                    <div class="mt-auto pt-4 flex items-center justify-between">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark font-medium">Starting at</span>
-                            <span class="text-text-light dark:text-text-dark font-bold text-sm">₹200</span>
-                        </div>
-                        <a href="/explore" class="bg-primary text-white dark:bg-primary-300 dark:text-black rounded-lg px-6 py-2 text-sm font-bold hover:bg-primary-hover transition-all duration-200 shadow-sm">
-                            Book
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex flex-col items-center justify-center mt-8 sm:mt-12 gap-4">
-            <a href="/explore" class="flex w-full sm:w-auto min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-8 bg-white dark:bg-card-dark text-text-light dark:text-text-dark border border-border-light dark:border-border-dark shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-[#252033] transition-all text-sm font-bold">
-                View all experts
-            </a>
         </div>
     </div>
 </section>
 
-<!-- Testimonials Section -->
-<section id="testimonials" class="py-16 sm:py-24 bg-[#110f16] text-white">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <!-- Featured Recap -->
-        <div class="mb-12 sm:mb-20">
-            <h2 class="text-3xl font-light mb-8 opacity-90">New on ExpertConnect</h2>
-            <div class="relative w-full rounded-2xl overflow-hidden bg-gradient-to-r from-gray-900 to-gray-800 border border-white/10 p-6 sm:p-8 md:p-12 flex flex-col sm:flex-row items-center justify-between">
-                <div class="z-10 w-full sm:w-1/2">
-                    <p class="text-gray-400 text-sm mb-2">your</p>
-                    <h3 class="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-2">2025 <span class="text-lg font-normal italic font-serif text-gray-300">recap on expertconnect</span></h3>
-                    <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                        <a href="/explore" class="bg-white text-black text-xs font-bold px-4 py-2 rounded hover:bg-gray-200 transition-colors w-full sm:w-auto">Watch Recap</a>
-                        <button class="text-white/70 text-xs font-bold px-4 py-2 rounded border border-white/20 hover:bg-white/10 transition-colors w-full sm:w-auto">Share Recap</button>
-                    </div>
-                </div>
-                <div class="absolute right-0 top-0 bottom-0 w-full sm:w-1/2 bg-[url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
-            </div>
-        </div>
-
-        <div class="text-center space-y-6 max-w-3xl mx-auto mb-12">
-            <h2 class="text-white text-3xl sm:text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-                Don't Just Take Our Word for It
-            </h2>
-            <p class="text-gray-300 text-lg md:text-xl font-normal leading-relaxed opacity-90">
-                Join 5,000+ experts sharing their knowledge and connecting with verified professionals from top companies.
+<!-- Categories Section -->
+<section id="categories" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16 reveal">
+            <h2 class="text-3xl md:text-4xl font-bold text-dark mb-4">Find Mentors by Domain</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Specialized guidance for every career path. Browse our most popular categories.
             </p>
         </div>
 
-        <div class="w-full border-b border-white/10 pb-12 mb-12">
-            <p class="text-center text-sm font-semibold text-gray-400 mb-8 uppercase tracking-widest">Trusted by experts from</p>
-            <div class="flex flex-wrap justify-center items-center gap-x-8 gap-y-6 sm:gap-x-12 sm:gap-y-8 opacity-70 hover:opacity-100 transition-all duration-500">
-                <div class="flex items-center gap-2 group">
-                    <span class="material-symbols-outlined text-2xl sm:text-3xl text-white group-hover:text-white/90">circle</span>
-                    <span class="font-bold text-lg sm:text-xl text-white group-hover:text-white/90">Google</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Engineering -->
+            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
+                <div class="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-6">
+                    <i class="fas fa-code text-primary text-2xl"></i>
                 </div>
-                <div class="flex items-center gap-2 group">
-                    <span class="material-symbols-outlined text-2xl sm:text-3xl text-white group-hover:text-white/90">play_circle</span>
-                    <span class="font-bold text-lg sm:text-xl text-white group-hover:text-white/90">Spotify</span>
-                </div>
-                <div class="flex items-center gap-2 group">
-                    <span class="material-symbols-outlined text-2xl sm:text-3xl text-white group-hover:text-white/90">movie</span>
-                    <span class="font-bold text-lg sm:text-xl text-white group-hover:text-white/90">Netflix</span>
-                </div>
-                <div class="flex items-center gap-2 group">
-                    <span class="material-symbols-outlined text-2xl sm:text-3xl text-white group-hover:text-white/90">shopping_cart</span>
-                    <span class="font-bold text-lg sm:text-xl text-white group-hover:text-white/90">Amazon</span>
-                </div>
-                <div class="flex items-center gap-2 group">
-                    <span class="material-symbols-outlined text-2xl sm:text-3xl text-white group-hover:text-white/90">payments</span>
-                    <span class="font-bold text-lg sm:text-xl text-white group-hover:text-white/90">Stripe</span>
-                </div>
+                <h3 class="text-xl font-bold text-dark mb-4">Engineering</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Frontend & Backend
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        System Design
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        DevOps & Cloud
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Data Structures
+                    </li>
+                </ul>
             </div>
-        </div>
 
-        <!-- Testimonials Container with Auto Scroll -->
-        <div class="relative overflow-hidden py-4">
-            <div class="testimonial-scroll-container flex gap-6 animate-scroll">
-                <!-- Testimonial 1 -->
-                <div class="flex-shrink-0 w-[300px] sm:w-[350px]">
-                    <div class="flex flex-col bg-[#e7eaea] p-6 sm:p-8 rounded-xl hover:shadow-xl transition-all duration-300 relative group text-slate-900 h-full">
-                        <div class="mb-4 text-slate-400">
-                            <span class="material-symbols-outlined text-4xl sm:text-5xl rotate-180">format_quote</span>
-                        </div>
-                        <p class="text-slate-800 text-sm sm:text-[15px] font-medium leading-relaxed flex-grow mb-6">
-                            "This platform helped me monetize my weekends effortlessly. I can finally share my product knowledge without the scheduling headaches. The integrations make it seamless."
-                        </p>
-                        <div class="flex items-center gap-4 mt-auto pt-4 border-t border-slate-200/60">
-                            <div class="relative">
-                                <div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full shadow-sm ring-2 ring-white" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o");'></div>
-                            </div>
-                            <div>
-                                <p class="text-slate-900 text-sm font-bold">Priya S.</p>
-                                <p class="text-slate-500 text-xs font-medium">PM at Google</p>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Data & AI -->
+            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
+                <div class="w-14 h-14 rounded-xl bg-purple-50 flex items-center justify-center mb-6">
+                    <i class="fas fa-database text-secondary text-2xl"></i>
                 </div>
-
-                <!-- Testimonial 2 -->
-                <div class="flex-shrink-0 w-[300px] sm:w-[350px]">
-                    <div class="flex flex-col bg-[#e7eaea] p-6 sm:p-8 rounded-xl hover:shadow-xl transition-all duration-300 relative group text-slate-900 h-full">
-                        <div class="mb-4 text-slate-400">
-                            <span class="material-symbols-outlined text-4xl sm:text-5xl rotate-180">format_quote</span>
-                        </div>
-                        <p class="text-slate-800 text-sm sm:text-[15px] font-medium leading-relaxed flex-grow mb-6">
-                            "I finally got the career advice I needed to crack my interview. The 1:1 session gave me specific feedback on my portfolio that I couldn't find anywhere else."
-                        </p>
-                        <div class="flex items-center gap-4 mt-auto pt-4 border-t border-slate-200/60">
-                            <div class="relative">
-                                <div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full shadow-sm ring-2 ring-white" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k");'></div>
-                            </div>
-                            <div>
-                                <p class="text-slate-900 text-sm font-bold">Arjun P.</p>
-                                <p class="text-slate-500 text-xs font-medium">Aspiring Designer</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimonial 3 -->
-                <div class="flex-shrink-0 w-[300px] sm:w-[350px]">
-                    <div class="flex flex-col bg-[#e7eaea] p-6 sm:p-8 rounded-xl hover:shadow-xl transition-all duration-300 relative group text-slate-900 h-full">
-                        <div class="mb-4 text-slate-400">
-                            <span class="material-symbols-outlined text-4xl sm:text-5xl rotate-180">format_quote</span>
-                        </div>
-                        <p class="text-slate-800 text-sm sm:text-[15px] font-medium leading-relaxed flex-grow mb-6">
-                            "The easiest way to connect with my audience 1:1. It handles payments and calendar invites seamlessly, so I can focus on delivering value instead of admin work."
-                        </p>
-                        <div class="flex items-center gap-4 mt-auto pt-4 border-t border-slate-200/60">
-                            <div class="relative">
-                                <div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full shadow-sm ring-2 ring-white" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuChBuZAp692o6ybsXbMByFh6SmH9Z2PVRcZj3QKCvyYlQfQ3rGkS8OAteiJD14qfPl8sYuzrdS-8mfEqJrQ2k_wHIqrydZ7AZEpLK-4XyFxouqCVzbJbIdHeM6eVQLYx4DUpHWD0THjqfTH0BGIkiMPp4WTbl5J1z-y7Qa_DF3F3PhMBTBUrjorUKPLVgRfnZCALlCtjNmqHt4QxwTuLFpn-9sGmm-QbT8dKgEwdYZ-hTCnGs8M6be7TJFM98C-KLh7M6MrkQs0-yU");'></div>
-                            </div>
-                            <div>
-                                <p class="text-slate-900 text-sm font-bold">Ananya R.</p>
-                                <p class="text-slate-500 text-xs font-medium">Tech Content Creator</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimonial 4 (New) -->
-                <div class="flex-shrink-0 w-[300px] sm:w-[350px]">
-                    <div class="flex flex-col bg-[#e7eaea] p-6 sm:p-8 rounded-xl hover:shadow-xl transition-all duration-300 relative group text-slate-900 h-full">
-                        <div class="mb-4 text-slate-400">
-                            <span class="material-symbols-outlined text-4xl sm:text-5xl rotate-180">format_quote</span>
-                        </div>
-                        <p class="text-slate-800 text-sm sm:text-[15px] font-medium leading-relaxed flex-grow mb-6">
-                            "As a startup founder, getting mentorship from industry veterans was game-changing. ExpertConnect helped me avoid costly mistakes and scale faster."
-                        </p>
-                        <div class="flex items-center gap-4 mt-auto pt-4 border-t border-slate-200/60">
-                            <div class="relative">
-                                <div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full shadow-sm ring-2 ring-white" style='background-image: url("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop");'></div>
-                            </div>
-                            <div>
-                                <p class="text-slate-900 text-sm font-bold">Rahul K.</p>
-                                <p class="text-slate-500 text-xs font-medium">Startup Founder</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimonial 5 (New) -->
-                <div class="flex-shrink-0 w-[300px] sm:w-[350px]">
-                    <div class="flex flex-col bg-[#e7eaea] p-6 sm:p-8 rounded-xl hover:shadow-xl transition-all duration-300 relative group text-slate-900 h-full">
-                        <div class="mb-4 text-slate-400">
-                            <span class="material-symbols-outlined text-4xl sm:text-5xl rotate-180">format_quote</span>
-                        </div>
-                        <p class="text-slate-800 text-sm sm:text-[15px] font-medium leading-relaxed flex-grow mb-6">
-                            "From consulting to full-time earnings! This platform transformed my side hustle into a sustainable income stream while doing what I love."
-                        </p>
-                        <div class="flex items-center gap-4 mt-auto pt-4 border-t border-slate-200/60">
-                            <div class="relative">
-                                <div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full shadow-sm ring-2 ring-white" style='background-image: url("https://images.unsplash.com/photo-1494790108755-2616b612b786?q=80&w=1974&auto=format&fit=crop");'></div>
-                            </div>
-                            <div>
-                                <p class="text-slate-900 text-sm font-bold">Neha S.</p>
-                                <p class="text-slate-500 text-xs font-medium">Marketing Consultant</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Duplicate cards for seamless scroll effect -->
-                <!-- Testimonial 1 (Duplicate) -->
-                <div class="flex-shrink-0 w-[300px] sm:w-[350px]">
-                    <div class="flex flex-col bg-[#e7eaea] p-6 sm:p-8 rounded-xl hover:shadow-xl transition-all duration-300 relative group text-slate-900 h-full">
-                        <div class="mb-4 text-slate-400">
-                            <span class="material-symbols-outlined text-4xl sm:text-5xl rotate-180">format_quote</span>
-                        </div>
-                        <p class="text-slate-800 text-sm sm:text-[15px] font-medium leading-relaxed flex-grow mb-6">
-                            "This platform helped me monetize my weekends effortlessly. I can finally share my product knowledge without the scheduling headaches. The integrations make it seamless."
-                        </p>
-                        <div class="flex items-center gap-4 mt-auto pt-4 border-t border-slate-200/60">
-                            <div class="relative">
-                                <div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full shadow-sm ring-2 ring-white" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o");'></div>
-                            </div>
-                            <div>
-                                <p class="text-slate-900 text-sm font-bold">Priya S.</p>
-                                <p class="text-slate-500 text-xs font-medium">PM at Google</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimonial 2 (Duplicate) -->
-                <div class="flex-shrink-0 w-[300px] sm:w-[350px]">
-                    <div class="flex flex-col bg-[#e7eaea] p-6 sm:p-8 rounded-xl hover:shadow-xl transition-all duration-300 relative group text-slate-900 h-full">
-                        <div class="mb-4 text-slate-400">
-                            <span class="material-symbols-outlined text-4xl sm:text-5xl rotate-180">format_quote</span>
-                        </div>
-                        <p class="text-slate-800 text-sm sm:text-[15px] font-medium leading-relaxed flex-grow mb-6">
-                            "I finally got the career advice I needed to crack my interview. The 1:1 session gave me specific feedback on my portfolio that I couldn't find anywhere else."
-                        </p>
-                        <div class="flex items-center gap-4 mt-auto pt-4 border-t border-slate-200/60">
-                            <div class="relative">
-                                <div class="w-10 h-10 bg-center bg-no-repeat bg-cover rounded-full shadow-sm ring-2 ring-white" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k");'></div>
-                            </div>
-                            <div>
-                                <p class="text-slate-900 text-sm font-bold">Arjun P.</p>
-                                <p class="text-slate-500 text-xs font-medium">Aspiring Designer</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <h3 class="text-xl font-bold text-dark mb-4">Data & AI</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Data Science
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Machine Learning
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Data Engineering
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Business Analytics
+                    </li>
+                </ul>
             </div>
-        </div>
 
-        <div class="flex flex-col items-center justify-center pt-8 sm:pt-12">
-            <a href="/create-page" class="group flex items-center justify-center rounded-lg h-12 sm:h-14 px-6 sm:px-8 bg-white text-[#110f16] text-base sm:text-lg font-bold shadow-lg shadow-white/10 hover:bg-gray-100 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 w-full sm:w-auto">
-                <span>Start earning today</span>
-                <span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">arrow_forward</span>
-            </a>
-            <p class="mt-4 text-sm text-gray-400">Free to join. No credit card required.</p>
+            <!-- Business -->
+            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
+                <div class="w-14 h-14 rounded-xl bg-indigo-50 flex items-center justify-center mb-6">
+                    <i class="fas fa-briefcase text-indigo-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-dark mb-4">Business</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Product Management
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Digital Marketing
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Consulting & Strategy
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Finance & Sales
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Design -->
+            <div class="category-card reveal bg-white rounded-2xl p-6 border border-gray-100 hover:border-primary/20 transition-all duration-300">
+                <div class="w-14 h-14 rounded-xl bg-orange-50 flex items-center justify-center mb-6">
+                    <i class="fas fa-pen-nib text-orange-500 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-dark mb-4">Design</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        UI/UX Design
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Product Design
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        Graphic Design
+                    </li>
+                    <li class="flex items-center text-gray-600">
+                        <i class="fas fa-check text-green-500 mr-3"></i>
+                        User Research
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </section>
 
-                        <!-- Earn & Convert More Section -->
-        <section id="earn-more" class="py-16 sm:py-24 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- Title Section -->
-                <div class="text-center mb-12 sm:mb-16">
-                    <h2 class="text-3xl sm:text-4xl font-bold mb-3">Earn & Convert more with ClearQ.in</h2>
-                    <p class="text-gray-600 dark:text-gray-400 text-base sm:text-lg">Powerful features to maximize your earnings</p>
-                </div>
+<!-- How It Works Section -->
+<section id="how-it-works" class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16 reveal">
+            <h2 class="text-3xl md:text-4xl font-bold text-dark mb-4">Your Path to Success</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                We've simplified the process to get you from stuck to unstoppable in just three steps.
+            </p>
+        </div>
 
-                <!-- Desktop Grid (3 columns) -->
-                <div class="hidden md:grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                    <!-- Left Column -->
-                    <div class="space-y-6">
-                        <!-- 2X Card -->
-                        <div class="bg-[#F6D0CE] dark:bg-pink-900/40 rounded-2xl p-6 h-64">
-                            <div class="flex flex-col h-full">
-                                <div class="flex-1 flex items-start">
-                                    <div class="w-10 h-10 border-2 border-black rounded-lg flex items-center justify-center bg-white/50">
-                                        <i class="fas fa-bolt text-base"></i>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-4xl font-bold mb-2">2X</div>
-                                    <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">convert better with</p>
-                                    <p class="text-sm font-bold text-gray-800 dark:text-gray-200">localised currency</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 40% Card -->
-                        <div class="bg-[#E0DBFC] dark:bg-purple-900/40 rounded-2xl p-6 h-64">
-                            <div class="relative h-full">
-                                <div class="absolute top-4 left-4 bg-white/90 rounded-full px-3 py-1.5 text-xs flex items-center gap-2 max-w-[75%]">
-                                    <img alt="User" class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
-                                    <span class="truncate">5/5 "Loved session"</span>
-                                </div>
-                                <div class="absolute top-16 left-6 bg-white/90 rounded-full px-3 py-1.5 text-xs flex items-center gap-2 max-w-[75%]">
-                                    <img alt="User" class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
-                                    <span class="truncate">5/5 "Best advice"</span>
-                                </div>
-                                <div class="h-full flex flex-col justify-end">
-                                    <div class="text-right">
-                                        <div class="text-4xl font-bold mb-2">40%</div>
-                                        <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">increase in conversion</p>
-                                        <p class="text-sm font-bold text-gray-800 dark:text-gray-200">with testimonial showcase</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Middle Column -->
-                    <div class="space-y-6">
-                        <!-- upto 4X Card -->
-                        <div class="bg-[#9CCB5C] dark:bg-green-900/40 rounded-2xl p-6 h-[calc(128px+1.5rem+64px)] relative">
-                            <div class="absolute top-6 right-6 bg-white shadow-md rounded-full px-3 py-1.5 text-sm flex items-center gap-2">
-                                <div class="w-3 h-2.5 bg-gradient-to-b from-orange-400 via-white to-green-500 rounded-sm"></div>
-                                <span class="font-bold">100$</span>
-                            </div>
-                            <div class="absolute bottom-6 left-6 bg-white shadow-md rounded-full px-3 py-1.5 text-sm flex items-center gap-2">
-                                <div class="w-3 h-2.5 bg-blue-500 rounded-sm"></div>
-                                <span class="font-bold">400$</span>
-                            </div>
-                            <div class="h-full flex flex-col justify-end">
-                                <div class="text-right">
-                                    <div class="text-3xl font-bold mb-2">upto 4X</div>
-                                    <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">your earnings with</p>
-                                    <p class="text-sm font-bold text-gray-800 dark:text-gray-200">country based pricing</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Instant Payouts Card -->
-                        <div class="bg-[#85C3EA] dark:bg-blue-900/40 rounded-2xl p-6 h-64">
-                            <div class="flex flex-col h-full justify-center">
-                                <div class="space-y-3">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <div class="bg-white rounded-full px-3 py-1.5 text-xs font-bold italic text-blue-800">PayPal</div>
-                                        <div class="bg-white rounded-full px-3 py-1.5 text-xs font-medium flex items-center gap-1.5">
-                                            <i class="fas fa-university text-xs"></i> Bank
-                                        </div>
-                                    </div>
-                                    <h3 class="text-lg font-bold mt-2">Instant payouts</h3>
-                                    <p class="text-sm text-gray-800 dark:text-gray-200">Withdraw directly to bank account</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column -->
-                    <div class="space-y-6">
-                        <!-- 13% Card -->
-                        <div class="bg-[#EEE3CD] dark:bg-yellow-900/20 rounded-2xl p-6 h-64">
-                            <div class="flex flex-col h-full justify-center items-center text-center">
-                                <i class="fas fa-shopping-cart text-2xl text-yellow-600 mb-3 opacity-60"></i>
-                                <div class="text-4xl font-bold mb-2">13%</div>
-                                <p class="text-sm text-gray-800 dark:text-gray-200 leading-tight">uplift in bookings with</p>
-                                <p class="text-sm font-bold text-gray-800 dark:text-gray-200">abandon cart emails</p>
-                            </div>
-                        </div>
-
-                        <!-- Get Discovered Card -->
-                        <div class="bg-[#A8E1E1] dark:bg-teal-900/40 rounded-2xl p-6 h-64">
-                            <div class="flex flex-col h-full">
-                                <div class="flex items-start gap-2 mb-4">
-                                    <div class="flex items-center gap-1.5 bg-white/60 rounded-full px-3 py-1.5 text-xs">
-                                        <img class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
-                                        <span>User</span>
-                                    </div>
-                                    <div class="flex items-center gap-1.5 bg-white/60 rounded-full px-3 py-1.5 text-xs">
-                                        <img class="w-4 h-4 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
-                                        <span>Booking</span>
-                                    </div>
-                                </div>
-                                <div class="bg-white/80 rounded px-3 py-1.5 text-xs font-mono w-fit mb-2">ClearQ.in</div>
-                                <div class="w-20 h-px bg-gray-400 mb-3"></div>
-                                <div class="flex-1 flex flex-col justify-center">
-                                    <h3 class="text-lg font-bold mb-1.5">Get Discovered</h3>
-                                    <p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-bold">Automated funnels</span> bring new bookings</p>
-                                </div>
-                            </div>
-                        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            <!-- Connecting line for desktop -->
+            <div class="hidden md:block absolute top-12 left-1/4 right-1/4 h-0.5 bg-gray-200"></div>
+            
+            <!-- Step 1 -->
+            <div class="relative reveal text-center">
+                <div class="w-20 h-20 rounded-full bg-white border-4 border-primary flex items-center justify-center mx-auto mb-6 relative z-10 shadow-lg">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <i class="fas fa-search text-primary text-xl"></i>
                     </div>
                 </div>
+                <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <h3 class="text-xl font-bold text-dark mb-3">1. Discover</h3>
+                    <p class="text-gray-600">
+                        Browse mentor profiles, reviews, and expertise to find the perfect match for your career goals.
+                    </p>
+                </div>
+            </div>
 
-                <!-- Mobile Layout (Single column with different arrangement) -->
-                <div class="md:hidden space-y-4">
-                    <!-- Row 1: 2X and 40% side by side -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <!-- 2X Card -->
-                        <div class="bg-[#F6D0CE] dark:bg-pink-900/40 rounded-2xl p-4 h-48">
-                            <div class="flex flex-col h-full">
-                                <div class="flex-1 flex items-start">
-                                    <div class="w-8 h-8 border-2 border-black rounded-lg flex items-center justify-center bg-white/50">
-                                        <i class="fas fa-bolt text-sm"></i>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-2xl font-bold mb-1">2X</div>
-                                    <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">convert better with</p>
-                                    <p class="text-xs font-bold text-gray-800 dark:text-gray-200">localised currency</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 40% Card -->
-                        <div class="bg-[#E0DBFC] dark:bg-purple-900/40 rounded-2xl p-4 h-48">
-                            <div class="relative h-full">
-                                <div class="absolute top-2 left-2 bg-white/90 rounded-full px-2 py-1 text-xxs flex items-center gap-1 max-w-[70%]">
-                                    <img alt="User" class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
-                                    <span class="truncate">5/5 "Loved"</span>
-                                </div>
-                                <div class="absolute top-10 left-3 bg-white/90 rounded-full px-2 py-1 text-xxs flex items-center gap-1 max-w-[70%]">
-                                    <img alt="User" class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
-                                    <span class="truncate">5/5 "Best"</span>
-                                </div>
-                                <div class="h-full flex flex-col justify-end">
-                                    <div class="text-right">
-                                        <div class="text-2xl font-bold mb-1">40%</div>
-                                        <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">increase in conversion</p>
-                                        <p class="text-xs font-bold text-gray-800 dark:text-gray-200">with testimonials</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Row 2: upto 4X (full width) -->
-                    <div class="bg-[#9CCB5C] dark:bg-green-900/40 rounded-2xl p-4 h-32 relative">
-                        <div class="absolute top-3 right-3 bg-white shadow-sm rounded-full px-2 py-1 text-xs flex items-center gap-1">
-                            <div class="w-2.5 h-2 bg-gradient-to-b from-orange-400 via-white to-green-500 rounded-sm"></div>
-                            <span class="font-bold">100$</span>
-                        </div>
-                        <div class="absolute bottom-3 left-3 bg-white shadow-sm rounded-full px-2 py-1 text-xs flex items-center gap-1">
-                            <div class="w-2.5 h-2 bg-blue-500 rounded-sm"></div>
-                            <span class="font-bold">400$</span>
-                        </div>
-                        <div class="h-full flex flex-col justify-end">
-                            <div class="text-right">
-                                <div class="text-2xl font-bold mb-1">upto 4X</div>
-                                <p class="text-xs text-gray-800 dark:text-gray-200 leading-tight">your earnings with</p>
-                                <p class="text-xs font-bold text-gray-800 dark:text-gray-200">country based pricing</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Row 3: Instant Payouts and 13% side by side -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <!-- Instant Payouts -->
-                        <div class="bg-[#85C3EA] dark:bg-blue-900/40 rounded-2xl p-4 h-48">
-                            <div class="flex flex-col h-full justify-center">
-                                <div class="space-y-2">
-                                    <div class="flex items-center gap-1 flex-wrap">
-                                        <div class="bg-white rounded-full px-2 py-1 text-xxs font-bold italic text-blue-800">PayPal</div>
-                                        <div class="bg-white rounded-full px-2 py-1 text-xxs font-medium flex items-center gap-1">
-                                            <i class="fas fa-university text-xxs"></i> Bank
-                                        </div>
-                                    </div>
-                                    <h3 class="text-sm font-bold mt-2">Instant payouts</h3>
-                                    <p class="text-xxs text-gray-800 dark:text-gray-200">Withdraw directly to bank account</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 13% Card -->
-                        <div class="bg-[#EEE3CD] dark:bg-yellow-900/20 rounded-2xl p-4 h-48">
-                            <div class="flex flex-col h-full justify-center items-center text-center">
-                                <i class="fas fa-shopping-cart text-lg text-yellow-600 mb-2 opacity-60"></i>
-                                <div class="text-2xl font-bold mb-1">13%</div>
-                                <p class="text-xxs text-gray-800 dark:text-gray-200 leading-tight">uplift in bookings with</p>
-                                <p class="text-xxs font-bold text-gray-800 dark:text-gray-200">abandon cart emails</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Row 4: Get Discovered (full width) -->
-                    <div class="bg-[#A8E1E1] dark:bg-teal-900/40 rounded-2xl p-4">
-                        <div class="flex flex-col">
-                            <div class="flex items-center gap-2 mb-3">
-                                <div class="flex items-center gap-1 bg-white/60 rounded-full px-2 py-1 text-xxs">
-                                    <img class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOQTFDj_oJ-06yzJtHFiHKAXpbKjOMrI862xxjIRpgLegtsoR8KYKobTK4R9d8TbnQyfudE9tdkLD58vXZhiD1PcHRXK0Uif_KiiAtf841Oqd-YuIRgkq_hFjUlca9zFCtuopj-T-B-jZf-LlPD69084YwPcNWT4FVETzMaFlp06GruYu590ol1k3XYatxZgJapFLiT-f1QoCwRmXHa4Nr29wDnTt3CW3c4uDZ_tpZ2xis8cCdqgnSOMteJSYgpRi1nn6fp1bE-_o"/>
-                                    <span>User</span>
-                                </div>
-                                <div class="flex items-center gap-1 bg-white/60 rounded-full px-2 py-1 text-xxs">
-                                    <img class="w-3 h-3 rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRYOehkX-q_4lcRLZvwIlj1gRO0XC3u4mQjbuyijBuXxiQiAKlkUcEC5w6K9T3NuoYaTXZq31Vc_4AwZqMNJO7w_AhoVQk-HD4BzupjihZ1V62AB-S6MJZSVyuX5C3mnj0p8XrbRxvIQoZ508GDy3jSokldOc5e1J0HpQtVVHboR42MD0pfenN4WAM3GaK2-ioSm4LfkNeGEldEXZ4WbNWskOwaCg8xXonG0w95SqMXXtwYMh9K6gUcxRIOW8KBOZAqWIcv_WmT3k"/>
-                                    <span>Booking</span>
-                                </div>
-                            </div>
-                            <div class="bg-white/80 rounded px-2 py-1 text-xxs font-mono w-fit mb-2">ClearQ.in</div>
-                            <div class="w-16 h-px bg-gray-400 mb-3"></div>
-                            <div>
-                                <h3 class="text-base font-bold mb-1">Get Discovered</h3>
-                                <p class="text-sm text-gray-800 dark:text-gray-200"><span class="font-bold">Automated funnels</span> bring new bookings</p>
-                            </div>
-                        </div>
+            <!-- Step 2 -->
+            <div class="relative reveal text-center">
+                <div class="w-20 h-20 rounded-full bg-white border-4 border-secondary flex items-center justify-center mx-auto mb-6 relative z-10 shadow-lg">
+                    <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                        <i class="fas fa-calendar-check text-secondary text-xl"></i>
                     </div>
                 </div>
+                <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <h3 class="text-xl font-bold text-dark mb-3">2. Connect</h3>
+                    <p class="text-gray-600">
+                        Book a session. Discuss your challenges and see if the mentor's style fits your needs.
+                    </p>
+                </div>
+            </div>
 
-                <!-- CTA Section -->
-                <div class="mt-12 sm:mt-16 text-center">
-                    <a href="/create-page" class="w-full max-w-sm mx-auto bg-black dark:bg-white dark:text-black text-white font-semibold py-4 rounded-xl hover:opacity-90 flex items-center justify-center gap-2 transition-all text-base">
-                        Start My Page
-                        <i class="fas fa-arrow-right text-sm"></i>
+            <!-- Step 3 -->
+            <div class="relative reveal text-center">
+                <div class="w-20 h-20 rounded-full bg-white border-4 border-green-500 flex items-center justify-center mx-auto mb-6 relative z-10 shadow-lg">
+                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <i class="fas fa-rocket text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+                    <h3 class="text-xl font-bold text-dark mb-3">3. Grow</h3>
+                    <p class="text-gray-600">
+                        Start your 1:1 sessions. Follow a personalized roadmap and track your progress weekly.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits Section with Mentorship Program Banner -->
+<section class="py-20 bg-gradient-to-b from-white to-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Mentorship Program Banner -->
+        <div class="reveal mb-16 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 rounded-2xl p-8 shadow-xl">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+                <div class="text-center lg:text-left">
+                    <h3 class="text-2xl font-bold text-white mb-3">🎯 Structured Mentorship Program</h3>
+                    <p class="text-white/90 max-w-2xl">
+                        Join our 3-month intensive program with weekly sessions, progress tracking, and guaranteed outcomes.
+                        Perfect for career changers and fast-trackers.
+                    </p>
+                </div>
+                <div>
+                    <a href="/mentorship-program" 
+                       class="inline-flex items-center px-8 py-4 bg-white text-orange-600 font-bold rounded-full hover:bg-gray-50 transition-all transform hover:-translate-y-1 shadow-lg">
+                        <i class="fas fa-calendar-alt mr-3"></i>
+                        Explore Program Details
+                        <i class="fas fa-arrow-right ml-3"></i>
                     </a>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm sm:text-base mt-4">Join 1000 professionals already using ExpertConnect</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- FAQ section-->
-        <section class="py-16 px-6 max-w-7xl mx-auto">
-    <div class="grid md:grid-cols-2 gap-12 items-start">
-        <!-- Booking Interface Section -->
-        <div class="bg-card-pink dark:bg-pink-900/30 p-6 rounded-2xl flex items-center justify-center min-h-[400px]">
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg w-full max-w-sm">
-                <div class="flex items-center gap-3 mb-4">
-                    <img alt="User" class="w-10 h-10 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmjQKfRA_SyRNWsFbR4qEG4_uhG0KJX49GulLKXm1U2OcCyAOGoLsRzz4BGZ3ir3c1T1goRMLBl1TH-7c5YjvAX6Ts4oHlrUgIq-8b77LHCWfFAuT3qli3-Hg2dDH5FBjV0jZQjrWwUt6PfIiDLXEE202E7Ad0rw4Kml2FtkG0WHHLacnFxf2JBX85udoRGQHbl1nr86dn9pR_tLhD5Qp4ZEc8ruzHGjFGlAaSIde97YoKSM40hpDbfv3IU7cY8YNU5imzHVhx3X8"/>
-                    <div>
-                        <div class="font-bold text-sm">Book session</div>
-                        <div class="text-[10px] text-gray-500">Select date &amp; time</div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-4 gap-2 mb-4 text-center">
-                    <div class="border rounded p-1 text-xs"><div class="text-gray-400">Thu</div><div class="font-bold">29 Sep</div></div>
-                    <div class="border border-black rounded p-1 text-xs"><div class="text-gray-400">Fri</div><div class="font-bold">30 Sep</div></div>
-                    <div class="border rounded p-1 text-xs"><div class="text-gray-400">Sat</div><div class="font-bold">01 Oct</div></div>
-                    <div class="border rounded p-1 text-xs"><div class="text-gray-400">Sun</div><div class="font-bold">02 Oct</div></div>
-                </div>
-                <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-700 p-2 rounded text-xs">
-                    <span>07:00pm, Tue 21st</span>
-                    <a href="/explore" class="bg-black text-white px-3 py-1 rounded">Book</a>
                 </div>
             </div>
         </div>
         
-        <!-- FAQ Section - Minimal -->
-        <div class="space-y-4">
-            <!-- FAQ 1 -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-                <button class="flex justify-between items-center w-full text-left text-sm font-medium py-2">
-                    <span class="flex gap-3"><span class="text-gray-400 text-xs">01</span> How do I book a 1:1 mentorship session?</span>
-                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
-                </button>
-                <div class="pl-7 text-xs text-gray-500 mt-1">
-                    Browse mentors, select time slot, and book instantly. We handle scheduling and payments.
+        <div class="text-center mb-16 reveal">
+            <h2 class="text-3xl md:text-4xl font-bold text-dark mb-4">Why Choose ClearQ?</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Experience mentorship that's designed to deliver real results and accelerate your growth.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Benefit 1 -->
+            <div class="reveal bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-6">
+                    <i class="fas fa-bolt text-white text-2xl"></i>
                 </div>
+                <h3 class="text-xl font-bold text-dark mb-4">Fast-Track Growth</h3>
+                <p class="text-gray-600">
+                    Achieve career milestones 4x faster with structured guidance compared to self-learning. 
+                    Our mentees report accelerated promotions and skill acquisition.
+                </p>
             </div>
 
-            <!-- FAQ 2 -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-                <button class="flex justify-between items-center w-full text-left text-sm font-medium py-2">
-                    <span class="flex gap-3"><span class="text-gray-400 text-xs">02</span> What digital products can I purchase?</span>
-                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
-                </button>
-                <div class="pl-7 text-xs text-gray-500 mt-1">
-                    Courses, downloadable resources, templates, eBooks, and pre-recorded workshops.
+            <!-- Benefit 2 -->
+            <div class="reveal bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center mb-6">
+                    <i class="fas fa-wallet text-white text-2xl"></i>
                 </div>
+                <h3 class="text-xl font-bold text-dark mb-4">Cost Effective</h3>
+                <p class="text-gray-600">
+                    Get premium industry knowledge at 30% less cost than traditional executive coaching or bootcamps. 
+                    Flexible plans for every budget.
+                </p>
             </div>
 
-            <!-- FAQ 3 -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-                <button class="flex justify-between items-center w-full text-left text-sm font-medium py-2">
-                    <span class="flex gap-3"><span class="text-gray-400 text-xs">03</span> How do payments work for mentors?</span>
-                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
-                </button>
-                <div class="pl-7 text-xs text-gray-500 mt-1">
-                    Instant payments after each session/sale via bank transfer, UPI, or digital wallets.
+            <!-- Benefit 3 -->
+            <div class="reveal bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6">
+                    <i class="fas fa-fingerprint text-white text-2xl"></i>
                 </div>
-            </div>
-
-            <!-- FAQ 4 -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-                <button class="flex justify-between items-center w-full text-left text-sm font-medium py-2">
-                    <span class="flex gap-3"><span class="text-gray-400 text-xs">04</span> Can I host group webinars?</span>
-                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
-                </button>
-                <div class="pl-7 text-xs text-gray-500 mt-1">
-                    Yes, schedule and host interactive workshops with built-in video conferencing.
-                </div>
-            </div>
-
-            <!-- FAQ 5 -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-3">
-                <button class="flex justify-between items-center w-full text-left text-sm font-medium py-2">
-                    <span class="flex gap-3"><span class="text-gray-400 text-xs">05</span> How do I create and sell courses?</span>
-                    <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
-                </button>
-                <div class="pl-7 text-xs text-gray-500 mt-1">
-                    Use our course builder with videos, quizzes, and set your own pricing.
-                </div>
+                <h3 class="text-xl font-bold text-dark mb-4">100% Personalized</h3>
+                <p class="text-gray-600">
+                    No pre-recorded videos or generic content. Live, 1:1 interactions tailored specifically to your 
+                    unique context, challenges, and goals.
+                </p>
             </div>
         </div>
     </div>
 </section>
 
-        <!-- Community CTA Section -->
-        <section id="community" class="py-16 sm:py-24 bg-background-light dark:bg-background-dark">
-            <div class="layout-container flex w-full flex-col items-center">
-                <div class="w-full px-4 py-8 sm:py-12 md:py-16">
-                    <div class="relative mx-auto flex max-w-5xl flex-col items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-[#fff5eb] to-[#ffeadd] px-6 py-8 sm:py-12 text-center dark:from-[#1c1917] dark:to-[#292524] sm:px-8 md:px-12 shadow-xl shadow-orange-900/5 dark:shadow-black/40 border border-[#ffdcc2] dark:border-white/10">
-                        <div class="pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-orange-400/20 blur-3xl opacity-60 mix-blend-multiply dark:mix-blend-screen"></div>
-                        <div class="pointer-events-none absolute -right-16 -bottom-16 h-64 w-64 rounded-full bg-rose-400/20 blur-3xl opacity-60 mix-blend-multiply dark:mix-blend-screen"></div>
-                        <div class="relative z-10 flex flex-col items-center gap-6 sm:gap-8 max-w-3xl">
-                            <div class="flex items-center justify-center">
-                                <div class="flex -space-x-3 hover:space-x-1 transition-all duration-300">
-                                    <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
-                                        <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAwsFahihzH36unU1u7gMZ7YZeSTcbnyOiphyTNuhv7bwveWFJe1EVXhl2Gc3_uhItQmUZNObshm_IW9uVIIZjTuf6d-xspX4jzfJ0EhIOnnT5x7KguQrz6_5GKd1moM0DXSFHxhslPz6Nqb1t_-ygw513mLkGF3wqQlq_i8AWeRVu_va2F4O3uBKdDZINA2GA0az018KcegW2D5w1BDjb-vBbMGJx87MtHhniWDv6W6zakOMtbzHH-iRQH2F5uMEcXZ53zb1p5aM0");'></div>
-                                    </div>
-                                    <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
-                                        <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAWMSOJ4k_dr5tNgEGUGnr2_3ZELuA4XynQm5oF0EaqNlE9332P2TA44Z35lNKJxFi8vht8cAvrFJ74feRnt6sRFNELW4rQEprBreqtOj63ezb_k3ea3-A3oIZlksF62mnxlT2H35hk6cW8YBWVHuEdzgm632Fl4sEq-XyYa27qcXFHkyLWbsiyTRl3ccQdr5JKeGfa9QfNSygIpw5IbaojcS0FVgxQC-vSDViNb1pQBNIGzkY4N46YrdG829iFLmElIt2NfkTDxeQ");'></div>
-                                    </div>
-                                    <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
-                                        <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCDfKpdoW9ebPmKE5srEez3-ME0QCavAE8O25DcZNfvv7Z1vtpS9MYMDFIEHZyIz1a1ypatTeXOHwkPfYGIXSpJRuXkjo_petGmrRPnEjaE-L3ysWRdj4jmkJFiKQ3BqUjKqmYs8BArkuqK9oE7woMPfylyyS9iovrqLYzXEhu7LnrmbauEKXgP7bj9hya8E-CL4IPKJSmoM8iO2Np3AguOdz3M-Dz3hpGWPkdi7ceo_y48Hf-TDdEK2H5KAZ6XgYBtPs96bFWIdXg");'></div>
-                                    </div>
-                                    <div class="relative overflow-hidden w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-gray-200 ring-2 ring-orange-200/50 dark:ring-orange-500/20 transition-transform hover:z-10 hover:scale-110">
-                                        <div class="bg-center bg-no-repeat bg-cover w-full h-full" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuARHzKt2bdDc5uo1oS42m55B-3Bq2kZGSTj-WD2nN3oquGhfwGJHOmBv969FAJVzCiN5iTikk8qumKHY3srZukcQpRZYJdZVaUrnaCDYX8ALsy-qb_kxszlwfupmUNcVUavyrwoSmVRK2w_pGZmugbgcRU3rc6gdmUjJutZBGyD6-xwALGCVgEdyw_h80WuP_T8T2Frnjo795SkGm-0R3E1YqEeTcAzzHwIsFJntCzk9WYpVWbABQkJxhCkEbel-uJKy7lEdV32A0o");'></div>
-                                    </div>
-                                    <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-white dark:border-zinc-800 bg-accent text-white text-xs font-bold ring-2 ring-orange-200/50 dark:ring-orange-500/20 z-0">
-                                        +2k
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex flex-col gap-4 text-center">
-                                <h2 class="text-gray-900 dark:text-white tracking-tight text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-                                    Ready to find your mentor?
-                                </h2>
-                                <p class="text-gray-600 dark:text-gray-300 text-base md:text-lg font-normal leading-relaxed max-w-2xl mx-auto">
-                                    Join thousands of experts and learners connecting daily. Whether you want to learn a new skill or share your expertise, it takes less than 2 minutes to get started.
-                                </p>
-                            </div>
-                            <div class="flex flex-col w-full sm:w-auto sm:flex-row gap-4 justify-center mt-4">
-                                <a href="/register" class="group flex items-center justify-center gap-2 rounded-lg bg-gray-900 hover:bg-black text-white dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100 px-6 sm:px-8 py-3 sm:py-3.5 text-base font-semibold transition-all duration-200 shadow-xl shadow-gray-900/10 hover:shadow-gray-900/20 w-full sm:w-auto">
-                                    <span>Get Started for Free</span>
-                                    <span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                                </a>
-                                <a href="/explore" class="flex items-center justify-center gap-2 rounded-lg bg-white dark:bg-white/5 border border-orange-200 dark:border-white/10 hover:bg-orange-50 dark:hover:bg-white/10 text-gray-900 dark:text-white px-6 sm:px-8 py-3 sm:py-3.5 text-base font-semibold transition-all duration-200 w-full sm:w-auto shadow-sm shadow-orange-900/5">
-                                    <span class="material-symbols-outlined text-[20px] text-accent">search</span>
-                                    <span>Browse Experts</span>
-                                </a>
-                            </div>
-                            <div class="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                <span class="material-symbols-outlined text-[16px] text-green-600 dark:text-green-500">check_circle</span>
-                                <span>No credit card required</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<!-- CTA Section -->
+<section class="py-20 bg-gradient-to-r from-primary to-secondary">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div class="reveal">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+                Ready to Transform Your Career?
+            </h2>
+            <p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+                Join thousands who've accelerated their careers with personalized mentorship.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                {% if not current_user %}
+                <a href="/register" 
+                   class="px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
+                    Start Free Trial
+                </a>
+                {% endif %}
+                <a href="/explore" 
+                   class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-bold text-lg hover:bg-white/10 transition-all">
+                    Explore Mentors
+                </a>
+                <a href="/mentorship-program" 
+                   class="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full font-bold text-lg hover:shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:-translate-y-1">
+                    <i class="fas fa-trophy mr-2"></i>
+                    View Program
+                </a>
             </div>
-        </section>
-        
-        <!-- Final CTA Section (from old UI) -->
-        <section class="py-20 bg-gradient-to-r from-primary to-secondary">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <div class="reveal">
-                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
-                        Ready to Transform Your Career?
-                    </h2>
-                    <p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-                        Join thousands who've accelerated their careers with personalized mentorship.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        {% if not current_user %}
-                        <a href="/register" 
-                           class="px-8 py-4 bg-white text-primary rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:-translate-y-1 shadow-lg">
-                            Start Free Trial
-                        </a>
-                        {% endif %}
-                        <a href="/explore" 
-                           class="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-bold text-lg hover:bg-white/10 transition-all">
-                            Explore Mentors
-                        </a>
-                        <a href="/mentorship-program" 
-                           class="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-full font-bold text-lg hover:shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:-translate-y-1">
-                            <i class="fas fa-trophy mr-2"></i>
-                            View Program
-                        </a>
-                    </div>
-                    <p class="text-white/70 mt-6 text-sm">
-                        No credit card required • Free 30-minute trial session
-                    </p>
-                </div>
-            </div>
-        </section>
-    </main>
-</div>
+            <p class="text-white/70 mt-6 text-sm">
+                No credit card required • Free 30-minute trial session
+            </p>
+        </div>
+    </div>
+</section>
 
 <script>
 // Initialize animations specific to homepage
 document.addEventListener('DOMContentLoaded', function() {
-    // Stats counter animation from old UI
+    // Add reveal class to all sections that need animation
+    const sections = document.querySelectorAll('.reveal');
+    sections.forEach(section => {
+        section.classList.add('reveal');
+    });
+    
+    // Stats counter animation
     const statNumbers = document.querySelectorAll('.stat-number[data-target]');
     statNumbers.forEach(stat => {
         const target = parseInt(stat.getAttribute('data-target'));
@@ -1025,80 +430,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 stat.textContent = Math.floor(current) + '+';
             }
         }, 20);
-    });
-    
-    // Mobile menu toggle
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
-    
-    if (mobileMenuButton && mobileMenu) {
-        mobileMenuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!mobileMenu.contains(event.target) && !mobileMenuButton.contains(event.target)) {
-                mobileMenu.classList.add('hidden');
-            }
-        });
-    }
-
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
-            
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                // Close mobile menu if open
-                if (mobileMenu) mobileMenu.classList.add('hidden');
-                
-                window.scrollTo({
-                    top: targetElement.offsetTop - 80,
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
-    // System dark mode detection
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.documentElement.classList.add('dark');
-    }
-    
-    // FAQ functionality
-    const faqButtons = document.querySelectorAll('.space-y-4 button');
-    
-    faqButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const answer = this.nextElementSibling;
-            const icon = this.querySelector('i');
-            
-            // Toggle answer visibility
-            if (answer.style.maxHeight) {
-                answer.style.maxHeight = null;
-                answer.style.opacity = '0';
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            } else {
-                answer.style.maxHeight = answer.scrollHeight + 'px';
-                answer.style.opacity = '1';
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-            }
-        });
-    });
-    
-    // Initialize all answers as hidden
-    const answers = document.querySelectorAll('.space-y-4 button + div');
-    answers.forEach(answer => {
-        answer.style.maxHeight = '0';
-        answer.style.opacity = '0';
-        answer.style.overflow = 'hidden';
-        answer.style.transition = 'max-height 0.2s ease, opacity 0.2s ease';
     });
 });
 </script>
