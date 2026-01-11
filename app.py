@@ -378,7 +378,7 @@ from datetime import datetime, timedelta
 
 # Add this function after your imports
 def generate_meeting_link(booking_id: int, db: Session):
-    """Generate or retrieve meeting link for a confirmed booking"""
+    """Generate or retrieve meeting link for a confirmed booking - UPDATED"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     
     if not booking:
@@ -404,26 +404,179 @@ def generate_meeting_link(booking_id: int, db: Session):
     booking.meeting_id = meeting_id
     booking.status = "confirmed"
     
-    # Also mark the time slot/availability as booked
+    # Mark TimeSlot records as booked (but NOT the entire Availability)
     target_date = booking.booking_date
     
-    # Find and mark the availability as booked
+    # Update all TimeSlot records for this booking
+    time_slots = db.query(TimeSlot).filter(TimeSlot.booking_id == booking.id).all()
+    for time_slot in time_slots:
+        time_slot.is_booked = True
+        print(f"Marked TimeSlot {time_slot.id} ({time_slot.start_time}-{time_slot.end_time}) as booked")
+    
+    # IMPORTANT: DO NOT mark entire availability as booked
+    # Instead, check if we should mark availability based on booked time slots
     availability = db.query(Availability).filter(
         Availability.mentor_id == booking.mentor_id,
         Availability.date == target_date
     ).first()
     
     if availability:
-        availability.is_booked = True
-    
-    # Also update all TimeSlot records for this booking
-    time_slots = db.query(TimeSlot).filter(TimeSlot.booking_id == booking.id).all()
-    for time_slot in time_slots:
-        time_slot.is_booked = True
+        # Get service duration to understand slot boundaries
+        service = db.query(Service).filter(Service.id == booking.service_id).first()
+        service_duration = service.duration_minutes if service else 60
+        
+        # Check what percentage of the availability window is booked
+        try:
+            # Parse availability times
+            avail_start = datetime.strptime(availability.start_time, "%H:%M")
+            avail_end = datetime.strptime(availability.end_time, "%H:%M")
+            total_availability_minutes = (avail_end - avail_start).seconds / 60
+            
+            # Calculate booked minutes
+            booked_minutes = 0
+            
+            # Get all booked time slots for this date
+            all_booked_slots = db.query(TimeSlot).join(Booking).filter(
+                Booking.mentor_id == booking.mentor_id,
+                TimeSlot.date == target_date,
+                TimeSlot.is_booked == True
+            ).all()
+            
+            for slot in all_booked_slots:
+                try:
+                    slot_start = datetime.strptime(slot.start_time, "%H:%M")
+                    slot_end = datetime.strptime(slot.end_time, "%H:%M")
+                    slot_minutes = (slot_end - slot_start).seconds / 60
+                    booked_minutes += slot_minutes
+                except:
+                    continue
+            
+            # Mark availability as booked only if >90% is booked or if it's a single-slot day
+            if total_availability_minutes > 0:
+                booked_percentage = (booked_minutes / total_availability_minutes) * 100
+                
+                # If most of the day is booked, mark it as booked
+                if booked_percentage > 90:
+                    availability.is_booked = True
+                    print(f"Marked availability as booked: {booked_percentage:.1f}% booked")
+                else:
+                    availability.is_booked = False
+                    print(f"Availability remains open: {booked_percentage:.1f}% booked")
+            
+        except Exception as e:
+            print(f"Error calculating availability booking percentage: {e}")
+            # Don't mark availability as booked if we can't calculate
+            availability.is_booked = False
     
     db.commit()
     
+    # Send notification (optional)
+    send_meeting_notification(booking, meeting_link, db)
+    
     return meeting_link, meeting_id
+
+@app.post("/mentor/availability/cleanup")
+async def cleanup_availability(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Clean up availability records that should not be marked as booked"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    # Get all availabilities marked as booked
+    booked_availabilities = db.query(Availability).filter(
+        Availability.mentor_id == mentor.id,
+        Availability.is_booked == True
+    ).all()
+    
+    fixed_count = 0
+    
+    for availability in booked_availabilities:
+        try:
+            # Check actual booked time slots
+            booked_slots = db.query(TimeSlot).join(Booking).filter(
+                Booking.mentor_id == mentor.id,
+                TimeSlot.date == availability.date,
+                TimeSlot.is_booked == True
+            ).all()
+            
+            if not booked_slots:
+                # No booked slots, so availability should be open
+                availability.is_booked = False
+                fixed_count += 1
+                print(f"Fixed availability for {availability.date}: No booked slots found")
+                continue
+            
+            # Calculate booking percentage
+            avail_start = datetime.strptime(availability.start_time, "%H:%M")
+            avail_end = datetime.strptime(availability.end_time, "%H:%M")
+            total_minutes = (avail_end - avail_start).seconds / 60
+            
+            booked_minutes = 0
+            for slot in booked_slots:
+                slot_start = datetime.strptime(slot.start_time, "%H:%M")
+                slot_end = datetime.strptime(slot.end_time, "%H:%M")
+                booked_minutes += (slot_end - slot_start).seconds / 60
+            
+            booked_percentage = (booked_minutes / total_minutes) * 100 if total_minutes > 0 else 0
+            
+            # If less than 90% booked, mark as available
+            if booked_percentage <= 90:
+                availability.is_booked = False
+                fixed_count += 1
+                print(f"Fixed availability for {availability.date}: {booked_percentage:.1f}% booked")
+                
+        except Exception as e:
+            print(f"Error processing availability for {availability.date}: {e}")
+            continue
+    
+    db.commit()
+    
+    return JSONResponse({
+        "success": True,
+        "message": f"Fixed {fixed_count} availability records",
+        "fixed_count": fixed_count
+    })
+
+def check_time_slot_availability(mentor_id: int, date: date, start_time: str, end_time: str, db: Session) -> bool:
+    """Check if a time slot is available (no conflicts with existing bookings)"""
+    # Check TimeSlot table for overlapping booked slots
+    overlapping_slots = db.query(TimeSlot).join(Booking).filter(
+        Booking.mentor_id == mentor_id,
+        TimeSlot.date == date,
+        TimeSlot.is_booked == True,
+        # Check for time overlap
+        or_(
+            # New slot starts during existing booked slot
+            and_(
+                TimeSlot.start_time <= start_time,
+                TimeSlot.end_time > start_time
+            ),
+            # New slot ends during existing booked slot
+            and_(
+                TimeSlot.start_time < end_time,
+                TimeSlot.end_time >= end_time
+            ),
+            # New slot completely contains existing booked slot
+            and_(
+                TimeSlot.start_time >= start_time,
+                TimeSlot.end_time <= end_time
+            ),
+            # Existing booked slot completely contains new slot
+            and_(
+                TimeSlot.start_time <= start_time,
+                TimeSlot.end_time >= end_time
+            )
+        )
+    ).first()
+    
+    return overlapping_slots is None
     
 def create_admin_user(db: Session):
     """Create an admin user if not exists"""
