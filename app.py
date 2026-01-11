@@ -2181,7 +2181,7 @@ async def create_availability(
     end_time: str = Form("21:00"),
     db: Session = Depends(get_db)
 ):
-    """Create a new availability with custom time range"""
+    """Create a new availability with custom time range - UPDATED WITH SLOT LOGIC"""
     # Get current user from cookie manually
     token = request.cookies.get("access_token")
     current_user = None
@@ -2308,56 +2308,94 @@ async def create_availability(
                     status_code=303
                 )
         
-        # Check if availability already exists for this date
-        existing = db.query(Availability).filter(
+        # NEW LOGIC: Check for existing availability
+        existing_availability = db.query(Availability).filter(
             Availability.mentor_id == mentor.id,
             Availability.date == parsed_date
         ).first()
         
-        if existing:
-            # If availability exists but is booked, we shouldn't allow overriding
-            if existing.is_booked:
+        if existing_availability:
+            # If availability exists but is booked, we need to check which slots are booked
+            if existing_availability.is_booked:
+                # Get booked time slots for this date
+                booked_time_slots = db.query(TimeSlot).join(Booking).filter(
+                    Booking.mentor_id == mentor.id,
+                    TimeSlot.date == parsed_date,
+                    TimeSlot.is_booked == True
+                ).all()
+                
+                # Check if the new availability conflicts with booked slots
+                for booked_slot in booked_time_slots:
+                    try:
+                        booked_start = datetime.strptime(booked_slot.start_time, "%H:%M")
+                        booked_end = datetime.strptime(booked_slot.end_time, "%H:%M")
+                        
+                        # Check for overlap
+                        if not (end_dt <= booked_start or start_dt >= booked_end):
+                            # There's an overlap with a booked slot
+                            return RedirectResponse(
+                                url="/mentor/availability?error=Cannot%20add%20availability%20that%20overlaps%20with%20existing%20bookings",
+                                status_code=303
+                            )
+                    except ValueError:
+                        continue
+                
+                # No conflicts, update the availability
+                existing_availability.start_time = start_time
+                existing_availability.end_time = end_time
+                existing_availability.service_id = parsed_service_id
+                # Keep is_booked = True because there are still bookings, but update times
+                
+                db.commit()
+                
                 return RedirectResponse(
-                    url="/mentor/availability?error=Cannot%20modify%20availability%20that%20has%20bookings",
+                    url="/mentor/availability?success=Availability%20updated%20successfully%20(around%20existing%20bookings)",
                     status_code=303
                 )
-            
-            # If it exists but is not booked, update it with new times
-            existing.start_time = start_time
-            existing.end_time = end_time
-            existing.service_id = parsed_service_id
-            existing.is_booked = False
-            
-            db.commit()
-            
-            return RedirectResponse(
-                url="/mentor/availability?success=Availability%20updated%20successfully",
-                status_code=303
-            )
+            else:
+                # Availability exists but not booked, update it
+                existing_availability.start_time = start_time
+                existing_availability.end_time = end_time
+                existing_availability.service_id = parsed_service_id
+                existing_availability.is_booked = False
+                
+                db.commit()
+                
+                return RedirectResponse(
+                    url="/mentor/availability?success=Availability%20updated%20successfully",
+                    status_code=303
+                )
         
-        # Check if there are any bookings for this date
-        existing_bookings = db.query(Booking).filter(
+        # Check if there are any time slots booked for this date
+        existing_booked_slots = db.query(TimeSlot).join(Booking).filter(
             Booking.mentor_id == mentor.id,
-            Booking.booking_date == parsed_date,
-            Booking.status.in_(["pending", "confirmed"])
+            TimeSlot.date == parsed_date,
+            TimeSlot.is_booked == True
         ).first()
         
-        if existing_bookings:
-            return RedirectResponse(
-                url="/mentor/availability?error=Cannot%20add%20availability%20for%20date%20with%20existing%20bookings",
-                status_code=303
+        if existing_booked_slots:
+            # There are booked slots, but we already checked for conflicts above
+            # Create new availability, mark it as partially booked
+            availability = Availability(
+                mentor_id=mentor.id,
+                service_id=parsed_service_id,
+                date=parsed_date,
+                start_time=start_time,
+                end_time=end_time,
+                is_booked=False,  # False because not ALL slots are booked
+                created_at=datetime.utcnow()
             )
-        
-        # Create new availability
-        availability = Availability(
-            mentor_id=mentor.id,
-            service_id=parsed_service_id,
-            date=parsed_date,
-            start_time=start_time,
-            end_time=end_time,
-            is_booked=False,
-            created_at=datetime.utcnow()
-        )
+        else:
+            # No bookings at all for this date
+            availability = Availability(
+                mentor_id=mentor.id,
+                service_id=parsed_service_id,
+                date=parsed_date,
+                start_time=start_time,
+                end_time=end_time,
+                is_booked=False,
+                created_at=datetime.utcnow()
+            )
         
         db.add(availability)
         db.commit()
@@ -2367,6 +2405,10 @@ async def create_availability(
         end_display = datetime.strptime(end_time, "%H:%M").strftime("%I:%M %p").lstrip("0")
         
         success_msg = f"Availability%20added%20successfully%20({start_display}%20-%20{end_display})"
+        
+        # If there are existing bookings, add a note
+        if existing_booked_slots:
+            success_msg += "%20(Note:%20Some%20time%20slots%20are%20already%20booked)"
         
         return RedirectResponse(
             url=f"/mentor/availability?success={success_msg}",
