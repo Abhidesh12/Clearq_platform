@@ -94,7 +94,7 @@
                                 </div>
                                 <div class="ml-3">
                                     <p class="text-sm text-blue-700">
-                                        <strong>Time Format:</strong> Use 24-hour format (HH:MM). For example, 2:00 PM = 14:00
+                                        <strong>Note:</strong> You can now add availability even if some slots are booked. Only the specific booked time slots will be blocked.
                                     </p>
                                 </div>
                             </div>
@@ -156,15 +156,40 @@
                                     <h3 class="font-semibold text-gray-900">
                                         {{ availability.display_date if availability.display_date else availability.date.strftime('%A, %B %d, %Y') if availability.date else 'Date not set' }}
                                     </h3>
+                                    <!-- First, calculate booked slots count -->
+                                    {% set booked_slots_count = 0 %}
+                                    {% if availability.time_slots %}
+                                        {% for time_slot in availability.time_slots %}
+                                            {% if time_slot.is_booked %}
+                                                {% set booked_slots_count = booked_slots_count + 1 %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    
                                     <div class="flex flex-wrap items-center gap-4 mt-2">
-                                        <span class="flex items-center text-sm font-medium {% if availability.is_booked %}text-red-600{% else %}text-green-600{% endif %}">
-                                            <i class="fas {% if availability.is_booked %}fa-calendar-times{% else %}fa-calendar-check{% endif %} mr-2"></i>
-                                            {{ 'Booked' if availability.is_booked else 'Available' }}
-                                        </span>
+                                        <!-- Status Badge -->
+                                        {% if availability.is_booked %}
+                                            <span class="flex items-center text-sm font-medium text-red-600">
+                                                <i class="fas fa-calendar-times mr-2"></i>
+                                                Fully Booked
+                                            </span>
+                                        {% elif booked_slots_count > 0 %}
+                                            <span class="flex items-center text-sm font-medium text-yellow-600">
+                                                <i class="fas fa-calendar-check mr-2"></i>
+                                                Partially Booked ({{ booked_slots_count }} slot{{ 's' if booked_slots_count != 1 }})
+                                            </span>
+                                        {% else %}
+                                            <span class="flex items-center text-sm font-medium text-green-600">
+                                                <i class="fas fa-calendar-check mr-2"></i>
+                                                Available
+                                            </span>
+                                        {% endif %}
+                                        
                                         <span class="flex items-center text-sm text-gray-600">
                                             <i class="fas fa-clock mr-2"></i>
                                             {{ availability.start_time }} - {{ availability.end_time }}
                                         </span>
+                                        
                                         {% if availability.service_id %}
                                         <span class="flex items-center text-sm text-blue-600">
                                             <i class="fas fa-list-alt mr-2"></i>
@@ -189,6 +214,40 @@
                                     <i class="fas fa-info-circle mr-2 text-blue-500"></i>
                                     <span>Time slots will be generated based on {{ availability.service.duration_minutes }} minute sessions</span>
                                 </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Time Slot Details Section -->
+                            {% if availability.time_slots and availability.time_slots|length > 0 %}
+                            <div class="mt-3 pt-3 border-t border-gray-100">
+                                <details class="group">
+                                    <summary class="flex items-center justify-between cursor-pointer text-sm font-medium text-gray-700">
+                                        <span>View Time Slots ({{ availability.time_slots|length }})</span>
+                                        <i class="fas fa-chevron-down group-open:rotate-180 transition-transform"></i>
+                                    </summary>
+                                    
+                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {% for slot in availability.time_slots %}
+                                        <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                                            <div class="flex items-center">
+                                                <i class="fas {% if slot.is_booked %}fa-lock text-red-500{% else %}fa-unlock text-green-500{% endif %} mr-2"></i>
+                                                <span class="text-sm {% if slot.is_booked %}text-gray-500 line-through{% else %}text-gray-700{% endif %}">
+                                                    {{ slot.start_time }} - {{ slot.end_time }}
+                                                </span>
+                                            </div>
+                                            {% if slot.is_booked %}
+                                            <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">
+                                                Booked
+                                            </span>
+                                            {% else %}
+                                            <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                                                Available
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </details>
                             </div>
                             {% endif %}
                             
@@ -219,15 +278,20 @@
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-lg font-bold text-gray-900">Availability Calendar</h3>
-                        <button onclick="navigateCalendar(-1)" class="p-2 text-gray-400 hover:text-primary">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="navigateCalendar(-1)" class="p-2 text-gray-400 hover:text-primary">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button onclick="navigateCalendar(1)" class="p-2 text-gray-400 hover:text-primary">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="mb-4">
                         <div id="currentMonth" class="text-center text-lg font-bold text-gray-900 mb-4">
-    {{ now.strftime('%Y-%m-%d') }}
-</div>
+                            {{ now.strftime('%B %Y') }}
+                        </div>
                         
                         <div class="grid grid-cols-7 gap-1 mb-4">
                             {% for day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] %}
@@ -253,15 +317,19 @@
                         <div class="flex flex-col gap-2">
                             <div class="flex items-center">
                                 <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                                <span class="text-xs text-gray-600">Has Availability</span>
+                                <span class="text-xs text-gray-600">Available</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
+                                <span class="text-xs text-gray-600">Partially Booked</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                                <span class="text-xs text-gray-600">Fully Booked</span>
                             </div>
                             <div class="flex items-center">
                                 <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
                                 <span class="text-xs text-gray-600">Today</span>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-                                <span class="text-xs text-gray-600">Booked</span>
                             </div>
                         </div>
                     </div>
@@ -352,6 +420,58 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Availability Tools -->
+                <div class="bg-gradient-to-br from-yellow-50 to-orange-100 rounded-2xl shadow-lg border border-yellow-200 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Availability Tools</h3>
+                    
+                    <div class="space-y-3">
+                        <form action="/mentor/availability/cleanup" method="POST" 
+                              onsubmit="return confirm('This will fix availability records that are incorrectly marked as booked. Continue?');">
+                            <button type="submit" 
+                                    class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-yellow-200 hover:border-yellow-400 transition-colors">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-tools text-yellow-600"></i>
+                                    </div>
+                                    <div>
+                                        <span class="font-medium text-gray-900 block">Fix Availability Status</span>
+                                        <span class="text-xs text-gray-500">Correct incorrectly marked booked days</span>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </button>
+                        </form>
+                        
+                        <button onclick="refreshAvailability()" 
+                                class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-yellow-200 hover:border-yellow-400 transition-colors">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-sync-alt text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-gray-900 block">Refresh Availability</span>
+                                    <span class="text-xs text-gray-500">Reload and recalculate status</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </button>
+                        
+                        <button onclick="showBookingStats()" 
+                                class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-yellow-200 hover:border-yellow-400 transition-colors">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-chart-bar text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-gray-900 block">View Booking Stats</span>
+                                    <span class="text-xs text-gray-500">See booking patterns and trends</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -379,10 +499,38 @@ document.addEventListener('DOMContentLoaded', function() {
         {% for availability in availabilities %}
         {
             date: "{{ availability.date.strftime('%Y-%m-%d') if availability.date else '' }}",
-            is_booked: {{ 'true' if availability.is_booked else 'false' }}
+            is_booked: {{ 'true' if availability.is_booked else 'false' }},
+            booked_slots_count: {{ availability.time_slots|selectattr('is_booked')|list|length if availability.time_slots else 0 }}
         },
         {% endfor %}
     ];
+    
+    availabilityDates.forEach(avail => {
+        if (!avail.date) return;
+        
+        const dateObj = new Date(avail.date);
+        const day = dateObj.getDate();
+        const dayElement = document.getElementById('day-' + day);
+        
+        if (dayElement) {
+            // Remove any existing status classes
+            dayElement.classList.remove('bg-green-100', 'border-green-300', 
+                                        'bg-yellow-100', 'border-yellow-300',
+                                        'bg-red-100', 'border-red-300');
+            
+            // Add appropriate status
+            if (avail.is_booked) {
+                dayElement.classList.add('bg-red-100', 'border-red-300');
+                dayElement.title = 'Fully booked for this date';
+            } else if (avail.booked_slots_count > 0) {
+                dayElement.classList.add('bg-yellow-100', 'border-yellow-300');
+                dayElement.title = `Partially booked (${avail.booked_slots_count} slots taken)`;
+            } else {
+                dayElement.classList.add('bg-green-100', 'border-green-300');
+                dayElement.title = 'Available for bookings';
+            }
+        }
+    });
     
     // Add event listeners for time preview
     const startTimeInput = document.getElementById('start_time');
@@ -396,6 +544,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (serviceSelect) {
         serviceSelect.addEventListener('change', updateTimeSlotPreview);
+    }
+    
+    // Add form submission loading state
+    const availabilityForm = document.querySelector('form[action="/mentor/availability/create"]');
+    if (availabilityForm) {
+        availabilityForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Adding Availability...';
+                submitBtn.disabled = true;
+            }
+        });
     }
     
     // Initial preview update
@@ -616,6 +776,74 @@ function showNotification(message, type) {
             }
         }, 300);
     }, 4000);
+}
+
+function refreshAvailability() {
+    showNotification('Refreshing availability status...', 'info');
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+}
+
+function showBookingStats() {
+    // Calculate stats from current page data
+    let totalSlots = 0;
+    let bookedSlots = 0;
+    
+    {% for availability in availabilities %}
+        {% if availability.time_slots %}
+            {% for slot in availability.time_slots %}
+                totalSlots += 1;
+                {% if slot.is_booked %}
+                    bookedSlots += 1;
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+    
+    const availableSlots = totalSlots - bookedSlots;
+    const utilization = totalSlots > 0 ? Math.round((bookedSlots / totalSlots) * 100) : 0;
+    
+    const message = `Booking Stats:\n\n• Total Time Slots: ${totalSlots}\n• Booked Slots: ${bookedSlots}\n• Available Slots: ${availableSlots}\n• Utilization Rate: ${utilization}%`;
+    
+    // Create a modal for stats
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Booking Statistics</h3>
+                <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span class="font-medium text-gray-700">Total Slots:</span>
+                    <span class="text-lg font-bold text-blue-600">${totalSlots}</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span class="font-medium text-gray-700">Available:</span>
+                    <span class="text-lg font-bold text-green-600">${availableSlots}</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                    <span class="font-medium text-gray-700">Booked:</span>
+                    <span class="text-lg font-bold text-yellow-600">${bookedSlots}</span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                    <span class="font-medium text-gray-700">Utilization:</span>
+                    <span class="text-lg font-bold text-purple-600">${utilization}%</span>
+                </div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-gray-200">
+                <button onclick="this.parentElement.parentElement.remove()" class="w-full px-4 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
 }
 </script>
 {% endblock %}
