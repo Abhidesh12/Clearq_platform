@@ -376,6 +376,32 @@ import uuid
 import requests
 from datetime import datetime, timedelta
 
+
+def get_current_user(request: Request, db: Session = Depends(get_db)):
+    token = request.cookies.get("access_token")
+    if not token:
+        return None
+    
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: int = payload.get("sub")
+        if user_id is None:
+            return None
+    except JWTError:
+        return None
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    if user and user.is_active:
+        return user
+    
+    return None
+        # Ensure profile_image has correct path
+       # if user.profile_image and not user.profile_image.startswith("uploads/"):
+            #user.profile_image = f"uploads/{user.profile_image}" if user.profile_image != "default-avatar.png" else "default-avatar.png"
+    
+    #return user if user and user.is_active else None
+
 # Add this function after your imports
 def generate_meeting_link(booking_id: int, db: Session):
     """Generate or retrieve meeting link for a confirmed booking - UPDATED"""
@@ -657,30 +683,7 @@ def load_availabilities_with_retry(mentor_id, db, retries=3):
                 raise e
             time.sleep(1)
             
-def get_current_user(request: Request, db: Session = Depends(get_db)):
-    token = request.cookies.get("access_token")
-    if not token:
-        return None
-    
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
-        if user_id is None:
-            return None
-    except JWTError:
-        return None
-    
-    user = db.query(User).filter(User.id == user_id).first()
-    
-    if user and user.is_active:
-        return user
-    
-    return None
-        # Ensure profile_image has correct path
-       # if user.profile_image and not user.profile_image.startswith("uploads/"):
-            #user.profile_image = f"uploads/{user.profile_image}" if user.profile_image != "default-avatar.png" else "default-avatar.png"
-    
-    #return user if user and user.is_active else None
+
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
