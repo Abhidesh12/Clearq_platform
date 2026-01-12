@@ -4,11 +4,18 @@
 
 {% block content %}
 <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Manage Availability</h1>
-            <p class="text-gray-600 mt-2">Set your available dates and time slots for mentoring sessions</p>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Manage Availability</h1>
+                    <p class="text-gray-600 mt-2">Set your regular weekly schedule</p>
+                </div>
+                <a href="/dashboard" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                </a>
+            </div>
         </div>
 
         <!-- Flash Messages -->
@@ -31,444 +38,221 @@
         </div>
         {% endif %}
 
+        <!-- Main Content -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column - Calendar & Form -->
+            <!-- Left Column - Weekly Schedule -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
-                    <h2 class="text-xl font-bold text-gray-900 mb-6">Add Availability Date</h2>
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Weekly Schedule</h2>
+                    <p class="text-gray-600 mb-6">Select the days you're available each week. You can set different hours for each day.</p>
                     
-                    <form action="/mentor/availability/create" method="POST" class="space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Date *
-                                </label>
-                                <input type="date" 
-                                       id="date" 
-                                       name="date" 
-                                       required
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       min="{{ today }}">
-                                <p class="mt-1 text-sm text-gray-500">
-                                    Select a date for availability
-                                </p>
-                            </div>
-                            
-                            <div>
-                                <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Start Time *
-                                </label>
-                                <input type="time" 
-                                       id="start_time" 
-                                       name="start_time" 
-                                       value="09:00"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       step="900" <!-- 15 minute steps -->
-                                       required>
-                                <p class="mt-1 text-sm text-gray-500">
-                                    When you're available from
-                                </p>
-                            </div>
-                            
-                            <div>
-                                <label for="end_time" class="block text-sm font-medium text-gray-700 mb-2">
-                                    End Time *
-                                </label>
-                                <input type="time" 
-                                       id="end_time" 
-                                       name="end_time" 
-                                       value="21:00"
-                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                       step="900"
-                                       required>
-                                <p class="mt-1 text-sm text-gray-500">
-                                    When you're available until
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-info-circle text-blue-400"></i>
+                    <div id="days-container" class="space-y-4">
+                        {% for day in [
+                            {"id": 0, "name": "Monday"},
+                            {"id": 1, "name": "Tuesday"},
+                            {"id": 2, "name": "Wednesday"},
+                            {"id": 3, "name": "Thursday"},
+                            {"id": 4, "name": "Friday"},
+                            {"id": 5, "name": "Saturday"},
+                            {"id": 6, "name": "Sunday"}
+                        ] %}
+                        <div class="border border-gray-200 rounded-lg p-4 transition-all duration-200 hover:border-blue-300" id="day-{{ day.id }}-container">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <input type="checkbox" 
+                                           id="day-{{ day.id }}" 
+                                           data-day-id="{{ day.id }}"
+                                           class="day-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
+                                           {% if day.id < 5 %}checked{% endif %}>
+                                    <label for="day-{{ day.id }}" class="ml-3 text-lg font-medium text-gray-900 cursor-pointer">
+                                        {{ day.name }}
+                                    </label>
                                 </div>
-                                <div class="ml-3">
-                                    <p class="text-sm text-blue-700">
-                                        <strong>Note:</strong> You can now add availability even if some slots are booked. Only the specific booked time slots will be blocked.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label for="service_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Service (Optional)
-                            </label>
-                            <select id="service_id" name="service_id"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                <option value="">All Services (General Availability)</option>
-                                {% if services %}
-                                {% for service in services %}
-                                <option value="{{ service.id }}">{{ service.name }} ({{ service.duration_minutes }} mins)</option>
-                                {% endfor %}
-                                {% endif %}
-                            </select>
-                            <p class="mt-1 text-sm text-gray-500">
-                                Leave empty for general availability across all services
-                            </p>
-                        </div>
-                        
-                        <!-- Time Slot Preview -->
-                        <div id="timeSlotPreview" class="bg-gray-50 border border-gray-200 rounded-lg p-4 hidden">
-                            <h4 class="font-medium text-gray-900 mb-2">Time Slot Preview</h4>
-                            <div id="previewContent" class="text-sm text-gray-600">
-                                <!-- Preview will be populated by JavaScript -->
-                            </div>
-                        </div>
-                        
-                        <div class="pt-4 border-t border-gray-200">
-                            <button type="submit"
-                                    class="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5">
-                                <i class="fas fa-plus mr-2"></i> Add Availability Date
-                            </button>
-                            <button type="button" onclick="resetForm()" class="ml-3 px-4 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50">
-                                Reset
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- Upcoming Availability -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold text-gray-900">Upcoming Availability</h2>
-                        <div class="text-sm text-gray-500">
-                            Showing {{ availabilities|length }} slot{{ 's' if availabilities|length != 1 }}
-                        </div>
-                    </div>
-                    
-                    {% if availabilities and availabilities|length > 0 %}
-                    <div class="space-y-4">
-                        {% for availability in availabilities %}
-                        <div class="border border-gray-200 rounded-xl p-4 hover:border-primary transition-colors">
-                            <div class="flex items-start justify-between mb-3">
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">
-                                        {{ availability.display_date if availability.display_date else availability.date.strftime('%A, %B %d, %Y') if availability.date else 'Date not set' }}
-                                    </h3>
-                                    <!-- First, calculate booked slots count -->
-                                    {% set booked_slots_count = 0 %}
-                                    {% if availability.time_slots %}
-                                        {% for time_slot in availability.time_slots %}
-                                            {% if time_slot.is_booked %}
-                                                {% set booked_slots_count = booked_slots_count + 1 %}
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endif %}
-                                    
-                                    <div class="flex flex-wrap items-center gap-4 mt-2">
-                                        <!-- Status Badge -->
-                                        {% if availability.is_booked %}
-                                            <span class="flex items-center text-sm font-medium text-red-600">
-                                                <i class="fas fa-calendar-times mr-2"></i>
-                                                Fully Booked
-                                            </span>
-                                        {% elif booked_slots_count > 0 %}
-                                            <span class="flex items-center text-sm font-medium text-yellow-600">
-                                                <i class="fas fa-calendar-check mr-2"></i>
-                                                Partially Booked ({{ booked_slots_count }} slot{{ 's' if booked_slots_count != 1 }})
-                                            </span>
-                                        {% else %}
-                                            <span class="flex items-center text-sm font-medium text-green-600">
-                                                <i class="fas fa-calendar-check mr-2"></i>
-                                                Available
-                                            </span>
-                                        {% endif %}
-                                        
-                                        <span class="flex items-center text-sm text-gray-600">
-                                            <i class="fas fa-clock mr-2"></i>
-                                            {{ availability.start_time }} - {{ availability.end_time }}
-                                        </span>
-                                        
-                                        {% if availability.service_id %}
-                                        <span class="flex items-center text-sm text-blue-600">
-                                            <i class="fas fa-list-alt mr-2"></i>
-                                            Service: {{ availability.service.name if availability.service else 'N/A' }}
-                                        </span>
-                                        {% endif %}
+                                <div class="flex items-center space-x-4" id="time-controls-{{ day.id }}">
+                                    <div>
+                                        <label class="block text-sm text-gray-600">Start</label>
+                                        <input type="time" 
+                                               id="start-{{ day.id }}"
+                                               data-day-id="{{ day.id }}"
+                                               value="09:00"
+                                               class="time-input mt-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-600">End</label>
+                                        <input type="time" 
+                                               id="end-{{ day.id }}"
+                                               data-day-id="{{ day.id }}"
+                                               value="17:00"
+                                               class="time-input mt-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
                                 </div>
-                                <form action="/mentor/availability/{{ availability.id }}/delete" method="POST" class="inline" 
-                                      onsubmit="return confirm('Are you sure you want to remove this availability? This cannot be undone.');">
-                                    <button type="submit" 
-                                            class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-colors"
-                                            title="Remove Availability">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
                             </div>
-                            
-                            {% if availability.service %}
-                            <div class="mt-3 pt-3 border-t border-gray-100">
-                                <div class="flex items-center text-sm text-gray-600">
-                                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
-                                    <span>Time slots will be generated based on {{ availability.service.duration_minutes }} minute sessions</span>
-                                </div>
-                            </div>
-                            {% endif %}
-                            
-                            <!-- Time Slot Details Section -->
-                            {% if availability.time_slots and availability.time_slots|length > 0 %}
-                            <div class="mt-3 pt-3 border-t border-gray-100">
-                                <details class="group">
-                                    <summary class="flex items-center justify-between cursor-pointer text-sm font-medium text-gray-700">
-                                        <span>View Time Slots ({{ availability.time_slots|length }})</span>
-                                        <i class="fas fa-chevron-down group-open:rotate-180 transition-transform"></i>
-                                    </summary>
-                                    
-                                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        {% for slot in availability.time_slots %}
-                                        <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                            <div class="flex items-center">
-                                                <i class="fas {% if slot.is_booked %}fa-lock text-red-500{% else %}fa-unlock text-green-500{% endif %} mr-2"></i>
-                                                <span class="text-sm {% if slot.is_booked %}text-gray-500 line-through{% else %}text-gray-700{% endif %}">
-                                                    {{ slot.start_time }} - {{ slot.end_time }}
-                                                </span>
-                                            </div>
-                                            {% if slot.is_booked %}
-                                            <span class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800">
-                                                Booked
-                                            </span>
-                                            {% else %}
-                                            <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
-                                                Available
-                                            </span>
-                                            {% endif %}
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                </details>
-                            </div>
-                            {% endif %}
-                            
-                            <div class="mt-3 pt-3 border-t border-gray-100">
-                                <div class="text-xs text-gray-500">
-                                    Added: {{ availability.created_at.strftime('%b %d, %Y at %I:%M %p') if availability.created_at else 'Recently' }}
-                                </div>
+                            <div class="mt-3 pt-3 border-t border-gray-100 hidden" id="preview-{{ day.id }}">
+                                <p class="text-sm text-gray-600">
+                                    <i class="fas fa-clock mr-2"></i>
+                                    Available: <span id="time-display-{{ day.id }}">9:00 AM - 5:00 PM</span>
+                                </p>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
-                    {% else %}
-                    <div class="text-center py-12">
-                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
-                            <i class="fas fa-calendar-times text-gray-400 text-2xl"></i>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <div class="flex items-center space-x-4">
+                            <button onclick="saveAvailability()" 
+                                    id="save-btn"
+                                    class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-save mr-2"></i> Save Schedule
+                            </button>
+                            <button onclick="resetToDefault()" class="px-4 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50">
+                                <i class="fas fa-undo mr-2"></i> Reset to Default
+                            </button>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No Upcoming Availability</h3>
-                        <p class="text-gray-500">Add availability dates to start accepting bookings</p>
-                        <p class="text-sm text-gray-400 mt-1">Use the form above to set your available dates and times</p>
+                        <p class="mt-3 text-sm text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Your schedule will automatically generate available slots for the next 30 days
+                        </p>
                     </div>
-                    {% endif %}
+                </div>
+
+                <!-- Special Dates (Exceptions) -->
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Special Dates</h2>
+                    <p class="text-gray-600 mb-6">Mark specific dates as unavailable (holidays, vacations, etc.)</p>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Add Unavailable Date</label>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="date" 
+                                   id="exception-date" 
+                                   min="{{ today }}" 
+                                   class="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" 
+                                   id="exception-reason" 
+                                   placeholder="Reason (optional)" 
+                                   class="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button onclick="addException()" 
+                                    class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-medium whitespace-nowrap">
+                                <i class="fas fa-ban mr-2"></i> Mark Unavailable
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="exceptions-list">
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                                <i class="fas fa-calendar text-gray-400 text-2xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Special Dates</h3>
+                            <p class="text-gray-500">Add dates when you're not available despite your weekly schedule</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Right Column - Calendar & Tips -->
+            <!-- Right Column - Information & Tools -->
             <div class="space-y-8">
-                <!-- Calendar -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-bold text-gray-900">Availability Calendar</h3>
-                        <div class="flex gap-2">
-                            <button onclick="navigateCalendar(-1)" class="p-2 text-gray-400 hover:text-primary">
-                                <i class="fas fa-chevron-left"></i>
+                <!-- Information Card -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg border border-blue-200 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">How It Works</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-sm text-gray-700">Check the days you're regularly available</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-sm text-gray-700">Set time ranges for each day</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-sm text-gray-700">System generates slots for next 30 days</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-sm text-gray-700">Mark special dates as unavailable</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-6 pt-4 border-t border-blue-200">
+                        <h4 class="font-medium text-gray-900 mb-3">Quick Time Presets:</h4>
+                        <div class="grid grid-cols-1 gap-2">
+                            <button onclick="setTimePreset('9:00', '17:00')" 
+                                    class="w-full text-left text-sm text-gray-700 hover:bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
+                                <i class="fas fa-briefcase mr-2 text-blue-500"></i>
+                                Work Day (9 AM - 5 PM)
                             </button>
-                            <button onclick="navigateCalendar(1)" class="p-2 text-gray-400 hover:text-primary">
-                                <i class="fas fa-chevron-right"></i>
+                            <button onclick="setTimePreset('17:00', '21:00')" 
+                                    class="w-full text-left text-sm text-gray-700 hover:bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
+                                <i class="fas fa-moon mr-2 text-purple-500"></i>
+                                Evening (5 PM - 9 PM)
+                            </button>
+                            <button onclick="setTimePreset('10:00', '14:00')" 
+                                    class="w-full text-left text-sm text-gray-700 hover:bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
+                                <i class="fas fa-sun mr-2 text-yellow-500"></i>
+                                Midday (10 AM - 2 PM)
                             </button>
                         </div>
                     </div>
-                    
-                    <div class="mb-4">
-                        <div id="currentMonth" class="text-center text-lg font-bold text-gray-900 mb-4">
-                            {{ now.strftime('%B %Y') }}
-                        </div>
-                        
-                        <div class="grid grid-cols-7 gap-1 mb-4">
-                            {% for day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] %}
-                            <div class="text-center text-sm font-medium text-gray-500 py-2">
-                                {{ day }}
-                            </div>
-                            {% endfor %}
-                            
-                            {% for day in range(1, 32) %}
-                            <div id="day-{{ day }}" 
-                                 class="text-center p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors"
-                                 onclick="selectDate('{{ day }}')">
-                                <span class="text-sm text-gray-700">
-                                    {{ day }}
-                                </span>
-                            </div>
-                            {% endfor %}
-                        </div>
+                </div>
+
+                <!-- Preview Card -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl shadow-lg border border-green-200 p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Your Schedule Preview</h3>
+                    <div id="schedule-preview" class="space-y-3">
+                        <!-- Preview will be generated here -->
                     </div>
-                    
-                    <!-- Legend -->
-                    <div class="pt-4 border-t border-gray-200">
-                        <div class="flex flex-col gap-2">
-                            <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                                <span class="text-xs text-gray-600">Available</span>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
-                                <span class="text-xs text-gray-600">Partially Booked</span>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-                                <span class="text-xs text-gray-600">Fully Booked</span>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-                                <span class="text-xs text-gray-600">Today</span>
+                    <div class="mt-6 pt-4 border-t border-green-200">
+                        <div class="text-sm text-gray-600">
+                            <p class="mb-2"><strong>Next Available Dates:</strong></p>
+                            <div id="next-dates" class="text-green-700 font-medium">
+                                <!-- Dates will be populated here -->
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Availability Tips -->
-                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg border border-blue-200 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Best Practices</h3>
-                    <ul class="space-y-3">
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                            <span class="text-sm text-gray-700"><strong>Be Realistic:</strong> Only set times when you're actually available</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                            <span class="text-sm text-gray-700"><strong>Plan Ahead:</strong> Set availability at least 24 hours in advance</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                            <span class="text-sm text-gray-700"><strong>Consistency:</strong> Try to keep similar schedules each week</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-                            <span class="text-sm text-gray-700"><strong>Buffer Time:</strong> Leave 15-30 minutes between sessions</span>
-                        </li>
-                    </ul>
-                    
-                    <div class="mt-4 pt-4 border-t border-blue-200">
-                        <h4 class="font-medium text-gray-900 mb-2">Recommended Time Ranges:</h4>
-                        <div class="space-y-2">
-                            <button onclick="setTimeRange('9:00', '17:00')" class="w-full text-left text-sm text-gray-600 hover:text-blue-600 p-2 rounded hover:bg-blue-50">
-                                <i class="fas fa-briefcase mr-2"></i>
-                                Work Day: 9:00 AM - 5:00 PM
-                            </button>
-                            <button onclick="setTimeRange('17:00', '21:00')" class="w-full text-left text-sm text-gray-600 hover:text-blue-600 p-2 rounded hover:bg-blue-50">
-                                <i class="fas fa-moon mr-2"></i>
-                                Evening: 5:00 PM - 9:00 PM
-                            </button>
-                            <button onclick="setTimeRange('10:00', '14:00')" class="w-full text-left text-sm text-gray-600 hover:text-blue-600 p-2 rounded hover:bg-blue-50">
-                                <i class="fas fa-sun mr-2"></i>
-                                Midday: 10:00 AM - 2:00 PM
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Quick Actions -->
-                <div class="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl shadow-lg border border-green-200 p-6">
+                <!-- Tools Card -->
+                <div class="bg-gradient-to-br from-yellow-50 to-orange-100 rounded-2xl shadow-lg border border-yellow-200 p-6">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
                     <div class="space-y-3">
-                        <button onclick="addNextWeek()" class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-green-200 hover:border-green-400 transition-colors">
+                        <button onclick="selectWeekdays()" 
+                                class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-yellow-200 hover:border-yellow-400 transition-colors">
                             <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
-                                    <i class="fas fa-calendar-plus text-green-600"></i>
+                                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-calendar-week text-blue-600"></i>
                                 </div>
                                 <div>
-                                    <span class="font-medium text-gray-900 block">Add Next Week</span>
-                                    <span class="text-xs text-gray-500">Add availability for same day next week</span>
+                                    <span class="font-medium text-gray-900 block">Weekdays Only</span>
+                                    <span class="text-xs text-gray-500">Select Monday-Friday</span>
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-400"></i>
                         </button>
                         
-                        <button onclick="addWeekend()" class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-green-200 hover:border-green-400 transition-colors">
+                        <button onclick="selectWeekend()" 
+                                class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-yellow-200 hover:border-yellow-400 transition-colors">
                             <div class="flex items-center">
                                 <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
                                     <i class="fas fa-umbrella-beach text-purple-600"></i>
                                 </div>
                                 <div>
-                                    <span class="font-medium text-gray-900 block">Add Weekend</span>
-                                    <span class="text-xs text-gray-500">Add Saturday and Sunday</span>
+                                    <span class="font-medium text-gray-900 block">Weekend Only</span>
+                                    <span class="text-xs text-gray-500">Select Saturday-Sunday</span>
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-400"></i>
                         </button>
                         
-                        <button onclick="clearAllFuture()" class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-green-200 hover:border-green-400 transition-colors">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center mr-3">
-                                    <i class="fas fa-trash-alt text-red-600"></i>
-                                </div>
-                                <div>
-                                    <span class="font-medium text-gray-900 block">Clear All Future</span>
-                                    <span class="text-xs text-gray-500">Remove all future availability</span>
-                                </div>
-                            </div>
-                            <i class="fas fa-chevron-right text-gray-400"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Availability Tools -->
-                <div class="bg-gradient-to-br from-yellow-50 to-orange-100 rounded-2xl shadow-lg border border-yellow-200 p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Availability Tools</h3>
-                    
-                    <div class="space-y-3">
-                        <form action="/mentor/availability/cleanup" method="POST" 
-                              onsubmit="return confirm('This will fix availability records that are incorrectly marked as booked. Continue?');">
-                            <button type="submit" 
-                                    class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-yellow-200 hover:border-yellow-400 transition-colors">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center mr-3">
-                                        <i class="fas fa-tools text-yellow-600"></i>
-                                    </div>
-                                    <div>
-                                        <span class="font-medium text-gray-900 block">Fix Availability Status</span>
-                                        <span class="text-xs text-gray-500">Correct incorrectly marked booked days</span>
-                                    </div>
-                                </div>
-                                <i class="fas fa-chevron-right text-gray-400"></i>
-                            </button>
-                        </form>
-                        
-                        <button onclick="refreshAvailability()" 
+                        <button onclick="selectAllDays()" 
                                 class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-yellow-200 hover:border-yellow-400 transition-colors">
                             <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
-                                    <i class="fas fa-sync-alt text-blue-600"></i>
+                                <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-calendar-alt text-green-600"></i>
                                 </div>
                                 <div>
-                                    <span class="font-medium text-gray-900 block">Refresh Availability</span>
-                                    <span class="text-xs text-gray-500">Reload and recalculate status</span>
+                                    <span class="font-medium text-gray-900 block">All Days</span>
+                                    <span class="text-xs text-gray-500">Select every day</span>
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-right text-gray-400"></i>
-                        </button>
-                        
-                        <button onclick="showBookingStats()" 
-                                class="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-yellow-200 hover:border-yellow-400 transition-colors">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
-                                    <i class="fas fa-chart-bar text-purple-600"></i>
-                                </div>
-                                <div>
-                                    <span class="font-medium text-gray-900 block">View Booking Stats</span>
-                                    <span class="text-xs text-gray-500">See booking patterns and trends</span>
-                                </div>
-                            </div>
-                            <i class="fas fa-chevron-right text-gray-400"></i>
                         </button>
                     </div>
                 </div>
@@ -479,287 +263,449 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Set today's date as default
-    const today = new Date().toISOString().split('T')[0];
-    const dateInput = document.getElementById('date');
-    if (dateInput && !dateInput.value) {
-        dateInput.value = today;
-    }
+    // Load existing availability data
+    loadAvailabilityData();
     
-    // Highlight today in calendar
-    const todayDate = new Date().getDate();
-    const todayElement = document.getElementById('day-' + todayDate);
-    if (todayElement) {
-        todayElement.classList.add('bg-blue-100', 'border-blue-300');
-        todayElement.querySelector('span').classList.add('font-bold', 'text-primary');
-    }
+    // Set up event listeners for checkboxes and time inputs
+    setupEventListeners();
     
-    // Highlight dates with availability
-    const availabilityDates = [
-        {% for availability in availabilities %}
-        {
-            date: "{{ availability.date.strftime('%Y-%m-%d') if availability.date else '' }}",
-            is_booked: {{ 'true' if availability.is_booked else 'false' }},
-            booked_slots_count: {{ availability.time_slots|selectattr('is_booked')|list|length if availability.time_slots else 0 }}
-        },
-        {% endfor %}
-    ];
-    
-    availabilityDates.forEach(avail => {
-        if (!avail.date) return;
-        
-        const dateObj = new Date(avail.date);
-        const day = dateObj.getDate();
-        const dayElement = document.getElementById('day-' + day);
-        
-        if (dayElement) {
-            // Remove any existing status classes
-            dayElement.classList.remove('bg-green-100', 'border-green-300', 
-                                        'bg-yellow-100', 'border-yellow-300',
-                                        'bg-red-100', 'border-red-300');
-            
-            // Add appropriate status
-            if (avail.is_booked) {
-                dayElement.classList.add('bg-red-100', 'border-red-300');
-                dayElement.title = 'Fully booked for this date';
-            } else if (avail.booked_slots_count > 0) {
-                dayElement.classList.add('bg-yellow-100', 'border-yellow-300');
-                dayElement.title = `Partially booked (${avail.booked_slots_count} slots taken)`;
-            } else {
-                dayElement.classList.add('bg-green-100', 'border-green-300');
-                dayElement.title = 'Available for bookings';
+    // Initial preview update
+    updateSchedulePreview();
+});
+
+// Days of week data
+const daysData = [
+    { id: 0, name: "Monday", is_active: true, start_time: "09:00", end_time: "17:00" },
+    { id: 1, name: "Tuesday", is_active: true, start_time: "09:00", end_time: "17:00" },
+    { id: 2, name: "Wednesday", is_active: true, start_time: "09:00", end_time: "17:00" },
+    { id: 3, name: "Thursday", is_active: true, start_time: "09:00", end_time: "17:00" },
+    { id: 4, name: "Friday", is_active: true, start_time: "09:00", end_time: "17:00" },
+    { id: 5, name: "Saturday", is_active: false, start_time: "10:00", end_time: "14:00" },
+    { id: 6, name: "Sunday", is_active: false, start_time: "10:00", end_time: "14:00" }
+];
+
+function setupEventListeners() {
+    // Checkbox change events
+    document.querySelectorAll('.day-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const dayId = parseInt(this.dataset.dayId);
+            const dayData = daysData.find(d => d.id === dayId);
+            if (dayData) {
+                dayData.is_active = this.checked;
+                updateDayUI(dayId);
+                updateSchedulePreview();
             }
+        });
+    });
+    
+    // Time input change events
+    document.querySelectorAll('.time-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const dayId = parseInt(this.dataset.dayId);
+            const dayData = daysData.find(d => d.id === dayId);
+            if (dayData) {
+                if (this.id.startsWith('start-')) {
+                    dayData.start_time = this.value;
+                } else {
+                    dayData.end_time = this.value;
+                }
+                updateTimeDisplay(dayId);
+                updateSchedulePreview();
+            }
+        });
+    });
+}
+
+function updateDayUI(dayId) {
+    const dayData = daysData.find(d => d.id === dayId);
+    if (!dayData) return;
+    
+    const container = document.getElementById(`day-${dayId}-container`);
+    const timeControls = document.getElementById(`time-controls-${dayId}`);
+    const preview = document.getElementById(`preview-${dayId}`);
+    
+    if (dayData.is_active) {
+        container.classList.add('border-blue-300', 'bg-blue-50');
+        timeControls.classList.remove('opacity-50');
+        timeControls.querySelectorAll('input').forEach(input => {
+            input.disabled = false;
+        });
+        preview.classList.remove('hidden');
+    } else {
+        container.classList.remove('border-blue-300', 'bg-blue-50');
+        timeControls.classList.add('opacity-50');
+        timeControls.querySelectorAll('input').forEach(input => {
+            input.disabled = true;
+        });
+        preview.classList.add('hidden');
+    }
+}
+
+function updateTimeDisplay(dayId) {
+    const dayData = daysData.find(d => d.id === dayId);
+    if (!dayData) return;
+    
+    const displayElement = document.getElementById(`time-display-${dayId}`);
+    if (displayElement) {
+        const startTime = formatTimeForDisplay(dayData.start_time);
+        const endTime = formatTimeForDisplay(dayData.end_time);
+        displayElement.textContent = `${startTime} - ${endTime}`;
+    }
+}
+
+function formatTimeForDisplay(time24) {
+    if (!time24) return "N/A";
+    
+    const [hours, minutes] = time24.split(':').map(Number);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+}
+
+async function loadAvailabilityData() {
+    try {
+        const response = await fetch('/api/mentor/availability/data');
+        const data = await response.json();
+        
+        if (data.success && data.days) {
+            // Update daysData with loaded data
+            data.days.forEach(loadedDay => {
+                const dayIndex = daysData.findIndex(d => d.id === loadedDay.id);
+                if (dayIndex !== -1) {
+                    daysData[dayIndex] = { ...daysData[dayIndex], ...loadedDay };
+                }
+            });
+            
+            // Update UI
+            daysData.forEach(day => {
+                const checkbox = document.getElementById(`day-${day.id}`);
+                const startInput = document.getElementById(`start-${day.id}`);
+                const endInput = document.getElementById(`end-${day.id}`);
+                
+                if (checkbox) checkbox.checked = day.is_active;
+                if (startInput) startInput.value = day.start_time;
+                if (endInput) endInput.value = day.end_time;
+                
+                updateDayUI(day.id);
+                updateTimeDisplay(day.id);
+            });
+            
+            // Load exceptions
+            if (data.exceptions && data.exceptions.length > 0) {
+                renderExceptions(data.exceptions);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading availability data:', error);
+        // Use default data already set
+    }
+    
+    // Initialize UI with current data
+    daysData.forEach(day => {
+        updateDayUI(day.id);
+        updateTimeDisplay(day.id);
+    });
+    updateSchedulePreview();
+}
+
+function updateSchedulePreview() {
+    const activeDays = daysData.filter(day => day.is_active);
+    const previewContainer = document.getElementById('schedule-preview');
+    const nextDatesContainer = document.getElementById('next-dates');
+    
+    if (!previewContainer || !nextDatesContainer) return;
+    
+    if (activeDays.length === 0) {
+        previewContainer.innerHTML = `
+            <div class="text-center py-4">
+                <p class="text-gray-600"><i class="fas fa-calendar-times mr-2"></i>No days selected</p>
+                <p class="text-sm text-gray-500 mt-1">Select days to see your schedule</p>
+            </div>
+        `;
+        nextDatesContainer.innerHTML = '<p class="text-gray-500">Select available days first</p>';
+        return;
+    }
+    
+    // Generate schedule preview
+    let previewHTML = '';
+    activeDays.forEach(day => {
+        const startTime = formatTimeForDisplay(day.start_time);
+        const endTime = formatTimeForDisplay(day.end_time);
+        
+        previewHTML += `
+            <div class="flex items-center justify-between p-2 bg-white rounded-lg border border-green-200">
+                <span class="font-medium text-gray-700">${day.name}</span>
+                <span class="text-sm text-green-700">${startTime} - ${endTime}</span>
+            </div>
+        `;
+    });
+    
+    previewContainer.innerHTML = previewHTML;
+    
+    // Calculate next available dates
+    const today = new Date();
+    const nextDates = [];
+    
+    for (let i = 0; i < 7 && nextDates.length < 3; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        
+        // Adjust for our day IDs (0 = Monday, 6 = Sunday)
+        let dayId = dayOfWeek - 1;
+        if (dayId < 0) dayId = 6; // Sunday
+        
+        const isActive = daysData.find(d => d.id === dayId)?.is_active;
+        
+        if (isActive) {
+            const dateStr = date.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            nextDates.push(dateStr);
+        }
+    }
+    
+    if (nextDates.length > 0) {
+        nextDatesContainer.innerHTML = nextDates.map(date => 
+            `<div class="flex items-center mb-1">
+                <i class="fas fa-calendar-day mr-2 text-green-500"></i>
+                <span>${date}</span>
+            </div>`
+        ).join('');
+    } else {
+        nextDatesContainer.innerHTML = '<p class="text-gray-500">No upcoming available dates</p>';
+    }
+}
+
+async function saveAvailability() {
+    const saveBtn = document.getElementById('save-btn');
+    const originalText = saveBtn.innerHTML;
+    
+    try {
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+        saveBtn.disabled = true;
+        
+        const response = await fetch('/mentor/availability/simple/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ days: daysData })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('Availability saved successfully!', 'success');
+            // Reload data to get any updates
+            loadAvailabilityData();
+        } else {
+            showNotification('Error: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error saving availability:', error);
+        showNotification('Failed to save availability. Please try again.', 'error');
+    } finally {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+    }
+}
+
+function resetToDefault() {
+    if (confirm('Reset to default schedule (Monday-Friday 9-5)?')) {
+        daysData.forEach(day => {
+            if (day.id < 5) {
+                day.is_active = true;
+                day.start_time = "09:00";
+                day.end_time = "17:00";
+            } else {
+                day.is_active = false;
+                day.start_time = "10:00";
+                day.end_time = "14:00";
+            }
+            
+            const checkbox = document.getElementById(`day-${day.id}`);
+            const startInput = document.getElementById(`start-${day.id}`);
+            const endInput = document.getElementById(`end-${day.id}`);
+            
+            if (checkbox) checkbox.checked = day.is_active;
+            if (startInput) startInput.value = day.start_time;
+            if (endInput) endInput.value = day.end_time;
+            
+            updateDayUI(day.id);
+            updateTimeDisplay(day.id);
+        });
+        
+        updateSchedulePreview();
+        showNotification('Reset to default schedule', 'info');
+    }
+}
+
+function setTimePreset(startTime, endTime) {
+    daysData.forEach(day => {
+        if (day.is_active) {
+            day.start_time = startTime;
+            day.end_time = endTime;
+            
+            const startInput = document.getElementById(`start-${day.id}`);
+            const endInput = document.getElementById(`end-${day.id}`);
+            
+            if (startInput) startInput.value = startTime;
+            if (endInput) endInput.value = endTime;
+            
+            updateTimeDisplay(day.id);
         }
     });
     
-    // Add event listeners for time preview
-    const startTimeInput = document.getElementById('start_time');
-    const endTimeInput = document.getElementById('end_time');
-    const serviceSelect = document.getElementById('service_id');
-    
-    if (startTimeInput && endTimeInput) {
-        startTimeInput.addEventListener('change', updateTimeSlotPreview);
-        endTimeInput.addEventListener('change', updateTimeSlotPreview);
-    }
-    
-    if (serviceSelect) {
-        serviceSelect.addEventListener('change', updateTimeSlotPreview);
-    }
-    
-    // Add form submission loading state
-    const availabilityForm = document.querySelector('form[action="/mentor/availability/create"]');
-    if (availabilityForm) {
-        availabilityForm.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Adding Availability...';
-                submitBtn.disabled = true;
-            }
-        });
-    }
-    
-    // Initial preview update
-    updateTimeSlotPreview();
-});
+    updateSchedulePreview();
+    showNotification(`Time set to ${formatTimeForDisplay(startTime)} - ${formatTimeForDisplay(endTime)} for active days`, 'success');
+}
 
-function updateTimeSlotPreview() {
-    const startTimeInput = document.getElementById('start_time');
-    const endTimeInput = document.getElementById('end_time');
-    const serviceSelect = document.getElementById('service_id');
-    const previewDiv = document.getElementById('timeSlotPreview');
-    const previewContent = document.getElementById('previewContent');
+async function addException() {
+    const dateInput = document.getElementById('exception-date');
+    const reasonInput = document.getElementById('exception-reason');
     
-    if (!startTimeInput || !endTimeInput || !previewDiv || !previewContent) return;
-    
-    const startTime = startTimeInput.value;
-    const endTime = endTimeInput.value;
-    const serviceText = serviceSelect.options[serviceSelect.selectedIndex].text;
-    
-    if (!startTime || !endTime) {
-        previewDiv.classList.add('hidden');
+    if (!dateInput.value) {
+        showNotification('Please select a date', 'error');
         return;
     }
     
-    // Parse times
-    const startParts = startTime.split(':');
-    const endParts = endTime.split(':');
-    
-    const startHour = parseInt(startParts[0]);
-    const startMinute = parseInt(startParts[1]);
-    const endHour = parseInt(endParts[0]);
-    const endMinute = parseInt(endParts[1]);
-    
-    // Validate times
-    if (startHour > endHour || (startHour === endHour && startMinute >= endMinute)) {
-        previewContent.innerHTML = `
-            <div class="flex items-center text-red-600">
-                <i class="fas fa-exclamation-triangle mr-2"></i>
-                <span>Start time must be before end time</span>
+    try {
+        const formData = new FormData();
+        formData.append('date', dateInput.value);
+        formData.append('is_available', 'false');
+        formData.append('reason', reasonInput.value || '');
+        
+        const response = await fetch('/mentor/availability/exceptions/add', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            showNotification('Date marked as unavailable', 'success');
+            dateInput.value = '';
+            reasonInput.value = '';
+            // Reload exceptions
+            loadAvailabilityData();
+        } else {
+            showNotification('Failed to add exception', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding exception:', error);
+        showNotification('Failed to add exception', 'error');
+    }
+}
+
+function renderExceptions(exceptions) {
+    const container = document.getElementById('exceptions-list');
+    if (!exceptions || exceptions.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i class="fas fa-calendar text-gray-400 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No Special Dates</h3>
+                <p class="text-gray-500">Add dates when you're not available despite your weekly schedule</p>
             </div>
         `;
-        previewDiv.classList.remove('hidden');
-        previewDiv.classList.add('bg-red-50', 'border-red-200');
-        previewDiv.classList.remove('bg-gray-50', 'border-gray-200');
         return;
     }
     
-    // Calculate duration
-    const startTotalMinutes = startHour * 60 + startMinute;
-    const endTotalMinutes = endHour * 60 + endMinute;
-    const totalMinutes = endTotalMinutes - startTotalMinutes;
+    let html = '<h3 class="font-medium text-gray-900 mb-4">Upcoming Unavailable Dates:</h3>';
+    html += '<div class="space-y-3">';
     
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    
-    // Format time for display
-    const formatTime = (hour, minute) => {
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const displayHour = hour % 12 || 12;
-        return `${displayHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
-    };
-    
-    const displayStart = formatTime(startHour, startMinute);
-    const displayEnd = formatTime(endHour, endMinute);
-    
-    // Update preview
-    previewContent.innerHTML = `
-        <div class="space-y-2">
-            <div class="flex items-center justify-between">
-                <span class="font-medium">Time Range:</span>
-                <span>${displayStart} - ${displayEnd}</span>
+    exceptions.forEach(exception => {
+        html += `
+            <div class="flex items-center justify-between bg-red-50 p-4 rounded-lg border border-red-200">
+                <div>
+                    <span class="font-medium text-red-800">${exception.date}</span>
+                    ${exception.reason ? `<p class="text-sm text-red-600 mt-1">${exception.reason}</p>` : ''}
+                </div>
+                <button onclick="removeException(${exception.id})" 
+                        class="text-red-500 hover:text-red-700 hover:bg-red-100 p-2 rounded-lg transition-colors"
+                        title="Remove exception">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="flex items-center justify-between">
-                <span class="font-medium">Total Duration:</span>
-                <span>${hours}h ${minutes}m</span>
-            </div>
-            ${serviceSelect.value ? `
-            <div class="flex items-center justify-between">
-                <span class="font-medium">Service:</span>
-                <span>${serviceText}</span>
-            </div>
-            ` : ''}
-            <div class="text-xs text-gray-500 mt-3">
-                <i class="fas fa-info-circle mr-1"></i>
-                Time slots will be generated within this range based on service duration
-            </div>
-        </div>
-    `;
-    
-    previewDiv.classList.remove('hidden');
-    previewDiv.classList.remove('bg-red-50', 'border-red-200');
-    previewDiv.classList.add('bg-gray-50', 'border-gray-200');
-}
-
-function selectDate(day) {
-    const dateInput = document.getElementById('date');
-    if (!dateInput) return;
-    
-    const today = new Date();
-    const selectedDate = new Date(today.getFullYear(), today.getMonth(), parseInt(day));
-    
-    // Format as YYYY-MM-DD
-    const year = selectedDate.getFullYear();
-    const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
-    const dayFormatted = selectedDate.getDate().toString().padStart(2, '0');
-    
-    dateInput.value = `${year}-${month}-${dayFormatted}`;
-    
-    // Highlight selected date
-    document.querySelectorAll('.text-center.p-2.border').forEach(el => {
-        el.classList.remove('bg-yellow-100', 'border-yellow-300');
+        `;
     });
     
-    const selectedElement = document.getElementById('day-' + day);
-    if (selectedElement) {
-        selectedElement.classList.add('bg-yellow-100', 'border-yellow-300');
-    }
-    
-    showNotification(`Date selected: ${selectedDate.toDateString()}`, 'info');
+    html += '</div>';
+    container.innerHTML = html;
 }
 
-function setTimeRange(start, end) {
-    const startInput = document.getElementById('start_time');
-    const endInput = document.getElementById('end_time');
-    
-    if (startInput) startInput.value = start;
-    if (endInput) endInput.value = end;
-    
-    updateTimeSlotPreview();
-    showNotification(`Time range set to ${start} - ${end}`, 'success');
-}
-
-function resetForm() {
-    const dateInput = document.getElementById('date');
-    const startInput = document.getElementById('start_time');
-    const endInput = document.getElementById('end_time');
-    const serviceSelect = document.getElementById('service_id');
-    const previewDiv = document.getElementById('timeSlotPreview');
-    
-    if (dateInput) {
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.value = today;
-    }
-    if (startInput) startInput.value = '09:00';
-    if (endInput) endInput.value = '21:00';
-    if (serviceSelect) serviceSelect.selectedIndex = 0;
-    if (previewDiv) previewDiv.classList.add('hidden');
-    
-    showNotification('Form reset to defaults', 'info');
-}
-
-function addNextWeek() {
-    const dateInput = document.getElementById('date');
-    if (dateInput && dateInput.value) {
-        const currentDate = new Date(dateInput.value);
-        currentDate.setDate(currentDate.getDate() + 7);
-        
-        const year = currentDate.getFullYear();
-        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-        const day = currentDate.getDate().toString().padStart(2, '0');
-        
-        dateInput.value = `${year}-${month}-${day}`;
-        showNotification('Next week date selected. Click "Add Availability Date" to confirm.', 'info');
+async function removeException(exceptionId) {
+    if (confirm('Are you sure you want to remove this exception?')) {
+        try {
+            const response = await fetch(`/mentor/availability/exceptions/${exceptionId}/delete`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                showNotification('Exception removed', 'success');
+                // Reload data
+                loadAvailabilityData();
+            }
+        } catch (error) {
+            console.error('Error removing exception:', error);
+            showNotification('Failed to remove exception', 'error');
+        }
     }
 }
 
-function addWeekend() {
-    const today = new Date();
-    const saturday = new Date(today);
-    const sunday = new Date(today);
-    
-    // Find next Saturday
-    saturday.setDate(today.getDate() + (6 - today.getDay()) % 7);
-    sunday.setDate(saturday.getDate() + 1);
-    
-    // TODO: In a real implementation, this would make AJAX calls to add both dates
-    showNotification(`Would add ${saturday.toDateString()} and ${sunday.toDateString()}`, 'info');
+// Quick action functions
+function selectWeekdays() {
+    daysData.forEach(day => {
+        day.is_active = day.id < 5;
+        const checkbox = document.getElementById(`day-${day.id}`);
+        if (checkbox) checkbox.checked = day.is_active;
+        updateDayUI(day.id);
+    });
+    updateSchedulePreview();
+    showNotification('Selected weekdays only', 'success');
 }
 
-function clearAllFuture() {
-    if (confirm('Are you sure you want to clear ALL future availability? This action cannot be undone.')) {
-        // TODO: In a real implementation, this would make an AJAX call
-        showNotification('All future availability would be cleared', 'info');
-    }
+function selectWeekend() {
+    daysData.forEach(day => {
+        day.is_active = day.id >= 5;
+        const checkbox = document.getElementById(`day-${day.id}`);
+        if (checkbox) checkbox.checked = day.is_active;
+        updateDayUI(day.id);
+    });
+    updateSchedulePreview();
+    showNotification('Selected weekend only', 'success');
 }
 
-function navigateCalendar(direction) {
-    // TODO: Implement calendar navigation
-    showNotification('Calendar navigation coming soon', 'info');
+function selectAllDays() {
+    daysData.forEach(day => {
+        day.is_active = true;
+        const checkbox = document.getElementById(`day-${day.id}`);
+        if (checkbox) checkbox.checked = true;
+        updateDayUI(day.id);
+    });
+    updateSchedulePreview();
+    showNotification('Selected all days', 'success');
 }
 
 function showNotification(message, type) {
     // Remove any existing notifications
     document.querySelectorAll('.notification-toast').forEach(el => el.remove());
     
+    const icon = type === 'success' ? 'fa-check-circle' : 
+                 type === 'error' ? 'fa-exclamation-circle' : 
+                 'fa-info-circle';
+    
+    const bgColor = type === 'success' ? 'bg-green-500' : 
+                    type === 'error' ? 'bg-red-500' : 
+                    'bg-blue-500';
+    
     const notification = document.createElement('div');
-    notification.className = `notification-toast fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
-        type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
-        type === 'info' ? 'bg-gradient-to-r from-blue-500 to-cyan-600' :
-        'bg-gradient-to-r from-red-500 to-pink-600'
-    } text-white max-w-sm`;
+    notification.className = `notification-toast fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${bgColor} text-white max-w-sm`;
     notification.innerHTML = `
         <div class="flex items-center gap-3">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'info' ? 'info-circle' : 'exclamation-circle'} text-xl"></i>
+            <i class="fas ${icon} text-xl"></i>
             <span class="font-medium">${message}</span>
         </div>
     `;
@@ -777,73 +723,31 @@ function showNotification(message, type) {
         }, 300);
     }, 4000);
 }
-
-function refreshAvailability() {
-    showNotification('Refreshing availability status...', 'info');
-    setTimeout(() => {
-        window.location.reload();
-    }, 1000);
-}
-
-function showBookingStats() {
-    // Calculate stats from current page data
-    let totalSlots = 0;
-    let bookedSlots = 0;
-    
-    {% for availability in availabilities %}
-        {% if availability.time_slots %}
-            {% for slot in availability.time_slots %}
-                totalSlots += 1;
-                {% if slot.is_booked %}
-                    bookedSlots += 1;
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-    {% endfor %}
-    
-    const availableSlots = totalSlots - bookedSlots;
-    const utilization = totalSlots > 0 ? Math.round((bookedSlots / totalSlots) * 100) : 0;
-    
-    const message = `Booking Stats:\n\n• Total Time Slots: ${totalSlots}\n• Booked Slots: ${bookedSlots}\n• Available Slots: ${availableSlots}\n• Utilization Rate: ${utilization}%`;
-    
-    // Create a modal for stats
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    modal.innerHTML = `
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-900">Booking Statistics</h3>
-                <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="space-y-4">
-                <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                    <span class="font-medium text-gray-700">Total Slots:</span>
-                    <span class="text-lg font-bold text-blue-600">${totalSlots}</span>
-                </div>
-                <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                    <span class="font-medium text-gray-700">Available:</span>
-                    <span class="text-lg font-bold text-green-600">${availableSlots}</span>
-                </div>
-                <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                    <span class="font-medium text-gray-700">Booked:</span>
-                    <span class="text-lg font-bold text-yellow-600">${bookedSlots}</span>
-                </div>
-                <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                    <span class="font-medium text-gray-700">Utilization:</span>
-                    <span class="text-lg font-bold text-purple-600">${utilization}%</span>
-                </div>
-            </div>
-            <div class="mt-6 pt-4 border-t border-gray-200">
-                <button onclick="this.parentElement.parentElement.remove()" class="w-full px-4 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark">
-                    Close
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-}
 </script>
+
+<style>
+.notification-toast {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.day-checkbox:checked + label {
+    color: #2563eb; /* blue-600 */
+}
+
+.time-input:disabled {
+    background-color: #f9fafb; /* gray-50 */
+    cursor: not-allowed;
+}
+</style>
 {% endblock %}
