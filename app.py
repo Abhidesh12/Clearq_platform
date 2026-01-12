@@ -3,6 +3,7 @@ import re
 import uuid
 from sqlalchemy import DECIMAL
 from decimal import Decimal
+import logging
 import requests
 import traceback
 from datetime import datetime, timedelta
@@ -3989,8 +3990,6 @@ async def meeting_page(
         "meeting_id": meeting_id
     })
 @app.post("/api/verify-payment")
-
-import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
