@@ -91,10 +91,21 @@ pwd_context = CryptContext(
 # Security
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Razorpay configuration
+# Razorpay configuration# Razorpay configuration with validation
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
-razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+# Initialize Razorpay client only if credentials are available
+razorpay_client = None
+if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
+    try:
+        razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+        print("✅ Razorpay client initialized successfully")
+    except Exception as e:
+        print(f"❌ Failed to initialize Razorpay client: {e}")
+        razorpay_client = None
+else:
+    print("⚠️ Razorpay credentials not set in environment variables")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-production")
 ALGORITHM = "HS256"
@@ -3978,6 +3989,11 @@ async def meeting_page(
         "meeting_id": meeting_id
     })
 @app.post("/api/verify-payment")
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
     """Verify Razorpay payment - called from frontend"""
     try:
