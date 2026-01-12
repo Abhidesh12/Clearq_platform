@@ -3989,10 +3989,8 @@ async def meeting_page(
         "meeting_link": meeting_link,
         "meeting_id": meeting_id
     })
+    
 @app.post("/api/verify-payment")
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
-
 async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
     """Verify Razorpay payment - called from frontend"""
     try:
