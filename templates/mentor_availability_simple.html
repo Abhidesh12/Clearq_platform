@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Availability - ClearQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/dashboard" class="text-xl font-bold text-blue-600">ClearQ</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="/logout" class="text-gray-700 hover:text-blue-600">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Manage Your Availability</h1>
+            <p class="text-gray-600 mt-2">Set your regular weekly schedule</p>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Weekly Schedule</h2>
+            <p class="text-gray-600 mb-6">Select the days you're available each week. You can also set custom hours for each day.</p>
+            
+            <div id="days-container" class="space-y-4">
+                <!-- Days will be loaded here -->
+            </div>
+            
+            <div class="mt-6">
+                <button onclick="saveAvailability()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
+                    <i class="fas fa-save mr-2"></i> Save Schedule
+                </button>
+                <button onclick="resetToDefault()" class="ml-4 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 font-medium">
+                    <i class="fas fa-undo mr-2"></i> Reset to Default
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Special Dates</h2>
+            <p class="text-gray-600 mb-6">Mark specific dates as unavailable (holidays, vacations, etc.)</p>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Add Unavailable Date</label>
+                <div class="flex space-x-2">
+                    <input type="date" id="exception-date" min="{{ today }}" class="flex-1 border border-gray-300 rounded-lg px-4 py-2">
+                    <input type="text" id="exception-reason" placeholder="Reason (optional)" class="flex-1 border border-gray-300 rounded-lg px-4 py-2">
+                    <button onclick="addException()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                        <i class="fas fa-ban mr-2"></i> Mark Unavailable
+                    </button>
+                </div>
+            </div>
+            
+            <div id="exceptions-list">
+                <!-- Exceptions will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load days data
+        const daysOfWeek = [
+            { id: 0, name: "Monday" },
+            { id: 1, name: "Tuesday" },
+            { id: 2, name: "Wednesday" },
+            { id: 3, name: "Thursday" },
+            { id: 4, name: "Friday" },
+            { id: 5, name: "Saturday" },
+            { id: 6, name: "Sunday" }
+        ];
+
+        let daysData = [];
+
+        // Load existing preferences
+        async function loadAvailability() {
+            try {
+                const response = await fetch('/api/mentor/availability/data');
+                const data = await response.json();
+                daysData = data.days || [];
+                renderDays();
+                renderExceptions(data.exceptions || []);
+            } catch (error) {
+                console.error('Error loading availability:', error);
+                // Initialize with default data
+                daysData = daysOfWeek.map(day => ({
+                    id: day.id,
+                    name: day.name,
+                    is_active: day.id < 5, // Monday-Friday active by default
+                    start_time: "09:00",
+                    end_time: "17:00"
+                }));
+                renderDays();
+            }
+        }
+
+        function renderDays() {
+            const container = document.getElementById('days-container');
+            container.innerHTML = '';
+            
+            daysData.forEach(day => {
+                const dayHtml = `
+                    <div class="border border-gray-200 rounded-lg p-4 ${day.is_active ? 'bg-blue-50 border-blue-200' : ''}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input type="checkbox" 
+                                       id="day-${day.id}" 
+                                       ${day.is_active ? 'checked' : ''}
+                                       onchange="toggleDay(${day.id})"
+                                       class="h-5 w-5 text-blue-600 rounded">
+                                <label for="day-${day.id}" class="ml-3 text-lg font-medium text-gray-900">
+                                    ${day.name}
+                                </label>
+                            </div>
+                            <div class="flex items-center space-x-4 ${day.is_active ? '' : 'opacity-50'}" id="time-controls-${day.id}">
+                                <div>
+                                    <label class="block text-sm text-gray-600">Start</label>
+                                    <input type="time" 
+                                           value="${day.start_time}" 
+                                           ${!day.is_active ? 'disabled' : ''}
+                                           onchange="updateTime(${day.id}, 'start', this.value)"
+                                           class="mt-1 border border-gray-300 rounded px-3 py-2">
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600">End</label>
+                                    <input type="time" 
+                                           value="${day.end_time}" 
+                                           ${!day.is_active ? 'disabled' : ''}
+                                           onchange="updateTime(${day.id}, 'end', this.value)"
+                                           class="mt-1 border border-gray-300 rounded px-3 py-2">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += dayHtml;
+            });
+        }
+
+        function toggleDay(dayId) {
+            const day = daysData.find(d => d.id === dayId);
+            if (day) {
+                day.is_active = !day.is_active;
+                renderDays();
+            }
+        }
+
+        function updateTime(dayId, type, value) {
+            const day = daysData.find(d => d.id === dayId);
+            if (day) {
+                if (type === 'start') {
+                    day.start_time = value;
+                } else {
+                    day.end_time = value;
+                }
+            }
+        }
+
+        function resetToDefault() {
+            daysData = daysOfWeek.map(day => ({
+                id: day.id,
+                name: day.name,
+                is_active: day.id < 5, // Monday-Friday active by default
+                start_time: "09:00",
+                end_time: "17:00"
+            }));
+            renderDays();
+            alert('Reset to default schedule (Monday-Friday, 9 AM - 5 PM)');
+        }
+
+        async function saveAvailability() {
+            try {
+                const response = await fetch('/mentor/availability/simple/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ days: daysData })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert('Availability saved successfully!');
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving availability:', error);
+                alert('Failed to save availability. Please try again.');
+            }
+        }
+
+        async function addException() {
+            const dateInput = document.getElementById('exception-date');
+            const reasonInput = document.getElementById('exception-reason');
+            
+            if (!dateInput.value) {
+                alert('Please select a date');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('date', dateInput.value);
+                formData.append('is_available', 'false');
+                formData.append('reason', reasonInput.value || '');
+                
+                const response = await fetch('/mentor/availability/exceptions/add', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    alert('Date marked as unavailable');
+                    dateInput.value = '';
+                    reasonInput.value = '';
+                    loadAvailability(); // Reload data
+                } else {
+                    alert('Failed to add exception');
+                }
+            } catch (error) {
+                console.error('Error adding exception:', error);
+                alert('Failed to add exception');
+            }
+        }
+
+        function renderExceptions(exceptions) {
+            const container = document.getElementById('exceptions-list');
+            if (!exceptions.length) {
+                container.innerHTML = '<p class="text-gray-500 italic">No special dates marked</p>';
+                return;
+            }
+            
+            let html = '<h3 class="font-medium text-gray-900 mb-2">Upcoming Unavailable Dates:</h3><ul class="space-y-2">';
+            exceptions.forEach(exception => {
+                html += `
+                    <li class="flex items-center justify-between bg-red-50 p-3 rounded">
+                        <div>
+                            <span class="font-medium">${exception.date}</span>
+                            ${exception.reason ? `<span class="text-gray-600 ml-2">(${exception.reason})</span>` : ''}
+                        </div>
+                        <button onclick="removeException(${exception.id})" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+        async function removeException(exceptionId) {
+            if (confirm('Are you sure you want to remove this exception?')) {
+                try {
+                    const response = await fetch(`/mentor/availability/exceptions/${exceptionId}/delete`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        loadAvailability(); // Reload data
+                    }
+                } catch (error) {
+                    console.error('Error removing exception:', error);
+                }
+            }
+        }
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadAvailability);
+    </script>
+</body>
+</html>
