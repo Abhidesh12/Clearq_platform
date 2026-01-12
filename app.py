@@ -196,7 +196,20 @@ class Service(Base):
     mentor = relationship("Mentor", back_populates="services")
     bookings = relationship("Booking", back_populates="service")
 
-
+class Availability(Base):
+    __tablename__ = "availabilities"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False)  # Changed from DateTime to Date
+    start_time = Column(String, default="09:00")  # Default start time
+    end_time = Column(String, default="24:00")
+    mentor_id = Column(Integer, ForeignKey("mentors.id"))
+    service_id = Column(Integer, ForeignKey("services.id"), nullable=True)   
+    is_booked = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    mentor = relationship("Mentor", back_populates="availabilities")
 
 class TimeSlot(Base):
     __tablename__ = "time_slots"
@@ -314,51 +327,6 @@ class MentorBalance(Base):
     
     # Relationships
     mentor = relationship("Mentor")
-
-
-
-class AvailabilityDay(Base):
-    __tablename__ = "availability_days"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    mentor_id = Column(Integer, ForeignKey("mentors.id"))
-    day_of_week = Column(Integer, nullable=False)  # 0=Monday, 6=Sunday
-    start_time = Column(String, default="09:00")
-    end_time = Column(String, default="21:00")
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    
-    # Relationships
-    mentor = relationship("Mentor")
-
-class AvailabilityException(Base):
-    __tablename__ = "availability_exceptions"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    mentor_id = Column(Integer, ForeignKey("mentors.id"))
-    date = Column(Date, nullable=False)  # Specific date
-    is_available = Column(Boolean, default=False)  # True=available, False=unavailable
-    reason = Column(String, nullable=True)  # "Holiday", "Sick", etc.
-    created_at = Column(DateTime, default=datetime.utcnow)
-    
-    # Relationships
-    mentor = relationship("Mentor")
-
-class Availability(Base):
-    __tablename__ = "availabilities"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    date = Column(Date, nullable=False)
-    start_time = Column(String, default="09:00")
-    end_time = Column(String, default="21:00")
-    mentor_id = Column(Integer, ForeignKey("mentors.id"))
-    service_id = Column(Integer, ForeignKey("services.id"), nullable=True)
-    is_booked = Column(Boolean, default=False)
-    is_generated = Column(Boolean, default=False)  # NEW: Whether this was auto-generated
-    created_at = Column(DateTime, default=datetime.utcnow)
-    
-    # Relationships
-    mentor = relationship("Mentor", back_populates="availabilities")
 
 # ============ PYDANTIC SCHEMAS ============
 
@@ -619,134 +587,6 @@ async def cleanup_availability(
         "message": f"Fixed {fixed_count} availability records",
         "fixed_count": fixed_count
     })
-
-def generate_availabilities_for_mentor(mentor_id: int, days_ahead: int = 30, db: Session = None):
-    """Generate availability slots based on mentor's day preferences"""
-    if db is None:
-        db = SessionLocal()
-    
-    try:
-        # Get mentor's day preferences
-        day_preferences = db.query(AvailabilityDay).filter(
-            AvailabilityDay.mentor_id == mentor_id,
-            AvailabilityDay.is_active == True
-        ).all()
-        
-        if not day_preferences:
-            print(f"No day preferences found for mentor {mentor_id}")
-            return
-        
-        # Get exceptions
-        exceptions = db.query(AvailabilityException).filter(
-            AvailabilityException.mentor_id == mentor_id
-        ).all()
-        exception_dates = {ex.date: ex.is_available for ex in exceptions}
-        
-        today = datetime.now().date()
-        end_date = today + timedelta(days=days_ahead)
-        
-        # Generate availabilities for each day
-        current_date = today
-        generated_count = 0
-        
-        while current_date <= end_date:
-            day_of_week = current_date.weekday()  # 0=Monday, 6=Sunday
-            
-            # Check if mentor is available on this day
-            day_pref = next((dp for dp in day_preferences if dp.day_of_week == day_of_week), None)
-            
-            # Check for exceptions
-            is_available = False
-            if current_date in exception_dates:
-                is_available = exception_dates[current_date]
-            elif day_pref:
-                is_available = True
-            
-            if is_available and day_pref:
-                # Check if availability already exists for this date
-                existing = db.query(Availability).filter(
-                    Availability.mentor_id == mentor_id,
-                    Availability.date == current_date,
-                    Availability.is_generated == True
-                ).first()
-                
-                if not existing:
-                    # Check if there are any bookings for this date
-                    has_bookings = db.query(Booking).filter(
-                        Booking.mentor_id == mentor_id,
-                        Booking.booking_date == current_date,
-                        Booking.status.in_(["confirmed", "pending"])
-                    ).first() is not None
-                    
-                    # Create new availability
-                    availability = Availability(
-                        mentor_id=mentor_id,
-                        date=current_date,
-                        start_time=day_pref.start_time,
-                        end_time=day_pref.end_time,
-                        is_booked=has_bookings,
-                        is_generated=True,
-                        created_at=datetime.utcnow()
-                    )
-                    db.add(availability)
-                    generated_count += 1
-            
-            current_date += timedelta(days=1)
-        
-        db.commit()
-        print(f"Generated {generated_count} availabilities for mentor {mentor_id}")
-        
-    except Exception as e:
-        db.rollback()
-        print(f"Error generating availabilities: {e}")
-    finally:
-        if db:
-            db.close()
-
-def get_available_dates_for_mentor(mentor_id: int, days_ahead: int = 30, db: Session = None):
-    """Get available dates for a mentor based on their preferences"""
-    if db is None:
-        db = SessionLocal()
-    
-    try:
-        # First, generate availabilities if needed
-        generate_availabilities_for_mentor(mentor_id, days_ahead, db)
-        
-        # Get all generated availabilities that are not booked
-        today = datetime.now().date()
-        
-        availabilities = db.query(Availability).filter(
-            Availability.mentor_id == mentor_id,
-            Availability.date >= today,
-            Availability.is_booked == False
-        ).order_by(Availability.date).all()
-        
-        # Group by date
-        available_dates = []
-        for avail in availabilities:
-            # Skip if date already in list
-            if any(ad['full_date'] == avail.date.strftime("%Y-%m-%d") for ad in available_dates):
-                continue
-            
-            available_dates.append({
-                'date_obj': avail.date,
-                'full_date': avail.date.strftime("%Y-%m-%d"),
-                'day_name': avail.date.strftime("%A"),
-                'day_short': avail.date.strftime("%a"),
-                'day_num': avail.date.day,
-                'month': avail.date.strftime("%b"),
-                'start_time': avail.start_time,
-                'end_time': avail.end_time
-            })
-        
-        return available_dates[:7]  # Return next 7 available dates
-        
-    except Exception as e:
-        print(f"Error getting available dates: {e}")
-        return []
-    finally:
-        if db:
-            db.close()
 
 def check_time_slot_availability(mentor_id: int, date: date, start_time: str, end_time: str, db: Session) -> bool:
     """Check if a time slot is available (no conflicts with existing bookings)"""
@@ -1278,202 +1118,7 @@ async def explore_mentors(
         "total_mentors": total_mentors
     })
 
-
-@app.get("/mentor/availability/days", response_class=HTMLResponse)
-async def mentor_availability_days_page(
-    request: Request,
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Mentor availability by days of week"""
-    if not current_user or current_user.role != "mentor":
-        return RedirectResponse(url="/login", status_code=303)
     
-    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
-    if not mentor:
-        return RedirectResponse(url="/dashboard", status_code=303)
-    
-    # Get current day preferences
-    day_preferences = db.query(AvailabilityDay).filter(
-        AvailabilityDay.mentor_id == mentor.id
-    ).order_by(AvailabilityDay.day_of_week).all()
-    
-    # Create default preferences if none exist
-    if not day_preferences:
-        default_days = [
-            {"day_of_week": 0, "day_name": "Monday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 1, "day_name": "Tuesday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 2, "day_name": "Wednesday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 3, "day_name": "Thursday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 4, "day_name": "Friday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 5, "day_name": "Saturday", "start_time": "10:00", "end_time": "14:00", "is_active": False},
-            {"day_of_week": 6, "day_name": "Sunday", "start_time": "10:00", "end_time": "14:00", "is_active": False},
-        ]
-        
-        for day_data in default_days:
-            day_pref = AvailabilityDay(
-                mentor_id=mentor.id,
-                day_of_week=day_data["day_of_week"],
-                start_time=day_data["start_time"],
-                end_time=day_data["end_time"],
-                is_active=day_data["is_active"]
-            )
-            db.add(day_pref)
-        db.commit()
-        db.refresh(day_preferences)
-    
-    # Get exceptions (next 30 days)
-    today = datetime.now().date()
-    future_date = today + timedelta(days=30)
-    
-    exceptions = db.query(AvailabilityException).filter(
-        AvailabilityException.mentor_id == mentor.id,
-        AvailabilityException.date >= today,
-        AvailabilityException.date <= future_date
-    ).order_by(AvailabilityException.date).all()
-    
-    # Generate availabilities for display
-    available_dates = get_available_dates_for_mentor(mentor.id, 30, db)
-    
-    return templates.TemplateResponse("mentor_availability_days.html", {
-        "request": request,
-        "current_user": current_user,
-        "mentor": mentor,
-        "day_preferences": day_preferences,
-        "exceptions": exceptions,
-        "available_dates": available_dates,
-        "today": today.strftime("%Y-%m-%d"),
-        "day_names": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    })
-
-@app.post("/mentor/availability/days/update")
-async def update_day_preferences(
-    request: Request,
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Update day of week preferences"""
-    if not current_user or current_user.role != "mentor":
-        return JSONResponse({"success": False, "message": "Access denied"})
-    
-    try:
-        data = await request.json()
-        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
-        
-        if not mentor:
-            return JSONResponse({"success": False, "message": "Mentor not found"})
-        
-        # Update each day preference
-        for day_data in data.get("days", []):
-            day_pref = db.query(AvailabilityDay).filter(
-                AvailabilityDay.mentor_id == mentor.id,
-                AvailabilityDay.day_of_week == day_data["day_of_week"]
-            ).first()
-            
-            if day_pref:
-                day_pref.start_time = day_data["start_time"]
-                day_pref.end_time = day_data["end_time"]
-                day_pref.is_active = day_data.get("is_active", True)
-            else:
-                day_pref = AvailabilityDay(
-                    mentor_id=mentor.id,
-                    day_of_week=day_data["day_of_week"],
-                    start_time=day_data["start_time"],
-                    end_time=day_data["end_time"],
-                    is_active=day_data.get("is_active", True)
-                )
-                db.add(day_pref)
-        
-        db.commit()
-        
-        # Regenerate availabilities
-        generate_availabilities_for_mentor(mentor.id, 30, db)
-        
-        return JSONResponse({
-            "success": True,
-            "message": "Availability preferences updated successfully!"
-        })
-        
-    except Exception as e:
-        db.rollback()
-        return JSONResponse({
-            "success": False,
-            "message": f"Error updating preferences: {str(e)}"
-        })
-
-@app.post("/mentor/availability/exceptions/add")
-async def add_availability_exception(
-    request: Request,
-    date: str = Form(...),
-    is_available: bool = Form(False),
-    reason: str = Form(None),
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Add an exception (holiday, etc.)"""
-    if not current_user or current_user.role != "mentor":
-        return RedirectResponse(url="/login", status_code=303)
-    
-    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
-    
-    try:
-        parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
-        
-        # Check if exception already exists
-        existing = db.query(AvailabilityException).filter(
-            AvailabilityException.mentor_id == mentor.id,
-            AvailabilityException.date == parsed_date
-        ).first()
-        
-        if existing:
-            existing.is_available = is_available
-            existing.reason = reason
-        else:
-            exception = AvailabilityException(
-                mentor_id=mentor.id,
-                date=parsed_date,
-                is_available=is_available,
-                reason=reason,
-                created_at=datetime.utcnow()
-            )
-            db.add(exception)
-        
-        db.commit()
-        
-        # Update affected availabilities
-        if is_available:
-            # Make date available
-            availability = db.query(Availability).filter(
-                Availability.mentor_id == mentor.id,
-                Availability.date == parsed_date
-            ).first()
-            
-            if availability:
-                availability.is_booked = False
-        else:
-            # Make date unavailable
-            availability = db.query(Availability).filter(
-                Availability.mentor_id == mentor.id,
-                Availability.date == parsed_date
-            ).first()
-            
-            if availability:
-                availability.is_booked = True
-        
-        db.commit()
-        
-        return RedirectResponse(
-            url="/mentor/availability/days?success=Exception%20added%20successfully",
-            status_code=303
-        )
-        
-    except Exception as e:
-        db.rollback()
-        return RedirectResponse(
-            url=f"/mentor/availability/days?error={str(e).replace(' ', '%20')}",
-            status_code=303
-        )
-
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
@@ -4115,14 +3760,31 @@ async def user_profile(
                 })
         
         # Prepare available dates for display (only dates with availability)
-        available_dates = get_available_dates_for_mentor(mentor.id, 30, db)
+        available_dates = []
+        for date_str in sorted(date_slots.keys()):
+            try:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+                if date_obj >= today:  # Ensure date is not in the past
+                    time_slots = date_slots[date_str]
+                    # Only show dates that have available time slots
+                    if time_slots:
+                        available_dates.append({
+                            "day_name": date_obj.strftime("%a"),
+                            "day_num": date_obj.day,
+                            "month": date_obj.strftime("%b"),
+                            "full_date": date_str,
+                            "time_slots": time_slots
+                        })
+            except ValueError:
+                continue
         
+        # Limit to 7 dates for display
         return templates.TemplateResponse("mentor_profile.html", {
             "request": request,
             "current_user": current_user,
             "mentor": mentor,
             "services": services,
-            "available_dates": available_dates  
+            "available_dates": available_dates[:7]  # Only show up to 7 available dates
         })
     
     # If user is a learner, show simple learner profile
@@ -4337,29 +3999,18 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
         print(f"=== Payment Verification Started ===")
         print(f"Data received: {data}")
         
-        # Get all possible parameters from different payment flows
-        razorpay_payment_id = data.get('razorpay_payment_id') or data.get('payment_id')
-        razorpay_order_id = data.get('razorpay_order_id') or data.get('order_id')
-        razorpay_signature = data.get('razorpay_signature') or data.get('signature')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_signature = data.get('razorpay_signature')
         booking_id = data.get('booking_id')
         
         # CRITICAL: Check if all required data is present
-        if not razorpay_payment_id or not razorpay_order_id or not razorpay_signature:
-            print(f"Missing payment data. Received: {data}")
+        if not all([razorpay_payment_id, razorpay_order_id, razorpay_signature, booking_id]):
+            print("Missing required payment data")
             return JSONResponse({
                 "success": False, 
-                "message": "Missing required payment data. Please try again.",
-                "code": "MISSING_DATA"
+                "message": "Missing required payment data"
             })
-        
-        # If booking_id not provided, try to find by order_id
-        if not booking_id:
-            booking = db.query(Booking).filter(
-                Booking.razorpay_order_id == razorpay_order_id
-            ).first()
-            if booking:
-                booking_id = booking.id
-                print(f"Found booking by order_id: {booking_id}")
         
         # Verify payment signature
         try:
@@ -4375,46 +4026,29 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
             
         except Exception as e:
             print(f"❌ Signature verification failed: {str(e)}")
-            # Still try to mark as paid if signature fails (for testing/demo)
-            # In production, you might want to be stricter
-            print(f"⚠️ Continuing despite signature failure for demo purposes")
-        
-        # Find the booking
-        booking = None
-        if booking_id:
-            booking = db.query(Booking).filter(Booking.id == booking_id).first()
-        
-        # If booking not found by ID, try by order ID
-        if not booking:
-            booking = db.query(Booking).filter(
-                Booking.razorpay_order_id == razorpay_order_id
-            ).first()
-        
-        if not booking:
-            print(f"❌ Booking not found for order: {razorpay_order_id}")
             return JSONResponse({
                 "success": False, 
-                "message": "Booking not found",
-                "code": "BOOKING_NOT_FOUND"
+                "message": f"Payment verification failed: {str(e)}"
             })
         
-        print(f"✅ Booking found: ID={booking.id}, Service ID={booking.service_id}")
+        # Find the booking
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if not booking:
+            print(f"❌ Booking not found: {booking_id}")
+            return JSONResponse({
+                "success": False, 
+                "message": "Booking not found"
+            })
+        
+        print(f"✅ Booking found: ID={booking.id}, Current Status={booking.status}, Payment Status={booking.payment_status}")
         
         # Check if already paid
         if booking.payment_status == "paid":
             print("⚠️ Payment already marked as paid")
-            service = db.query(Service).filter(Service.id == booking.service_id).first()
-            is_digital = service.is_digital if service else False
-            
-            redirect_url = "/dashboard"
-            if is_digital and service:
-                redirect_url = f"/digital-product/{service.id}"
-            
             return JSONResponse({
                 "success": True, 
                 "message": "Payment already verified",
-                "redirect_url": redirect_url,
-                "is_digital": is_digital
+                "redirect_url": "/dashboard"
             })
         
         # Update booking with payment details
@@ -4471,8 +4105,7 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
             "success": True, 
             "message": "Payment verified successfully!",
             "redirect_url": redirect_url,
-            "is_digital": is_digital,
-            "booking_id": booking.id
+            "is_digital": is_digital
         })
         
     except Exception as e:
@@ -4481,8 +4114,7 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
         print(traceback.format_exc())
         return JSONResponse({
             "success": False, 
-            "message": f"Payment verification failed: {str(e)}",
-            "code": "SERVER_ERROR"
+            "message": f"Payment verification failed: {str(e)}"
         })
 # Update the time-slots API to support both ID and username
 @app.post("/api/time-slots/{identifier}")
