@@ -223,6 +223,9 @@ class AvailabilityException(Base):
     # Relationships
     mentor = relationship("Mentor")
 
+
+
+
 class Availability(Base):
     __tablename__ = "availabilities"
     
@@ -534,42 +537,76 @@ def generate_availabilities_for_mentor(mentor_id: int, days_ahead: int = 30, db:
             db.close()
 
 def get_available_dates_for_mentor(mentor_id: int, days_ahead: int = 30, db: Session = None):
-    """Get available dates for a mentor based on their preferences"""
+    """Get available dates for a mentor based on their day preferences"""
     if db is None:
         db = SessionLocal()
     
     try:
-        # First, generate availabilities if needed
-        generate_availabilities_for_mentor(mentor_id, days_ahead, db)
+        # Get mentor's day preferences
+        day_preferences = db.query(AvailabilityDay).filter(
+            AvailabilityDay.mentor_id == mentor_id,
+            AvailabilityDay.is_active == True
+        ).all()
         
-        # Get all generated availabilities that are not booked
+        if not day_preferences:
+            print(f"No day preferences found for mentor {mentor_id}")
+            return []
+        
+        # Get exceptions
+        exceptions = db.query(AvailabilityException).filter(
+            AvailabilityException.mentor_id == mentor_id
+        ).all()
+        exception_dates = {ex.date: ex.is_available for ex in exceptions}
+        
         today = datetime.now().date()
+        end_date = today + timedelta(days=days_ahead)
         
-        availabilities = db.query(Availability).filter(
-            Availability.mentor_id == mentor_id,
-            Availability.date >= today,
-            Availability.is_booked == False
-        ).order_by(Availability.date).all()
-        
-        # Group by date
+        # Generate list of available dates
         available_dates = []
-        for avail in availabilities:
-            # Skip if date already in list
-            if any(ad['full_date'] == avail.date.strftime("%Y-%m-%d") for ad in available_dates):
-                continue
-            
-            available_dates.append({
-                'date_obj': avail.date,
-                'full_date': avail.date.strftime("%Y-%m-%d"),
-                'day_name': avail.date.strftime("%A"),
-                'day_short': avail.date.strftime("%a"),
-                'day_num': avail.date.day,
-                'month': avail.date.strftime("%b"),
-                'start_time': avail.start_time,
-                'end_time': avail.end_time
-            })
+        current_date = today
         
-        return available_dates[:7]  # Return next 7 available dates
+        while current_date <= end_date:
+            day_of_week = current_date.weekday()  # 0=Monday, 6=Sunday
+            
+            # Check if mentor is available on this day
+            day_pref = next((dp for dp in day_preferences if dp.day_of_week == day_of_week), None)
+            
+            # Check for exceptions
+            is_available = False
+            if current_date in exception_dates:
+                is_available = exception_dates[current_date]
+            elif day_pref:
+                is_available = True
+            
+            if is_available:
+                # Check if date is fully booked (all time slots)
+                # Get all time slots for this date
+                time_slots = db.query(TimeSlot).join(Booking).filter(
+                    Booking.mentor_id == mentor_id,
+                    TimeSlot.date == current_date
+                ).all()
+                
+                # Count booked slots
+                booked_slots = [ts for ts in time_slots if ts.is_booked]
+                
+                # Only consider date unavailable if ALL slots are booked
+                is_date_fully_booked = len(time_slots) > 0 and len(booked_slots) == len(time_slots)
+                
+                if not is_date_fully_booked:
+                    available_dates.append({
+                        'date_obj': current_date,
+                        'full_date': current_date.strftime("%Y-%m-%d"),
+                        'day_name': current_date.strftime("%A"),
+                        'day_short': current_date.strftime("%a"),
+                        'day_num': current_date.day,
+                        'month': current_date.strftime("%b"),
+                        'start_time': day_pref.start_time if day_pref else "09:00",
+                        'end_time': day_pref.end_time if day_pref else "17:00"
+                    })
+            
+            current_date += timedelta(days=1)
+        
+        return available_dates[:14]  # Return next 14 available dates
         
     except Exception as e:
         print(f"Error getting available dates: {e}")
@@ -578,8 +615,9 @@ def get_available_dates_for_mentor(mentor_id: int, days_ahead: int = 30, db: Ses
         if db:
             db.close()
             
+            
 def generate_meeting_link(booking_id: int, db: Session):
-    """Generate or retrieve meeting link for a confirmed booking - UPDATED"""
+    """Generate or retrieve meeting link for a confirmed booking - FIXED VERSION"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     
     if not booking:
@@ -605,7 +643,7 @@ def generate_meeting_link(booking_id: int, db: Session):
     booking.meeting_id = meeting_id
     booking.status = "confirmed"
     
-    # Mark TimeSlot records as booked (but NOT the entire Availability)
+    # Mark ONLY the TimeSlot record as booked (NOT the entire Availability)
     target_date = booking.booking_date
     
     # Update all TimeSlot records for this booking
@@ -622,51 +660,45 @@ def generate_meeting_link(booking_id: int, db: Session):
     ).first()
     
     if availability:
-        # Get service duration to understand slot boundaries
-        service = db.query(Service).filter(Service.id == booking.service_id).first()
-        service_duration = service.duration_minutes if service else 60
+        # Check if ALL time slots for this date are booked
+        all_time_slots = db.query(TimeSlot).filter(
+            TimeSlot.date == target_date,
+            TimeSlot.booking.has(mentor_id=booking.mentor_id)
+        ).all()
         
-        # Check what percentage of the availability window is booked
+        booked_slots = [ts for ts in all_time_slots if ts.is_booked]
+        
+        # Only mark availability as booked if ALL time slots are booked
+        # OR if this booking covers the entire availability window
         try:
-            # Parse availability times
+            # Parse times to check if booking covers entire availability
             avail_start = datetime.strptime(availability.start_time, "%H:%M")
             avail_end = datetime.strptime(availability.end_time, "%H:%M")
-            total_availability_minutes = (avail_end - avail_start).seconds / 60
             
-            # Calculate booked minutes
-            booked_minutes = 0
+            # Get service duration
+            service = db.query(Service).filter(Service.id == booking.service_id).first()
+            service_duration = service.duration_minutes if service else 60
             
-            # Get all booked time slots for this date
-            all_booked_slots = db.query(TimeSlot).join(Booking).filter(
-                Booking.mentor_id == booking.mentor_id,
-                TimeSlot.date == target_date,
-                TimeSlot.is_booked == True
-            ).all()
+            # Calculate booked time for this booking
+            booking_start = datetime.strptime(booking.selected_time, "%H:%M")
+            booking_end = booking_start + timedelta(minutes=service_duration)
             
-            for slot in all_booked_slots:
-                try:
-                    slot_start = datetime.strptime(slot.start_time, "%H:%M")
-                    slot_end = datetime.strptime(slot.end_time, "%H:%M")
-                    slot_minutes = (slot_end - slot_start).seconds / 60
-                    booked_minutes += slot_minutes
-                except:
-                    continue
+            # Check if booking covers the entire availability window
+            booking_covers_all = (booking_start <= avail_start and booking_end >= avail_end)
             
-            # Mark availability as booked only if >90% is booked or if it's a single-slot day
-            if total_availability_minutes > 0:
-                booked_percentage = (booked_minutes / total_availability_minutes) * 100
+            # Mark availability as booked only if:
+            # 1. Booking covers entire window, OR
+            # 2. All time slots for the day are booked
+            if booking_covers_all or (len(all_time_slots) > 0 and len(booked_slots) == len(all_time_slots)):
+                availability.is_booked = True
+                print(f"Marked availability as booked (full day or all slots booked)")
+            else:
+                availability.is_booked = False
+                print(f"Availability remains open (partial booking)")
                 
-                # If most of the day is booked, mark it as booked
-                if booked_percentage > 90:
-                    availability.is_booked = True
-                    print(f"Marked availability as booked: {booked_percentage:.1f}% booked")
-                else:
-                    availability.is_booked = False
-                    print(f"Availability remains open: {booked_percentage:.1f}% booked")
-            
         except Exception as e:
-            print(f"Error calculating availability booking percentage: {e}")
-            # Don't mark availability as booked if we can't calculate
+            print(f"Error checking availability coverage: {e}")
+            # Default: don't mark as booked
             availability.is_booked = False
     
     db.commit()
@@ -675,6 +707,7 @@ def generate_meeting_link(booking_id: int, db: Session):
     send_meeting_notification(booking, meeting_link, db)
     
     return meeting_link, meeting_id
+
 
 @app.post("/mentor/availability/cleanup")
 async def cleanup_availability(
@@ -2515,6 +2548,132 @@ async def debug_my_digital_products(
         })
     
     return {"user_id": current_user.id, "purchases": result}
+
+@app.get("/mentor/availability/simple", response_class=HTMLResponse)
+async def mentor_availability_simple_page(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Simple availability management - days of week"""
+    if not current_user or current_user.role != "mentor":
+        return RedirectResponse(url="/login", status_code=303)
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        return RedirectResponse(url="/dashboard", status_code=303)
+    
+    # Days of week with names
+    days_of_week = [
+        {"id": 0, "name": "Monday"},
+        {"id": 1, "name": "Tuesday"},
+        {"id": 2, "name": "Wednesday"},
+        {"id": 3, "name": "Thursday"},
+        {"id": 4, "name": "Friday"},
+        {"id": 5, "name": "Saturday"},
+        {"id": 6, "name": "Sunday"}
+    ]
+    
+    # Get existing preferences
+    day_preferences = db.query(AvailabilityDay).filter(
+        AvailabilityDay.mentor_id == mentor.id
+    ).all()
+    
+    # Create a dict for easy lookup
+    pref_dict = {pref.day_of_week: pref for pref in day_preferences}
+    
+    # Prepare data for template
+    days_data = []
+    for day in days_of_week:
+        pref = pref_dict.get(day["id"])
+        days_data.append({
+            "id": day["id"],
+            "name": day["name"],
+            "is_active": pref.is_active if pref else False,
+            "start_time": pref.start_time if pref else "09:00",
+            "end_time": pref.end_time if pref else "17:00"
+        })
+    
+    # Get exceptions (next 30 days)
+    today = datetime.now().date()
+    future_date = today + timedelta(days=30)
+    
+    exceptions = db.query(AvailabilityException).filter(
+        AvailabilityException.mentor_id == mentor.id,
+        AvailabilityException.date >= today,
+        AvailabilityException.date <= future_date
+    ).order_by(AvailabilityException.date).all()
+    
+    return templates.TemplateResponse("mentor_availability_simple.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor": mentor,
+        "days": days_data,
+        "exceptions": exceptions,
+        "today": today.strftime("%Y-%m-%d")
+    })
+
+@app.post("/mentor/availability/simple/update")
+async def update_simple_availability(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update simple availability preferences"""
+    if not current_user or current_user.role != "mentor":
+        return JSONResponse({"success": False, "message": "Access denied"})
+    
+    try:
+        data = await request.json()
+        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+        
+        if not mentor:
+            return JSONResponse({"success": False, "message": "Mentor not found"})
+        
+        # Update day preferences
+        for day_data in data.get("days", []):
+            day_pref = db.query(AvailabilityDay).filter(
+                AvailabilityDay.mentor_id == mentor.id,
+                AvailabilityDay.day_of_week == day_data["day_of_week"]
+            ).first()
+            
+            if day_pref:
+                day_pref.is_active = day_data.get("is_active", False)
+                if day_data.get("is_active", False):
+                    day_pref.start_time = day_data.get("start_time", "09:00")
+                    day_pref.end_time = day_data.get("end_time", "17:00")
+            else:
+                if day_data.get("is_active", False):
+                    day_pref = AvailabilityDay(
+                        mentor_id=mentor.id,
+                        day_of_week=day_data["day_of_week"],
+                        start_time=day_data.get("start_time", "09:00"),
+                        end_time=day_data.get("end_time", "17:00"),
+                        is_active=True
+                    )
+                    db.add(day_pref)
+        
+        db.commit()
+        
+        # Delete inactive preferences
+        db.query(AvailabilityDay).filter(
+            AvailabilityDay.mentor_id == mentor.id,
+            AvailabilityDay.is_active == False
+        ).delete(synchronize_session=False)
+        
+        db.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "message": "Availability updated successfully!"
+        })
+        
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({
+            "success": False,
+            "message": f"Error updating availability: {str(e)}"
+        })
     
     
 @app.get("/mentor/availability", response_class=HTMLResponse)
