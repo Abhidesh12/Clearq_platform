@@ -2549,6 +2549,8 @@ async def debug_my_digital_products(
     
     return {"user_id": current_user.id, "purchases": result}
 
+
+
 @app.get("/mentor/availability/simple", response_class=HTMLResponse)
 async def mentor_availability_simple_page(
     request: Request,
@@ -2611,6 +2613,96 @@ async def mentor_availability_simple_page(
         "days": days_data,
         "exceptions": exceptions,
         "today": today.strftime("%Y-%m-%d")
+    })
+
+
+@app.delete("/mentor/availability/exceptions/{exception_id}/delete")
+async def delete_availability_exception(
+    exception_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete an availability exception"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    
+    exception = db.query(AvailabilityException).filter(
+        AvailabilityException.id == exception_id,
+        AvailabilityException.mentor_id == mentor.id
+    ).first()
+    
+    if not exception:
+        raise HTTPException(status_code=404, detail="Exception not found")
+    
+    db.delete(exception)
+    db.commit()
+    
+    return JSONResponse({"success": True, "message": "Exception removed"})
+
+@app.get("/api/mentor/availability/data")
+async def get_mentor_availability_data(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get mentor availability data for the simple interface"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor not found")
+    
+    # Get day preferences
+    day_preferences = db.query(AvailabilityDay).filter(
+        AvailabilityDay.mentor_id == mentor.id
+    ).all()
+    
+    # Prepare days data
+    days_of_week = [
+        {"id": 0, "name": "Monday"},
+        {"id": 1, "name": "Tuesday"},
+        {"id": 2, "name": "Wednesday"},
+        {"id": 3, "name": "Thursday"},
+        {"id": 4, "name": "Friday"},
+        {"id": 5, "name": "Saturday"},
+        {"id": 6, "name": "Sunday"}
+    ]
+    
+    pref_dict = {pref.day_of_week: pref for pref in day_preferences}
+    
+    days_data = []
+    for day in days_of_week:
+        pref = pref_dict.get(day["id"])
+        days_data.append({
+            "id": day["id"],
+            "name": day["name"],
+            "is_active": pref.is_active if pref else (day["id"] < 5),  # Default: Mon-Fri active
+            "start_time": pref.start_time if pref and pref.is_active else "09:00",
+            "end_time": pref.end_time if pref and pref.is_active else "17:00"
+        })
+    
+    # Get exceptions
+    today = datetime.now().date()
+    exceptions = db.query(AvailabilityException).filter(
+        AvailabilityException.mentor_id == mentor.id,
+        AvailabilityException.date >= today
+    ).order_by(AvailabilityException.date).all()
+    
+    exceptions_data = [
+        {
+            "id": ex.id,
+            "date": ex.date.strftime("%Y-%m-%d"),
+            "reason": ex.reason
+        }
+        for ex in exceptions
+    ]
+    
+    return JSONResponse({
+        "success": True,
+        "days": days_data,
+        "exceptions": exceptions_data
     })
 
 @app.post("/mentor/availability/simple/update")
@@ -4210,14 +4302,11 @@ async def user_profile(
     db: Session = Depends(get_db)
 ):
     """User profile page - works for both mentors and learners"""
-    # Find user by username with eager loading if needed
     user = db.query(User).filter(User.username == username).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # If user is a mentor, show mentor profile
     if user.role == "mentor":
-        # Eager load mentor with user
         mentor = db.query(Mentor).options(joinedload(Mentor.user)).filter(
             Mentor.user_id == user.id
         ).first()
@@ -4230,12 +4319,11 @@ async def user_profile(
             Service.is_active == True
         ).all()
         
-        # Use new function to get available dates
+        # Use the new simple availability function
         available_dates = get_available_dates_for_mentor(mentor.id, 30, db)
         
         # Ensure we have user data properly loaded
         if not mentor.user:
-            # Fallback: manually set user from the already loaded user
             mentor.user = user
         
         return templates.TemplateResponse("mentor_profile.html", {
