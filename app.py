@@ -4115,31 +4115,14 @@ async def user_profile(
                 })
         
         # Prepare available dates for display (only dates with availability)
-        available_dates = []
-        for date_str in sorted(date_slots.keys()):
-            try:
-                date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-                if date_obj >= today:  # Ensure date is not in the past
-                    time_slots = date_slots[date_str]
-                    # Only show dates that have available time slots
-                    if time_slots:
-                        available_dates.append({
-                            "day_name": date_obj.strftime("%a"),
-                            "day_num": date_obj.day,
-                            "month": date_obj.strftime("%b"),
-                            "full_date": date_str,
-                            "time_slots": time_slots
-                        })
-            except ValueError:
-                continue
+        available_dates = get_available_dates_for_mentor(mentor.id, 30, db)
         
-        # Limit to 7 dates for display
         return templates.TemplateResponse("mentor_profile.html", {
             "request": request,
             "current_user": current_user,
             "mentor": mentor,
             "services": services,
-            "available_dates": available_dates[:7]  # Only show up to 7 available dates
+            "available_dates": available_dates  
         })
     
     # If user is a learner, show simple learner profile
