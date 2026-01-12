@@ -780,7 +780,7 @@ async def cleanup_availability(
 
 def check_time_slot_availability(mentor_id: int, date: date, start_time: str, end_time: str, db: Session) -> bool:
     """Check if a time slot is available (no conflicts with existing bookings)"""
-    # Check TimeSlot table for overlapping booked slots
+    # Check for overlapping booked time slots
     overlapping_slots = db.query(TimeSlot).join(Booking).filter(
         Booking.mentor_id == mentor_id,
         TimeSlot.date == date,
@@ -811,7 +811,8 @@ def check_time_slot_availability(mentor_id: int, date: date, start_time: str, en
     ).first()
     
     return overlapping_slots is None
-    
+
+
 def create_admin_user(db: Session):
     """Create an admin user if not exists"""
     admin_email = "admin@clearq.com"
@@ -3199,7 +3200,7 @@ async def create_availability(
 # ============ BOOKING & PAYMENT ROUTES ============
 
 def generate_meeting_link(booking_id: int, db: Session):
-    """Generate or retrieve meeting link for a confirmed booking"""
+    """Generate or retrieve meeting link for a confirmed booking - FIXED"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     
     if not booking:
@@ -3209,41 +3210,56 @@ def generate_meeting_link(booking_id: int, db: Session):
     if booking.meeting_link and booking.meeting_id:
         return booking.meeting_link, booking.meeting_id
     
-    # Get user details for the meeting
-    mentor = db.query(User).filter(User.id == booking.mentor.user_id).first()
+    # Get user details
+    mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
     learner = db.query(User).filter(User.id == booking.learner_id).first()
     
-    mentor_name = mentor.full_name or mentor.username
-    learner_name = learner.full_name or learner.username
+    if not mentor or not learner:
+        raise HTTPException(status_code=404, detail="User details not found")
     
-    # Generate Jitsi meeting link
-    meeting_link, meeting_id = generate_jitsi_meeting_link(
-        booking_id=booking.id,
-        mentor_name=mentor_name,
-        learner_name=learner_name
-    )
+    # Generate simple Jitsi meeting link
+    meeting_id = f"clearq-{booking_id}-{uuid.uuid4().hex[:8]}"
+    meeting_link = f"https://meet.jit.si/{meeting_id}"
     
     # Update booking with meeting details
     booking.meeting_link = meeting_link
     booking.meeting_id = meeting_id
     booking.status = "confirmed"
     
-    # Also mark the time slot/availability as booked
+    # Mark TimeSlot records as booked (but NOT the entire Availability)
     target_date = booking.booking_date
     
-    # Find and mark the availability as booked
+    # Update all TimeSlot records for this booking
+    time_slots = db.query(TimeSlot).filter(TimeSlot.booking_id == booking.id).all()
+    for time_slot in time_slots:
+        time_slot.is_booked = True
+        print(f"✅ Marked TimeSlot {time_slot.id} ({time_slot.start_time}-{time_slot.end_time}) as booked")
+    
+    # IMPORTANT: DO NOT mark entire availability as booked
+    # Only mark Availability as booked if ALL time slots for that day are booked
     availability = db.query(Availability).filter(
         Availability.mentor_id == booking.mentor_id,
         Availability.date == target_date
     ).first()
     
     if availability:
-        availability.is_booked = True
-    
-    # Also update all TimeSlot records for this booking
-    time_slots = db.query(TimeSlot).filter(TimeSlot.booking_id == booking.id).all()
-    for time_slot in time_slots:
-        time_slot.is_booked = True
+        # Check all time slots for this date
+        all_time_slots = db.query(TimeSlot).join(Booking).filter(
+            Booking.mentor_id == booking.mentor_id,
+            TimeSlot.date == target_date
+        ).all()
+        
+        # Count booked vs available slots
+        total_slots = len(all_time_slots)
+        booked_slots = sum(1 for ts in all_time_slots if ts.is_booked)
+        
+        # Only mark availability as booked if ALL slots are booked
+        if total_slots > 0 and booked_slots == total_slots:
+            availability.is_booked = True
+            print(f"✅ Marked availability as booked (all {total_slots} slots booked)")
+        else:
+            availability.is_booked = False
+            print(f"✅ Availability remains open ({booked_slots}/{total_slots} slots booked)")
     
     db.commit()
     
@@ -3620,6 +3636,17 @@ async def create_booking(
             end_time_str = end_time.strftime("%H:%M")
             
             # Create booking record
+
+            is_available = check_time_slot_availability(
+                
+                mentor_id=service.mentor_id,
+                date=target_date,
+                start_time=time_slot,
+                end_time=end_time_str,
+                db=db
+            )
+            if not is_available:
+                    raise HTTPException(status_code=400, detail="This time slot is no longer available")
             booking = Booking(
                 learner_id=current_user.id,
                 mentor_id=service.mentor_id,
@@ -3642,14 +3669,8 @@ async def create_booking(
             # Mark the time slot as booked (only for live sessions)
             target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
             
-            # Find and mark the availability as booked
-            availability = db.query(Availability).filter(
-                Availability.mentor_id == service.mentor_id,
-                Availability.date == target_date
-            ).first()
-            
-            if availability:
-                availability.is_booked = True
+            # DO NOT mark availability as booked here - will be handled in generate_meeting_link
+            print(f"✅ Time slot reserved without marking availability as booked")
             
             # Create a time slot record (only for live sessions)
             time_slot_record = TimeSlot(
