@@ -3893,31 +3893,50 @@ async def user_service_page(
 
 # ============ API ENDPOINTS ============
 # In your FastAPI app
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+    
 @app.post("/api/create-razorpay-order")
 async def create_razorpay_order(request: Request, db: Session = Depends(get_db)):
-    data = await request.json()
-    booking_id = data.get("booking_id")
-    amount = data.get("amount")
-    
-    # Create Razorpay order
-    order_data = {
-        "amount": amount,
-        "currency": "INR",
-        "receipt": f"booking_{booking_id}",
-        "notes": {
-            "booking_id": str(booking_id)
+    try:
+        data = await request.json()
+        booking_id = data.get("booking_id")
+        amount = data.get("amount")  # Should be in paise (e.g., 50000 for ₹500)
+        
+        if not booking_id or not amount:
+            raise HTTPException(status_code=400, detail="Missing booking_id or amount")
+        
+        # Create Razorpay order
+        order_data = {
+            "amount": int(amount),  # Must be integer
+            "currency": "INR",
+            "receipt": f"booking_{booking_id}",
+            "payment_capture": 1,  # Auto-capture payment
+            "notes": {
+                "booking_id": str(booking_id)
+            }
         }
-    }
-    
-    order = razorpay_client.order.create(data=order_data)
-    
-    # Update booking with order ID
-    booking = db.query(Booking).filter(Booking.id == booking_id).first()
-    if booking:
-        booking.razorpay_order_id = order["id"]
-        db.commit()
-    
-    return {"order_id": order["id"]}
+        
+        order = razorpay_client.order.create(data=order_data)
+        
+        # Update booking with order ID
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if booking:
+            booking.razorpay_order_id = order["id"]
+            db.commit()
+        
+        return {
+            "order_id": order["id"],
+            "amount": order["amount"],
+            "currency": order["currency"]
+        }
+        
+    except Exception as e:
+        print(f"Error creating Razorpay order: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
     
 @app.get("/meeting/{booking_id}", response_class=HTMLResponse)
 async def meeting_page(
@@ -3971,6 +3990,7 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
         razorpay_signature = data.get('razorpay_signature')
         booking_id = data.get('booking_id')
         
+        # CRITICAL: Check if all required data is present
         if not all([razorpay_payment_id, razorpay_order_id, razorpay_signature, booking_id]):
             print("Missing required payment data")
             return JSONResponse({
