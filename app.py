@@ -1366,7 +1366,7 @@ async def explore_mentors(
     limit: int = 9
 ):
     # Build base query for verified mentors
-    query = db.query(Mentor).join(User).filter(
+    query = db.query(Mentor).options(joinedload(Mentor.user)).join(User).filter(
         Mentor.is_verified_by_admin == True,
         User.is_active == True
     )
