@@ -31,6 +31,7 @@ from pydantic import BaseModel, EmailStr
 import razorpay
 from dotenv import load_dotenv
 import json
+from sqlalchemy.orm import joinedload, selectinload, subqueryload
 from urllib.parse import urlencode
 from fastapi import File, UploadFile
 from fastapi.responses import JSONResponse
@@ -4050,75 +4051,40 @@ async def user_profile(
     db: Session = Depends(get_db)
 ):
     """User profile page - works for both mentors and learners"""
-    # Find user by username
+    # Find user by username with eager loading if needed
     user = db.query(User).filter(User.username == username).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
     # If user is a mentor, show mentor profile
     if user.role == "mentor":
-        mentor = db.query(Mentor).filter(Mentor.user_id == user.id).first()
+        # Eager load mentor with user
+        mentor = db.query(Mentor).options(joinedload(Mentor.user)).filter(
+            Mentor.user_id == user.id
+        ).first()
+        
         if not mentor:
             raise HTTPException(status_code=404, detail="Mentor profile not found")
-        
-        # Clean up past availabilities for this mentor
-        today = datetime.now().date()
-        try:
-            db.query(Availability).filter(
-                Availability.mentor_id == mentor.id,
-                Availability.date < today
-            ).delete(synchronize_session=False)
-            db.commit()
-        except Exception as e:
-            print(f"Error cleaning up past availabilities for mentor {mentor.id}: {e}")
-            db.rollback()
         
         services = db.query(Service).filter(
             Service.mentor_id == mentor.id,
             Service.is_active == True
         ).all()
         
-        # Get actual availabilities from database (future dates only)
-        availabilities = db.query(Availability).filter(
-            Availability.mentor_id == mentor.id,
-            Availability.is_booked == False,
-            Availability.date >= today
-        ).order_by(Availability.date).all()
-        
-        # Group availabilities by date for the frontend
-        from collections import defaultdict
-        date_slots = defaultdict(list)
-        
-        for avail in availabilities:
-            if isinstance(avail.date, datetime):
-                date_str = avail.date.strftime("%Y-%m-%d")
-                date_obj = avail.date
-            elif isinstance(avail.date, date):
-                date_str = avail.date.strftime("%Y-%m-%d")
-                date_obj = avail.date
-            else:
-                try:
-                    date_str = datetime.strptime(str(avail.date), "%Y-%m-%d").strftime("%Y-%m-%d")
-                    date_obj = datetime.strptime(str(avail.date), "%Y-%m-%d").date()
-                except:
-                    continue
-            
-            # Only include if date is not in the past
-            if date_obj >= today:
-                date_slots[date_str].append({
-                    "start_time": avail.start_time,
-                    "end_time": avail.end_time
-                })
-        
-        # Prepare available dates for display (only dates with availability)
+        # Use new function to get available dates
         available_dates = get_available_dates_for_mentor(mentor.id, 30, db)
+        
+        # Ensure we have user data properly loaded
+        if not mentor.user:
+            # Fallback: manually set user from the already loaded user
+            mentor.user = user
         
         return templates.TemplateResponse("mentor_profile.html", {
             "request": request,
             "current_user": current_user,
             "mentor": mentor,
             "services": services,
-            "available_dates": available_dates  # This now shows next 7 available dates
+            "available_dates": available_dates
         })
     
     # If user is a learner, show simple learner profile
