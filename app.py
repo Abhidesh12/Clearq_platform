@@ -382,6 +382,12 @@ class PayoutUpdate(BaseModel):
 # ============ DEPENDENCIES ============
 # Add this function after your database models
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # Add this to your imports
 import uuid
@@ -676,12 +682,7 @@ async def startup_event():
     finally:
         db.close()
         
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
         
 def load_availabilities_with_retry(mentor_id, db, retries=3):
     for i in range(retries):
