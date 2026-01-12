@@ -196,20 +196,7 @@ class Service(Base):
     mentor = relationship("Mentor", back_populates="services")
     bookings = relationship("Booking", back_populates="service")
 
-class Availability(Base):
-    __tablename__ = "availabilities"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    date = Column(Date, nullable=False)  # Changed from DateTime to Date
-    start_time = Column(String, default="09:00")  # Default start time
-    end_time = Column(String, default="24:00")
-    mentor_id = Column(Integer, ForeignKey("mentors.id"))
-    service_id = Column(Integer, ForeignKey("services.id"), nullable=True)   
-    is_booked = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    
-    # Relationships
-    mentor = relationship("Mentor", back_populates="availabilities")
+
 
 class TimeSlot(Base):
     __tablename__ = "time_slots"
@@ -328,7 +315,7 @@ class MentorBalance(Base):
     # Relationships
     mentor = relationship("Mentor")
 
-# Existing models ke baad, yeh naye models add karo:
+
 
 class AvailabilityDay(Base):
     __tablename__ = "availability_days"
