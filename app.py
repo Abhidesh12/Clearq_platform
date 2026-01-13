@@ -7,6 +7,12 @@ import logging
 import requests
 import traceback
 from sqlalchemy import or_, and_
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from fastapi_mail.errors import ConnectionErrors
+from pydantic import EmailStr, BaseModel
+from typing import List
+import secrets
+import string
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import time  # Add this import
@@ -79,6 +85,35 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
+# Email configuration
+MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")
+MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")
+MAIL_FROM = os.getenv("MAIL_FROM", "noreply@clearq.in")
+MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
+MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "ClearQ Mentorship")
+MAIL_STARTTLS = os.getenv("MAIL_STARTTLS", "True").lower() == "true"
+MAIL_SSL_TLS = os.getenv("MAIL_SSL_TLS", "False").lower() == "true"
+
+# Email connection config
+mail_conf = ConnectionConfig(
+    MAIL_USERNAME=MAIL_USERNAME,
+    MAIL_PASSWORD=MAIL_PASSWORD,
+    MAIL_FROM=MAIL_FROM,
+    MAIL_PORT=MAIL_PORT,
+    MAIL_SERVER=MAIL_SERVER,
+    MAIL_FROM_NAME=MAIL_FROM_NAME,
+    MAIL_STARTTLS=MAIL_STARTTLS,
+    MAIL_SSL_TLS=MAIL_SSL_TLS,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=True,
+    TEMPLATE_FOLDER=Path(__file__).parent / "templates/email"
+)
+
+# Initialize FastMail
+fm = FastMail(mail_conf)
+
+
 # Templates and static files
 async def add_now_to_context(request: Request):
     return {"now": datetime.now()}
@@ -142,6 +177,13 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     google_id = Column(String, unique=True, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    verification_token = Column(String, nullable=True)
+    verification_token_expires = Column(DateTime, nullable=True)
+    reset_token = Column(String, nullable=True)
+    reset_token_expires = Column(DateTime, nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -411,6 +453,22 @@ class WithdrawalRequest(BaseModel):
 class PayoutUpdate(BaseModel):
     status: str
     notes: Optional[str] = None
+
+# Email models
+class EmailSchema(BaseModel):
+    email: List[EmailStr]
+    subject: str
+    body: dict
+
+class VerificationRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    new_password: str
+    confirm_password: str
+    token: str
+    
 # ============ DEPENDENCIES ============
 # Add this function after your database models
 
