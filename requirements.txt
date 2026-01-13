@@ -13,3 +13,6 @@ email-validator
 bcrypt==4.0.1
 requests
 uuid
+fastapi-mail==1.4.1
+emails==0.6
+python-multipart
