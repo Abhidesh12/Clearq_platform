@@ -1442,7 +1442,7 @@ if (navigator.share) {
     document.querySelector('.share-btn-mobile').addEventListener('click', async () => {
         try {
             await navigator.share({
-                title: '{{ mentor.user.full_name }} - ClearQ Mentor',
+                title: '{{ mentor.user.full_name if mentor.user else mentor.username }} - ClearQ Mentor',
                 text: 'Check out this amazing mentor on ClearQ!',
                 url: window.location.href,
             });
