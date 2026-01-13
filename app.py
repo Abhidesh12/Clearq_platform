@@ -1041,13 +1041,13 @@ async def startup_event():
             if not day_preferences:
                 # Create default day preferences
                 default_days = [
-                    {"day_of_week": 0, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-                    {"day_of_week": 1, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-                    {"day_of_week": 2, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-                    {"day_of_week": 3, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-                    {"day_of_week": 4, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-                    {"day_of_week": 5, "start_time": "10:00", "end_time": "14:00", "is_active": False},
-                    {"day_of_week": 6, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+                    {"day_of_week": 0, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                    {"day_of_week": 1, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                    {"day_of_week": 2, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                    {"day_of_week": 3, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                    {"day_of_week": 4, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                    {"day_of_week": 5, "start_time": "09:00", "end_time": "21:00", "is_active": False},
+                    {"day_of_week": 6, "start_time": "09:00", "end_time": "21:00", "is_active": False},
                 ]
                 
                 for day_data in default_days:
