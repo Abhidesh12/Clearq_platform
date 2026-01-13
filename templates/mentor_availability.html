@@ -63,7 +63,7 @@
                                            id="day-{{ day.id }}" 
                                            data-day-id="{{ day.id }}"
                                            class="day-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
-                                           {% if day.id < 5 %}checked{% endif %}>
+                                           {% if day.id < 7 %}checked{% endif %}>
                                     <label for="day-{{ day.id }}" class="ml-3 text-lg font-medium text-gray-900 cursor-pointer">
                                         {{ day.name }}
                                     </label>
@@ -82,7 +82,7 @@
                                         <input type="time" 
                                                id="end-{{ day.id }}"
                                                data-day-id="{{ day.id }}"
-                                               value="17:00"
+                                               value="21:00"
                                                class="time-input mt-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                     </div>
                                 </div>
@@ -180,7 +180,7 @@
                             <button onclick="setTimePreset('9:00', '21:00')" 
                                     class="w-full text-left text-sm text-gray-700 hover:bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
                                 <i class="fas fa-briefcase mr-2 text-blue-500"></i>
-                                Work Day (9 AM - 9 PM)
+                                Full Day (9 AM - 9 PM)
                             </button>
                             <button onclick="setTimePreset('17:00', '21:00')" 
                                     class="w-full text-left text-sm text-gray-700 hover:bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
@@ -273,15 +273,15 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSchedulePreview();
 });
 
-// Days of week data
+// Days of week data - UPDATED: All days active with 9AM-9PM
 const daysData = [
     { id: 0, name: "Monday", is_active: true, start_time: "09:00", end_time: "21:00" },
     { id: 1, name: "Tuesday", is_active: true, start_time: "09:00", end_time: "21:00" },
     { id: 2, name: "Wednesday", is_active: true, start_time: "09:00", end_time: "21:00" },
     { id: 3, name: "Thursday", is_active: true, start_time: "09:00", end_time: "21:00" },
     { id: 4, name: "Friday", is_active: true, start_time: "09:00", end_time: "21:00" },
-    { id: 5, name: "Saturday", is_active: false, start_time: "10:00", end_time: "21:00" },
-    { id: 6, name: "Sunday", is_active: false, start_time: "10:00", end_time: "21:00" }
+    { id: 5, name: "Saturday", is_active: true, start_time: "09:00", end_time: "21:00" },
+    { id: 6, name: "Sunday", is_active: true, start_time: "09:00", end_time: "21:00" }
 ];
 
 function setupEventListeners() {
@@ -514,17 +514,11 @@ async function saveAvailability() {
 }
 
 function resetToDefault() {
-    if (confirm('Reset to default schedule (Monday-Friday 9-5)?')) {
+    if (confirm('Reset to default schedule (All days 9AM-9PM)?')) {
         daysData.forEach(day => {
-            if (day.id < 5) {
-                day.is_active = true;
-                day.start_time = "09:00";
-                day.end_time = "17:00";
-            } else {
-                day.is_active = false;
-                day.start_time = "10:00";
-                day.end_time = "14:00";
-            }
+            day.is_active = true;  // All days active
+            day.start_time = "09:00";  // 9 AM
+            day.end_time = "21:00";    // 9 PM
             
             const checkbox = document.getElementById(`day-${day.id}`);
             const startInput = document.getElementById(`start-${day.id}`);
@@ -539,7 +533,7 @@ function resetToDefault() {
         });
         
         updateSchedulePreview();
-        showNotification('Reset to default schedule', 'info');
+        showNotification('Reset to default schedule (All days 9AM-9PM)', 'info');
     }
 }
 
@@ -658,7 +652,7 @@ async function removeException(exceptionId) {
 // Quick action functions
 function selectWeekdays() {
     daysData.forEach(day => {
-        day.is_active = day.id < 5;
+        day.is_active = day.id < 5;  // Only Monday-Friday
         const checkbox = document.getElementById(`day-${day.id}`);
         if (checkbox) checkbox.checked = day.is_active;
         updateDayUI(day.id);
@@ -669,7 +663,7 @@ function selectWeekdays() {
 
 function selectWeekend() {
     daysData.forEach(day => {
-        day.is_active = day.id >= 5;
+        day.is_active = day.id >= 5;  // Only Saturday-Sunday
         const checkbox = document.getElementById(`day-${day.id}`);
         if (checkbox) checkbox.checked = day.is_active;
         updateDayUI(day.id);
@@ -680,7 +674,7 @@ function selectWeekend() {
 
 function selectAllDays() {
     daysData.forEach(day => {
-        day.is_active = true;
+        day.is_active = true;  // All days
         const checkbox = document.getElementById(`day-${day.id}`);
         if (checkbox) checkbox.checked = true;
         updateDayUI(day.id);
