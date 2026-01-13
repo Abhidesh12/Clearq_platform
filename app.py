@@ -5399,7 +5399,7 @@ async def meeting_page(
     
     # If meeting link doesn't exist, generate one
     if not booking.meeting_link:
-        meeting_link, meeting_id = generate_meeting_link(booking.id, db)
+        meeting_link, meeting_id = await generate_meeting_link(booking.id, db)
     else:
         meeting_link = booking.meeting_link
         meeting_id = booking.meeting_id
@@ -5515,7 +5515,7 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
         else:
             # For live sessions, generate meeting link
             try:
-                meeting_link, meeting_id = generate_meeting_link(booking.id, db)
+                meeting_link, meeting_id = await generate_meeting_link(booking.id, db)
                 print(f"✅ Meeting link generated: {meeting_link}")
             except Exception as e:
                 print(f"⚠️ Error generating meeting link: {str(e)}")
