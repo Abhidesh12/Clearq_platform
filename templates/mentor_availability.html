@@ -90,7 +90,7 @@
                             <div class="mt-3 pt-3 border-t border-gray-100 hidden" id="preview-{{ day.id }}">
                                 <p class="text-sm text-gray-600">
                                     <i class="fas fa-clock mr-2"></i>
-                                    Available: <span id="time-display-{{ day.id }}">9:00 AM - 5:00 PM</span>
+                                    Available: <span id="time-display-{{ day.id }}">9:00 AM - 9:00 PM</span>
                                 </p>
                             </div>
                         </div>
@@ -177,10 +177,10 @@
                     <div class="mt-6 pt-4 border-t border-blue-200">
                         <h4 class="font-medium text-gray-900 mb-3">Quick Time Presets:</h4>
                         <div class="grid grid-cols-1 gap-2">
-                            <button onclick="setTimePreset('9:00', '17:00')" 
+                            <button onclick="setTimePreset('9:00', '21:00')" 
                                     class="w-full text-left text-sm text-gray-700 hover:bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
                                 <i class="fas fa-briefcase mr-2 text-blue-500"></i>
-                                Work Day (9 AM - 5 PM)
+                                Work Day (9 AM - 9 PM)
                             </button>
                             <button onclick="setTimePreset('17:00', '21:00')" 
                                     class="w-full text-left text-sm text-gray-700 hover:bg-white p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
@@ -275,13 +275,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Days of week data
 const daysData = [
-    { id: 0, name: "Monday", is_active: true, start_time: "09:00", end_time: "17:00" },
-    { id: 1, name: "Tuesday", is_active: true, start_time: "09:00", end_time: "17:00" },
-    { id: 2, name: "Wednesday", is_active: true, start_time: "09:00", end_time: "17:00" },
-    { id: 3, name: "Thursday", is_active: true, start_time: "09:00", end_time: "17:00" },
-    { id: 4, name: "Friday", is_active: true, start_time: "09:00", end_time: "17:00" },
-    { id: 5, name: "Saturday", is_active: false, start_time: "10:00", end_time: "14:00" },
-    { id: 6, name: "Sunday", is_active: false, start_time: "10:00", end_time: "14:00" }
+    { id: 0, name: "Monday", is_active: true, start_time: "09:00", end_time: "21:00" },
+    { id: 1, name: "Tuesday", is_active: true, start_time: "09:00", end_time: "21:00" },
+    { id: 2, name: "Wednesday", is_active: true, start_time: "09:00", end_time: "21:00" },
+    { id: 3, name: "Thursday", is_active: true, start_time: "09:00", end_time: "21:00" },
+    { id: 4, name: "Friday", is_active: true, start_time: "09:00", end_time: "21:00" },
+    { id: 5, name: "Saturday", is_active: false, start_time: "10:00", end_time: "21:00" },
+    { id: 6, name: "Sunday", is_active: false, start_time: "10:00", end_time: "21:00" }
 ];
 
 function setupEventListeners() {
