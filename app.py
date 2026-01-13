@@ -1194,13 +1194,13 @@ async def mentor_availability_days_page(
     # Create default preferences if none exist
     if not day_preferences:
         default_days = [
-            {"day_of_week": 0, "day_name": "Monday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 1, "day_name": "Tuesday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 2, "day_name": "Wednesday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 3, "day_name": "Thursday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 4, "day_name": "Friday", "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 5, "day_name": "Saturday", "start_time": "10:00", "end_time": "14:00", "is_active": False},
-            {"day_of_week": 6, "day_name": "Sunday", "start_time": "10:00", "end_time": "14:00", "is_active": False},
+            {"day_of_week": 0, "day_name": "Monday", "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 1, "day_name": "Tuesday", "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 2, "day_name": "Wednesday", "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 3, "day_name": "Thursday", "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 4, "day_name": "Friday", "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 5, "day_name": "Saturday", "start_time": "09:00", "end_time": "21:00", "is_active": False},
+            {"day_of_week": 6, "day_name": "Sunday", "start_time": "09:00", "end_time": "21:00", "is_active": False},
         ]
         
         for day_data in default_days:
@@ -2797,7 +2797,7 @@ async def mentor_availability_simple_page(
             "name": day["name"],
             "is_active": pref.is_active if pref else False,
             "start_time": pref.start_time if pref else "09:00",
-            "end_time": pref.end_time if pref else "17:00"
+            "end_time": pref.end_time if pref else "21:00"
         })
     
     # Get exceptions (next 30 days)
@@ -2866,13 +2866,13 @@ async def get_mentor_availability_data(
     # If no preferences, create default ones
     if not day_preferences:
         default_days = [
-            {"day_of_week": 0, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 1, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 2, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 3, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 4, "start_time": "09:00", "end_time": "17:00", "is_active": True},
-            {"day_of_week": 5, "start_time": "10:00", "end_time": "14:00", "is_active": False},
-            {"day_of_week": 6, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+            {"day_of_week": 0, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 1, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 2, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 3, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 4, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 5, "start_time": "09:00", "end_time": "21:00", "is_active": False},
+            {"day_of_week": 6, "start_time": "09:00", "end_time": "21:00", "is_active": False},
         ]
         
         for day_data in default_days:
@@ -2910,7 +2910,7 @@ async def get_mentor_availability_data(
             "name": day["name"],
             "is_active": pref.is_active if pref else (day["id"] < 5),  # Default: Mon-Fri active
             "start_time": pref.start_time if pref and pref.is_active else "09:00",
-            "end_time": pref.end_time if pref and pref.is_active else "17:00"
+            "end_time": pref.end_time if pref and pref.is_active else "21:00"
         })
     
     # Get exceptions
@@ -2962,14 +2962,14 @@ async def update_simple_availability(
                 day_pref.is_active = day_data.get("is_active", False)
                 if day_data.get("is_active", False):
                     day_pref.start_time = day_data.get("start_time", "09:00")
-                    day_pref.end_time = day_data.get("end_time", "17:00")
+                    day_pref.end_time = day_data.get("end_time", "21:00")
             else:
                 if day_data.get("is_active", False):
                     day_pref = AvailabilityDay(
                         mentor_id=mentor.id,
                         day_of_week=day_data["day_of_week"],
                         start_time=day_data.get("start_time", "09:00"),
-                        end_time=day_data.get("end_time", "17:00"),
+                        end_time=day_data.get("end_time", "21:00"),
                         is_active=True
                     )
                     db.add(day_pref)
