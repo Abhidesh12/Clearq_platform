@@ -1868,6 +1868,8 @@ async def login_page(request: Request, current_user = Depends(get_current_user))
         "google_auth_url": google_auth_url
     })
 
+
+
 @app.post("/login")
 async def login_user(
     request: Request,
@@ -1901,6 +1903,31 @@ async def login_user(
     response = RedirectResponse(url="/dashboard", status_code=303)
     response.set_cookie(key="access_token", value=access_token, httponly=True)
     return response
+
+@app.get("/resend-verification", response_class=HTMLResponse)
+async def resend_verification_page(request: Request):
+    """Page to resend verification email"""
+    return templates.TemplateResponse("resend_verification.html", {"request": request})
+
+@app.post("/resend-verification")
+async def resend_verification(
+    email: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Resend verification email"""
+    user = db.query(User).filter(User.email == email).first()
+    
+    if user and not user.is_verified:
+        try:
+            await send_verification_email(user, db)
+        except Exception as e:
+            print(f"⚠️ Could not resend verification email: {e}")
+    
+    # Always return success (for security)
+    return RedirectResponse(
+        url="/login?message=If%20your%20email%20is%20registered%20and%20not%20verified,%20a%20new%20verification%20link%20has%20been%20sent.",
+        status_code=303
+    )
 
 @app.get("/auth/google/callback")
 async def google_auth_callback(request: Request, code: str, db: Session = Depends(get_db)):
