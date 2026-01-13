@@ -6,6 +6,7 @@ from decimal import Decimal
 import logging
 import requests
 import traceback
+from sqlalchemy import or_, and_
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import time  # Add this import
@@ -820,12 +821,14 @@ async def cleanup_availability(
 
 def check_time_slot_availability(mentor_id: int, date: date, start_time: str, end_time: str, db: Session) -> bool:
     """Check if a time slot is available (no conflicts with existing bookings)"""
-    # Check for overlapping booked time slots
+    from sqlalchemy import and_, or_  # Import here if not already imported at top
+    
+    # Check TimeSlot table for overlapping booked slots
     overlapping_slots = db.query(TimeSlot).join(Booking).filter(
         Booking.mentor_id == mentor_id,
         TimeSlot.date == date,
         TimeSlot.is_booked == True,
-        # Check for time overlap
+        # Check for time overlap using and_ and or_
         or_(
             # New slot starts during existing booked slot
             and_(
