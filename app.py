@@ -4517,7 +4517,7 @@ async def user_profile(
 ):
     """User profile page - works for both mentors and learners"""
     try:
-        # Use joinedload to eagerly load relationships
+        # Get user with mentor profile
         user = db.query(User).options(
             joinedload(User.mentor_profile)
         ).filter(User.username == username).first()
@@ -4526,13 +4526,25 @@ async def user_profile(
             raise HTTPException(status_code=404, detail="User not found")
         
         if user.role == "mentor":
-            # Get mentor with user relationship
+            # IMPORTANT: Get mentor in the SAME session with ALL relationships
             mentor = db.query(Mentor).options(
                 joinedload(Mentor.user)
             ).filter(Mentor.user_id == user.id).first()
             
             if not mentor:
-                raise HTTPException(status_code=404, detail="Mentor profile not found")
+                # Create mentor profile if it doesn't exist
+                mentor = Mentor(
+                    user_id=user.id,
+                    verification_status="pending",
+                    created_at=datetime.utcnow()
+                )
+                db.add(mentor)
+                db.commit()
+                db.refresh(mentor)
+                # Reload with relationships
+                mentor = db.query(Mentor).options(
+                    joinedload(Mentor.user)
+                ).filter(Mentor.id == mentor.id).first()
             
             # Get services
             services = db.query(Service).filter(
@@ -4540,7 +4552,7 @@ async def user_profile(
                 Service.is_active == True
             ).all()
             
-            # IMPORTANT: Ensure day preferences exist
+            # Ensure day preferences exist
             day_preferences = db.query(AvailabilityDay).filter(
                 AvailabilityDay.mentor_id == mentor.id
             ).all()
@@ -4574,29 +4586,157 @@ async def user_profile(
             
             # Generate availability from day preferences
             try:
-                generate_availability_from_day_preferences(mentor.id, db, 30)
+                # Use the same db session
+                from sqlalchemy.orm import Session as DBSession
+                
+                # Generate availability
+                today = datetime.now().date()
+                end_date = today + timedelta(days=30)
+                
+                generated_count = 0
+                current_date = today
+                
+                while current_date <= end_date:
+                    day_of_week = current_date.weekday()
+                    
+                    # Check if day preference exists and is active
+                    day_pref = db.query(AvailabilityDay).filter(
+                        AvailabilityDay.mentor_id == mentor.id,
+                        AvailabilityDay.day_of_week == day_of_week,
+                        AvailabilityDay.is_active == True
+                    ).first()
+                    
+                    if day_pref:
+                        # Check if availability already exists
+                        existing = db.query(Availability).filter(
+                            Availability.mentor_id == mentor.id,
+                            Availability.date == current_date
+                        ).first()
+                        
+                        if not existing:
+                            # Create new availability
+                            availability = Availability(
+                                mentor_id=mentor.id,
+                                date=current_date,
+                                start_time=day_pref.start_time,
+                                end_time=day_pref.end_time,
+                                is_booked=False,
+                                created_at=datetime.utcnow()
+                            )
+                            db.add(availability)
+                            generated_count += 1
+                
+                    current_date += timedelta(days=1)
+                
+                if generated_count > 0:
+                    db.commit()
+                    print(f"✅ Generated {generated_count} availability records for mentor {mentor.id}")
+                    
             except Exception as e:
+                db.rollback()
                 print(f"⚠️ Error generating availability: {e}")
-                # Continue even if generation fails
             
-            # Now get available dates
-            available_dates = get_available_dates_for_mentor(mentor.id, 30, db)
+            # Get available dates
+            try:
+                today = datetime.now().date()
+                end_date = today + timedelta(days=30)
+                
+                # Get active day preferences
+                active_days = db.query(AvailabilityDay).filter(
+                    AvailabilityDay.mentor_id == mentor.id,
+                    AvailabilityDay.is_active == True
+                ).all()
+                
+                # Get all availabilities
+                availabilities = db.query(Availability).filter(
+                    Availability.mentor_id == mentor.id,
+                    Availability.date >= today,
+                    Availability.date <= end_date,
+                    Availability.is_booked == False
+                ).all()
+                
+                # Get exceptions
+                exceptions = db.query(AvailabilityException).filter(
+                    AvailabilityException.mentor_id == mentor.id,
+                    AvailabilityException.date >= today,
+                    AvailabilityException.date <= end_date,
+                    AvailabilityException.is_available == False
+                ).all()
+                
+                exception_dates = {ex.date for ex in exceptions}
+                
+                available_dates = []
+                for avail in availabilities:
+                    # Skip if date is in exceptions
+                    if avail.date in exception_dates:
+                        continue
+                    
+                    # Check if this is an active day
+                    day_of_week = avail.date.weekday()
+                    is_active_day = any(day.day_of_week == day_of_week for day in active_days)
+                    
+                    if is_active_day:
+                        available_dates.append({
+                            'date_obj': avail.date,
+                            'full_date': avail.date.strftime("%Y-%m-%d"),
+                            'day_name': avail.date.strftime("%A"),
+                            'day_short': avail.date.strftime("%a"),
+                            'day_num': avail.date.day,
+                            'month': avail.date.strftime("%b"),
+                            'start_time': avail.start_time,
+                            'end_time': avail.end_time
+                        })
+                
+                # Sort by date
+                available_dates.sort(key=lambda x: x['date_obj'])
+                
+                print(f"✅ Found {len(available_dates)} available dates for mentor {mentor.id}")
+                for date in available_dates[:3]:
+                    print(f"  - {date['full_date']} ({date['day_name']})")
+                    
+            except Exception as e:
+                print(f"⚠️ Error getting available dates: {e}")
+                available_dates = []
             
-            # Debug: Log what we found
-            print(f"✅ Found {len(available_dates)} available dates for mentor {mentor.id}")
-            for date in available_dates[:3]:  # Show first 3 for debugging
-                print(f"  - {date['full_date']} ({date['day_name']})")
-            
-            # Ensure mentor.user is populated
-            if not mentor.user:
-                mentor.user = user
+            # Prepare mentor data for template
+            mentor_data = {
+                "id": mentor.id,
+                "user_id": mentor.user_id,
+                "experience_years": mentor.experience_years,
+                "industry": mentor.industry,
+                "job_title": mentor.job_title,
+                "company": mentor.company,
+                "bio": mentor.bio,
+                "skills": mentor.skills,
+                "linkedin_url": mentor.linkedin_url,
+                "github_url": mentor.github_url,
+                "twitter_url": mentor.twitter_url,
+                "website_url": mentor.website_url,
+                "rating": mentor.rating,
+                "review_count": mentor.review_count,
+                "total_sessions": mentor.total_sessions,
+                "is_verified_by_admin": mentor.is_verified_by_admin,
+                "verification_status": mentor.verification_status,
+                "created_at": mentor.created_at,
+                "user": {
+                    "id": mentor.user.id,
+                    "username": mentor.user.username,
+                    "email": mentor.user.email,
+                    "full_name": mentor.user.full_name,
+                    "profile_image": mentor.user.profile_image,
+                    "role": mentor.user.role,
+                    "is_active": mentor.user.is_active,
+                    "is_verified": mentor.user.is_verified,
+                    "created_at": mentor.user.created_at
+                } if mentor.user else None
+            }
             
             return templates.TemplateResponse("mentor_profile.html", {
                 "request": request,
                 "current_user": current_user,
-                "mentor": mentor,
+                "mentor": mentor_data,  # Pass dict instead of ORM object
                 "services": services,
-                "available_dates": available_dates
+                "available_dates": available_dates[:14]  # Limit to 14 dates
             })
             
         # If user is a learner, show simple learner profile
@@ -4604,17 +4744,34 @@ async def user_profile(
             return templates.TemplateResponse("learner_profile.html", {
                 "request": request,
                 "current_user": current_user,
-                "profile_user": user
+                "profile_user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "full_name": user.full_name,
+                    "profile_image": user.profile_image,
+                    "role": user.role,
+                    "is_active": user.is_active,
+                    "is_verified": user.is_verified,
+                    "created_at": user.created_at
+                }
             })
         
         else:
             raise HTTPException(status_code=404, detail="Profile not found")
             
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"❌ Error in user_profile route: {str(e)}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Internal server error")
+        # Return a generic error page instead of 500
+        return templates.TemplateResponse("error.html", {
+            "request": request,
+            "error_code": 500,
+            "error_message": "Something went wrong. Please try again later."
+        }, status_code=500)
 # Service page by username and service ID
 @app.get("/{username}/service/{service_id}", response_class=HTMLResponse)
 async def user_service_page(
