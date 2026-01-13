@@ -548,9 +548,37 @@ def get_available_dates_for_mentor(mentor_id: int, days_ahead: int = 30, db: Ses
             AvailabilityDay.is_active == True
         ).all()
         
+        # If no day preferences exist, create default ones (Monday-Friday, 9-5)
         if not day_preferences:
-            print(f"No day preferences found for mentor {mentor_id}")
-            return []
+            print(f"Creating default day preferences for mentor {mentor_id}")
+            default_days = [
+                {"day_of_week": 0, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 1, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 2, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 3, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 4, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 5, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+                {"day_of_week": 6, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+            ]
+            
+            for day_data in default_days:
+                day_pref = AvailabilityDay(
+                    mentor_id=mentor_id,
+                    day_of_week=day_data["day_of_week"],
+                    start_time=day_data["start_time"],
+                    end_time=day_data["end_time"],
+                    is_active=day_data["is_active"],
+                    created_at=datetime.utcnow()
+                )
+                db.add(day_pref)
+            
+            db.commit()
+            
+            # Reload preferences
+            day_preferences = db.query(AvailabilityDay).filter(
+                AvailabilityDay.mentor_id == mentor_id,
+                AvailabilityDay.is_active == True
+            ).all()
         
         # Get exceptions
         exceptions = db.query(AvailabilityException).filter(
@@ -610,6 +638,8 @@ def get_available_dates_for_mentor(mentor_id: int, days_ahead: int = 30, db: Ses
         
     except Exception as e:
         print(f"Error getting available dates: {e}")
+        import traceback
+        traceback.print_exc()
         return []
     finally:
         if db:
@@ -778,6 +808,8 @@ async def cleanup_availability(
         "fixed_count": fixed_count
     })
 
+
+
 def check_time_slot_availability(mentor_id: int, date: date, start_time: str, end_time: str, db: Session) -> bool:
     """Check if a time slot is available (no conflicts with existing bookings)"""
     # Check for overlapping booked time slots
@@ -811,6 +843,85 @@ def check_time_slot_availability(mentor_id: int, date: date, start_time: str, en
     ).first()
     
     return overlapping_slots is None
+
+
+def generate_availability_from_day_preferences(mentor_id: int, db: Session, days_ahead: int = 30):
+    """Generate Availability records from day preferences"""
+    try:
+        # Get day preferences
+        day_preferences = db.query(AvailabilityDay).filter(
+            AvailabilityDay.mentor_id == mentor_id,
+            AvailabilityDay.is_active == True
+        ).all()
+        
+        if not day_preferences:
+            print(f"No day preferences found for mentor {mentor_id}")
+            return
+        
+        # Get exceptions
+        exceptions = db.query(AvailabilityException).filter(
+            AvailabilityException.mentor_id == mentor_id
+        ).all()
+        exception_dates = {ex.date: ex.is_available for ex in exceptions}
+        
+        today = datetime.now().date()
+        end_date = today + timedelta(days=days_ahead)
+        
+        generated_count = 0
+        
+        # Generate for each day
+        current_date = today
+        while current_date <= end_date:
+            day_of_week = current_date.weekday()  # 0=Monday, 6=Sunday
+            
+            # Check if mentor is available on this day
+            day_pref = next((dp for dp in day_preferences if dp.day_of_week == day_of_week), None)
+            
+            # Check for exceptions
+            is_available = False
+            if current_date in exception_dates:
+                is_available = exception_dates[current_date]
+            elif day_pref:
+                is_available = True
+            
+            if is_available and day_pref:
+                # Check if availability already exists
+                existing = db.query(Availability).filter(
+                    Availability.mentor_id == mentor_id,
+                    Availability.date == current_date
+                ).first()
+                
+                if not existing:
+                    # Check if there are bookings for this date
+                    has_bookings = db.query(Booking).filter(
+                        Booking.mentor_id == mentor_id,
+                        Booking.booking_date == current_date,
+                        Booking.status.in_(["confirmed", "pending"])
+                    ).first() is not None
+                    
+                    # Create new availability
+                    availability = Availability(
+                        mentor_id=mentor_id,
+                        date=current_date,
+                        start_time=day_pref.start_time,
+                        end_time=day_pref.end_time,
+                        is_booked=False,  # Start as not booked
+                        created_at=datetime.utcnow()
+                    )
+                    db.add(availability)
+                    generated_count += 1
+                    print(f"Generated availability for {current_date}: {day_pref.start_time}-{day_pref.end_time}")
+            
+            current_date += timedelta(days=1)
+        
+        db.commit()
+        print(f"✅ Generated {generated_count} availability records for mentor {mentor_id}")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error generating availability: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 def create_admin_user(db: Session):
@@ -870,6 +981,47 @@ async def startup_event():
     db = SessionLocal()
     try:
         create_admin_user(db)
+        
+        # Ensure all mentors have day preferences
+        mentors = db.query(Mentor).all()
+        for mentor in mentors:
+            # Check if mentor has day preferences
+            day_preferences = db.query(AvailabilityDay).filter(
+                AvailabilityDay.mentor_id == mentor.id
+            ).first()
+            
+            if not day_preferences:
+                # Create default day preferences
+                default_days = [
+                    {"day_of_week": 0, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                    {"day_of_week": 1, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                    {"day_of_week": 2, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                    {"day_of_week": 3, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                    {"day_of_week": 4, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                    {"day_of_week": 5, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+                    {"day_of_week": 6, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+                ]
+                
+                for day_data in default_days:
+                    day_pref = AvailabilityDay(
+                        mentor_id=mentor.id,
+                        day_of_week=day_data["day_of_week"],
+                        start_time=day_data["start_time"],
+                        end_time=day_data["end_time"],
+                        is_active=day_data["is_active"],
+                        created_at=datetime.utcnow()
+                    )
+                    db.add(day_pref)
+                
+                print(f"Created default day preferences for mentor {mentor.id}")
+        
+        db.commit()
+        print("✅ Startup tasks completed")
+        
+    except Exception as e:
+        print(f"❌ Error in startup tasks: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
         db.close()
         
@@ -907,6 +1059,9 @@ def allowed_file(filename: str) -> bool:
     
     ext = filename.rsplit('.', 1)[1].lower()
     return ext in ALLOWED_EXTENSIONS
+
+
+
 
 def save_profile_image(file: UploadFile, user_id: int) -> str:
     """Save uploaded profile image and return filename"""
@@ -2653,12 +2808,38 @@ async def get_mentor_availability_data(
     
     mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
     if not mentor:
-        raise HTTPException(status_code=404, detail="Mentor not found")
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
     
-    # Get day preferences
+    # Ensure day preferences exist
     day_preferences = db.query(AvailabilityDay).filter(
         AvailabilityDay.mentor_id == mentor.id
     ).all()
+    
+    # If no preferences, create default ones
+    if not day_preferences:
+        default_days = [
+            {"day_of_week": 0, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+            {"day_of_week": 1, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+            {"day_of_week": 2, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+            {"day_of_week": 3, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+            {"day_of_week": 4, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+            {"day_of_week": 5, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+            {"day_of_week": 6, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+        ]
+        
+        for day_data in default_days:
+            day_pref = AvailabilityDay(
+                mentor_id=mentor.id,
+                day_of_week=day_data["day_of_week"],
+                start_time=day_data["start_time"],
+                end_time=day_data["end_time"],
+                is_active=day_data["is_active"],
+                created_at=datetime.utcnow()
+            )
+            db.add(day_pref)
+        
+        db.commit()
+        db.refresh(day_preferences)
     
     # Prepare days data
     days_of_week = [
@@ -2705,7 +2886,6 @@ async def get_mentor_availability_data(
         "days": days_data,
         "exceptions": exceptions_data
     })
-
 @app.post("/mentor/availability/simple/update")
 async def update_simple_availability(
     request: Request,
@@ -2723,7 +2903,7 @@ async def update_simple_availability(
         if not mentor:
             return JSONResponse({"success": False, "message": "Mentor not found"})
         
-        # Update day preferences
+        # Update each day preference
         for day_data in data.get("days", []):
             day_pref = db.query(AvailabilityDay).filter(
                 AvailabilityDay.mentor_id == mentor.id,
@@ -2756,9 +2936,13 @@ async def update_simple_availability(
         
         db.commit()
         
+        # Regenerate availability for next 30 days
+        generate_availability_from_day_preferences(mentor.id, db, 30)
+        
         return JSONResponse({
             "success": True,
-            "message": "Availability updated successfully!"
+            "message": "Availability updated successfully!",
+            "regenerated": True
         })
         
     except Exception as e:
@@ -4340,8 +4524,52 @@ async def user_profile(
             Service.is_active == True
         ).all()
         
-        # Use the new simple availability function
+        # IMPORTANT: First ensure day preferences exist
+        day_preferences = db.query(AvailabilityDay).filter(
+            AvailabilityDay.mentor_id == mentor.id
+        ).all()
+        
+        # If no day preferences, create default ones
+        if not day_preferences:
+            print(f"Creating default day preferences for mentor {mentor.id}")
+            default_days = [
+                {"day_of_week": 0, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 1, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 2, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 3, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 4, "start_time": "09:00", "end_time": "17:00", "is_active": True},
+                {"day_of_week": 5, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+                {"day_of_week": 6, "start_time": "10:00", "end_time": "14:00", "is_active": False},
+            ]
+            
+            for day_data in default_days:
+                day_pref = AvailabilityDay(
+                    mentor_id=mentor.id,
+                    day_of_week=day_data["day_of_week"],
+                    start_time=day_data["start_time"],
+                    end_time=day_data["end_time"],
+                    is_active=day_data["is_active"],
+                    created_at=datetime.utcnow()
+                )
+                db.add(day_pref)
+            
+            db.commit()
+            print(f"✅ Created default day preferences for mentor {mentor.id}")
+        
+        # Generate availability from day preferences
+        try:
+            generate_availability_from_day_preferences(mentor.id, db, 30)
+        except Exception as e:
+            print(f"⚠️ Error generating availability: {e}")
+            # Continue even if generation fails
+        
+        # Now get available dates
         available_dates = get_available_dates_for_mentor(mentor.id, 30, db)
+        
+        # Debug: Log what we found
+        print(f"✅ Found {len(available_dates)} available dates for mentor {mentor.id}")
+        for date in available_dates[:3]:  # Show first 3 for debugging
+            print(f"  - {date['full_date']} ({date['day_name']})")
         
         # Ensure we have user data properly loaded
         if not mentor.user:
@@ -4354,7 +4582,7 @@ async def user_profile(
             "services": services,
             "available_dates": available_dates
         })
-    
+        
     # If user is a learner, show simple learner profile
     elif user.role == "learner":
         return templates.TemplateResponse("learner_profile.html", {
