@@ -854,8 +854,8 @@ def get_available_dates_for_mentor(mentor_id: int, days_ahead: int = 30, db: Ses
             db.close()
             
             
-def generate_meeting_link(booking_id: int, db: Session):
-    """Generate or retrieve meeting link for a confirmed booking - FIXED VERSION"""
+async def generate_meeting_link(booking_id: int, db: Session):
+    """Generate or retrieve meeting link for a confirmed booking - UPDATED WITH EMAIL"""
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     
     if not booking:
@@ -863,6 +863,11 @@ def generate_meeting_link(booking_id: int, db: Session):
     
     # If meeting link already exists, return it
     if booking.meeting_link and booking.meeting_id:
+        # Still send email if it hasn't been sent
+        try:
+            await send_booking_confirmation_email(booking, db)
+        except Exception as e:
+            print(f"⚠️ Could not send booking confirmation email: {e}")
         return booking.meeting_link, booking.meeting_id
     
     # Get user details
@@ -888,7 +893,7 @@ def generate_meeting_link(booking_id: int, db: Session):
     time_slots = db.query(TimeSlot).filter(TimeSlot.booking_id == booking.id).all()
     for time_slot in time_slots:
         time_slot.is_booked = True
-        print(f"Marked TimeSlot {time_slot.id} ({time_slot.start_time}-{time_slot.end_time}) as booked")
+        print(f"✅ Marked TimeSlot {time_slot.id} ({time_slot.start_time}-{time_slot.end_time}) as booked")
     
     # IMPORTANT: DO NOT mark entire availability as booked
     # Instead, check if we should mark availability based on booked time slots
@@ -929,23 +934,77 @@ def generate_meeting_link(booking_id: int, db: Session):
             # 2. All time slots for the day are booked
             if booking_covers_all or (len(all_time_slots) > 0 and len(booked_slots) == len(all_time_slots)):
                 availability.is_booked = True
-                print(f"Marked availability as booked (full day or all slots booked)")
+                print(f"✅ Marked availability as booked (full day or all slots booked)")
             else:
                 availability.is_booked = False
-                print(f"Availability remains open (partial booking)")
+                print(f"✅ Availability remains open (partial booking)")
                 
         except Exception as e:
-            print(f"Error checking availability coverage: {e}")
+            print(f"⚠️ Error checking availability coverage: {e}")
             # Default: don't mark as booked
             availability.is_booked = False
     
     db.commit()
     
-    # Send notification (optional)
+    # Send booking confirmation email (async)
+    try:
+        await send_booking_confirmation_email(booking, db)
+        print(f"✅ Booking confirmation email sent for booking {booking_id}")
+    except Exception as e:
+        print(f"⚠️ Could not send booking confirmation email: {e}")
+    
+    # Also send notification to mentor
+    try:
+        await send_mentor_notification_email(booking, db)
+        print(f"✅ Mentor notification email sent for booking {booking_id}")
+    except Exception as e:
+        print(f"⚠️ Could not send mentor notification email: {e}")
+    
+    # Send meeting notification (optional)
     send_meeting_notification(booking, meeting_link, db)
     
     return meeting_link, meeting_id
 
+async def send_mentor_notification_email(booking: Booking, db: Session):
+    """Send booking notification to mentor"""
+    try:
+        # Get mentor and learner details
+        mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
+        mentor_user = db.query(User).filter(User.id == mentor.user_id).first() if mentor else None
+        learner = db.query(User).filter(User.id == booking.learner_id).first()
+        service = db.query(Service).filter(Service.id == booking.service_id).first()
+        
+        if not mentor_user or not learner:
+            return False
+        
+        # Prepare email content
+        template_body = {
+            "mentor_name": mentor_user.full_name or mentor_user.username,
+            "learner_name": learner.full_name or learner.username,
+            "learner_email": learner.email,
+            "service_name": service.name if service else "Session",
+            "booking_date": booking.booking_date.strftime("%B %d, %Y") if booking.booking_date else "N/A",
+            "booking_time": booking.selected_time if booking.selected_time else "N/A",
+            "booking_id": booking.id,
+            "amount_paid": f"₹{booking.amount_paid}" if booking.amount_paid > 0 else "Free",
+            "meeting_link": booking.meeting_link if booking.meeting_link else "Will be available before session",
+            "dashboard_url": "https://www.clearq.in/dashboard",
+            "booking_details_url": f"https://www.clearq.in/dashboard/booking/{booking.id}"
+        }
+        
+        message = MessageSchema(
+            subject=f"New Booking: {service.name if service else 'Session'} with {learner.full_name or learner.username}",
+            recipients=[mentor_user.email],
+            template_body=template_body,
+            subtype=MessageType.html
+        )
+        
+        await fm.send_message(message, template_name="mentor_notification.html")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error sending mentor notification: {e}")
+        return False
 
 @app.post("/mentor/availability/cleanup")
 async def cleanup_availability(
