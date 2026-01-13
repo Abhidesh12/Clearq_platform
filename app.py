@@ -3784,6 +3784,8 @@ async def create_booking(
 ):
     if not current_user or current_user.role != "learner":
         raise HTTPException(status_code=403, detail="Only learners can book sessions")
+
+    target_date = None
     
     service_id = booking_data.get("service_id")
     date_str = booking_data.get("date")
