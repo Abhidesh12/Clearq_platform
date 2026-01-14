@@ -1,5 +1,7 @@
 import os
 import re
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 import uuid
 from sqlalchemy import DECIMAL
 from decimal import Decimal
@@ -53,6 +55,14 @@ load_dotenv()
 
 # Initialize FastAPI
 app = FastAPI(title="ClearQ Mentorship Platform")
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SECRET_KEY  # Use your existing SECRET_KEY
+)
+
+# Then add your CSPMiddleware
+app.add_middleware(CSPMiddleware)
 
 # Updated middleware
 class CSPMiddleware(BaseHTTPMiddleware):
