@@ -3510,6 +3510,88 @@ def send_meeting_notification(booking: Booking, meeting_link: str, db: Session):
     print(f"Time: {booking.selected_time}")
     print(f"Participants: Learner {booking.learner_id}, Mentor {booking.mentor_id}")
 
+def cleanup_expired_pending_bookings(db: Session = Depends(get_db)):
+    """Clean up expired pending bookings (run this periodically)"""
+    try:
+        one_hour_ago = datetime.now() - timedelta(hours=1)
+        
+        # Find expired pending bookings
+        expired_bookings = db.query(Booking).filter(
+            Booking.payment_status == "pending",
+            Booking.status == "pending",
+            Booking.created_at < one_hour_ago
+        ).all()
+        
+        for booking in expired_bookings:
+            print(f"Cleaning up expired booking: {booking.id}")
+            
+            # Free up time slots
+            time_slots = db.query(TimeSlot).filter(
+                TimeSlot.booking_id == booking.id
+            ).all()
+            
+            for slot in time_slots:
+                db.delete(slot)
+            
+            # Delete the booking
+            db.delete(booking)
+        
+        db.commit()
+        print(f"Cleaned up {len(expired_bookings)} expired bookings")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"Error cleaning up expired bookings: {e}")
+
+@app.get("/api/check-booking-status/{booking_id}")
+async def check_booking_status(
+    booking_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Check booking status - useful for frontend to handle back button"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    booking = db.query(Booking).filter(
+        Booking.id == booking_id,
+        Booking.learner_id == current_user.id
+    ).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    service = db.query(Service).filter(Service.id == booking.service_id).first()
+    
+    response = {
+        "booking_id": booking.id,
+        "payment_status": booking.payment_status,
+        "booking_status": booking.status,
+        "is_digital": service.is_digital if service else False,
+        "amount_paid": booking.amount_paid,
+        "created_at": booking.created_at.isoformat() if booking.created_at else None
+    }
+    
+    # Determine redirect URL based on current status
+    if booking.payment_status == "paid":
+        if service and service.is_digital:
+            response["redirect_url"] = f"/digital-product/{service.id}"
+        elif booking.meeting_link:
+            response["redirect_url"] = f"/meeting/{booking.id}"
+        else:
+            response["redirect_url"] = "/dashboard?tab=upcoming"
+    elif booking.payment_status == "pending":
+        response["redirect_url"] = f"/payment/{booking.id}"
+    elif booking.payment_status == "free":
+        if service and service.is_digital:
+            response["redirect_url"] = f"/digital-product/{service.id}"
+        elif booking.meeting_link:
+            response["redirect_url"] = f"/meeting/{booking.id}"
+        else:
+            response["redirect_url"] = "/dashboard"
+    
+    return JSONResponse(response)
+
 # ============ MENTOR PAYOUT ROUTES ============
 
 @app.get("/mentor/payout", response_class=HTMLResponse)
@@ -3785,6 +3867,7 @@ async def create_booking(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """Create booking with proper back button and payment handling - FULLY UPDATED"""
     if not current_user or current_user.role != "learner":
         raise HTTPException(status_code=403, detail="Only learners can book sessions")
 
@@ -3824,6 +3907,31 @@ async def create_booking(
         date_str = datetime.now().strftime("%Y-%m-%d")
         time_slot = datetime.now().strftime("%H:%M")
     
+    # CRITICAL: Check for existing pending bookings (within last 1 hour)
+    if not is_digital_service and date_str and time_slot:
+        # For live sessions, check if user already has a pending booking for same slot
+        existing_pending = db.query(Booking).filter(
+            Booking.learner_id == current_user.id,
+            Booking.service_id == service_id,
+            Booking.booking_date == datetime.strptime(date_str, "%Y-%m-%d").date(),
+            Booking.selected_time == time_slot,
+            Booking.payment_status == "pending",
+            Booking.status == "pending",
+            Booking.created_at >= datetime.now() - timedelta(hours=1)
+        ).first()
+        
+        if existing_pending:
+            print(f"✅ Found existing pending booking: {existing_pending.id}")
+            return JSONResponse({
+                "success": True,
+                "booking_id": existing_pending.id,
+                "redirect_url": f"/payment/{existing_pending.id}",
+                "is_digital": is_digital_service,
+                "is_free": service.price == 0,
+                "existing_booking": True,
+                "message": "Continuing with existing booking"
+            })
+    
     # Check if service is free (price = 0)
     is_free_service = service.price == 0
     
@@ -3844,7 +3952,8 @@ async def create_booking(
                 meeting_link=None,
                 meeting_id=None,
                 notes=f"Free digital product: {service.name}",
-                download_count=0
+                download_count=0,
+                created_at=datetime.utcnow()
             )
             
             db.add(booking)
@@ -3868,24 +3977,26 @@ async def create_booking(
             start_time = datetime.strptime(time_slot, "%H:%M")
             end_time = start_time + timedelta(minutes=service.duration_minutes)
             end_time_str = end_time.strftime("%H:%M")
+            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
             
-            # Create booking record
-
+            # Check if time slot is available
             is_available = check_time_slot_availability(
-                
                 mentor_id=service.mentor_id,
                 date=target_date,
                 start_time=time_slot,
                 end_time=end_time_str,
                 db=db
             )
+            
             if not is_available:
-                    raise HTTPException(status_code=400, detail="This time slot is no longer available")
+                raise HTTPException(status_code=400, detail="This time slot is no longer available")
+            
+            # Create booking record
             booking = Booking(
                 learner_id=current_user.id,
                 mentor_id=service.mentor_id,
                 service_id=service_id,
-                booking_date=datetime.strptime(date_str, "%Y-%m-%d"),
+                booking_date=target_date,
                 selected_time=time_slot,
                 razorpay_order_id=None,
                 amount_paid=0,
@@ -3893,20 +4004,15 @@ async def create_booking(
                 payment_status="free",
                 meeting_link=meeting_link,
                 meeting_id=meeting_id,
-                notes=f"Free session scheduled for {date_str} at {time_slot}"
+                notes=f"Free session scheduled for {date_str} at {time_slot}",
+                created_at=datetime.utcnow()
             )
             
             db.add(booking)
             db.commit()
             db.refresh(booking)
             
-            # Mark the time slot as booked (only for live sessions)
-            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-            
-            # DO NOT mark availability as booked here - will be handled in generate_meeting_link
-            print(f"✅ Time slot reserved without marking availability as booked")
-            
-            # Create a time slot record (only for live sessions)
+            # Create a time slot record
             time_slot_record = TimeSlot(
                 booking_id=booking.id,
                 start_time=time_slot,
@@ -3916,12 +4022,32 @@ async def create_booking(
                 created_at=datetime.utcnow()
             )
             db.add(time_slot_record)
+            
+            # Update availability if needed
+            availability = db.query(Availability).filter(
+                Availability.mentor_id == service.mentor_id,
+                Availability.date == target_date
+            ).first()
+            
+            if availability:
+                # Check if all slots for this date are booked
+                all_time_slots = db.query(TimeSlot).join(Booking).filter(
+                    Booking.mentor_id == service.mentor_id,
+                    TimeSlot.date == target_date
+                ).all()
+                
+                booked_slots = sum(1 for ts in all_time_slots if ts.is_booked)
+                total_slots = len(all_time_slots)
+                
+                if total_slots > 0 and booked_slots == total_slots:
+                    availability.is_booked = True
+            
             db.commit()
             
             return JSONResponse({
                 "success": True,
                 "booking_id": booking.id,
-                "redirect_url": f"/dashboard",
+                "redirect_url": f"/meeting/{booking.id}",
                 "meeting_link": meeting_link,
                 "meeting_id": meeting_id,
                 "is_digital": False,
@@ -3931,6 +4057,27 @@ async def create_booking(
     else:
         # Paid services
         if is_digital_service:
+            # Check for existing pending digital product booking
+            existing_digital_booking = db.query(Booking).filter(
+                Booking.learner_id == current_user.id,
+                Booking.service_id == service_id,
+                Booking.payment_status == "pending",
+                Booking.status == "pending",
+                Booking.created_at >= datetime.now() - timedelta(hours=1)
+            ).first()
+            
+            if existing_digital_booking:
+                print(f"✅ Found existing pending digital booking: {existing_digital_booking.id}")
+                return JSONResponse({
+                    "success": True,
+                    "booking_id": existing_digital_booking.id,
+                    "redirect_url": f"/payment/{existing_digital_booking.id}",
+                    "is_digital": True,
+                    "is_free": False,
+                    "existing_booking": True,
+                    "message": "Continuing with existing booking"
+                })
+            
             # Paid digital product - create Razorpay order
             order_amount = service.price * 100
             order_currency = "INR"
@@ -3963,7 +4110,8 @@ async def create_booking(
                     meeting_link=None,
                     meeting_id=None,
                     notes=f"Digital product purchase: {service.name}",
-                    download_count=0
+                    download_count=0,
+                    created_at=datetime.utcnow()
                 )
                 
                 db.add(booking)
@@ -3981,13 +4129,33 @@ async def create_booking(
                 })
                 
             except Exception as e:
-                raise HTTPException(status_code=500, detail=str(e))
+                raise HTTPException(status_code=500, detail=f"Error creating payment order: {str(e)}")
         else:
-            # Paid session - create Razorpay order
-            order_amount = service.price * 100
-            order_currency = "INR"
+            # Paid live session
+            
+            # Calculate end time based on service duration
+            start_time = datetime.strptime(time_slot, "%H:%M")
+            end_time = start_time + timedelta(minutes=service.duration_minutes)
+            end_time_str = end_time.strftime("%H:%M")
+            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            
+            # Check if time slot is available
+            is_available = check_time_slot_availability(
+                mentor_id=service.mentor_id,
+                date=target_date,
+                start_time=time_slot,
+                end_time=end_time_str,
+                db=db
+            )
+            
+            if not is_available:
+                raise HTTPException(status_code=400, detail="This time slot is no longer available")
             
             try:
+                # Create Razorpay order
+                order_amount = service.price * 100
+                order_currency = "INR"
+                
                 order_data = {
                     "amount": order_amount,
                     "currency": order_currency,
@@ -4003,17 +4171,12 @@ async def create_booking(
                 
                 razorpay_order = razorpay_client.order.create(order_data)
                 
-                # Calculate end time based on service duration
-                start_time = datetime.strptime(time_slot, "%H:%M")
-                end_time = start_time + timedelta(minutes=service.duration_minutes)
-                end_time_str = end_time.strftime("%H:%M")
-                
                 # Create booking record for session
                 booking = Booking(
                     learner_id=current_user.id,
                     mentor_id=service.mentor_id,
                     service_id=service_id,
-                    booking_date=datetime.strptime(date_str, "%Y-%m-%d").date(),
+                    booking_date=target_date,
                     selected_time=time_slot,
                     razorpay_order_id=razorpay_order["id"],
                     amount_paid=service.price,
@@ -4022,22 +4185,20 @@ async def create_booking(
                     meeting_link=None,
                     meeting_id=None,
                     notes=f"Session scheduled for {date_str} at {time_slot} (Pending Payment)",
-                    download_count=0
+                    created_at=datetime.utcnow()
                 )
                 
                 db.add(booking)
                 db.commit()
                 db.refresh(booking)
                 
-                # Create a TimeSlot record to temporarily reserve the slot (only for live sessions)
-                target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-                
+                # Create a TimeSlot record to temporarily reserve the slot
                 time_slot_record = TimeSlot(
                     booking_id=booking.id,
                     start_time=time_slot,
                     end_time=end_time_str,
                     date=target_date,
-                    is_booked=False,
+                    is_booked=False,  # Not booked yet, just reserved
                     created_at=datetime.utcnow()
                 )
                 db.add(time_slot_record)
@@ -4055,7 +4216,7 @@ async def create_booking(
                 
             except Exception as e:
                 db.rollback()
-                raise HTTPException(status_code=500, detail=str(e))
+                raise HTTPException(status_code=500, detail=f"Error creating booking: {str(e)}")
 # Add this new API endpoint for generating time slots
 @app.post("/api/generate-time-slots")
 async def generate_time_slots(
