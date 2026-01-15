@@ -1287,7 +1287,8 @@ async def mentor_availability_days_page(
             )
             db.add(day_pref)
         db.commit()
-        db.refresh(day_preferences)
+        for preference in day_preferences:
+            db.refresh(preference)
     
     # Get exceptions (next 30 days)
     today = datetime.now().date()
@@ -2961,7 +2962,8 @@ async def get_mentor_availability_data(
             db.add(day_pref)
         
         db.commit()
-        db.refresh(day_preferences)
+        for preference in day_preferences:
+            db.refresh(preference)
     
     # Prepare days data
     days_of_week = [
