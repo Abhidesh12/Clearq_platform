@@ -5227,7 +5227,7 @@ async def meeting_page(
             detail="Meeting not confirmed yet. Please wait for payment confirmation."
         )
     
-    # If meeting link doesn't exist, generate one
+    ## If meeting link doesn't exist, generate one
     if not booking.meeting_link:
         meeting_link, meeting_id = generate_meeting_link(booking.id, db)
     else:
