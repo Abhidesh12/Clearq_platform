@@ -175,7 +175,7 @@
             Back to Dashboard
         </a>
         
-        {% if booking.status == 'confirmed' and booking.booking_date.strftime('%Y-%m-%d') == now().strftime('%Y-%m-%d') %}
+        {% if booking.status == 'confirmed' and booking.booking_date.strftime('%Y-%m-%d') == now.strftime('%Y-%m-%d') %}
         <button onclick="embedMeeting()" class="action-btn btn-primary">
             <i class="fas fa-video"></i>
             Start Meeting Here
