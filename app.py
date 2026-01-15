@@ -2963,6 +2963,7 @@ async def get_mentor_availability_data(
             {"day_of_week": 6, "start_time": "09:00", "end_time": "21:00", "is_active": False},
         ]
         
+        day_preferences = []  # Initialize as empty list
         for day_data in default_days:
             day_pref = AvailabilityDay(
                 mentor_id=mentor.id,
@@ -2973,8 +2974,10 @@ async def get_mentor_availability_data(
                 created_at=datetime.utcnow()
             )
             db.add(day_pref)
+            day_preferences.append(day_pref)  # Add to our list
         
         db.commit()
+        # Now refresh each created preference
         for preference in day_preferences:
             db.refresh(preference)
     
