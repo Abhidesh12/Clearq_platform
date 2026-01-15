@@ -748,6 +748,19 @@ def generate_meeting_link(booking_id: int, db: Session):
     return meeting_link, meeting_id
 
 
+@app.get("/meta.json")
+async def meta_json():
+    return {
+        "name": "Your App",
+        "short_name": "App",
+        "description": "Your application description",
+        "start_url": "/",
+        "display": "standalone",
+        "theme_color": "#000000",
+        "background_color": "#ffffff"
+    }
+
+
 @app.get("/payment/callback")
 async def payment_callback(
     request: Request,
