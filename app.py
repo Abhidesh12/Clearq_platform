@@ -84,7 +84,7 @@ async def add_now_to_context(request: Request):
     return {"now": datetime.now()}
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["now"] = lambda: datetime.now()
+templates.env.globals["now"] = datetime.now()
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],
@@ -5258,7 +5258,8 @@ async def meeting_page(
         "current_user": current_user,
         "booking": booking,
         "meeting_link": meeting_link,
-        "meeting_id": meeting_id
+        "meeting_id": meeting_id,
+        "now": datetime.now()
     })
     
 @app.post("/api/verify-payment")
