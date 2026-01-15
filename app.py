@@ -748,6 +748,80 @@ def generate_meeting_link(booking_id: int, db: Session):
     return meeting_link, meeting_id
 
 
+@app.get("/payment/callback")
+async def payment_callback(
+    request: Request,
+    payment_id: Optional[str] = None,
+    order_id: Optional[str] = None,
+    booking_id: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    """Handle payment callbacks from payment gateways (Google Pay, etc.)"""
+    try:
+        # Try to get parameters from query string
+        payment_id = payment_id or request.query_params.get('razorpay_payment_id')
+        order_id = order_id or request.query_params.get('razorpay_order_id')
+        booking_id = booking_id or request.query_params.get('booking_id')
+        
+        if not payment_id:
+            return RedirectResponse(url="/dashboard?error=Missing%20payment%20ID")
+        
+        # Try to find booking
+        booking = None
+        if booking_id:
+            booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        
+        if not booking and order_id:
+            booking = db.query(Booking).filter(Booking.razorpay_order_id == order_id).first()
+        
+        if not booking:
+            return RedirectResponse(url="/dashboard?error=Booking%20not%20found")
+        
+        # Check if already paid
+        if booking.payment_status == "paid":
+            service = db.query(Service).filter(Service.id == booking.service_id).first()
+            if service and service.is_digital:
+                return RedirectResponse(url=f"/digital-product/{service.id}")
+            elif booking.meeting_link:
+                return RedirectResponse(url=f"/meeting/{booking.id}")
+            else:
+                return RedirectResponse(url="/dashboard?success=Payment%20already%20verified")
+        
+        # Verify payment with Razorpay
+        try:
+            payment = razorpay_client.payment.fetch(payment_id)
+            
+            if payment.get('status') == 'captured':
+                # Update booking
+                booking.payment_status = "paid"
+                booking.razorpay_payment_id = payment_id
+                booking.razorpay_order_id = order_id or payment.get('order_id')
+                
+                # Generate meeting link for sessions
+                service = db.query(Service).filter(Service.id == booking.service_id).first()
+                if service and not service.is_digital:
+                    generate_meeting_link(booking.id, db)
+                else:
+                    booking.status = "completed"
+                
+                db.commit()
+                
+                # Redirect based on service type
+                if service and service.is_digital:
+                    return RedirectResponse(url=f"/digital-product/{service.id}")
+                else:
+                    return RedirectResponse(url=f"/meeting/{booking.id}")
+            else:
+                return RedirectResponse(url=f"/payment/{booking.id}?error=Payment%20not%20captured")
+                
+        except Exception as e:
+            print(f"Payment verification error: {e}")
+            return RedirectResponse(url=f"/payment/{booking.id}?error=Payment%20verification%20failed")
+            
+    except Exception as e:
+        print(f"Callback error: {e}")
+        return RedirectResponse(url="/dashboard?error=Callback%20failed")
+
 @app.post("/mentor/availability/cleanup")
 async def cleanup_availability(
     request: Request,
