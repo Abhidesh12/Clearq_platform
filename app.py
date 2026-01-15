@@ -5222,6 +5222,7 @@ async def create_razorpay_order(request: Request, db: Session = Depends(get_db))
     
 @app.get("/meeting/{booking_id}", response_class=HTMLResponse)
 async def meeting_page(
+    request: Request,
     booking_id: int,
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
