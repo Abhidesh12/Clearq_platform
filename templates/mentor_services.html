@@ -3,7 +3,92 @@
 {% block title %}Manage Services - ClearQ{% endblock %}
 
 {% block content %}
+<!-- Add Tailwind Configuration -->
+<script>
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                "primary": "#1f1f1f",
+                "primary-hover": "#000000",
+                "accent": "#ff6b4a",
+                "background-light": "#fff5ec",
+                "background-dark": "#151022",
+                "text-light": "#1f1f1f",
+                "text-dark": "#ffffff",
+                "text-secondary-light": "#555555",
+                "text-secondary-dark": "#a09db3",
+                "card-light": "#ffffff",
+                "card-dark": "#1e1a2e",
+                "border-light": "#E5E4E0",
+                "border-dark": "#2d2a3b",
+                "accent-beige": "#F0EFEA",
+                "secondary": "#2D3748",
+                "dark-card": "#232936",
+                "card-purple": "#E0DBFC",
+                "card-green": "#9CCB5C",
+                "card-blue": "#85C3EA",
+                "card-beige": "#EEE3CD",
+                "card-teal": "#A8E1E1",
+                "card-pink": "#F6D0CE",
+                "brand-red": "#FF3F1F",
+            },
+            fontFamily: {
+                "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "2xl": "1rem",
+                "full": "9999px"
+            },
+            fontSize: {
+                'xxs': '0.625rem',
+            }
+        },
+    }
+}
+</script>
+
 <style>
+    /* Initialize CSS Variables with your theme */
+    :root {
+        /* Primary Colors */
+        --primary: #1f1f1f;
+        --primary-hover: #000000;
+        --accent: #ff6b4a;
+        --secondary: #2D3748;
+        --brand-red: #FF3F1F;
+        
+        /* Background Colors */
+        --background-light: #fff5ec;
+        --background-dark: #151022;
+        --card-light: #ffffff;
+        --card-dark: #1e1a2e;
+        --dark-card: #232936;
+        --accent-beige: #F0EFEA;
+        
+        /* Text Colors */
+        --text-light: #1f1f1f;
+        --text-dark: #ffffff;
+        --text-secondary-light: #555555;
+        --text-secondary-dark: #a09db3;
+        
+        /* Border Colors */
+        --border-light: #E5E4E0;
+        --border-dark: #2d2a3b;
+        
+        /* Card Color Palette */
+        --card-purple: #E0DBFC;
+        --card-green: #9CCB5C;
+        --card-blue: #85C3EA;
+        --card-beige: #EEE3CD;
+        --card-teal: #A8E1E1;
+        --card-pink: #F6D0CE;
+    }
+
     .services-container {
         max-width: 100%;
         margin: 0 auto;
@@ -41,7 +126,7 @@
     .services-header h1 {
         font-size: 2rem;
         font-weight: 700;
-        color: white;
+        color: var(--text-dark);
         margin-bottom: 0.5rem;
         letter-spacing: -0.5px;
     }
@@ -138,7 +223,7 @@
     .form-header {
         padding: 1.5rem 2rem;
         border-bottom: 1px solid var(--border-light);
-        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
+        background: linear-gradient(135deg, var(--background-light) 0%, var(--accent-beige) 100%);
     }
 
     .form-header h2 {
@@ -347,7 +432,7 @@
     .digital-fields {
         margin-top: 1.5rem;
         padding: 1.5rem;
-        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
+        background: linear-gradient(135deg, var(--background-light) 0%, var(--accent-beige) 100%);
         border-radius: 1.5rem;
         border: 2px solid var(--border-light);
         animation: slideIn 0.3s ease;
@@ -448,7 +533,7 @@
     .editor-toolbar {
         display: flex;
         padding: 1rem;
-        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
+        background: linear-gradient(135deg, var(--background-light) 0%, var(--accent-beige) 100%);
         border-bottom: 2px solid var(--border-light);
         flex-wrap: wrap;
         gap: 0.5rem;
@@ -548,7 +633,7 @@
     .list-header {
         padding: 1.5rem 2rem;
         border-bottom: 1px solid var(--border-light);
-        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
+        background: linear-gradient(135deg, var(--background-light) 0%, var(--accent-beige) 100%);
     }
 
     .list-header h2 {
@@ -589,7 +674,7 @@
 
     .service-item:hover {
         border-color: var(--accent);
-        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
+        background: linear-gradient(135deg, var(--background-light) 0%, var(--accent-beige) 100%);
         transform: translateY(-2px);
         box-shadow: 0 12px 32px rgba(31, 31, 31, 0.1);
     }
@@ -745,6 +830,33 @@
         color: white;
     }
 
+    /* Digital Product Info */
+    .digital-product-info {
+        background: linear-gradient(135deg, var(--card-purple), #e0dbfc);
+        border: 2px solid rgba(136, 19, 55, 0.2);
+        padding: 1rem;
+        border-radius: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .digital-product-info h4 {
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .digital-product-info h4 i {
+        color: var(--accent);
+    }
+
+    .digital-product-info p {
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+    }
+
     /* Empty State */
     .empty-state {
         flex: 1;
@@ -824,33 +936,6 @@
 
     .notification i {
         font-size: 1.25rem;
-    }
-
-    /* Digital Product Info */
-    .digital-product-info {
-        background: linear-gradient(135deg, var(--card-purple), #e0dbfc);
-        border: 2px solid rgba(136, 19, 55, 0.2);
-        padding: 1rem;
-        border-radius: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .digital-product-info h4 {
-        font-weight: 600;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .digital-product-info h4 i {
-        color: var(--accent);
-    }
-
-    .digital-product-info p {
-        font-size: 0.875rem;
-        color: var(--text-secondary-light);
     }
 
     /* Responsive Design */
@@ -1293,9 +1378,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize color variables
-        initializeThemeColors();
-        
         // Rich Text Editor Functionality
         const editor = document.getElementById('rich-text-editor');
         const textarea = document.getElementById('description-textarea');
@@ -1572,44 +1654,6 @@
                 toggleDigitalFields();
             }
         });
-        
-        // Initialize theme colors
-        function initializeThemeColors() {
-            const root = document.documentElement;
-            
-            // Primary Colors
-            root.style.setProperty('--primary', '#1f1f1f');
-            root.style.setProperty('--primary-hover', '#000000');
-            root.style.setProperty('--accent', '#ff6b4a');
-            root.style.setProperty('--secondary', '#2D3748');
-            root.style.setProperty('--brand-red', '#FF3F1F');
-            
-            // Background Colors
-            root.style.setProperty('--background-light', '#fff5ec');
-            root.style.setProperty('--background-dark', '#151022');
-            root.style.setProperty('--card-light', '#ffffff');
-            root.style.setProperty('--card-dark', '#1e1a2e');
-            root.style.setProperty('--dark-card', '#232936');
-            root.style.setProperty('--accent-beige', '#F0EFEA');
-            
-            // Text Colors
-            root.style.setProperty('--text-light', '#1f1f1f');
-            root.style.setProperty('--text-dark', '#ffffff');
-            root.style.setProperty('--text-secondary-light', '#555555');
-            root.style.setProperty('--text-secondary-dark', '#a09db3');
-            
-            // Border Colors
-            root.style.setProperty('--border-light', '#E5E4E0');
-            root.style.setProperty('--border-dark', '#2d2a3b');
-            
-            // Card Color Palette
-            root.style.setProperty('--card-purple', '#E0DBFC');
-            root.style.setProperty('--card-green', '#9CCB5C');
-            root.style.setProperty('--card-blue', '#85C3EA');
-            root.style.setProperty('--card-beige', '#EEE3CD');
-            root.style.setProperty('--card-teal', '#A8E1E1');
-            root.style.setProperty('--card-pink', '#F6D0CE');
-        }
         
         // Enhanced notification system
         window.showNotification = function(message, type = 'info') {
