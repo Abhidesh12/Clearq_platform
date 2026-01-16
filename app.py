@@ -498,7 +498,7 @@ def can_withdraw(mentor_id: int, amount: float, db: Session):
     balance = get_mentor_balance(mentor_id, db)
     
     # Minimum withdrawal amount
-    if amount < 500:
+    if amount < 1:
         return False, "Minimum withdrawal amount is ₹500"
     
     # Check available balance
