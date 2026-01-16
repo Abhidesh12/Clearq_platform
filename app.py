@@ -3617,6 +3617,86 @@ async def mentor_availability_page(
         "flash_messages": flash_messages
     })
 
+@app.post("/api/admin/withdrawal/{withdrawal_id}/process")
+async def process_withdrawal_admin(
+    withdrawal_id: int,
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin process withdrawal request"""
+    if not current_user or current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    try:
+        data = await request.json()
+        action = data.get("action")
+        admin_notes = data.get("admin_notes", "")
+        
+        if action not in ["approve", "reject"]:
+            return JSONResponse({
+                "success": False,
+                "error": "Invalid action"
+            })
+        
+        # Get withdrawal request
+        withdrawal = db.query(WithdrawalRequest).filter(
+            WithdrawalRequest.id == withdrawal_id
+        ).first()
+        
+        if not withdrawal:
+            return JSONResponse({
+                "success": False,
+                "error": "Withdrawal request not found"
+            })
+        
+        # Process withdrawal
+        if action == "approve":
+            # Mark as paid
+            withdrawal.status = "paid"
+            withdrawal.processed_at = datetime.utcnow()
+            withdrawal.admin_notes = admin_notes
+            
+            # Update mentor earnings (deduct from total_withdrawn)
+            earnings = db.query(MentorEarnings).filter_by(
+                mentor_id=withdrawal.mentor_id
+            ).first()
+            
+            if earnings:
+                earnings.total_withdrawn += withdrawal.amount
+                earnings.last_updated = datetime.utcnow()
+        
+        elif action == "reject":
+            # Reject withdrawal and return amount to available balance
+            withdrawal.status = "rejected"
+            withdrawal.processed_at = datetime.utcnow()
+            withdrawal.admin_notes = admin_notes
+            
+            # Return amount to available balance
+            earnings = db.query(MentorEarnings).filter_by(
+                mentor_id=withdrawal.mentor_id
+            ).first()
+            
+            if earnings:
+                earnings.available_balance += withdrawal.amount
+                earnings.last_updated = datetime.utcnow()
+        
+        db.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "message": f"Withdrawal {action}d successfully",
+            "withdrawal_id": withdrawal.id,
+            "status": withdrawal.status
+        })
+        
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({
+            "success": False,
+            "error": f"Error processing withdrawal: {str(e)}"
+        })
+
 @app.get("/debug/availability/{mentor_id}")
 async def debug_availability(
     mentor_id: int,
@@ -3655,6 +3735,7 @@ async def debug_availability(
             } for a in availabilities
         ],
         "bookings": [
+            
             {
                 "id": b.id,
                 "date": str(b.booking_date),
