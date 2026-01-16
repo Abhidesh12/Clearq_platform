@@ -54,6 +54,127 @@
         --glass-border: rgba(255, 255, 255, 0.2);
     }
 
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal-content {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-2xl);
+        animation: slideUp 0.3s ease;
+        max-height: 90vh;
+        overflow-y: auto;
+        max-width: 500px;
+        width: 90%;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -40%);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .modal-close {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid var(--border-light);
+        color: var(--text-secondary-light);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .modal-close:hover {
+        background: var(--border-light);
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    /* Payment Method Options */
+    .payment-method-option {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .payment-method-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .payment-method-content {
+        padding: 1rem;
+        border: 2px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        text-align: center;
+        transition: var(--transition);
+        background: white;
+    }
+
+    .payment-method-option input[type="radio"]:checked + .payment-method-content {
+        border-color: var(--accent);
+        background: rgba(255, 107, 74, 0.05);
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+    }
+
+    .payment-method-option:hover .payment-method-content {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Form Input Focus */
+    input:focus, textarea:focus {
+        outline: none;
+        border-color: var(--accent) !important;
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+    }
+
     .dashboard-container {
         max-width: 100%;
         margin: 0 auto;
@@ -82,6 +203,11 @@
         bottom: 0;
         background: radial-gradient(circle at 30% 20%, rgba(255, 107, 74, 0.15) 0%, transparent 50%),
                     radial-gradient(circle at 70% 80%, rgba(255, 63, 31, 0.1) 0%, transparent 50%);
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
     }
 
     .header-content {
@@ -802,6 +928,12 @@
         border-color: rgba(246, 208, 206, 0.3);
     }
 
+    .status-rejected {
+        background: linear-gradient(135deg, var(--card-pink), #e4b9b7);
+        color: #8a4d49;
+        border-color: rgba(246, 208, 206, 0.3);
+    }
+
     /* Google Meet Button Styles */
     .join-meet-btn {
         display: inline-flex;
@@ -1478,103 +1610,6 @@
         background: linear-gradient(135deg, rgba(224, 219, 252, 0.1), white);
     }
 
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        overflow-y: auto;
-    }
-
-    .modal-content {
-        background: white;
-        border-radius: var(--radius-xl);
-        margin: 2rem auto;
-        width: 90%;
-        max-width: 500px;
-        box-shadow: var(--shadow-xl);
-        animation: modalSlideIn 0.3s ease-out;
-    }
-
-    @keyframes modalSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .modal-header {
-        padding: 1.5rem;
-        border-bottom: 1px solid var(--border-light);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .modal-close {
-        background: none;
-        border: none;
-        font-size: 1.25rem;
-        color: var(--text-secondary-light);
-        cursor: pointer;
-        transition: var(--transition);
-        width: 2rem;
-        height: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--radius);
-    }
-
-    .modal-close:hover {
-        background: var(--accent-beige);
-        color: var(--primary);
-    }
-
-    .modal-body {
-        padding: 1.5rem;
-    }
-
-    /* Payment Method Options */
-    .payment-method-option {
-        display: block;
-    }
-
-    .payment-method-option input {
-        display: none;
-    }
-
-    .payment-method-content {
-        padding: 1.25rem;
-        border: 2px solid var(--border-light);
-        border-radius: var(--radius);
-        text-align: center;
-        cursor: pointer;
-        transition: var(--transition);
-        background: white;
-    }
-
-    .payment-method-option input:checked + .payment-method-content {
-        border-color: var(--card-green);
-        background: linear-gradient(135deg, rgba(156, 203, 92, 0.1), white);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .payment-method-option:hover .payment-method-content {
-        border-color: var(--accent);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
     /* Responsive Design */
     @media (min-width: 640px) {
         .dashboard-header {
@@ -2172,30 +2207,28 @@
                         <div class="earnings-summary">
                             <div class="earnings-total">
                                 <div class="total-label">Total Earnings</div>
-                                <div class="total-amount">₹{{ earnings|default(0) }}</div>
+                                <div class="total-amount">₹{{ earnings_data.total_earned|default(0)|int }}</div>
                             </div>
                             
                             <div class="earnings-stats">
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">{{ upcoming_count|default(0) }}</div>
-                                    <div class="earning-stat-label">Upcoming</div>
+                                    <div class="earning-stat-value">₹{{ earnings_data.available_balance|default(0)|int }}</div>
+                                    <div class="earning-stat-label">Available</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
+                                    <div class="earning-stat-value">₹{{ earnings_data.total_withdrawn|default(0)|int }}</div>
+                                    <div class="earning-stat-label">Withdrawn</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ earnings_data.pending_withdrawals|default(0) }}</div>
                                     <div class="earning-stat-label">Pending</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">
-                                        {% if confirmed_bookings %}{{ confirmed_bookings|selectattr('payment_status', 'equalto', 'paid')|list|length }}{% else %}0{% endif %}
-                                    </div>
-                                    <div class="earning-stat-label">Paid</div>
-                                </div>
-                                
-                                <div class="earning-stat-item">
-                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
-                                    <div class="earning-stat-label">Unpaid</div>
+                                    <div class="earning-stat-value">{{ earnings_data.completed_withdrawals|default(0) }}</div>
+                                    <div class="earning-stat-label">Paid Out</div>
                                 </div>
                             </div>
                             
@@ -2203,21 +2236,24 @@
                                 <div class="payout-row">
                                     <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 500;">
                                         <i class="fas fa-money-bill-wave"></i>
-                                        Next Payout
+                                        Available for Withdrawal
                                     </span>
-                                    <span style="font-size: 1rem; font-weight: 700; color: var(--primary);">
-                                        ₹{{ (earnings|default(0) * 0.8)|int }}
+                                    <span style="font-size: 1.25rem; font-weight: 700; color: var(--card-green);">
+                                        ₹{{ earnings_data.available_balance|default(0)|int }}
                                     </span>
                                 </div>
+                                
+                                {% if earnings_data.available_balance > 0 %}
                                 <div class="payout-row">
                                     <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
-                                        <i class="fas fa-clock"></i>
-                                        in 3 days
+                                        <i class="fas fa-info-circle"></i>
+                                        Minimum Withdrawal
                                     </span>
                                     <span style="font-size: 0.8125rem; font-weight: 600; color: var(--accent);">
-                                        Pending
+                                        ₹500
                                     </span>
                                 </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -2677,7 +2713,7 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2><i class="fas fa-wallet"></i> Earnings Dashboard</h2>
-                        {% if earnings_data and earnings_data.available_balance > 0 %}
+                        {% if earnings_data.available_balance and earnings_data.available_balance > 500 %}
                         <button onclick="openWithdrawalModal()" 
                                 class="header-action-btn" 
                                 style="background: linear-gradient(135deg, var(--card-green), #7cb342); color: white; border: none;">
@@ -2690,28 +2726,28 @@
                         <div class="earnings-summary">
                             <div class="earnings-total">
                                 <div class="total-label">Total Earnings</div>
-                                <div class="total-amount">₹{{ earnings_data.total_earned|default(0)|int if earnings_data else 0 }}</div>
+                                <div class="total-amount">₹{{ earnings_data.total_earned|default(0)|int }}</div>
                             </div>
                             
                             <!-- Balance Breakdown -->
                             <div class="earnings-stats">
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}</div>
+                                    <div class="earning-stat-value">₹{{ earnings_data.available_balance|default(0)|int }}</div>
                                     <div class="earning-stat-label">Available</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">₹{{ earnings_data.total_withdrawn|default(0)|int if earnings_data else 0 }}</div>
+                                    <div class="earning-stat-value">₹{{ earnings_data.total_withdrawn|default(0)|int }}</div>
                                     <div class="earning-stat-label">Withdrawn</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">{{ earnings_data.pending_withdrawals|default(0) if earnings_data else 0 }}</div>
+                                    <div class="earning-stat-value">{{ earnings_data.pending_withdrawals|default(0) }}</div>
                                     <div class="earning-stat-label">Pending</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">{{ earnings_data.completed_withdrawals|default(0) if earnings_data else 0 }}</div>
+                                    <div class="earning-stat-value">{{ earnings_data.completed_withdrawals|default(0) }}</div>
                                     <div class="earning-stat-label">Paid Out</div>
                                 </div>
                             </div>
@@ -2724,18 +2760,18 @@
                                         Available for Withdrawal
                                     </span>
                                     <span style="font-size: 1.25rem; font-weight: 700; color: var(--card-green);">
-                                        ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
+                                        ₹{{ earnings_data.available_balance|default(0)|int }}
                                     </span>
                                 </div>
                                 
-                                {% if earnings_data and earnings_data.min_withdrawal_amount %}
+                                {% if earnings_data.available_balance > 0 %}
                                 <div class="payout-row">
                                     <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
                                         <i class="fas fa-info-circle"></i>
                                         Minimum Withdrawal
                                     </span>
                                     <span style="font-size: 0.8125rem; font-weight: 600; color: var(--accent);">
-                                        ₹{{ earnings_data.min_withdrawal_amount }}
+                                        ₹500
                                     </span>
                                 </div>
                                 {% endif %}
@@ -2771,7 +2807,7 @@
                                         <td><strong style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">₹{{ withdrawal.amount|int }}</strong></td>
                                         <td>
                                             <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">
-                                                {{ withdrawal.payment_method|default('N/A') }}
+                                                {{ withdrawal.payment_method|default('N/A')|title }}
                                             </span>
                                         </td>
                                         <td>
@@ -2788,7 +2824,7 @@
                                                 <i class="fas fa-money-bill-wave"></i> Paid
                                             </span>
                                             {% elif withdrawal.status == 'rejected' %}
-                                            <span class="status-badge" style="background: linear-gradient(135deg, var(--card-pink), #e4b9b7); color: #8a4d49; border-color: rgba(246, 208, 206, 0.3); display: inline-flex; font-size: 0.75rem;">
+                                            <span class="status-badge status-rejected" style="display: inline-flex; font-size: 0.75rem;">
                                                 <i class="fas fa-times-circle"></i> Rejected
                                             </span>
                                             {% endif %}
@@ -2821,7 +2857,7 @@
                             </div>
                             <h3>No Withdrawal History</h3>
                             <p>You haven't made any withdrawal requests yet</p>
-                            {% if earnings_data and earnings_data.available_balance > 0 %}
+                            {% if earnings_data.available_balance and earnings_data.available_balance > 500 %}
                             <button onclick="openWithdrawalModal()" 
                                     class="header-action-btn" 
                                     style="margin-top: 1.5rem; background: linear-gradient(135deg, var(--card-green), #7cb342); color: white; border: none;">
@@ -2978,7 +3014,7 @@
         </div>
 
         {% elif current_user.role == 'admin' %}
-        <!-- Admin Dashboard - Add Withdrawal Requests Section -->
+        <!-- Admin Dashboard -->
         <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
             <!-- Pending Withdrawal Requests -->
             <div class="dashboard-card">
@@ -3054,22 +3090,6 @@
                                 </button>
                                 <input type="hidden" name="admin_notes" id="adminNotesInput{{ withdrawal.id }}">
                             </form>
-                            
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    const notesTextarea = document.getElementById('adminNotes{{ withdrawal.id }}');
-                                    const notesInput = document.getElementById('adminNotesInput{{ withdrawal.id }}');
-                                    
-                                    if (notesTextarea && notesInput) {
-                                        notesTextarea.addEventListener('input', function() {
-                                            notesInput.value = this.value;
-                                        });
-                                        
-                                        // Set initial value
-                                        notesInput.value = notesTextarea.value;
-                                    }
-                                });
-                            </script>
                         </div>
                         {% endfor %}
                     </div>
@@ -3080,73 +3100,6 @@
                         </div>
                         <h3>All Caught Up!</h3>
                         <p>No pending withdrawal requests at the moment</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Pending Mentor Approvals -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-user-clock"></i> Pending Mentor Approvals</h2>
-                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 600;">
-                        <i class="fas fa-hashtag"></i>
-                        {{ pending_mentors|length if pending_mentors else 0 }} pending
-                    </span>
-                </div>
-                
-                <div class="card-content">
-                    {% if pending_mentors and pending_mentors|length > 0 %}
-                    <div>
-                        {% for mentor in pending_mentors %}
-                        <div class="pending-mentor">
-                            <div class="mentor-info">
-                                {% if mentor.user.profile_image %}
-                                <img src="/static/{{ mentor.user.profile_image }}" 
-                                     alt="{{ mentor.user.full_name }}"
-                                     class="mentor-avatar">
-                                {% else %}
-                                <div class="mentor-avatar">
-                                    {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
-                                </div>
-                                {% endif %}
-                                <div class="mentor-details">
-                                    <h3>{{ mentor.user.full_name or mentor.user.username }}</h3>
-                                    <p>{{ mentor.user.email }}</p>
-                                    <div class="mentor-tags">
-                                        {% if mentor.industry %}
-                                        <span class="mentor-tag">{{ mentor.industry }}</span>
-                                        {% endif %}
-                                        {% if mentor.experience_years %}
-                                        <span class="mentor-tag">{{ mentor.experience_years }} years exp</span>
-                                        {% endif %}
-                                        {% if mentor.job_title %}
-                                        <span class="mentor-tag">{{ mentor.job_title }}</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" class="mentor-actions">
-                                <button type="submit" name="action" value="approve" class="action-button action-approve">
-                                    <i class="fas fa-check"></i>
-                                    Approve
-                                </button>
-                                <button type="submit" name="action" value="reject" class="action-button action-reject">
-                                    <i class="fas fa-times"></i>
-                                    Reject
-                                </button>
-                            </form>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <div class="empty-state-icon" style="background: linear-gradient(135deg, var(--card-green), #7cb342);">
-                            <i class="fas fa-check"></i>
-                        </div>
-                        <h3>All Caught Up!</h3>
-                        <p>No pending mentor approvals at the moment</p>
                     </div>
                     {% endif %}
                 </div>
@@ -3292,7 +3245,7 @@
                                             Paid
                                         </span>
                                         {% elif withdrawal.status == 'rejected' %}
-                                        <span class="status-badge" style="background: linear-gradient(135deg, var(--card-pink), #e4b9b7); color: #8a4d49; border-color: rgba(246, 208, 206, 0.3); display: inline-flex; font-size: 0.75rem;">
+                                        <span class="status-badge status-rejected" style="display: inline-flex; font-size: 0.75rem;">
                                             Rejected
                                         </span>
                                         {% endif %}
@@ -3314,9 +3267,9 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        {% if withdrawal.processed_by %}
+                                        {% if withdrawal.admin_notes %}
                                         <span style="font-size: 0.8125rem; color: var(--text-secondary-light);">
-                                            {{ withdrawal.processed_by }}
+                                            {{ withdrawal.admin_notes|truncate(20) }}
                                         </span>
                                         {% endif %}
                                     </td>
@@ -3342,8 +3295,8 @@
 </div>
 
 <!-- Withdrawal Modal -->
-<div id="withdrawalModal" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 500px;">
+<div id="withdrawalModal" class="modal">
+    <div class="modal-content">
         <div class="modal-header">
             <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.75rem;">
                 <i class="fas fa-money-bill-wave" style="color: var(--card-green);"></i>
@@ -3364,7 +3317,7 @@
                                 Available Balance
                             </div>
                             <div style="font-size: 1.75rem; font-weight: 800; color: var(--card-green);">
-                                ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
+                                ₹{{ earnings_data.available_balance|default(0)|int }}
                             </div>
                         </div>
                         <div style="text-align: right;">
@@ -3388,7 +3341,7 @@
                                id="withdrawalAmount" 
                                name="amount"
                                min="500" 
-                               max="{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}"
+                               max="{{ earnings_data.available_balance|default(0)|int }}"
                                step="100"
                                required
                                style="width: 100%; padding: 0.875rem 1rem; padding-left: 2.5rem; border: 2px solid var(--border-light); border-radius: var(--radius); font-size: 1rem; font-weight: 500; color: var(--primary); transition: var(--transition); background: white;"
@@ -3399,7 +3352,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
                         <div style="font-size: 0.75rem; color: var(--text-secondary-light);">
-                            Enter amount between ₹500 - ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
+                            Enter amount between ₹500 - ₹{{ earnings_data.available_balance|default(0)|int }}
                         </div>
                         <button type="button" 
                                 onclick="setMaxAmount()" 
@@ -3559,14 +3512,33 @@
             }
         `;
         document.head.appendChild(style);
-        
-        // Initialize payment method selection
+
+        // Payment method selection
         const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
         paymentMethods.forEach(method => {
             method.addEventListener('change', function() {
                 document.getElementById('paymentDetailsSection').style.display = 'block';
             });
         });
+
+        // Initialize admin notes
+        {% if current_user.role == 'admin' and pending_withdrawals %}
+            {% for withdrawal in pending_withdrawals %}
+            document.addEventListener('DOMContentLoaded', function() {
+                const notesTextarea = document.getElementById('adminNotes{{ withdrawal.id }}');
+                const notesInput = document.getElementById('adminNotesInput{{ withdrawal.id }}');
+                
+                if (notesTextarea && notesInput) {
+                    notesTextarea.addEventListener('input', function() {
+                        notesInput.value = this.value;
+                    });
+                    
+                    // Set initial value
+                    notesInput.value = notesTextarea.value;
+                }
+            });
+            {% endfor %}
+        {% endif %}
     });
 
     // Mentor Section Management
@@ -3712,13 +3684,9 @@
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
         
-        // Add event listener for payment method selection
-        const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
-        paymentMethods.forEach(method => {
-            method.addEventListener('change', function() {
-                document.getElementById('paymentDetailsSection').style.display = 'block';
-            });
-        });
+        // Reset form
+        document.getElementById('withdrawalForm').reset();
+        document.getElementById('paymentDetailsSection').style.display = 'none';
     }
 
     function closeWithdrawalModal() {
@@ -3728,7 +3696,7 @@
     }
 
     function setMaxAmount() {
-        const availableBalance = {{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }};
+        const availableBalance = {{ earnings_data.available_balance|default(0)|int }};
         const amountInput = document.getElementById('withdrawalAmount');
         amountInput.value = availableBalance;
     }
