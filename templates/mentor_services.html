@@ -4,67 +4,57 @@
 
 {% block content %}
 <style>
-    :root {
-        --primary: #3B82F6;
-        --primary-dark: #2563EB;
-        --primary-light: #60A5FA;
-        --secondary: #8B5CF6;
-        --accent: #06B6D4;
-        --success: #10B981;
-        --warning: #F59E0B;
-        --danger: #EF4444;
-        --gray-900: #0F172A;
-        --gray-800: #1E293B;
-        --gray-700: #334155;
-        --gray-600: #475569;
-        --gray-500: #64748B;
-        --gray-400: #94A3B8;
-        --gray-300: #CBD5E1;
-        --gray-200: #E2E8F0;
-        --gray-100: #F1F5F9;
-        --gray-50: #F8FAFC;
-        --white: #FFFFFF;
-        --radius-sm: 0.375rem;
-        --radius: 0.5rem;
-        --radius-md: 0.75rem;
-        --radius-lg: 1rem;
-        --radius-xl: 1.5rem;
-        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        --transition: all 0.2s ease;
-    }
-
     .services-container {
         max-width: 100%;
         margin: 0 auto;
         padding: 0;
+        background: var(--background-light);
+        min-height: 100vh;
     }
 
     /* Header */
     .services-header {
-        padding: 1.25rem;
-        background: var(--white);
-        border-bottom: 1px solid var(--gray-200);
+        padding: 2rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--background-dark) 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .services-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 20%, rgba(255, 107, 74, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(255, 63, 31, 0.1) 0%, transparent 50%);
+    }
+
+    .services-header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
     }
 
     .services-header h1 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.25rem;
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
     }
 
     .services-header p {
-        font-size: 0.875rem;
-        color: var(--gray-600);
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 600px;
     }
 
     /* Main Content */
     .services-main {
-        padding: 1.25rem;
+        padding: 2rem 1.5rem;
         max-width: 1200px;
         margin: 0 auto;
     }
@@ -73,156 +63,201 @@
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
+        gap: 1rem;
+        margin-bottom: 2rem;
     }
 
     .stat-card {
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
-        padding: 1rem;
-        transition: var(--transition);
+        background: linear-gradient(135deg, var(--card-light) 0%, var(--accent-beige) 100%);
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 32px rgba(31, 31, 31, 0.08);
+        border: 1px solid rgba(229, 228, 224, 0.5);
+        padding: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--brand-red));
     }
 
     .stat-card:hover {
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: 0 16px 48px rgba(31, 31, 31, 0.12);
     }
 
     .stat-label {
         font-size: 0.75rem;
-        color: var(--gray-600);
+        font-weight: 600;
+        color: var(--text-secondary-light);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .stat-label i {
+        color: var(--accent);
     }
 
     .stat-value {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--gray-900);
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary);
         line-height: 1;
+        background: linear-gradient(135deg, var(--primary), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     /* Create Service Form */
     .create-service-card {
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
-        margin-bottom: 1rem;
+        background: var(--card-light);
+        border-radius: 2rem;
+        box-shadow: 0 12px 48px rgba(31, 31, 31, 0.1);
+        border: 1px solid var(--border-light);
+        margin-bottom: 2rem;
         overflow: hidden;
+        transition: all 0.3s ease;
     }
 
     .create-service-card:hover {
-        box-shadow: var(--shadow-lg);
+        box-shadow: 0 20px 60px rgba(31, 31, 31, 0.15);
     }
 
     .form-header {
-        padding: 1.25rem;
-        border-bottom: 1px solid var(--gray-200);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border-light);
+        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
     }
 
     .form-header h2 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--gray-900);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-header h2 i {
+        color: var(--accent);
     }
 
     .form-content {
-        padding: 1.25rem;
+        padding: 2rem;
     }
 
     .form-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 1.5rem;
     }
 
     .form-group {
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
     }
 
     .form-label {
         display: block;
         font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--gray-700);
-        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .form-label i {
+        color: var(--accent);
     }
 
     .form-required {
-        color: var(--danger);
+        color: var(--brand-red);
+        margin-left: 0.25rem;
     }
 
     .form-input {
         width: 100%;
-        padding: 0.75rem;
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius);
-        font-size: 0.9375rem;
-        color: var(--gray-900);
-        transition: var(--transition);
+        padding: 1rem;
+        border: 2px solid var(--border-light);
+        border-radius: 1rem;
+        font-size: 1rem;
+        color: var(--primary);
+        background: white;
+        transition: all 0.3s ease;
+        font-family: inherit;
     }
 
     .form-input:focus {
         outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(255, 107, 74, 0.1);
+        background: white;
     }
 
     .form-input::placeholder {
-        color: var(--gray-400);
+        color: var(--text-secondary-light);
+        opacity: 0.6;
     }
 
     .form-select {
         width: 100%;
-        padding: 0.75rem;
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius);
-        font-size: 0.9375rem;
-        color: var(--gray-900);
-        background: var(--white);
+        padding: 1rem;
+        border: 2px solid var(--border-light);
+        border-radius: 1rem;
+        font-size: 1rem;
+        color: var(--primary);
+        background: white;
         cursor: pointer;
-        transition: var(--transition);
+        transition: all 0.3s ease;
         appearance: none;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-        background-position: right 0.5rem center;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ff6b4a'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3e%3c/svg%3e");
+        background-position: right 1rem center;
         background-repeat: no-repeat;
-        background-size: 1.5em 1.5em;
-        padding-right: 2.5rem;
+        background-size: 1.5em;
+        padding-right: 3rem;
+        font-family: inherit;
     }
 
     .form-select:focus {
         outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(255, 107, 74, 0.1);
+        background: white;
     }
 
     .form-textarea {
         width: 100%;
-        min-height: 100px;
-        padding: 0.75rem;
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius);
-        font-size: 0.9375rem;
-        color: var(--gray-900);
+        min-height: 120px;
+        padding: 1rem;
+        border: 2px solid var(--border-light);
+        border-radius: 1rem;
+        font-size: 1rem;
+        color: var(--primary);
+        background: white;
         resize: vertical;
-        transition: var(--transition);
+        transition: all 0.3s ease;
         font-family: inherit;
     }
 
     .form-textarea:focus {
         outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    .form-textarea::placeholder {
-        color: var(--gray-400);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(255, 107, 74, 0.1);
+        background: white;
     }
 
     .price-input {
@@ -231,43 +266,55 @@
 
     .price-prefix {
         position: absolute;
-        left: 0.75rem;
-        top: 0.75rem;
-        color: var(--gray-500);
-        font-size: 0.9375rem;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 1rem;
     }
 
     .price-input .form-input {
-        padding-left: 2rem;
+        padding-left: 2.5rem;
     }
 
     .radio-group {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 1rem;
     }
 
     .radio-option {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
         cursor: pointer;
+        padding: 1rem;
+        border: 2px solid var(--border-light);
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .radio-option:hover {
+        border-color: var(--accent);
+        background: rgba(255, 107, 74, 0.05);
     }
 
     .radio-input {
         width: 1.25rem;
         height: 1.25rem;
-        border: 2px solid var(--gray-300);
+        border: 2px solid var(--border-light);
         border-radius: 50%;
         appearance: none;
         position: relative;
         cursor: pointer;
-        transition: var(--transition);
+        transition: all 0.3s ease;
+        flex-shrink: 0;
     }
 
     .radio-input:checked {
-        border-color: var(--primary);
-        background: var(--primary);
+        border-color: var(--accent);
+        background: var(--accent);
     }
 
     .radio-input:checked::after {
@@ -278,30 +325,39 @@
         transform: translate(-50%, -50%);
         width: 0.5rem;
         height: 0.5rem;
-        background: var(--white);
+        background: white;
         border-radius: 50%;
     }
 
     .radio-label {
-        font-size: 0.9375rem;
-        color: var(--gray-700);
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--primary);
         cursor: pointer;
+        flex: 1;
+    }
+
+    .radio-description {
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+        margin-top: 0.25rem;
+        display: block;
     }
 
     .digital-fields {
-        margin-top: 1rem;
-        padding: 1rem;
-        background: var(--gray-50);
-        border-radius: var(--radius);
-        border: 1px solid var(--gray-200);
-        animation: fadeIn 0.3s ease;
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
+        border-radius: 1.5rem;
+        border: 2px solid var(--border-light);
+        animation: slideIn 0.3s ease;
     }
 
     .digital-fields.hidden {
         display: none;
     }
 
-    @keyframes fadeIn {
+    @keyframes slideIn {
         from {
             opacity: 0;
             transform: translateY(-10px);
@@ -313,119 +369,136 @@
     }
 
     .form-help {
-        font-size: 0.75rem;
-        color: var(--gray-500);
-        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-help i {
+        color: var(--accent);
+        flex-shrink: 0;
     }
 
     .form-actions {
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--gray-200);
-        margin-top: 1rem;
+        padding-top: 2rem;
+        margin-top: 1.5rem;
+        border-top: 2px solid var(--border-light);
     }
 
     .submit-button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0.875rem 1.5rem;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: var(--white);
+        padding: 1rem 2.5rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        color: white;
         border: none;
-        border-radius: var(--radius);
+        border-radius: 1.5rem;
         font-weight: 600;
-        font-size: 0.9375rem;
+        font-size: 1rem;
         cursor: pointer;
-        transition: var(--transition);
-        gap: 0.5rem;
+        transition: all 0.3s ease;
+        gap: 0.75rem;
+        min-width: 200px;
+        box-shadow: 0 8px 24px rgba(255, 107, 74, 0.3);
     }
 
     .submit-button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 16px 32px rgba(255, 107, 74, 0.4);
+        background: linear-gradient(135deg, var(--brand-red), var(--accent));
+    }
+
+    .submit-button:active {
+        transform: translateY(0);
     }
 
     /* Digital Product Badge */
     .digital-badge {
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
-        padding: 0.25rem 0.5rem;
-        background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        background: linear-gradient(135deg, var(--card-purple), var(--secondary));
         color: white;
-        border-radius: 1rem;
-        font-size: 0.6875rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
         font-weight: 600;
         margin-left: 0.5rem;
+        box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
     }
 
     /* Rich Text Editor Styles */
     .rich-text-editor-container {
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius);
+        border: 2px solid var(--border-light);
+        border-radius: 1rem;
         overflow: hidden;
-        background-color: var(--white);
-        transition: var(--transition);
+        background-color: white;
+        transition: all 0.3s ease;
     }
 
     .rich-text-editor-container:focus-within {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(255, 107, 74, 0.1);
     }
 
     .editor-toolbar {
         display: flex;
-        padding: 0.5rem;
-        background-color: var(--gray-50);
-        border-bottom: 1px solid var(--gray-200);
+        padding: 1rem;
+        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
+        border-bottom: 2px solid var(--border-light);
         flex-wrap: wrap;
-        gap: 0.25rem;
+        gap: 0.5rem;
         align-items: center;
     }
 
     .toolbar-btn {
-        background: none;
-        border: 1px solid transparent;
-        border-radius: var(--radius-sm);
-        width: 2rem;
-        height: 2rem;
+        background: white;
+        border: 2px solid var(--border-light);
+        border-radius: 0.75rem;
+        width: 2.5rem;
+        height: 2.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: var(--gray-600);
-        font-size: 0.875rem;
-        transition: var(--transition);
+        color: var(--primary);
+        font-size: 1rem;
+        transition: all 0.2s ease;
         padding: 0;
     }
 
     .toolbar-btn:hover {
-        background-color: var(--gray-200);
-        border-color: var(--gray-300);
-        color: var(--gray-900);
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+        transform: translateY(-1px);
     }
 
     .toolbar-btn.active {
-        background-color: var(--primary-light);
-        border-color: var(--primary);
-        color: var(--primary-dark);
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
     }
 
     .toolbar-separator {
-        width: 1px;
+        width: 2px;
         height: 1.5rem;
-        background-color: var(--gray-300);
+        background-color: var(--border-light);
         margin: 0 0.25rem;
     }
 
     .editor-content {
         min-height: 180px;
-        padding: 0.875rem;
-        font-size: 0.9375rem;
+        padding: 1.5rem;
+        font-size: 1rem;
         line-height: 1.6;
         overflow-y: auto;
         outline: none;
-        color: var(--gray-900);
+        color: var(--primary);
         font-family: inherit;
     }
 
@@ -434,24 +507,25 @@
     }
 
     .editor-content p {
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
     }
 
     .editor-content ul, .editor-content ol {
         padding-left: 1.5rem;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
     }
 
     .editor-content h2 {
-        font-size: 1.125rem;
+        font-size: 1.25rem;
         font-weight: 600;
-        margin: 1rem 0 0.5rem;
-        color: var(--gray-900);
+        margin: 1rem 0 0.75rem;
+        color: var(--primary);
     }
 
     .editor-content[placeholder]:empty:before {
         content: attr(placeholder);
-        color: var(--gray-400);
+        color: var(--text-secondary-light);
+        opacity: 0.6;
     }
 
     .hidden-textarea {
@@ -460,30 +534,39 @@
 
     /* Services List */
     .services-list-card {
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
+        background: var(--card-light);
+        border-radius: 2rem;
+        box-shadow: 0 12px 48px rgba(31, 31, 31, 0.1);
+        border: 1px solid var(--border-light);
+        transition: all 0.3s ease;
     }
 
     .services-list-card:hover {
-        box-shadow: var(--shadow-lg);
+        box-shadow: 0 20px 60px rgba(31, 31, 31, 0.15);
     }
 
     .list-header {
-        padding: 1.25rem;
-        border-bottom: 1px solid var(--gray-200);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border-light);
+        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
     }
 
     .list-header h2 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--gray-900);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .list-header h2 i {
+        color: var(--accent);
     }
 
     .list-content {
-        padding: 1.25rem;
+        padding: 2rem;
         min-height: 200px;
         display: flex;
         flex-direction: column;
@@ -492,86 +575,116 @@
     .services-list {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 1rem;
     }
 
     .service-item {
-        padding: 1rem;
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
-        transition: var(--transition);
+        padding: 1.5rem;
+        border: 2px solid var(--border-light);
+        border-radius: 1.5rem;
+        transition: all 0.3s ease;
         position: relative;
+        background: white;
     }
 
     .service-item:hover {
-        border-color: var(--primary);
-        background: var(--gray-50);
-        transform: translateY(-1px);
+        border-color: var(--accent);
+        background: linear-gradient(135deg, #fff5ec 0%, var(--accent-beige) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(31, 31, 31, 0.1);
     }
 
     .service-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
     }
 
     .service-name {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.25rem;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
         display: flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: 0.5rem;
     }
 
     .service-category {
-        font-size: 0.75rem;
-        color: var(--gray-600);
-        text-transform: capitalize;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: rgba(255, 107, 74, 0.1);
+        padding: 0.375rem 0.75rem;
+        border-radius: 2rem;
     }
 
     .service-status {
         font-size: 0.75rem;
-        font-weight: 500;
-        padding: 0.125rem 0.5rem;
-        border-radius: 1rem;
+        font-weight: 600;
+        padding: 0.375rem 0.75rem;
+        border-radius: 2rem;
         white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
     }
 
     .status-active {
-        background: #D1FAE5;
-        color: #065F46;
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
     }
 
     .status-inactive {
-        background: var(--gray-100);
-        color: var(--gray-700);
+        background: var(--border-light);
+        color: var(--text-secondary-light);
+    }
+
+    .service-description {
+        font-size: 0.9375rem;
+        color: var(--text-secondary-light);
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .service-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 0.75rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--border-light);
     }
 
     .service-price {
         display: flex;
         align-items: baseline;
-        gap: 0.25rem;
+        gap: 0.375rem;
     }
 
     .price-amount {
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: var(--primary);
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .price-duration {
         font-size: 0.875rem;
-        color: var(--gray-500);
+        color: var(--text-secondary-light);
+        font-weight: 500;
     }
 
     .service-actions {
@@ -580,51 +693,56 @@
     }
 
     .action-button {
-        width: 2rem;
-        height: 2rem;
-        border: none;
-        border-radius: var(--radius);
-        background: transparent;
-        color: var(--gray-400);
+        width: 2.5rem;
+        height: 2.5rem;
+        border: 2px solid var(--border-light);
+        border-radius: 1rem;
+        background: white;
+        color: var(--text-secondary-light);
         cursor: pointer;
-        transition: var(--transition);
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .action-button:hover {
-        background: var(--gray-100);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(31, 31, 31, 0.1);
     }
 
     .edit-button:hover {
-        color: var(--primary);
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        border-color: var(--accent);
+        color: white;
     }
 
     .delete-button:hover {
-        color: var(--danger);
+        background: var(--brand-red);
+        border-color: var(--brand-red);
+        color: white;
     }
 
     /* Service Type Indicator */
     .service-type-indicator {
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
-        padding: 0.125rem 0.5rem;
-        border-radius: 1rem;
-        font-size: 0.6875rem;
-        font-weight: 500;
+        gap: 0.375rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        font-weight: 600;
         margin-left: 0.5rem;
     }
 
     .type-live {
-        background: #E0F2FE;
-        color: #0369A1;
+        background: linear-gradient(135deg, var(--card-blue), #5d99c6);
+        color: white;
     }
 
     .type-digital {
-        background: #F3E8FF;
-        color: #7C3AED;
+        background: linear-gradient(135deg, var(--card-purple), #7c3aed);
+        color: white;
     }
 
     /* Empty State */
@@ -634,92 +752,165 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 2rem 1rem;
+        padding: 3rem 1rem;
         text-align: center;
     }
 
     .empty-icon {
-        width: 3.5rem;
-        height: 3.5rem;
-        margin: 0 auto 1rem;
-        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--gray-400);
-        font-size: 1.5rem;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 16px 32px rgba(255, 107, 74, 0.2);
     }
 
     .empty-state h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--gray-900);
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
         margin-bottom: 0.5rem;
     }
 
     .empty-state p {
+        font-size: 1rem;
+        color: var(--text-secondary-light);
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    /* Notification */
+    .notification {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        padding: 1.25rem 1.5rem;
+        border-radius: 1rem;
+        font-weight: 500;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        max-width: 400px;
+        box-shadow: 0 12px 32px rgba(31, 31, 31, 0.15);
+        transform: translateX(120%);
+        transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .notification.show {
+        transform: translateX(0);
+    }
+
+    .notification.success {
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
+    }
+
+    .notification.error {
+        background: linear-gradient(135deg, var(--brand-red), #d32f2f);
+        color: white;
+    }
+
+    .notification.info {
+        background: linear-gradient(135deg, var(--card-blue), #5d99c6);
+        color: white;
+    }
+
+    .notification i {
+        font-size: 1.25rem;
+    }
+
+    /* Digital Product Info */
+    .digital-product-info {
+        background: linear-gradient(135deg, var(--card-purple), #e0dbfc);
+        border: 2px solid rgba(136, 19, 55, 0.2);
+        padding: 1rem;
+        border-radius: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .digital-product-info h4 {
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .digital-product-info h4 i {
+        color: var(--accent);
+    }
+
+    .digital-product-info p {
         font-size: 0.875rem;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
     }
 
     /* Responsive Design */
     @media (min-width: 640px) {
         .services-header {
-            padding: 1.5rem 1.75rem;
+            padding: 3rem 2rem;
         }
         
         .services-header h1 {
-            font-size: 1.75rem;
+            font-size: 2.5rem;
         }
         
         .services-main {
-            padding: 1.75rem;
+            padding: 3rem 2rem;
         }
         
         .stats-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .stat-card {
+            padding: 2rem;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
         }
         
         .form-grid {
             grid-template-columns: repeat(2, 1fr);
         }
         
-        .form-grid .form-group:nth-child(1),
-        .form-grid .form-group:nth-child(2) {
-            grid-column: span 1;
-        }
-        
         .form-grid .form-group:nth-child(3) {
             grid-column: span 2;
         }
         
-        .form-grid .form-group:nth-child(4) {
-            grid-column: span 2;
-        }
-        
-        .form-grid .form-group:nth-child(4) {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
+        .radio-group {
+            flex-direction: row;
             gap: 1rem;
         }
         
-        .radio-group {
-            flex-direction: row;
-            gap: 1.5rem;
+        .radio-option {
+            flex: 1;
         }
         
         .editor-toolbar {
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
     }
 
     @media (min-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
         .services-main {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1.5rem;
+            gap: 2rem;
         }
         
         .create-service-card,
@@ -735,25 +926,27 @@
     @media (min-width: 1024px) {
         .services-main {
             grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            padding: 2rem;
+            gap: 3rem;
         }
         
         .services-list-card {
             position: sticky;
             top: 2rem;
+            height: fit-content;
         }
         
-        .form-grid .form-group:nth-child(4) {
-            grid-template-columns: repeat(2, 1fr);
+        .service-item {
+            padding: 1.25rem;
         }
         
-        .form-group:nth-child(5) {
-            grid-column: span 1;
+        .service-description {
+            -webkit-line-clamp: 3;
         }
-        
-        .form-group:nth-child(6) {
-            grid-column: span 1;
+    }
+
+    @media (min-width: 1280px) {
+        .services-main {
+            grid-template-columns: 3fr 2fr;
         }
     }
 </style>
@@ -761,9 +954,9 @@
 <div class="services-container">
     <!-- Header -->
     <div class="services-header">
-        <div style="max-width: 1200px; margin: 0 auto;">
+        <div class="services-header-content">
             <h1>Manage Services</h1>
-            <p>Create and manage your mentoring services & digital products</p>
+            <p>Create and manage your mentoring services & digital products to help learners achieve their goals</p>
         </div>
     </div>
 
@@ -774,21 +967,33 @@
             <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-label">Total Services</div>
+                    <div class="stat-label">
+                        <i class="fas fa-layer-group"></i>
+                        Total Services
+                    </div>
                     <div class="stat-value">{{ services|length }}</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Active Services</div>
+                    <div class="stat-label">
+                        <i class="fas fa-check-circle"></i>
+                        Active Services
+                    </div>
                     <div class="stat-value">
                         {{ services|selectattr('is_active', 'equalto', true)|list|length }}
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-label">
+                        <i class="fas fa-calendar-check"></i>
+                        Total Bookings
+                    </div>
                     <div class="stat-value">{{ mentor.total_sessions|default('0') }}</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Avg. Price</div>
+                    <div class="stat-label">
+                        <i class="fas fa-indian-rupee-sign"></i>
+                        Avg. Price
+                    </div>
                     <div class="stat-value">
                         ₹{{ (services|map(attribute='price')|sum / services|length if services and services|length > 0 else 0)|int }}
                     </div>
@@ -798,7 +1003,10 @@
             <!-- Create Service Form -->
             <div class="create-service-card">
                 <div class="form-header">
-                    <h2>Create New Service</h2>
+                    <h2>
+                        <i class="fas fa-plus-circle"></i>
+                        Create New Service
+                    </h2>
                 </div>
                 
                 <div class="form-content">
@@ -807,16 +1015,19 @@
                             <!-- Service Name -->
                             <div class="form-group">
                                 <label class="form-label">
+                                    <i class="fas fa-heading"></i>
                                     Service Name <span class="form-required">*</span>
                                 </label>
                                 <input type="text" name="name" required 
                                        class="form-input"
-                                       placeholder="e.g., Mock Interview, Resume Review, E-Book">
+                                       placeholder="e.g., Mock Interview, Resume Review, E-Book"
+                                       autocomplete="off">
                             </div>
                             
                             <!-- Category -->
                             <div class="form-group">
                                 <label class="form-label">
+                                    <i class="fas fa-tags"></i>
                                     Category <span class="form-required">*</span>
                                 </label>
                                 <select name="category" required class="form-select">
@@ -835,6 +1046,7 @@
                             <!-- Description with Rich Text Editor -->
                             <div class="form-group">
                                 <label class="form-label">
+                                    <i class="fas fa-align-left"></i>
                                     Description <span class="form-required">*</span>
                                 </label>
                                 <div class="rich-text-editor-container">
@@ -881,6 +1093,7 @@
                                               id="description-textarea"></textarea>
                                 </div>
                                 <p class="form-help">
+                                    <i class="fas fa-lightbulb"></i>
                                     Use the toolbar to format your description. This will be displayed to learners.
                                 </p>
                             </div>
@@ -888,8 +1101,9 @@
                             <!-- Price, Duration, Type -->
                             <div class="form-group">
                                 <!-- Price -->
-                                <div class="form-group" style="margin-bottom: 1rem;">
+                                <div class="form-group" style="margin-bottom: 1.5rem;">
                                     <label class="form-label">
+                                        <i class="fas fa-indian-rupee-sign"></i>
                                         Price (INR) <span class="form-required">*</span>
                                     </label>
                                     <div class="price-input">
@@ -897,23 +1111,27 @@
                                         <input type="number" name="price" required min="0"
                                                class="form-input"
                                                placeholder="999"
-                                               id="price-input">
+                                               id="price-input"
+                                               autocomplete="off">
                                     </div>
                                 </div>
                                 
                                 <!-- Duration (for live sessions) -->
-                                <div class="form-group" style="margin-bottom: 1rem;">
+                                <div class="form-group" style="margin-bottom: 1.5rem;">
                                     <label class="form-label" id="duration-label">
+                                        <i class="fas fa-clock"></i>
                                         Duration (minutes) <span class="form-required">*</span>
                                     </label>
                                     <input type="number" name="duration_minutes" value="60" required min="15" step="15"
                                            class="form-input"
-                                           id="duration-input">
+                                           id="duration-input"
+                                           autocomplete="off">
                                 </div>
                                 
                                 <!-- Service Type -->
                                 <div class="form-group">
                                     <label class="form-label">
+                                        <i class="fas fa-bolt"></i>
                                         Service Type
                                     </label>
                                     <div class="radio-group">
@@ -921,13 +1139,19 @@
                                             <input type="radio" name="is_digital" value="false" checked 
                                                    class="radio-input service-type-radio"
                                                    data-type="live">
-                                            <span class="radio-label">Live Session</span>
+                                            <span class="radio-label">
+                                                Live Session
+                                                <span class="radio-description">Real-time video call with learners</span>
+                                            </span>
                                         </label>
                                         <label class="radio-option">
                                             <input type="radio" name="is_digital" value="true" 
                                                    class="radio-input service-type-radio"
                                                    data-type="digital">
-                                            <span class="radio-label">Digital Product</span>
+                                            <span class="radio-label">
+                                                Digital Product
+                                                <span class="radio-description">Downloadable content or resource</span>
+                                            </span>
                                         </label>
                                     </div>
                                 </div>
@@ -938,19 +1162,22 @@
                         <div id="digital-product-fields" class="digital-fields hidden">
                             <div class="form-group">
                                 <label class="form-label">
+                                    <i class="fas fa-link"></i>
                                     Digital Product URL <span class="form-required" id="digital-url-required">*</span>
                                 </label>
                                 <input type="url" name="digital_product_url"
                                        class="form-input"
                                        placeholder="https://drive.google.com/file/... or https://clearq.in/download"
-                                       id="digital-product-url">
+                                       id="digital-product-url"
+                                       autocomplete="off">
                                 <p class="form-help">
+                                    <i class="fas fa-info-circle"></i>
                                     Learners will get access to this URL immediately after purchase. Ensure the link is accessible.
                                 </p>
                             </div>
                             <div class="form-group">
-                                <div class="form-help" style="color: var(--primary); font-weight: 500;">
-                                    <i class="fas fa-info-circle"></i>
+                                <div class="form-help" style="color: var(--accent); font-weight: 600;">
+                                    <i class="fas fa-rocket"></i>
                                     For digital products, duration is automatically set to "Instant Access"
                                 </div>
                             </div>
@@ -972,7 +1199,10 @@
         <div>
             <div class="services-list-card">
                 <div class="list-header">
-                    <h2>Your Services</h2>
+                    <h2>
+                        <i class="fas fa-list"></i>
+                        Your Services
+                    </h2>
                 </div>
                 
                 <div class="list-content">
@@ -985,53 +1215,52 @@
                                     <div class="service-name">
                                         {{ service.name }}
                                         {% if service.is_digital %}
-<div class="digital-product-info bg-blue-50 p-4 rounded-lg mb-4">
-    <h4 class="font-bold text-blue-900 mb-2">
-        <i class="fas fa-download text-blue-500 mr-2"></i>
-        Digital Product - Instant Access
-    </h4>
-    <p class="text-sm text-blue-800">
-        Purchase this product and get immediate download access. No scheduling needed!
-    </p>
-</div>
-{% else %}
+                                        <div class="digital-product-info">
+                                            <h4>
+                                                <i class="fas fa-download"></i>
+                                                Digital Product - Instant Access
+                                            </h4>
+                                            <p>Purchase this product and get immediate download access. No scheduling needed!</p>
+                                        </div>
+                                        {% else %}
                                         <span class="service-type-indicator type-live">
                                             <i class="fas fa-video"></i> Live
                                         </span>
                                         {% endif %}
                                     </div>
                                     <div class="service-category">
+                                        <i class="fas fa-tag"></i>
                                         {{ service.category|replace('-', ' ')|title }}
                                     </div>
                                 </div>
                                 <span class="service-status {% if service.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                    <i class="fas fa-circle"></i>
                                     {{ 'Active' if service.is_active else 'Inactive' }}
                                 </span>
                             </div>
                             
-                            <div style="margin-bottom: 0.5rem;">
-                                <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4; margin-bottom: 0.5rem;">
-                                    {{ service.description|truncate(120) }}
-                                </p>
-                                {% if service.is_digital and service.digital_product_url %}
-                                <div style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--gray-500);">
-                                    <i class="fas fa-link"></i>
-                                    <span>Download link added</span>
-                                </div>
-                                {% endif %}
+                            <div class="service-description">
+                                {{ service.description|striptags|truncate(120) }}
                             </div>
+                            
+                            {% if service.is_digital and service.digital_product_url %}
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--accent); margin-bottom: 1rem;">
+                                <i class="fas fa-link"></i>
+                                <span>Download link available</span>
+                            </div>
+                            {% endif %}
                             
                             <div class="service-footer">
                                 <div class="service-price">
-    <span class="price-amount">₹{{ service.price }}</span>
-    <span class="price-duration">
-        {% if service.is_digital %}
-        Instant Access
-        {% else %}
-        {{ service.duration_minutes }} min
-        {% endif %}
-    </span>
-</div>
+                                    <span class="price-amount">₹{{ service.price }}</span>
+                                    <span class="price-duration">
+                                        {% if service.is_digital %}
+                                        Instant Access
+                                        {% else %}
+                                        {{ service.duration_minutes }} min
+                                        {% endif %}
+                                    </span>
+                                </div>
                                 <div class="service-actions">
                                     <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
                                         <i class="fas fa-edit"></i>
@@ -1050,7 +1279,7 @@
                             <i class="fas fa-list-alt"></i>
                         </div>
                         <h3>No Services Yet</h3>
-                        <p>Create your first service to start accepting bookings</p>
+                        <p>Create your first service to start accepting bookings and helping learners</p>
                     </div>
                     {% endif %}
                 </div>
@@ -1059,8 +1288,14 @@
     </div>
 </div>
 
+<!-- Notification Container -->
+<div id="notification-container"></div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize color variables
+        initializeThemeColors();
+        
         // Rich Text Editor Functionality
         const editor = document.getElementById('rich-text-editor');
         const textarea = document.getElementById('description-textarea');
@@ -1148,6 +1383,12 @@
                     document.execCommand(command, false, null);
                 }
                 
+                // Update active state
+                if (value) {
+                    toolbarButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                }
+                
                 updateTextarea();
                 editor.focus();
             });
@@ -1181,14 +1422,14 @@
                 // For digital products, duration is "Instant Access"
                 durationInput.value = 0;
                 durationInput.disabled = true;
-                durationLabel.innerHTML = 'Access Type <span class="form-required">*</span>';
+                durationLabel.innerHTML = '<i class="fas fa-bolt"></i> Access Type <span class="form-required">*</span>';
                 durationInput.placeholder = "Instant Access";
                 
                 // Add help text for digital products
                 if (!document.querySelector('.digital-help')) {
                     const helpDiv = document.createElement('div');
                     helpDiv.className = 'form-help digital-help';
-                    helpDiv.innerHTML = '<i class="fas fa-info-circle"></i> For digital products, learners get instant access after purchase';
+                    helpDiv.innerHTML = '<i class="fas fa-rocket"></i> For digital products, learners get instant access after purchase';
                     durationInput.parentNode.appendChild(helpDiv);
                 }
             } else {
@@ -1199,7 +1440,7 @@
                 // For live sessions, enable duration input
                 durationInput.disabled = false;
                 durationInput.value = 60;
-                durationLabel.innerHTML = 'Duration (minutes) <span class="form-required">*</span>';
+                durationLabel.innerHTML = '<i class="fas fa-clock"></i> Duration (minutes) <span class="form-required">*</span>';
                 durationInput.placeholder = "60";
                 
                 // Remove digital help text
@@ -1227,7 +1468,7 @@
             // Validate that description is not empty
             if (!editor.textContent.trim() || editor.innerHTML === '<br>') {
                 e.preventDefault();
-                alert('Please provide a description for your service.');
+                showNotification('Please provide a description for your service.', 'error');
                 editor.focus();
                 return;
             }
@@ -1238,7 +1479,7 @@
                 const digitalUrl = digitalProductUrl.value.trim();
                 if (!digitalUrl) {
                     e.preventDefault();
-                    alert('Please provide a download URL for your digital product.');
+                    showNotification('Please provide a download URL for your digital product.', 'error');
                     digitalProductUrl.focus();
                     return;
                 }
@@ -1248,7 +1489,7 @@
                     new URL(digitalUrl);
                 } catch (_) {
                     e.preventDefault();
-                    alert('Please enter a valid URL starting with http:// or https://');
+                    showNotification('Please enter a valid URL starting with http:// or https://', 'error');
                     digitalProductUrl.focus();
                     return;
                 }
@@ -1257,7 +1498,7 @@
             // Show loading state
             const submitButton = this.querySelector('.submit-button');
             const originalHTML = submitButton.innerHTML;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Creating...</span>';
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Creating Service...</span>';
             submitButton.disabled = true;
             
             // Re-enable after 5 seconds if still on page
@@ -1275,6 +1516,9 @@
         };
         
         window.deleteService = function(serviceId) {
+            showNotification('Are you sure you want to delete this service? This action cannot be undone.', 'info');
+            
+            // Create confirmation dialog
             if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
                 fetch(`/mentor/services/${serviceId}/delete`, {
                     method: 'POST',
@@ -1303,11 +1547,13 @@
         // Input validation
         priceInput.addEventListener('input', function() {
             if (this.value < 0) this.value = 0;
+            if (this.value > 99999) this.value = 99999;
         });
         
         durationInput.addEventListener('input', function() {
             if (this.disabled) return;
             if (this.value < 15) this.value = 15;
+            if (this.value > 480) this.value = 480;
             // Round to nearest 15
             this.value = Math.round(this.value / 15) * 15;
         });
@@ -1319,6 +1565,7 @@
                 // Auto-select digital product type
                 document.querySelector('input[name="is_digital"][value="true"]').checked = true;
                 toggleDigitalFields();
+                showNotification('Digital product type selected automatically', 'info');
             } else if (this.value !== '') {
                 // Auto-select live session for other categories
                 document.querySelector('input[name="is_digital"][value="false"]').checked = true;
@@ -1326,32 +1573,95 @@
             }
         });
         
-        // Notification system
-        window.showNotification = function(message, type) {
+        // Initialize theme colors
+        function initializeThemeColors() {
+            const root = document.documentElement;
+            
+            // Primary Colors
+            root.style.setProperty('--primary', '#1f1f1f');
+            root.style.setProperty('--primary-hover', '#000000');
+            root.style.setProperty('--accent', '#ff6b4a');
+            root.style.setProperty('--secondary', '#2D3748');
+            root.style.setProperty('--brand-red', '#FF3F1F');
+            
+            // Background Colors
+            root.style.setProperty('--background-light', '#fff5ec');
+            root.style.setProperty('--background-dark', '#151022');
+            root.style.setProperty('--card-light', '#ffffff');
+            root.style.setProperty('--card-dark', '#1e1a2e');
+            root.style.setProperty('--dark-card', '#232936');
+            root.style.setProperty('--accent-beige', '#F0EFEA');
+            
+            // Text Colors
+            root.style.setProperty('--text-light', '#1f1f1f');
+            root.style.setProperty('--text-dark', '#ffffff');
+            root.style.setProperty('--text-secondary-light', '#555555');
+            root.style.setProperty('--text-secondary-dark', '#a09db3');
+            
+            // Border Colors
+            root.style.setProperty('--border-light', '#E5E4E0');
+            root.style.setProperty('--border-dark', '#2d2a3b');
+            
+            // Card Color Palette
+            root.style.setProperty('--card-purple', '#E0DBFC');
+            root.style.setProperty('--card-green', '#9CCB5C');
+            root.style.setProperty('--card-blue', '#85C3EA');
+            root.style.setProperty('--card-beige', '#EEE3CD');
+            root.style.setProperty('--card-teal', '#A8E1E1');
+            root.style.setProperty('--card-pink', '#F6D0CE');
+        }
+        
+        // Enhanced notification system
+        window.showNotification = function(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            
+            // Remove existing notifications
+            const existingNotifications = container.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            });
+            
+            // Create new notification
             const notification = document.createElement('div');
-            notification.className = `fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
-                type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
-                type === 'error' ? 'bg-gradient-to-r from-red-500 to-pink-600' : 'bg-gradient-to-r from-blue-500 to-cyan-600'
-            } text-white max-w-sm`;
+            notification.className = `notification ${type}`;
+            
+            // Set icon based on type
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'error') icon = 'exclamation-circle';
+            
             notification.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} text-xl"></i>
-                    <span class="font-medium">${message}</span>
-                </div>
+                <i class="fas fa-${icon}"></i>
+                <span>${message}</span>
             `;
             
-            document.body.appendChild(notification);
+            container.appendChild(notification);
             
-            // Remove after 4 seconds
+            // Show notification with animation
             setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(100%)';
+                notification.classList.add('show');
+            }, 10);
+            
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
                 setTimeout(() => {
                     if (notification.parentNode) {
                         notification.parentNode.removeChild(notification);
                     }
                 }, 300);
             }, 4000);
+            
+            // Click to dismiss
+            notification.addEventListener('click', () => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            });
         };
         
         // Check for URL parameters for messages
@@ -1372,6 +1682,31 @@
             const cleanUrl = window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
         }
+        
+        // Add hover effects to stat cards
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+        
+        // Add animation to service items
+        const serviceItems = document.querySelectorAll('.service-item');
+        serviceItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                item.style.transition = 'all 0.5s ease';
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
     });
 </script>
 {% endblock %}
