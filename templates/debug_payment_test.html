@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Payment Test</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        async function testPayment() {
+            try {
+                // First create a booking
+                const bookingResponse = await fetch('/api/create-booking', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        service_id: {{ service.id }},
+                        date: '2025-01-25',
+                        time: '14:00'
+                    })
+                });
+                
+                const bookingData = await bookingResponse.json();
+                console.log('Booking created:', bookingData);
+                
+                if (!bookingData.success) {
+                    alert('Failed to create booking: ' + bookingData.message);
+                    return;
+                }
+                
+                // Create Razorpay order
+                const options = {
+                    key: "{{ RAZORPAY_KEY_ID }}",
+                    amount: {{ service.price * 100 }},
+                    currency: "INR",
+                    name: "Test Payment",
+                    description: "Debug payment test",
+                    order_id: bookingData.razorpay_order_id,
+                    handler: async function(response) {
+                        console.log('Payment handler called:', response);
+                        
+                        // Call verify endpoint
+                        const verifyResponse = await fetch('/api/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                                booking_id: bookingData.booking_id
+                            })
+                        });
+                        
+                        const verifyData = await verifyResponse.json();
+                        console.log('Verify response:', verifyData);
+                        
+                        if (verifyData.success) {
+                            alert('✅ Payment verified! Redirecting...');
+                            window.location.href = verifyData.redirect_url;
+                        } else {
+                            alert('❌ Verification failed: ' + verifyData.message);
+                        }
+                    },
+                    prefill: {
+                        name: "{{ current_user.full_name }}",
+                        email: "{{ current_user.email }}"
+                    },
+                    theme: { color: "#F37254" }
+                };
+                
+                const rzp = new Razorpay(options);
+                rzp.open();
+                
+                rzp.on('payment.failed', function(response) {
+                    console.error('Payment failed:', response);
+                    alert('Payment failed: ' + JSON.stringify(response.error));
+                });
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function testVerifyEndpoint() {
+            // Direct test of verify endpoint
+            const response = await fetch('/api/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    booking_id: 23, // Your stuck booking ID
+                    razorpay_payment_id: "pay_test123",
+                    razorpay_order_id: "order_test123",
+                    razorpay_signature: "sig_test123"
+                })
+            });
+            
+            const data = await response.json();
+            console.log('Verify endpoint test:', data);
+            alert('Verify endpoint response: ' + JSON.stringify(data));
+        }
+    </script>
+</head>
+<body>
+    <h1>Debug Payment Test</h1>
+    <p>Service: {{ service.name }} - ₹{{ service.price }}</p>
+    <button onclick="testPayment()">Test Payment Flow</button>
+    <button onclick="testVerifyEndpoint()">Test Verify Endpoint</button>
+    
+    <div id="logs"></div>
+    
+    <script>
+        // Override console.log to show in page
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const logsDiv = document.getElementById('logs');
+            if (logsDiv) {
+                logsDiv.innerHTML += '<p>' + args.join(' ') + '</p>';
+            }
+        };
+    </script>
+</body>
+</html>
