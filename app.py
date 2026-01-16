@@ -455,6 +455,95 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
 
 # Add this function after your imports
 
+# Add these functions after your existing helper functions
+
+def get_mentor_balance(mentor_id: int, db: Session):
+    """Get or create mentor balance record"""
+    balance = db.query(MentorBalance).filter(MentorBalance.mentor_id == mentor_id).first()
+    
+    if not balance:
+        balance = MentorBalance(
+            mentor_id=mentor_id,
+            total_earnings=0.00,
+            available_balance=0.00,
+            pending_withdrawal=0.00,
+            total_withdrawn=0.00
+        )
+        db.add(balance)
+        db.commit()
+        db.refresh(balance)
+    
+    return balance
+
+def update_mentor_earnings(mentor_id: int, amount: float, db: Session):
+    """Update mentor earnings when a booking is completed and paid"""
+    balance = get_mentor_balance(mentor_id, db)
+    
+    # Add to total earnings
+    balance.total_earnings += Decimal(str(amount))
+    
+    # Calculate platform fee (20%) and mentor's share (80%)
+    mentor_share = amount * 0.8
+    
+    # Add to available balance
+    balance.available_balance += Decimal(str(mentor_share))
+    balance.last_updated = datetime.utcnow()
+    
+    db.commit()
+    return balance
+
+def can_withdraw(mentor_id: int, amount: float, db: Session):
+    """Check if mentor can withdraw the requested amount"""
+    balance = get_mentor_balance(mentor_id, db)
+    
+    # Minimum withdrawal amount
+    if amount < 500:
+        return False, "Minimum withdrawal amount is ₹500"
+    
+    # Check available balance
+    if amount > float(balance.available_balance):
+        return False, "Insufficient balance"
+    
+    return True, ""
+
+def process_withdrawal_request(mentor_id: int, amount: float, payment_method: str, 
+                              account_details: str, db: Session):
+    """Process a withdrawal request"""
+    # Check if withdrawal is possible
+    can_withdraw_result, message = can_withdraw(mentor_id, amount, db)
+    if not can_withdraw_result:
+        return None, message
+    
+    try:
+        # Get mentor balance
+        balance = get_mentor_balance(mentor_id, db)
+        
+        # Create withdrawal request
+        withdrawal = MentorPayout(
+            mentor_id=mentor_id,
+            amount=amount,
+            status="pending",
+            payment_method=payment_method,
+            account_details=account_details,
+            request_date=datetime.utcnow()
+        )
+        
+        db.add(withdrawal)
+        
+        # Update mentor balance
+        balance.available_balance -= Decimal(str(amount))
+        balance.pending_withdrawal += Decimal(str(amount))
+        balance.last_updated = datetime.utcnow()
+        
+        db.commit()
+        db.refresh(withdrawal)
+        
+        return withdrawal, "Withdrawal request submitted successfully!"
+        
+    except Exception as e:
+        db.rollback()
+        return None, f"Error processing withdrawal: {str(e)}"
+
 def generate_availabilities_for_mentor(mentor_id: int, days_ahead: int = 30, db: Session = None):
     """Generate availability slots based on mentor's day preferences"""
     if db is None:
@@ -2034,6 +2123,15 @@ async def dashboard(
             all_bookings = db.query(Booking).filter(
                 Booking.mentor_id == mentor.id
             ).order_by(Booking.created_at.desc()).all()
+            balance = get_mentor_balance(mentor.id, db)
+
+            # Calculate earnings from paid bookings
+            earnings_query = db.query(Booking).filter(
+            Booking.mentor_id == mentor.id,
+            Booking.payment_status == "paid"
+            ).with_entities(func.sum(Booking.amount_paid))
+
+            total_earnings = earnings_query.scalar() or 0
             
             # Separate bookings by type and status
             confirmed_bookings = []
@@ -2253,6 +2351,124 @@ def generate_jitsi_meeting_link(booking_id: int, mentor_name: str, learner_name:
     import uuid
     meeting_id = f"clearq-{booking_id}-{uuid.uuid4().hex[:8]}"
     return f"https://meet.jit.si/{meeting_id}", meeting_id
+
+# ============ WITHDRAWAL ROUTES ============
+
+@app.post("/api/mentor/withdrawal/request")
+async def request_withdrawal(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Handle withdrawal request from mentor"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    try:
+        data = await request.json()
+        amount = float(data.get("amount", 0))
+        payment_method = data.get("payment_method")
+        payment_details = data.get("payment_details", "")
+        
+        # Validation
+        if amount <= 0:
+            return JSONResponse({
+                "success": False,
+                "error": "Invalid withdrawal amount"
+            })
+        
+        if not payment_method:
+            return JSONResponse({
+                "success": False,
+                "error": "Payment method is required"
+            })
+        
+        # Get mentor
+        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+        if not mentor:
+            return JSONResponse({
+                "success": False,
+                "error": "Mentor profile not found"
+            })
+        
+        # Process withdrawal
+        withdrawal, message = process_withdrawal_request(
+            mentor_id=mentor.id,
+            amount=amount,
+            payment_method=payment_method,
+            account_details=payment_details,
+            db=db
+        )
+        
+        if not withdrawal:
+            return JSONResponse({
+                "success": False,
+                "error": message
+            })
+        
+        return JSONResponse({
+            "success": True,
+            "message": message,
+            "withdrawal_id": withdrawal.id,
+            "balance": {
+                "available": float(get_mentor_balance(mentor.id, db).available_balance)
+            }
+        })
+        
+    except Exception as e:
+        return JSONResponse({
+            "success": False,
+            "error": f"Error processing withdrawal: {str(e)}"
+        })
+
+@app.get("/api/mentor/withdrawal/history")
+async def get_withdrawal_history(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    status: Optional[str] = None,
+    limit: int = 20
+):
+    """Get withdrawal history for mentor"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    query = db.query(MentorPayout).filter(MentorPayout.mentor_id == mentor.id)
+    
+    if status:
+        query = query.filter(MentorPayout.status == status)
+    
+    withdrawals = query.order_by(MentorPayout.request_date.desc()).limit(limit).all()
+    
+    # Format response
+    withdrawals_data = []
+    for w in withdrawals:
+        withdrawals_data.append({
+            "id": w.id,
+            "amount": float(w.amount),
+            "payment_method": w.payment_method,
+            "status": w.status,
+            "request_date": w.request_date.isoformat() if w.request_date else None,
+            "processed_date": w.processed_date.isoformat() if w.processed_date else None,
+            "notes": w.notes
+        })
+    
+    # Get balance
+    balance = get_mentor_balance(mentor.id, db)
+    
+    return JSONResponse({
+        "success": True,
+        "withdrawals": withdrawals_data,
+        "balance": {
+            "available": float(balance.available_balance),
+            "total_earned": float(balance.total_earnings),
+            "total_withdrawn": float(balance.total_withdrawn),
+            "pending_withdrawal": float(balance.pending_withdrawal)
+        }
+    })
     
 @app.post("/mentor/services/{service_id}/update-digital-url")
 async def update_digital_product_url(
