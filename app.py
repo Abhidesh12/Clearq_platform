@@ -762,6 +762,7 @@ async def meta_json():
 
 
 @app.get("/payment/callback")
+@app.post("/payment/callback")
 async def payment_callback(
     request: Request,
     payment_id: Optional[str] = None,
