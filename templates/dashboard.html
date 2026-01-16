@@ -84,11 +84,6 @@
                     radial-gradient(circle at 70% 80%, rgba(255, 63, 31, 0.1) 0%, transparent 50%);
     }
 
-    @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-
     .header-content {
         max-width: 1200px;
         margin: 0 auto;
@@ -2682,7 +2677,7 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2><i class="fas fa-wallet"></i> Earnings Dashboard</h2>
-                        {% if earnings_data.available_balance > 0 %}
+                        {% if earnings_data and earnings_data.available_balance > 0 %}
                         <button onclick="openWithdrawalModal()" 
                                 class="header-action-btn" 
                                 style="background: linear-gradient(135deg, var(--card-green), #7cb342); color: white; border: none;">
@@ -2695,28 +2690,28 @@
                         <div class="earnings-summary">
                             <div class="earnings-total">
                                 <div class="total-label">Total Earnings</div>
-                                <div class="total-amount">₹{{ earnings_data.total_earned|default(0)|int }}</div>
+                                <div class="total-amount">₹{{ earnings_data.total_earned|default(0)|int if earnings_data else 0 }}</div>
                             </div>
                             
                             <!-- Balance Breakdown -->
                             <div class="earnings-stats">
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">₹{{ earnings_data.available_balance|default(0)|int }}</div>
+                                    <div class="earning-stat-value">₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}</div>
                                     <div class="earning-stat-label">Available</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">₹{{ earnings_data.total_withdrawn|default(0)|int }}</div>
+                                    <div class="earning-stat-value">₹{{ earnings_data.total_withdrawn|default(0)|int if earnings_data else 0 }}</div>
                                     <div class="earning-stat-label">Withdrawn</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">{{ earnings_data.pending_withdrawals|default(0) }}</div>
+                                    <div class="earning-stat-value">{{ earnings_data.pending_withdrawals|default(0) if earnings_data else 0 }}</div>
                                     <div class="earning-stat-label">Pending</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">{{ earnings_data.completed_withdrawals|default(0) }}</div>
+                                    <div class="earning-stat-value">{{ earnings_data.completed_withdrawals|default(0) if earnings_data else 0 }}</div>
                                     <div class="earning-stat-label">Paid Out</div>
                                 </div>
                             </div>
@@ -2729,11 +2724,11 @@
                                         Available for Withdrawal
                                     </span>
                                     <span style="font-size: 1.25rem; font-weight: 700; color: var(--card-green);">
-                                        ₹{{ earnings_data.available_balance|default(0)|int }}
+                                        ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
                                     </span>
                                 </div>
                                 
-                                {% if earnings_data.min_withdrawal_amount %}
+                                {% if earnings_data and earnings_data.min_withdrawal_amount %}
                                 <div class="payout-row">
                                     <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
                                         <i class="fas fa-info-circle"></i>
@@ -2826,7 +2821,7 @@
                             </div>
                             <h3>No Withdrawal History</h3>
                             <p>You haven't made any withdrawal requests yet</p>
-                            {% if earnings_data.available_balance > 0 %}
+                            {% if earnings_data and earnings_data.available_balance > 0 %}
                             <button onclick="openWithdrawalModal()" 
                                     class="header-action-btn" 
                                     style="margin-top: 1.5rem; background: linear-gradient(135deg, var(--card-green), #7cb342); color: white; border: none;">
@@ -3065,12 +3060,14 @@
                                     const notesTextarea = document.getElementById('adminNotes{{ withdrawal.id }}');
                                     const notesInput = document.getElementById('adminNotesInput{{ withdrawal.id }}');
                                     
-                                    notesTextarea.addEventListener('input', function() {
-                                        notesInput.value = this.value;
-                                    });
-                                    
-                                    // Set initial value
-                                    notesInput.value = notesTextarea.value;
+                                    if (notesTextarea && notesInput) {
+                                        notesTextarea.addEventListener('input', function() {
+                                            notesInput.value = this.value;
+                                        });
+                                        
+                                        // Set initial value
+                                        notesInput.value = notesTextarea.value;
+                                    }
                                 });
                             </script>
                         </div>
@@ -3367,7 +3364,7 @@
                                 Available Balance
                             </div>
                             <div style="font-size: 1.75rem; font-weight: 800; color: var(--card-green);">
-                                ₹{{ earnings_data.available_balance|default(0)|int }}
+                                ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
                             </div>
                         </div>
                         <div style="text-align: right;">
@@ -3391,7 +3388,7 @@
                                id="withdrawalAmount" 
                                name="amount"
                                min="500" 
-                               max="{{ earnings_data.available_balance|default(0)|int }}"
+                               max="{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}"
                                step="100"
                                required
                                style="width: 100%; padding: 0.875rem 1rem; padding-left: 2.5rem; border: 2px solid var(--border-light); border-radius: var(--radius); font-size: 1rem; font-weight: 500; color: var(--primary); transition: var(--transition); background: white;"
@@ -3402,7 +3399,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
                         <div style="font-size: 0.75rem; color: var(--text-secondary-light);">
-                            Enter amount between ₹500 - ₹{{ earnings_data.available_balance|default(0)|int }}
+                            Enter amount between ₹500 - ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
                         </div>
                         <button type="button" 
                                 onclick="setMaxAmount()" 
@@ -3731,7 +3728,7 @@
     }
 
     function setMaxAmount() {
-        const availableBalance = {{ earnings_data.available_balance|default(0)|int }};
+        const availableBalance = {{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }};
         const amountInput = document.getElementById('withdrawalAmount');
         amountInput.value = availableBalance;
     }
