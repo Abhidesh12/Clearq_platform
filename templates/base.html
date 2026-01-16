@@ -392,16 +392,10 @@
                         {% endif %}
                         <div class="flex items-center space-x-4">
                             <div class="flex items-center space-x-2">
-                                {% if current_user.profile_image %}
-                                <img src="/static/{{ current_user.profile_image }}" 
+                                <!-- Same profile image for all users -->
+                                <img src="https://cdn-icons-png.flaticon.com/512/5951/5951752.png" 
                                      alt="{{ current_user.full_name or current_user.username }}"
-                                     class="w-8 h-8 rounded-full object-cover">
-                                {% else %}
-                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-semibold" 
-                                     aria-label="User profile">
-                                    {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper if current_user.full_name or current_user.username else 'U' }}
-                                </div>
-                                {% endif %}
+                                     class="w-8 h-8 rounded-full object-cover border-2 border-primary/20">
                                 <span class="text-sm text-gray-600">Hi, {{ current_user.full_name or current_user.username }}</span>
                             </div>
                             <a href="/logout" 
@@ -471,16 +465,10 @@
                         {% endif %}
                         <div class="pt-4 border-t border-gray-200">
                             <div class="flex items-center space-x-3 mb-4 px-4">
-                                {% if current_user.profile_image %}
-                                <img src="/static/{{ current_user.profile_image }}" 
+                                <!-- Same profile image for all users (mobile) -->
+                                <img src="https://cdn-icons-png.flaticon.com/512/5951/5951752.png" 
                                      alt="{{ current_user.full_name or current_user.username }}"
-                                     class="w-10 h-10 rounded-full object-cover">
-                                {% else %}
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-semibold"
-                                     aria-hidden="true">
-                                    {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper if current_user.full_name or current_user.username else 'U' }}
-                                </div>
-                                {% endif %}
+                                     class="w-10 h-10 rounded-full object-cover border-2 border-primary/20">
                                 <div>
                                     <p class="font-medium text-gray-900">{{ current_user.full_name or current_user.username }}</p>
                                     <p class="text-sm text-gray-500">{{ current_user.role|title }}</p>
