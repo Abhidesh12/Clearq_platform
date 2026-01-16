@@ -3043,17 +3043,22 @@
                             </div>
                             
                             <!-- Action Buttons -->
-                            <form action="/admin/withdrawal/{{ withdrawal.id }}/process" method="POST" class="mentor-actions">
-                                <button type="submit" name="action" value="approve" class="action-button action-approve">
-                                    <i class="fas fa-check"></i>
-                                    Approve & Mark Paid
-                                </button>
-                                <button type="submit" name="action" value="reject" class="action-button action-reject">
-                                    <i class="fas fa-times"></i>
-                                    Reject
-                                </button>
-                                <input type="hidden" name="admin_notes" id="adminNotesInput{{ withdrawal.id }}">
-                            </form>
+                            <!-- AJAX version: -->
+<div class="mentor-actions">
+    <button type="button" 
+            onclick="processWithdrawal({{ withdrawal.id }}, 'approve')" 
+            class="action-button action-approve">
+        <i class="fas fa-check"></i>
+        Approve & Mark Paid
+    </button>
+    <button type="button" 
+            onclick="processWithdrawal({{ withdrawal.id }}, 'reject')" 
+            class="action-button action-reject">
+        <i class="fas fa-times"></i>
+        Reject
+    </button>
+    <input type="hidden" id="adminNotesInput{{ withdrawal.id }}" value="{{ withdrawal.admin_notes or '' }}">
+</div>
                             
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
