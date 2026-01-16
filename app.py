@@ -327,8 +327,6 @@ class Payment(Base):
     payment_method = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-# Create tables
-Base.metadata.create_all(bind=engine)
 
 class MentorPayout(Base):
     __tablename__ = "mentor_payouts"
@@ -359,6 +357,9 @@ class MentorBalance(Base):
     
     # Relationships
     mentor = relationship("Mentor")
+
+
+Base.metadata.create_all(bind=engine)
 
 # ============ PYDANTIC SCHEMAS ============
 
