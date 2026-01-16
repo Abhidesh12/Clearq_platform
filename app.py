@@ -2749,6 +2749,8 @@ async def payment_page(
     
     # Debug print
     print(f"Payment page - Booking ID: {booking.id}, Status: {booking.payment_status}, Razorpay Order ID: {booking.razorpay_order_id}")
+    payment_amount = booking.amount_paid if booking.amount_paid else (service.price if service else 0)
+
     
     return templates.TemplateResponse("payment.html", {
         "request": request,
@@ -2756,7 +2758,9 @@ async def payment_page(
         "booking": booking,
         "service": service,
         "mentor": mentor,
-        "RAZORPAY_KEY_ID": RAZORPAY_KEY_ID
+        "RAZORPAY_KEY_ID": RAZORPAY_KEY_ID,
+        "razorpay_key_id": RAZORPAY_KEY_ID,
+        "payment_amount": payment_amount
     })
 
 @app.post("/api/verify-payment-manual")
@@ -5620,6 +5624,42 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
                 "redirect_url": redirect_url,
                 "is_digital": service.is_digital if service else False
             })
+
+        token = request.cookies.get("access_token")
+        
+        current_user = None
+    
+        if token:
+            try:
+                payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+                user_id: int = payload.get("sub")
+                if user_id:
+                    current_user = db.query(User).filter(User.id == user_id).first()
+            except JWTError:
+                pass
+    
+        if not current_user:
+            return JSONResponse({
+                "success": False, 
+                "message": "Not authenticated",
+                "code": "NOT_AUTHENTICATED"
+            })
+
+        # Verify booking belongs to current user
+        if booking.learner_id != current_user.id:
+            return JSONResponse({
+                "success": False, 
+                "message": "Unauthorized access to booking",
+                "code": "UNAUTHORIZED"
+            })
+    
+    # ... rest of the function ...
+    
+    
+    
+
+ 
+        
         
         # Verify with Razorpay
         print("🔍 Verifying with Razorpay API...")
