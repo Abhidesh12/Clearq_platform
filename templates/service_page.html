@@ -3,7 +3,57 @@
 {% block title %}{{ service.name }} - {{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }} - ClearQ Mentor{% endblock %}
 
 {% block content %}
+<!-- Add Tailwind Configuration -->
+<script>
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                "primary": "#1f1f1f",
+                "primary-hover": "#000000",
+                "accent": "#ff6b4a",
+                "background-light": "#fff5ec",
+                "background-dark": "#151022",
+                "text-light": "#1f1f1f",
+                "text-dark": "#ffffff",
+                "text-secondary-light": "#555555",
+                "text-secondary-dark": "#a09db3",
+                "card-light": "#ffffff",
+                "card-dark": "#1e1a2e",
+                "border-light": "#E5E4E0",
+                "border-dark": "#2d2a3b",
+                "accent-beige": "#F0EFEA",
+                "secondary": "#2D3748",
+                "dark-card": "#232936",
+                "card-purple": "#E0DBFC",
+                "card-green": "#9CCB5C",
+                "card-blue": "#85C3EA",
+                "card-beige": "#EEE3CD",
+                "card-teal": "#A8E1E1",
+                "card-pink": "#F6D0CE",
+                "brand-red": "#FF3F1F",
+            },
+            fontFamily: {
+                "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "2xl": "1rem",
+                "full": "9999px"
+            },
+            fontSize: {
+                'xxs': '0.625rem',
+            }
+        },
+    }
+}
+</script>
+
 <style>
+    /* Initialize CSS Variables */
     :root {
         /* Primary Colors */
         --primary: #1f1f1f;
@@ -37,37 +87,19 @@
         --card-beige: #EEE3CD;
         --card-teal: #A8E1E1;
         --card-pink: #F6D0CE;
-        
-        /* UI Variables */
-        --radius-sm: 0.25rem;
-        --radius: 0.5rem;
-        --radius-md: 0.75rem;
-        --radius-lg: 1rem;
-        --radius-xl: 1.5rem;
-        --shadow-sm: 0 1px 2px 0 rgba(31, 31, 31, 0.05);
-        --shadow: 0 1px 3px 0 rgba(31, 31, 31, 0.1), 0 1px 2px 0 rgba(31, 31, 31, 0.06);
-        --shadow-md: 0 4px 6px -1px rgba(31, 31, 31, 0.1), 0 2px 4px -1px rgba(31, 31, 31, 0.06);
-        --shadow-lg: 0 10px 15px -3px rgba(31, 31, 31, 0.1), 0 4px 6px -2px rgba(31, 31, 31, 0.05);
-        --shadow-xl: 0 20px 25px -5px rgba(31, 31, 31, 0.1), 0 10px 10px -5px rgba(31, 31, 31, 0.04);
-        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .service-container {
-        max-width: 100%;
-        margin: 0 auto;
-        padding: 0;
-        background: linear-gradient(135deg, #fff5ec 0%, var(--background-light) 100%);
+        background: var(--background-light);
         min-height: 100vh;
     }
 
-    /* Service Header */
+    /* Compact Header */
     .service-header {
         background: linear-gradient(135deg, var(--primary) 0%, var(--background-dark) 100%);
-        color: var(--text-dark);
-        padding: 2rem 1.5rem;
+        padding: 1rem;
         position: relative;
         overflow: hidden;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .service-header::before {
@@ -77,43 +109,18 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: radial-gradient(circle at 30% 20%, rgba(255, 107, 74, 0.15) 0%, transparent 50%),
-                    radial-gradient(circle at 70% 80%, rgba(255, 63, 31, 0.1) 0%, transparent 50%);
+        background: radial-gradient(circle at 30% 20%, rgba(255, 107, 74, 0.1) 0%, transparent 50%);
     }
 
     .service-header-content {
-        max-width: 1200px;
+        max-width: 100%;
         margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
         position: relative;
         z-index: 2;
     }
 
     .breadcrumb {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        font-size: 0.8125rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .breadcrumb a {
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        font-weight: 500;
-        transition: var(--transition);
-    }
-
-    .breadcrumb a:hover {
-        color: var(--accent);
-        text-decoration: none;
-    }
-
-    .breadcrumb span {
-        color: rgba(255, 255, 255, 0.5);
+        display: none; /* Hide on mobile */
     }
 
     .service-title {
@@ -121,62 +128,59 @@
     }
 
     .service-title h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.75rem;
-        line-height: 1.2;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
         color: white;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     .service-meta {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.75rem;
-        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
     }
 
     .meta-item {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9375rem;
+        gap: 0.25rem;
         color: rgba(255, 255, 255, 0.9);
         font-weight: 500;
     }
 
     .meta-item i {
-        font-size: 0.875rem;
-        opacity: 0.9;
+        font-size: 0.7rem;
     }
 
     .meta-divider {
         color: rgba(255, 255, 255, 0.3);
+        display: none; /* Hide on mobile */
     }
 
     .meta-rating i {
         color: #FFD166;
-    }   
+    }
 
     .header-price-card {
         background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: var(--radius-xl);
-        padding: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: var(--shadow-lg);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-top: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     .price-display {
         text-align: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .price-amount {
-        font-size: 2.5rem;
-        font-weight: 800;
+        font-size: 1.75rem;
+        font-weight: 700;
         line-height: 1;
-        margin-bottom: 0.375rem;
+        margin-bottom: 0.25rem;
         background: linear-gradient(135deg, var(--accent), var(--brand-red));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -184,205 +188,121 @@
     }
 
     .price-label {
-        font-size: 0.9375rem;
+        font-size: 0.75rem;
         opacity: 0.9;
         color: rgba(255, 255, 255, 0.9);
-        font-weight: 500;
     }
 
     .book-now-btn {
         display: block;
         width: 100%;
-        padding: 1rem;
+        padding: 0.75rem;
         background: linear-gradient(135deg, var(--accent), var(--brand-red));
         color: white;
         border: none;
-        border-radius: var(--radius-lg);
+        border-radius: 0.5rem;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.875rem;
         cursor: pointer;
-        transition: var(--transition);
-        text-decoration: none;
+        transition: all 0.2s ease;
         text-align: center;
-        box-shadow: 0 8px 24px rgba(255, 107, 74, 0.3);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .book-now-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            transparent, 
-            rgba(255, 255, 255, 0.2), 
-            transparent);
-        transition: left 0.5s;
-    }
-
-    .book-now-btn:hover::before {
-        left: 100%;
+        text-decoration: none;
     }
 
     .book-now-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 32px rgba(255, 107, 74, 0.4);
+        transform: translateY(-1px);
         background: linear-gradient(135deg, var(--brand-red), var(--accent));
     }
 
     /* Main Content */
     .service-main {
-        padding: 2rem 1.5rem;
-        max-width: 1200px;
-        margin: 0 auto;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
     }
 
-    /* Service Cards */
+    /* Compact Cards */
     .service-card {
         background: var(--card-light);
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-md);
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(31, 31, 31, 0.08);
         border: 1px solid var(--border-light);
-        margin-bottom: 1.5rem;
         overflow: hidden;
-        transition: var(--transition);
-        position: relative;
-    }
-
-    .service-card:hover {
-        box-shadow: var(--shadow-xl);
-        transform: translateY(-4px);
-    }
-
-    .service-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--accent), var(--brand-red));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .service-card:hover::before {
-        opacity: 1;
     }
 
     .card-header {
-        padding: 1.5rem;
+        padding: 1rem;
         border-bottom: 1px solid var(--border-light);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: linear-gradient(135deg, var(--accent-beige) 0%, white 100%);
+        background: var(--accent-beige);
     }
 
     .card-header h2 {
-        font-size: 1.375rem;
-        font-weight: 700;
+        font-size: 1rem;
+        font-weight: 600;
         color: var(--primary);
         margin: 0;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .card-header h2 i {
         color: var(--accent);
-        font-size: 1.125rem;
+        font-size: 0.875rem;
     }
 
     .card-content {
-        padding: 1.5rem;
+        padding: 1rem;
     }
 
     /* Service Description */
     .service-description {
-        line-height: 1.7;
+        font-size: 0.875rem;
+        line-height: 1.6;
         color: var(--text-secondary-light);
-        font-size: 1.0625rem;
     }
 
     .service-description p {
-        margin-bottom: 1.25rem;
+        margin-bottom: 1rem;
     }
 
     .service-description p:last-child {
         margin-bottom: 0;
     }
 
-    .service-description strong {
-        color: var(--primary);
-        font-weight: 600;
-    }
-
-    .service-description em {
-        color: var(--accent);
-        font-style: normal;
-        font-weight: 500;
-    }
-
-    /* Benefits Grid */
+    /* Benefits Grid - Compact */
     .benefits-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1.25rem;
+        gap: 0.75rem;
     }
 
     .benefit-item {
         display: flex;
         align-items: flex-start;
-        gap: 1rem;
-        padding: 1.25rem;
+        gap: 0.75rem;
+        padding: 0.75rem;
         background: white;
         border: 1px solid var(--border-light);
-        border-radius: var(--radius-lg);
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
     }
 
     .benefit-item:hover {
         border-color: var(--accent);
         background: var(--accent-beige);
-        transform: translateX(8px);
-    }
-
-    .benefit-item::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 3px;
-        background: linear-gradient(180deg, var(--accent), var(--brand-red));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .benefit-item:hover::before {
-        opacity: 1;
     }
 
     .benefit-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: var(--radius);
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.375rem;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        font-size: 1.25rem;
-        transition: var(--transition);
-    }
-
-    .benefit-item:hover .benefit-icon {
-        transform: scale(1.1) rotate(5deg);
+        font-size: 1rem;
     }
 
     .icon-personalized {
@@ -406,79 +326,58 @@
     }
 
     .benefit-content h3 {
-        font-size: 1.0625rem;
-        font-weight: 700;
+        font-size: 0.875rem;
+        font-weight: 600;
         color: var(--primary);
-        margin-bottom: 0.375rem;
+        margin-bottom: 0.25rem;
     }
 
     .benefit-content p {
-        font-size: 0.9375rem;
+        font-size: 0.75rem;
         color: var(--text-secondary-light);
-        line-height: 1.5;
+        line-height: 1.4;
     }
 
-    /* Related Services */
+    /* Related Services - Compact */
     .related-services-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 0.75rem;
     }
 
     .related-service-item {
         display: block;
-        padding: 1.25rem;
+        padding: 0.75rem;
         border: 1px solid var(--border-light);
-        border-radius: var(--radius-lg);
+        border-radius: 0.5rem;
         text-decoration: none;
-        transition: var(--transition);
+        transition: all 0.2s ease;
         background: white;
-        position: relative;
-        overflow: hidden;
     }
 
     .related-service-item:hover {
         border-color: var(--accent);
         background: var(--accent-beige);
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .related-service-item::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--card-blue), var(--card-teal));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .related-service-item:hover::before {
-        opacity: 1;
     }
 
     .related-service-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
     }
 
     .related-service-name {
-        font-size: 1rem;
-        font-weight: 700;
+        font-size: 0.875rem;
+        font-weight: 600;
         color: var(--primary);
         flex: 1;
     }
 
     .related-service-price {
-        font-size: 1.25rem;
-        font-weight: 800;
+        font-size: 1rem;
+        font-weight: 700;
         color: var(--primary);
-        text-align: right;
         background: linear-gradient(135deg, var(--accent), var(--brand-red));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -486,175 +385,151 @@
     }
 
     .related-service-duration {
-        font-size: 0.8125rem;
+        font-size: 0.75rem;
         color: var(--text-secondary-light);
-        margin-top: 0.25rem;
-        font-weight: 500;
+        margin-top: 0.125rem;
+        text-align: right;
     }
 
     .related-service-description {
-        font-size: 0.9375rem;
+        font-size: 0.75rem;
         color: var(--text-secondary-light);
-        line-height: 1.5;
+        line-height: 1.4;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
 
-    /* Booking Section */
+    /* Booking Section - Compact */
     .booking-section {
         background: var(--card-light);
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-lg);
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(31, 31, 31, 0.08);
         border: 1px solid var(--border-light);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
+        padding: 1rem;
         position: sticky;
-        top: 1.5rem;
+        top: 1rem;
+        margin-bottom: 1rem;
     }
 
     .booking-header {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .booking-header h3 {
-        font-size: 1.375rem;
-        font-weight: 700;
+        font-size: 1rem;
+        font-weight: 600;
         color: var(--primary);
         margin: 0;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .booking-header h3 i {
         color: var(--accent);
     }
 
-    /* Date Selection */
+    /* Date Selection - Compact */
     .date-selection {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .date-selection label {
         display: block;
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
         font-weight: 600;
         color: var(--primary);
-        margin-bottom: 0.875rem;
+        margin-bottom: 0.5rem;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
     }
 
     .date-selection label i {
         color: var(--accent);
+        font-size: 0.75rem;
     }
 
     .date-selector {
         display: flex;
-        gap: 0.75rem;
+        gap: 0.5rem;
         overflow-x: auto;
-        padding-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
         -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
     }
 
     .date-selector::-webkit-scrollbar {
-        height: 4px;
-    }
-
-    .date-selector::-webkit-scrollbar-track {
-        background: var(--accent-beige);
-        border-radius: 4px;
-    }
-
-    .date-selector::-webkit-scrollbar-thumb {
-        background: var(--accent);
-        border-radius: 4px;
+        display: none;
     }
 
     .date-item {
         flex: 0 0 auto;
-        width: 5rem;
-        padding: 1rem 0.5rem;
-        border: 2px solid var(--border-light);
-        border-radius: var(--radius-lg);
+        width: 3.5rem;
+        padding: 0.5rem;
+        border: 1px solid var(--border-light);
+        border-radius: 0.5rem;
         background: white;
         cursor: pointer;
-        transition: var(--transition);
+        transition: all 0.2s ease;
         text-align: center;
-        position: relative;
-        overflow: hidden;
     }
 
     .date-item:hover {
         border-color: var(--accent);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
     }
 
     .date-item.selected {
         border-color: var(--accent);
-        background: linear-gradient(135deg, rgba(255, 107, 74, 0.1), white);
-        box-shadow: var(--shadow-md);
-    }
-
-    .date-item.selected::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, var(--accent), var(--brand-red));
+        background: rgba(255, 107, 74, 0.05);
     }
 
     .day {
-        font-size: 0.8125rem;
+        font-size: 0.7rem;
         font-weight: 600;
         color: var(--text-secondary-light);
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.125rem;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
     }
 
     .date {
-        font-size: 1.5rem;
-        font-weight: 800;
+        font-size: 1.125rem;
+        font-weight: 700;
         color: var(--primary);
         line-height: 1;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.125rem;
     }
 
     .month {
-        font-size: 0.8125rem;
+        font-size: 0.7rem;
         color: var(--text-secondary-light);
-        font-weight: 500;
     }
 
-    /* Time Selection */
+    /* Time Selection - Compact */
     .time-selection {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
     }
 
     .time-selection label {
         display: block;
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
         font-weight: 600;
         color: var(--primary);
-        margin-bottom: 0.875rem;
+        margin-bottom: 0.5rem;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
     }
 
     .time-selection label i {
         color: var(--accent);
+        font-size: 0.75rem;
     }
 
     .time-slots-container {
-        min-height: 120px;
+        min-height: 3rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -663,72 +538,57 @@
     .loading-spinner {
         text-align: center;
         color: var(--text-secondary-light);
-        padding: 2rem;
+        padding: 1rem;
     }
 
     .loading-spinner i {
-        font-size: 1.75rem;
-        margin-bottom: 0.75rem;
+        font-size: 1rem;
+        margin-bottom: 0.375rem;
         color: var(--accent);
     }
 
     .loading-spinner p {
-        font-size: 0.9375rem;
+        font-size: 0.75rem;
         font-weight: 500;
     }
 
     .time-slots-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .time-slot-btn {
-        padding: 0.75rem 0.5rem;
-        border: 2px solid var(--border-light);
-        border-radius: var(--radius);
+        padding: 0.5rem 0.375rem;
+        border: 1px solid var(--border-light);
+        border-radius: 0.375rem;
         background: white;
         color: var(--text-secondary-light);
-        font-size: 0.9375rem;
+        font-size: 0.75rem;
         font-weight: 500;
         cursor: pointer;
-        transition: var(--transition);
+        transition: all 0.2s ease;
         text-align: center;
-        position: relative;
-        overflow: hidden;
     }
 
     .time-slot-btn:hover {
         border-color: var(--accent);
         color: var(--primary);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-sm);
     }
 
     .time-slot-btn.selected {
         border-color: var(--accent);
-        background: linear-gradient(135deg, rgba(255, 107, 74, 0.1), white);
+        background: rgba(255, 107, 74, 0.05);
         color: var(--accent);
         font-weight: 600;
-        box-shadow: var(--shadow-sm);
     }
 
-    .time-slot-btn.selected::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, var(--accent), var(--brand-red));
-    }
-
-    /* Pricing Summary */
+    /* Pricing Summary - Compact */
     .pricing-summary {
-        background: linear-gradient(135deg, var(--accent-beige), white);
-        border-radius: var(--radius-lg);
-        padding: 1.25rem;
-        margin-bottom: 1.5rem;
+        background: var(--accent-beige);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
         border: 1px solid var(--border-light);
     }
 
@@ -736,125 +596,79 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid var(--border-light);
+        margin-bottom: 0.5rem;
+        font-size: 0.75rem;
     }
 
     .pricing-row:last-child {
         margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
     }
 
     .pricing-total {
-        border-top: 2px solid var(--border-light);
-        padding-top: 1rem;
-        margin-top: 1rem;
+        border-top: 1px solid var(--border-light);
+        padding-top: 0.5rem;
+        margin-top: 0.5rem;
+        font-weight: 600;
     }
 
     .pricing-label {
-        font-size: 0.9375rem;
         color: var(--text-secondary-light);
-        font-weight: 500;
     }
 
     .pricing-value {
-        font-size: 1rem;
-        font-weight: 600;
         color: var(--primary);
+        font-weight: 600;
     }
 
     .pricing-total .pricing-value {
-        font-size: 1.5rem;
+        font-size: 0.875rem;
         background: linear-gradient(135deg, var(--accent), var(--brand-red));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        font-weight: 700;
     }
 
     /* Book Button */
     .book-button {
         display: block;
         width: 100%;
-        padding: 1.125rem;
+        padding: 0.75rem;
         background: linear-gradient(135deg, var(--accent), var(--brand-red));
         color: white;
         border: none;
-        border-radius: var(--radius-lg);
+        border-radius: 0.5rem;
         font-weight: 600;
-        font-size: 1.125rem;
+        font-size: 0.875rem;
         cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        box-shadow: var(--shadow-lg);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .book-button::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            transparent, 
-            rgba(255, 255, 255, 0.2), 
-            transparent);
-        transition: left 0.5s;
-    }
-
-    .book-button:hover::before {
-        left: 100%;
+        transition: all 0.2s ease;
+        text-align: center;
+        margin-bottom: 1rem;
     }
 
     .book-button:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-xl);
+        transform: translateY(-1px);
         background: linear-gradient(135deg, var(--brand-red), var(--accent));
     }
 
-    .book-button:active {
-        transform: translateY(0);
-    }
-
-    /* Mentor Info */
+    /* Mentor Info - Compact */
     .mentor-info-card {
         background: var(--card-light);
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-lg);
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(31, 31, 31, 0.08);
         border: 1px solid var(--border-light);
-        padding: 1.5rem;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .mentor-info-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--card-purple), var(--card-blue));
+        padding: 1rem;
     }
 
     .mentor-header {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
     }
 
     .mentor-avatar {
-        width: 4rem;
-        height: 4rem;
+        width: 2.5rem;
+        height: 2.5rem;
         border-radius: 50%;
         overflow: hidden;
         flex-shrink: 0;
@@ -863,21 +677,19 @@
         align-items: center;
         justify-content: center;
         color: white;
-        font-weight: 700;
-        font-size: 1.5rem;
-        box-shadow: var(--shadow-md);
-        border: 3px solid white;
+        font-weight: 600;
+        font-size: 1rem;
     }
 
     .mentor-details h4 {
-        font-size: 1.125rem;
-        font-weight: 700;
+        font-size: 0.875rem;
+        font-weight: 600;
         color: var(--primary);
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.125rem;
     }
 
     .mentor-details p {
-        font-size: 0.9375rem;
+        font-size: 0.75rem;
         color: var(--text-secondary-light);
         font-weight: 500;
     }
@@ -885,60 +697,91 @@
     .view-profile-btn {
         display: block;
         width: 100%;
-        padding: 0.875rem;
-        border: 2px solid var(--accent);
+        padding: 0.5rem;
+        border: 1px solid var(--accent);
         color: var(--accent);
         background: transparent;
-        border-radius: var(--radius);
+        border-radius: 0.375rem;
         font-weight: 600;
-        font-size: 0.9375rem;
+        font-size: 0.75rem;
         cursor: pointer;
-        transition: var(--transition);
+        transition: all 0.2s ease;
         text-align: center;
         text-decoration: none;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .view-profile-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            transparent, 
-            rgba(255, 107, 74, 0.1), 
-            transparent);
-        transition: left 0.5s;
-    }
-
-    .view-profile-btn:hover::before {
-        left: 100%;
     }
 
     .view-profile-btn:hover {
         background: rgba(255, 107, 74, 0.1);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+    }
+
+    /* Digital Product Badge */
+    .digital-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        background: linear-gradient(135deg, var(--card-purple), #7c3aed);
+        color: white;
+        border-radius: 1rem;
+        font-size: 0.625rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+        vertical-align: middle;
+    }
+
+    /* Empty State - Compact */
+    .empty-state {
+        text-align: center;
+        padding: 1.5rem;
+        background: var(--accent-beige);
+        border-radius: 0.5rem;
+        border: 1px dashed var(--border-light);
+        margin: 0.5rem 0;
+    }
+
+    .empty-state-icon {
+        width: 2rem;
+        height: 2rem;
+        margin: 0 auto 0.75rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.875rem;
+    }
+
+    .empty-state h3 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .empty-state p {
+        font-size: 0.75rem;
+        color: var(--text-secondary-light);
+        margin-bottom: 0;
+        line-height: 1.4;
     }
 
     /* Notification System */
     .notification {
         position: fixed;
-        top: 1.5rem;
-        right: 1.5rem;
-        padding: 1.25rem 1.75rem;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-xl);
+        top: 1rem;
+        right: 1rem;
+        left: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(31, 31, 31, 0.15);
         z-index: 1000;
-        animation: slideIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        max-width: 350px;
+        animation: slideIn 0.3s ease;
         display: flex;
         align-items: center;
-        gap: 1rem;
-        border-left: 4px solid;
+        gap: 0.75rem;
+        border-left: 3px solid;
+        font-size: 0.75rem;
     }
 
     .notification-success {
@@ -960,88 +803,33 @@
     }
 
     .notification i {
-        font-size: 1.25rem;
+        font-size: 0.875rem;
     }
 
     @keyframes slideIn {
         from {
-            transform: translateX(100%);
+            transform: translateY(-20px);
             opacity: 0;
         }
         to {
-            transform: translateX(0);
+            transform: translateY(0);
             opacity: 1;
         }
-    }
-
-    /* Digital Product Badge */
-    .digital-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: linear-gradient(135deg, var(--card-purple), #7c3aed);
-        color: white;
-        border-radius: 2rem;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        margin-left: 0.75rem;
-        vertical-align: middle;
-        box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 3rem 1rem;
-        background: linear-gradient(135deg, var(--accent-beige), white);
-        border-radius: var(--radius-lg);
-        border: 2px dashed var(--border-light);
-    }
-
-    .empty-state-icon {
-        width: 4rem;
-        height: 4rem;
-        margin: 0 auto 1.5rem;
-        background: linear-gradient(135deg, var(--accent), var(--brand-red));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.5rem;
-        box-shadow: var(--shadow-lg);
-    }
-
-    .empty-state h3 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
-    }
-
-    .empty-state p {
-        font-size: 0.9375rem;
-        color: var(--text-secondary-light);
-        margin-bottom: 1.5rem;
-        max-width: 300px;
-        margin-left: auto;
-        margin-right: auto;
-        line-height: 1.5;
     }
 
     /* Responsive Design */
     @media (min-width: 640px) {
         .service-header {
-            padding: 2.5rem 2rem;
+            padding: 1.5rem;
         }
         
         .service-title h1 {
-            font-size: 2.25rem;
+            font-size: 1.5rem;
         }
         
         .service-main {
-            padding: 2.5rem 2rem;
+            padding: 1.5rem;
+            gap: 1.5rem;
         }
         
         .benefits-grid {
@@ -1056,72 +844,100 @@
             grid-template-columns: repeat(3, 1fr);
         }
         
-        .date-selector {
-            flex-wrap: wrap;
-            overflow-x: visible;
+        .notification {
+            left: auto;
+            max-width: 300px;
         }
     }
 
     @media (min-width: 768px) {
-        .service-main {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-        
-        .service-card {
-            margin-bottom: 0;
-        }
-        
-        .booking-section {
-            margin-bottom: 0;
-        }
-        
-        .date-selector {
-            flex-wrap: nowrap;
-            overflow-x: auto;
-        }
-    }
-
-    @media (min-width: 1024px) {
         .service-header-content {
-            flex-direction: row;
-            align-items: flex-start;
+            display: flex;
             justify-content: space-between;
+            align-items: flex-start;
         }
         
         .service-info {
             flex: 1;
-            margin-right: 2rem;
+            margin-right: 1.5rem;
         }
         
         .header-price-card {
-            min-width: 280px;
+            min-width: 200px;
+            margin-top: 0;
+        }
+        
+        .service-main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .booking-section {
+            order: 2;
+            position: sticky;
+            top: 1.5rem;
+        }
+        
+        .service-content {
+            order: 1;
+            grid-column: span 1;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .service-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .service-title h1 {
+            font-size: 1.75rem;
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .breadcrumb a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            color: var(--accent);
+        }
+        
+        .breadcrumb span {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .meta-divider {
+            display: inline;
         }
         
         .service-main {
             grid-template-columns: 2fr 1fr;
-            gap: 2.5rem;
-            padding: 3rem 2rem;
+            gap: 2rem;
         }
         
-        .service-card:first-child {
-            margin-bottom: 2rem;
-        }
-        
-        .booking-section {
-            position: sticky;
-            top: 2rem;
-        }
-        
-        .time-slots-grid {
-            grid-template-columns: repeat(2, 1fr);
+        .date-selector {
+            flex-wrap: wrap;
         }
     }
 
     @media (min-width: 1200px) {
-        .time-slots-grid {
-            grid-template-columns: repeat(3, 1fr);
+        .service-header-content,
+        .service-main {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .service-main {
+            padding: 2rem 1.5rem;
         }
     }
 </style>
@@ -1131,21 +947,13 @@
     <div class="service-header">
         <div class="service-header-content">
             <div class="service-info">
-                <nav class="breadcrumb">
-                    <a href="/">Home</a>
-                    <span>/</span>
-                    <a href="/{{ mentor.user.username }}">{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}</a>
-                    <span>/</span>
-                    <span>Service</span>
-                </nav>
-                
                 <div class="service-title">
                     <h1>
                         {{ service.name }}
                         {% if service.is_digital %}
                         <span class="digital-badge">
                             <i class="fas fa-download"></i>
-                            Digital Product
+                            Digital
                         </span>
                         {% endif %}
                     </h1>
@@ -1155,13 +963,11 @@
                             {{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}
                         </span>
                         {% if not service.is_digital %}
-                        <span class="meta-divider">•</span>
                         <span class="meta-item">
                             <i class="fas fa-clock"></i>
-                            {{ service.duration_minutes }} minutes
+                            {{ service.duration_minutes }} min
                         </span>
                         {% endif %}
-                        <span class="meta-divider">•</span>
                         <span class="meta-item meta-rating">
                             <i class="fas fa-star"></i>
                             {{ mentor.rating if mentor.rating else '4.9' }}
@@ -1175,9 +981,9 @@
                     <div class="price-amount">₹{{ service.price }}</div>
                     <div class="price-label">
                         {% if service.is_digital %}
-                        One-time purchase • Lifetime access
+                        One-time purchase
                         {% else %}
-                        Per session • Instant booking
+                        Per session
                         {% endif %}
                     </div>
                 </div>
@@ -1196,8 +1002,8 @@
 
     <!-- Main Content -->
     <div class="service-main">
-        <!-- Left Column -->
-        <div>
+        <!-- Left Column: Content -->
+        <div class="service-content">
             <!-- Service Description -->
             <div class="service-card">
                 <div class="card-header">
@@ -1208,12 +1014,12 @@
                         {% if service.description %}
                             {{ service.description|safe }}
                         {% else %}
-                            <div class="empty-state" style="padding: 2rem;">
-                                <div class="empty-state-icon" style="width: 3rem; height: 3rem;">
+                            <div class="empty-state" style="padding: 1rem;">
+                                <div class="empty-state-icon" style="width: 1.5rem; height: 1.5rem; font-size: 0.75rem;">
                                     <i class="fas fa-info-circle"></i>
                                 </div>
-                                <h3 style="font-size: 1.125rem;">No Description Available</h3>
-                                <p style="font-size: 0.875rem;">Check back later for more details about this service.</p>
+                                <h3 style="font-size: 0.75rem;">No Description Available</h3>
+                                <p style="font-size: 0.7rem;">Check back later for more details.</p>
                             </div>
                         {% endif %}
                     </div>
@@ -1318,7 +1124,7 @@
             {% if other_services and other_services|length > 0 %}
             <div class="service-card">
                 <div class="card-header">
-                    <h2><i class="fas fa-layer-group"></i> More Services by {{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}</h2>
+                    <h2><i class="fas fa-layer-group"></i> More Services</h2>
                 </div>
                 <div class="card-content">
                     <div class="related-services-grid">
@@ -1335,7 +1141,7 @@
                                 </div>
                             </div>
                             <div class="related-service-description">
-                                {{ other_service.description|striptags|truncate(100) if other_service.description else 'No description available' }}
+                                {{ other_service.description|striptags|truncate(80) if other_service.description else 'No description' }}
                             </div>
                         </a>
                         {% endfor %}
@@ -1345,7 +1151,7 @@
             {% endif %}
         </div>
 
-        <!-- Right Column -->
+        <!-- Right Column: Booking & Mentor Info -->
         <div>
             <!-- Booking Section -->
             <div id="booking-section" class="booking-section">
@@ -1380,12 +1186,12 @@
                             </div>
                             {% endfor %}
                         {% else %}
-                            <div class="empty-state" style="padding: 1.5rem; border: 1px solid var(--border-light);">
-                                <div class="empty-state-icon" style="width: 2.5rem; height: 2.5rem; font-size: 1rem;">
+                            <div class="empty-state" style="padding: 1rem;">
+                                <div class="empty-state-icon" style="width: 1.5rem; height: 1.5rem; font-size: 0.75rem;">
                                     <i class="fas fa-calendar-times"></i>
                                 </div>
-                                <h3 style="font-size: 0.9375rem;">No Dates Available</h3>
-                                <p style="font-size: 0.8125rem;">Check back later for available slots</p>
+                                <h3 style="font-size: 0.75rem;">No Dates Available</h3>
+                                <p style="font-size: 0.7rem;">Check back later</p>
                             </div>
                         {% endif %}
                     </div>
@@ -1444,49 +1250,40 @@
                     <span>Book Session - ₹{{ service.price }}</span>
                     {% endif %}
                 </button>
-            </div>
 
-            <!-- Mentor Info -->
-            <div class="mentor-info-card">
-                <div class="mentor-header">
-                    <div class="mentor-avatar">
-                        {% if mentor.user.profile_image %}
-                        <img src="/static/{{ mentor.user.profile_image }}" 
-                             alt="{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}"
-                             style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                        {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper if mentor.user.full_name or mentor.user.username else 'M' }}
-                        {% endif %}
+                <!-- Mentor Info -->
+                <div class="mentor-info-card" style="margin-bottom: 0;">
+                    <div class="mentor-header">
+                        <div class="mentor-avatar">
+                            {% if mentor.user.profile_image %}
+                            <img src="/static/{{ mentor.user.profile_image }}" 
+                                 alt="{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}"
+                                 style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper if mentor.user.full_name or mentor.user.username else 'M' }}
+                            {% endif %}
+                        </div>
+                        <div class="mentor-details">
+                            <h4>{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}</h4>
+                            <p>{{ mentor.job_title if mentor.job_title else 'Expert Mentor' }}</p>
+                        </div>
                     </div>
-                    <div class="mentor-details">
-                        <h4>{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}</h4>
-                        <p>{{ mentor.job_title if mentor.job_title else 'Expert Mentor' }}</p>
-                    </div>
+                    <a href="/{{ mentor.user.username }}" class="view-profile-btn">
+                        <i class="fas fa-external-link-alt"></i>
+                        View Full Profile
+                    </a>
                 </div>
-                <a href="/{{ mentor.user.username }}" class="view-profile-btn">
-                    <i class="fas fa-external-link-alt"></i>
-                    View Full Profile
-                </a>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Debug Info (hidden in production) -->
-<div style="display: none;" id="debug-info">
-    <p>Mentor ID: {{ mentor.id if mentor else 'Not found' }}</p>
-    <p>Mentor Username: {{ mentor.user.username if mentor and mentor.user else 'Not found' }}</p>
-    <p>Service ID: {{ service.id if service else 'Not found' }}</p>
-    <p>Service Mentor ID: {{ service.mentor_id if service else 'Not found' }}</p>
-    <p>Is Digital: {{ service.is_digital }}</p>
-</div>
-
+<!-- JavaScript (Keep existing functionality) -->
 <script>
     let selectedDate = null;
     let selectedTime = null;
     const isDigital = {{ service.is_digital|tojson|safe }};
 
-    // Enhanced notification system
     function showNotification(message, type = 'success') {
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
@@ -1497,18 +1294,17 @@
         
         notification.innerHTML = `
             <i class="fas fa-${icon}"></i>
-            <div style="flex: 1;">
-                <span style="font-weight: 600; display: block; margin-bottom: 0.25rem;">${type.charAt(0).toUpperCase() + type.slice(1)}</span>
-                <span style="font-size: 0.9375rem;">${message}</span>
+            <div style="flex: 1; font-size: 0.75rem;">
+                <span style="font-weight: 600; display: block;">${type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                <span>${message}</span>
             </div>
-            <button onclick="this.parentElement.remove()" style="opacity: 0.8; cursor: pointer; transition: opacity 0.2s; background: none; border: none; color: inherit;">
+            <button onclick="this.parentElement.remove()" style="opacity: 0.8; cursor: pointer; background: none; border: none; color: inherit;">
                 <i class="fas fa-times"></i>
             </button>
         `;
         
         document.body.appendChild(notification);
         
-        // Remove after 5 seconds
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.remove();
@@ -1517,16 +1313,12 @@
     }
 
     function selectDate(element, date) {
-        // Remove selected class from all date items
         document.querySelectorAll('.date-item').forEach(item => {
             item.classList.remove('selected');
         });
         
-        // Add selected class to clicked item
         element.classList.add('selected');
         selectedDate = date;
-        
-        // Load time slots for selected date
         loadTimeSlots(date);
     }
 
@@ -1543,24 +1335,20 @@
             const pathParts = window.location.pathname.split('/');
             const username = pathParts[1];
             const serviceId = pathParts[3];
-            
-            // Get mentor ID from template context
             const mentorId = {{ mentor.id if mentor else (service.mentor_id if service else 0) }};
             
             if (!mentorId) {
                 container.innerHTML = `
-                    <div class="empty-state" style="padding: 1.5rem; border: 1px solid var(--border-light);">
-                        <div class="empty-state-icon" style="width: 2.5rem; height: 2.5rem; font-size: 1rem; background: linear-gradient(135deg, var(--card-pink), #e4b9b7);">
+                    <div class="empty-state" style="padding: 1rem;">
+                        <div class="empty-state-icon" style="width: 1.5rem; height: 1.5rem; font-size: 0.75rem;">
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
-                        <h3 style="font-size: 0.9375rem;">Error Loading Slots</h3>
-                        <p style="font-size: 0.8125rem;">Mentor information not available</p>
+                        <h3 style="font-size: 0.75rem;">Error Loading Slots</h3>
+                        <p style="font-size: 0.7rem;">Mentor information not available</p>
                     </div>
                 `;
                 return;
             }
-            
-            console.log('Loading time slots for:', { date, serviceId, mentorId });
             
             const response = await fetch('/api/generate-time-slots', {
                 method: 'POST',
@@ -1575,16 +1363,15 @@
             });
             
             const data = await response.json();
-            console.log('Time slots response:', data);
             
             if (data.success && data.slots && data.slots.length > 0) {
                 container.innerHTML = `
-                    <div style="margin-bottom: 0.75rem;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <span style="font-size: 0.9375rem; font-weight: 600; color: var(--primary);">
+                    <div style="margin-bottom: 0.5rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.375rem;">
+                            <span style="font-size: 0.75rem; font-weight: 600; color: var(--primary);">
                                 Available Slots
                             </span>
-                            <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
+                            <span style="font-size: 0.7rem; color: var(--text-secondary-light);">
                                 ${data.slots.length} slot${data.slots.length > 1 ? 's' : ''}
                             </span>
                         </div>
@@ -1599,7 +1386,6 @@
                     </div>
                 `;
                 
-                // Select first time slot by default
                 if (data.slots.length > 0) {
                     const firstBtn = container.querySelector('.time-slot-btn');
                     if (firstBtn) {
@@ -1608,12 +1394,12 @@
                 }
             } else {
                 container.innerHTML = `
-                    <div class="empty-state" style="padding: 1.5rem; border: 1px solid var(--border-light);">
-                        <div class="empty-state-icon" style="width: 2.5rem; height: 2.5rem; font-size: 1rem; background: linear-gradient(135deg, var(--card-beige), #e5d7b8);">
+                    <div class="empty-state" style="padding: 1rem;">
+                        <div class="empty-state-icon" style="width: 1.5rem; height: 1.5rem; font-size: 0.75rem;">
                             <i class="fas fa-calendar-times"></i>
                         </div>
-                        <h3 style="font-size: 0.9375rem;">No Available Slots</h3>
-                        <p style="font-size: 0.8125rem;">${data.message || 'No time slots available for this date'}</p>
+                        <h3 style="font-size: 0.75rem;">No Available Slots</h3>
+                        <p style="font-size: 0.7rem;">${data.message || 'No time slots available'}</p>
                     </div>
                 `;
                 selectedTime = null;
@@ -1621,12 +1407,12 @@
         } catch (error) {
             console.error('Error loading time slots:', error);
             container.innerHTML = `
-                <div class="empty-state" style="padding: 1.5rem; border: 1px solid var(--border-light);">
-                    <div class="empty-state-icon" style="width: 2.5rem; height: 2.5rem; font-size: 1rem; background: linear-gradient(135deg, var(--card-pink), #e4b9b7);">
+                <div class="empty-state" style="padding: 1rem;">
+                    <div class="empty-state-icon" style="width: 1.5rem; height: 1.5rem; font-size: 0.75rem;">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
-                    <h3 style="font-size: 0.9375rem;">Error Loading Slots</h3>
-                    <p style="font-size: 0.8125rem;">Please try again later</p>
+                    <h3 style="font-size: 0.75rem;">Error Loading Slots</h3>
+                    <p style="font-size: 0.7rem;">Please try again later</p>
                 </div>
             `;
             selectedTime = null;
@@ -1634,12 +1420,10 @@
     }
 
     function selectTime(time, element) {
-        // Remove selected class from all time slots
         document.querySelectorAll('.time-slot-btn').forEach(btn => {
             btn.classList.remove('selected');
         });
         
-        // Add selected class to clicked button
         element.classList.add('selected');
         selectedTime = time;
     }
@@ -1651,32 +1435,10 @@
                 behavior: 'smooth',
                 block: 'start'
             });
-            
-            // Add highlight animation
-            bookingSection.style.animation = 'none';
-            setTimeout(() => {
-                bookingSection.style.animation = 'highlightPulse 1s';
-            }, 10);
-            
-            // Add CSS for highlight animation
-            if (!document.querySelector('#highlight-animation')) {
-                const style = document.createElement('style');
-                style.id = 'highlight-animation';
-                style.textContent = `
-                    @keyframes highlightPulse {
-                        0% { box-shadow: 0 10px 15px -3px rgba(31, 31, 31, 0.1); }
-                        50% { box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.2); }
-                        100% { box-shadow: 0 10px 15px -3px rgba(31, 31, 31, 0.1); }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
         }
     }
 
-    // Updated bookService function
     async function bookService() {
-        // Check authentication
         {% if not current_user %}
             showNotification('Please login to book this service', 'warning');
             setTimeout(() => {
@@ -1692,12 +1454,10 @@
         
         const pathParts = window.location.pathname.split('/');
         const serviceId = pathParts[3];
-        
-        // Get mentor ID from template context
         const mentorId = {{ mentor.id if mentor else (service.mentor_id if service else 0) }};
         
         if (!mentorId) {
-            showNotification('Error: Mentor information not found. Please refresh the page.', 'error');
+            showNotification('Error: Mentor information not found.', 'error');
             return;
         }
         
@@ -1706,10 +1466,9 @@
             mentor_id: mentorId
         };
         
-        // Only add date/time for non-digital services
         if (!isDigital) {
             if (!selectedDate || !selectedTime) {
-                showNotification('Please select a date and time before booking.', 'warning');
+                showNotification('Please select a date and time.', 'warning');
                 scrollToBooking();
                 return;
             }
@@ -1717,15 +1476,10 @@
             bookingData.time = selectedTime;
         }
         
-        console.log('Sending booking data:', bookingData);
-        
-        // Show loading state
         const bookButton = document.getElementById('book-button');
         const originalHTML = bookButton.innerHTML;
-        const originalBg = bookButton.style.background;
         bookButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         bookButton.disabled = true;
-        bookButton.style.background = 'linear-gradient(135deg, var(--text-secondary-light), var(--border-light))';
         
         try {
             const response = await fetch('/api/create-booking', {
@@ -1737,16 +1491,14 @@
             });
             
             const data = await response.json();
-            console.log('Booking response:', data);
             
             if (data.success) {
                 if (isDigital) {
-                    showNotification('🎉 Product added to cart! Redirecting to payment...', 'success');
+                    showNotification('🎉 Product added to cart! Redirecting...', 'success');
                 } else {
-                    showNotification('🎉 Session booked successfully! Redirecting to payment...', 'success');
+                    showNotification('🎉 Session booked successfully! Redirecting...', 'success');
                 }
                 
-                // Redirect based on response
                 if (data.redirect_url) {
                     setTimeout(() => {
                         window.location.href = data.redirect_url;
@@ -1761,80 +1513,26 @@
                     }, 1500);
                 }
             } else {
-                showNotification(data.message || 'Failed to create booking. Please try again.', 'error');
-                // Reset button
+                showNotification(data.message || 'Failed to create booking.', 'error');
                 bookButton.innerHTML = originalHTML;
                 bookButton.disabled = false;
-                bookButton.style.background = originalBg;
             }
         } catch (error) {
             console.error('Error:', error);
-            showNotification('Failed to create booking. Please try again.', 'error');
-            // Reset button
+            showNotification('Failed to create booking.', 'error');
             bookButton.innerHTML = originalHTML;
             bookButton.disabled = false;
-            bookButton.style.background = originalBg;
         }
     }
 
-    // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('=== Service Page Debug ===');
-        console.log('Mentor ID:', {{ mentor.id if mentor else 'null' }});
-        console.log('Mentor Username:', "{{ mentor.user.username if mentor and mentor.user else 'null' }}");
-        console.log('Service ID:', {{ service.id if service else 'null' }});
-        console.log('Service Mentor ID:', {{ service.mentor_id if service else 'null' }});
-        console.log('Is Digital Service:', {{ service.is_digital }});
-        console.log('Available Dates:', {{ available_dates|length if available_dates else 0 }});
-        console.log('Current User:', {% if current_user %}"{{ current_user.username }}"{% else %}null{% endif %});
-        console.log('Current User Role:', {% if current_user %}"{{ current_user.role }}"{% else %}null{% endif %});
-        
-        // Initialize first date selection for live sessions
         if (!isDigital) {
             const firstDate = document.querySelector('.date-item');
             if (firstDate) {
                 const date = firstDate.dataset.date;
                 selectDate(firstDate, date);
             }
-            
-            // Add scroll indicator for date selector on mobile
-            const dateSelector = document.getElementById('dateContainer');
-            if (dateSelector && dateSelector.scrollWidth > dateSelector.clientWidth) {
-                dateSelector.style.position = 'relative';
-                dateSelector.style.background = `
-                    linear-gradient(to right, 
-                        transparent 85%, 
-                        rgba(255, 107, 74, 0.1) 95%, 
-                        rgba(255, 107, 74, 0.2)
-                    ),
-                    linear-gradient(to left, 
-                        transparent 85%, 
-                        rgba(255, 107, 74, 0.1) 95%, 
-                        rgba(255, 107, 74, 0.2)
-                    )
-                `;
-            }
         }
-        
-        // Check if user is authenticated
-        {% if not current_user %}
-            console.log('User not logged in');
-        {% elif current_user.role != 'learner' %}
-            console.log('User role is not learner:', "{{ current_user.role }}");
-        {% endif %}
-        
-        // Add hover effects to interactive elements
-        const interactiveElements = document.querySelectorAll('.benefit-item, .related-service-item, .date-item, .time-slot-btn');
-        
-        interactiveElements.forEach(element => {
-            element.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-4px)';
-            });
-            
-            element.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
     });
 </script>
 {% endblock %}
