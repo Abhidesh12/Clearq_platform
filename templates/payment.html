@@ -117,6 +117,38 @@
             border-color: #4f46e5;
             background-color: #f5f3ff;
         }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .toast-success {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .toast-error {
+            background-color: #ef4444;
+            color: white;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -396,10 +428,10 @@
                 <button id="payButton" 
                         class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-lg 
                                transition duration-300 transform hover:scale-105 shadow-lg 
-                               flex items-center justify-center mx-auto"
+                               flex items-center justify-center mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
                         onclick="initializePayment()">
                     <i class="fas fa-lock mr-3"></i>
-                    <span>Pay ₹{{ payment_amount }} Now</span>
+                    <span id="payButtonText">Pay ₹{{ payment_amount }} Now</span>
                 </button>
                 
                 <!-- Manual UPI Payment Option -->
@@ -459,7 +491,7 @@
         </div>
     </div>
 
-    <!-- Success Modal (Hidden by default) -->
+    <!-- Success Modal -->
     <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -496,165 +528,144 @@
 
     <!-- JavaScript -->
     <script>
-        // Global variables
-        let selectedPaymentMethod = 'card';
-        let currentRazorpayInstance = null;
-        let isProcessingPayment = false;
-        let statusCheckInterval = null;
-        
-        // Payment method selection
-        function selectPaymentMethod(method) {
-            selectedPaymentMethod = method;
-            
-            // Update UI
-            document.querySelectorAll('.payment-option').forEach(option => {
-                option.classList.remove('active');
-                option.classList.remove('border-blue-400', 'border-green-400', 'border-purple-400');
-            });
-            
-            const selectedOption = document.getElementById(method + 'Option');
-            if (selectedOption) {
-                selectedOption.classList.add('active');
-                if (method === 'card') selectedOption.classList.add('border-blue-400');
-                if (method === 'upi') selectedOption.classList.add('border-green-400');
-                if (method === 'netbanking') selectedOption.classList.add('border-purple-400');
-            }
-            
-            // Show selected method
-            const methodNames = {
-                'card': 'Credit/Debit Card',
-                'upi': 'UPI (Google Pay, PhonePe, Paytm)',
-                'netbanking': 'Net Banking'
-            };
-            
-            document.getElementById('selectedMethodText').textContent = 
-                `Selected: ${methodNames[method] || method}`;
-            document.getElementById('selectedMethod').classList.remove('hidden');
-        }
-        
-        // Copy UPI ID
-        function copyUPI() {
-            const upiId = 'clearq@razorpay';
-            navigator.clipboard.writeText(upiId)
-                .then(() => {
-                    // Show toast
-                    const toast = document.createElement('div');
-                    toast.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50';
-                    toast.innerHTML = '<i class="fas fa-check-circle mr-2"></i> UPI ID copied!';
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 3000);
-                })
-                .catch(err => console.error('Copy failed:', err));
-        }
-        
-        // Update progress bar
-        function updateProgress(bar, percent) {
-            if (bar) {
-                bar.style.width = percent + '%';
-            }
-        }
-        
-        // Show success modal
-        function showSuccessModal(message) {
-            const successModal = document.getElementById('successModal');
-            const successMessage = document.getElementById('successMessage');
-            
-            if (successMessage && message) {
-                successMessage.textContent = message;
-            }
-            if (successModal) {
-                successModal.classList.remove('hidden');
-            }
-            
-            // Animate redirect progress
-            const redirectProgress = document.getElementById('redirectProgress');
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 2;
-                updateProgress(redirectProgress, progress);
-                if (progress >= 100) {
-                    clearInterval(interval);
+        // ==================== CONFIGURATION ====================
+        const CONFIG = {
+            RAZORPAY_KEY: "{{ RAZORPAY_KEY_ID }}",
+            BOOKING_ID: {{ booking.id }},
+            SERVICE_NAME: "{{ service.name if service else 'Booking' }}",
+            USER_NAME: "{{ current_user.full_name }}",
+            USER_EMAIL: "{{ current_user.email }}",
+            AMOUNT_IN_PAISE: {{ booking.amount_paid * 100 if booking.amount_paid else (service.price * 100 if service else 0) }},
+            AMOUNT_IN_RUPEES: {{ booking.amount_paid if booking.amount_paid else (service.price if service else 0) }},
+            EXISTING_ORDER_ID: "{{ booking.razorpay_order_id|default('') }}",
+            IS_DIGITAL_SERVICE: {{ 'true' if service and service.is_digital else 'false' }},
+            PAYMENT_STATUS: "{{ booking.payment_status }}"
+        };
+
+        // ==================== STATE MANAGEMENT ====================
+        let state = {
+            selectedPaymentMethod: 'card',
+            currentRazorpayInstance: null,
+            isProcessingPayment: false,
+            statusCheckInterval: null,
+            retryCount: 0,
+            maxRetries: 3
+        };
+
+        // ==================== DOM ELEMENTS ====================
+        const elements = {
+            payButton: document.getElementById('payButton'),
+            payButtonText: document.getElementById('payButtonText'),
+            paymentProgress: document.getElementById('paymentProgress'),
+            successModal: document.getElementById('successModal'),
+            errorModal: document.getElementById('errorModal'),
+            successMessage: document.getElementById('successMessage'),
+            errorMessage: document.getElementById('errorMessage'),
+            redirectProgress: document.getElementById('redirectProgress'),
+            retryButton: document.getElementById('retryButton'),
+            selectedMethod: document.getElementById('selectedMethod'),
+            selectedMethodText: document.getElementById('selectedMethodText')
+        };
+
+        // ==================== UTILITY FUNCTIONS ====================
+        const utils = {
+            showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            },
+
+            updateProgress(percent) {
+                if (elements.paymentProgress) {
+                    elements.paymentProgress.style.width = percent + '%';
                 }
-            }, 40);
-        }
-        
-        // Show error modal
-        function showErrorModal(message) {
-            const errorModal = document.getElementById('errorModal');
-            const errorMessage = document.getElementById('errorMessage');
-            
-            if (errorMessage && message) {
-                errorMessage.textContent = message;
+            },
+
+            disablePaymentButton() {
+                if (elements.payButton) {
+                    elements.payButton.disabled = true;
+                    elements.payButtonText.textContent = 'Processing...';
+                }
+            },
+
+            enablePaymentButton() {
+                if (elements.payButton) {
+                    elements.payButton.disabled = false;
+                    elements.payButtonText.textContent = `Pay ₹${CONFIG.AMOUNT_IN_RUPEES} Now`;
+                }
+            },
+
+            showModal(modal, message = '') {
+                if (modal === 'success' && elements.successModal) {
+                    if (message) elements.successMessage.textContent = message;
+                    elements.successModal.classList.remove('hidden');
+                } else if (modal === 'error' && elements.errorModal) {
+                    if (message) elements.errorMessage.textContent = message;
+                    elements.errorModal.classList.remove('hidden');
+                }
+            },
+
+            hideModal(modal) {
+                if (modal === 'success' && elements.successModal) {
+                    elements.successModal.classList.add('hidden');
+                } else if (modal === 'error' && elements.errorModal) {
+                    elements.errorModal.classList.add('hidden');
+                }
             }
-            if (errorModal) {
-                errorModal.classList.remove('hidden');
-            }
-        }
-        
-        // Close error modal
-        function closeErrorModal() {
-            const errorModal = document.getElementById('errorModal');
-            if (errorModal) {
-                errorModal.classList.add('hidden');
-            }
-        }
-        
-        // Reset payment button
-        function resetPaymentButton() {
-            const payButton = document.getElementById('payButton');
-            if (payButton) {
-                payButton.disabled = false;
-                payButton.innerHTML = '<i class="fas fa-lock mr-3"></i><span>Pay ₹{{ payment_amount }} Now</span>';
-            }
-        }
-        
-        // Initialize payment
-        async function initializePayment() {
-            try {
-                if (isProcessingPayment) {
-                    console.log('Payment already in progress');
-                    return;
+        };
+
+        // ==================== PAYMENT METHODS ====================
+        const paymentMethods = {
+            selectPaymentMethod(method) {
+                state.selectedPaymentMethod = method;
+                
+                // Update UI
+                document.querySelectorAll('.payment-option').forEach(option => {
+                    option.classList.remove('active', 'border-blue-400', 'border-green-400', 'border-purple-400');
+                });
+                
+                const selectedOption = document.getElementById(method + 'Option');
+                if (selectedOption) {
+                    selectedOption.classList.add('active');
+                    const borderColor = method === 'card' ? 'border-blue-400' : 
+                                      method === 'upi' ? 'border-green-400' : 
+                                      'border-purple-400';
+                    selectedOption.classList.add(borderColor);
                 }
                 
-                isProcessingPayment = true;
-                const payButton = document.getElementById('payButton');
-                const paymentProgress = document.getElementById('paymentProgress');
+                // Show selected method
+                const methodNames = {
+                    'card': 'Credit/Debit Card',
+                    'upi': 'UPI (Google Pay, PhonePe, Paytm)',
+                    'netbanking': 'Net Banking'
+                };
                 
-                // Disable button and show loading
-                payButton.disabled = true;
-                payButton.innerHTML = '<div class="loader"></div> Initializing Payment...';
-                updateProgress(paymentProgress, 10);
-                
-                // Check if Razorpay is loaded
-                if (typeof Razorpay === 'undefined') {
-                    throw new Error('Payment system not loaded. Please reload the page.');
+                if (elements.selectedMethodText) {
+                    elements.selectedMethodText.textContent = `Selected: ${methodNames[method] || method}`;
                 }
-                
-                // Get amount in paise
-                const amount = {{ booking.amount_paid * 100 if booking.amount_paid else (service.price * 100 if service else 0) }};
-                
-                if (amount <= 0) {
-                    throw new Error('Invalid amount. Please contact support.');
+                if (elements.selectedMethod) {
+                    elements.selectedMethod.classList.remove('hidden');
                 }
-                
-                console.log('Payment amount in paise:', amount);
-                updateProgress(paymentProgress, 30);
-                
-                // Check for existing order ID
-                let orderId = "{{ booking.razorpay_order_id|default('') }}";
-                
-                // Create new order if needed
-                if (!orderId || orderId === 'None' || orderId === '' || orderId === 'null') {
-                    console.log('Creating new Razorpay order...');
-                    
+            },
+
+            async createRazorpayOrder() {
+                try {
+                    console.log('Creating Razorpay order...');
                     const response = await fetch('/api/create-razorpay-order', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            booking_id: {{ booking.id }},
-                            amount: amount
+                            booking_id: CONFIG.BOOKING_ID,
+                            amount: CONFIG.AMOUNT_IN_PAISE
                         })
                     });
                     
@@ -668,358 +679,351 @@
                         throw new Error('No order ID received from server');
                     }
                     
-                    orderId = data.order_id;
-                    console.log('New order ID:', orderId);
-                } else {
-                    console.log('Using existing order ID:', orderId);
+                    console.log('New order ID created:', data.order_id);
+                    return data.order_id;
+                    
+                } catch (error) {
+                    console.error('Error creating order:', error);
+                    throw error;
                 }
-                
-                updateProgress(paymentProgress, 50);
-                
-                // Razorpay options with proper handler
-                const options = {
-                    key: "{{ RAZORPAY_KEY_ID }}",
-                    amount: amount,
-                    currency: "INR",
-                    name: "ClearQ Mentorship",
-                    description: "Payment for {{ service.name if service else 'Booking' }} #{{ booking.id }}",
-                    order_id: orderId,
-                    handler: async function(response) {
-                        console.log('✅ Razorpay payment handler triggered!');
-                        console.log('Payment ID:', response.razorpay_payment_id);
-                        console.log('Order ID:', response.razorpay_order_id);
-                        console.log('Signature:', response.razorpay_signature);
-                        
-                        updateProgress(paymentProgress, 80);
-                        
-                        // Show success modal
-                        showSuccessModal('Payment successful! Verifying...');
-                        
-                        // Immediately call verification endpoint
-                        await verifyPayment(response);
-                    },
-                    prefill: {
-                        name: "{{ current_user.full_name }}",
-                        email: "{{ current_user.email }}",
-                    },
-                    theme: {
-                        color: "#4F46E5"
-                    },
-                    modal: {
-                        ondismiss: function() {
-                            console.log('Payment modal closed by user');
-                            isProcessingPayment = false;
-                            resetPaymentButton();
-                            updateProgress(paymentProgress, 0);
-                        },
-                        escape: false  // Prevent closing with escape key during payment
-                    },
-                    notes: {
-                        booking_id: "{{ booking.id }}",
-                        service_type: "{{ 'digital' if service and service.is_digital else 'session' }}"
-                    },
-                    retry: {
-                        enabled: true,
-                        max_count: 2
-                    },
-                    remember_customer: false,
-                    callback_url: "/payment/callback?booking_id={{ booking.id }}",
-                    redirect: true
+            },
+
+            getPaymentMethodConfig() {
+                const config = {
+                    netbanking: false,
+                    card: false,
+                    upi: false,
+                    wallet: false
                 };
                 
-                // Set payment method preferences
-                if (selectedPaymentMethod === 'card') {
-                    options.method = {
-                        netbanking: false,
-                        card: true,
-                        upi: false,
-                        wallet: false
-                    };
-                } else if (selectedPaymentMethod === 'upi') {
-                    options.method = {
-                        netbanking: false,
-                        card: false,
-                        upi: true,
-                        wallet: false
-                    };
-                } else if (selectedPaymentMethod === 'netbanking') {
-                    options.method = {
-                        netbanking: true,
-                        card: false,
-                        upi: false,
-                        wallet: false
-                    };
+                switch(state.selectedPaymentMethod) {
+                    case 'card':
+                        config.card = true;
+                        break;
+                    case 'upi':
+                        config.upi = true;
+                        break;
+                    case 'netbanking':
+                        config.netbanking = true;
+                        break;
                 }
                 
-                console.log('Opening Razorpay with options:', options);
-                
-                // Open Razorpay checkout
-                currentRazorpayInstance = new Razorpay(options);
-                currentRazorpayInstance.open();
-                
-                // Handle payment failures
-                currentRazorpayInstance.on('payment.failed', function(response) {
-                    console.error('Payment failed:', response.error);
-                    isProcessingPayment = false;
-                    
-                    let errorMsg = 'Payment failed. ';
-                    if (response.error && response.error.description) {
-                        errorMsg += response.error.description;
-                    } else if (response.error && response.error.reason) {
-                        errorMsg += response.error.reason;
-                    } else {
-                        errorMsg += 'Please try again or contact support.';
-                    }
-                    
-                    showErrorModal(errorMsg);
-                    resetPaymentButton();
-                    updateProgress(paymentProgress, 0);
-                });
-                
-                // Handle successful payment but before handler
-                currentRazorpayInstance.on('payment.success', function(response) {
-                    console.log('Payment success event fired:', response);
-                });
-                
-            } catch (error) {
-                console.error('Payment initialization error:', error);
-                isProcessingPayment = false;
-                showErrorModal('Error: ' + error.message);
-                resetPaymentButton();
-                const paymentProgress = document.getElementById('paymentProgress');
-                updateProgress(paymentProgress, 0);
-            }
-        }
-        
-        // Verify payment (CORE FIX - This is the missing piece)
-        async function verifyPayment(response, attempt = 1) {
-            const maxRetries = 5;
-            const paymentProgress = document.getElementById('paymentProgress');
-            
-            try {
-                console.log(`Payment verification attempt ${attempt}/${maxRetries}...`);
-                
-                const verifyResponse = await fetch('/api/verify-payment', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_signature: response.razorpay_signature,
-                        booking_id: {{ booking.id }}
-                    })
-                });
-                
-                const result = await verifyResponse.json();
-                console.log('Verification response:', result);
-                
-                if (result.success) {
-                    console.log('✅ Payment verified successfully!');
-                    isProcessingPayment = false;
-                    updateProgress(paymentProgress, 100);
-                    
-                    // Update success message
-                    const successMessage = document.getElementById('successMessage');
-                    if (result.is_digital) {
-                        successMessage.textContent = 'Your digital product is now available! Redirecting...';
-                    } else {
-                        successMessage.textContent = 'Your booking is confirmed! Redirecting...';
-                    }
-                    
-                    // Stop status checking
-                    if (statusCheckInterval) {
-                        clearInterval(statusCheckInterval);
-                    }
-                    
-                    // Redirect after delay
-                    setTimeout(() => {
-                        if (result.redirect_url) {
-                            window.location.href = result.redirect_url;
-                        } else {
-                            window.location.href = '/dashboard?payment=success';
-                        }
-                    }, 2000);
-                    
-                } else {
-                    // Retry logic with exponential backoff
-                    if (attempt < maxRetries) {
-                        console.log(`Retrying verification in ${attempt * 1000}ms...`);
-                        setTimeout(() => {
-                            verifyPayment(response, attempt + 1);
-                        }, attempt * 1000);
-                    } else {
-                        throw new Error(result.message || 'Payment verification failed after retries');
-                    }
-                }
-            } catch (verifyError) {
-                console.error('Verification error:', verifyError);
-                
-                if (attempt < maxRetries) {
-                    setTimeout(() => {
-                        verifyPayment(response, attempt + 1);
-                    }, attempt * 1000);
-                } else {
-                    isProcessingPayment = false;
-                    const errorModal = document.getElementById('errorModal');
-                    const errorMessage = document.getElementById('errorMessage');
-                    
-                    errorMessage.textContent = 
-                        'Payment verification failed. Your payment was successful but we could not confirm it. ' +
-                        'Please contact support with Payment ID: ' + response.razorpay_payment_id;
-                    
-                    errorModal.classList.remove('hidden');
-                    resetPaymentButton();
-                    updateProgress(paymentProgress, 0);
-                    
-                    // Setup manual verification button
-                    const retryButton = document.getElementById('retryButton');
-                    if (retryButton) {
-                        retryButton.onclick = async function() {
-                            await manualVerifyPayment(response.razorpay_payment_id, response.razorpay_order_id);
-                        };
-                    }
-                }
-            }
-        }
-        
-        // Manual verification function
-        async function manualVerifyPayment(paymentId, orderId) {
-            try {
-                const verifyResponse = await fetch('/api/verify-payment-manual', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        razorpay_payment_id: paymentId,
-                        razorpay_order_id: orderId,
-                        booking_id: {{ booking.id }}
-                    })
-                });
-                
-                const result = await verifyResponse.json();
-                if (result.success) {
-                    showSuccessModal('Payment manually verified! Redirecting...');
-                    setTimeout(() => {
-                        window.location.href = result.redirect_url || '/dashboard';
-                    }, 2000);
-                } else {
-                    showErrorModal('Manual verification failed: ' + result.message);
-                }
-            } catch (error) {
-                showErrorModal('Manual verification error: ' + error.message);
-            }
-        }
-        
-        // Check booking status periodically
-        async function checkBookingStatus() {
-            try {
-                const response = await fetch(`/api/check-booking-status/{{ booking.id }}`);
-                const data = await response.json();
-                
-                console.log('Status check:', data.payment_status);
-                
-                if (data.payment_status === 'paid') {
-                    // Stop checking
-                    if (statusCheckInterval) {
-                        clearInterval(statusCheckInterval);
-                    }
-                    
-                    // Redirect to appropriate page
-                    if (data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    } else if (data.is_digital) {
-                        window.location.href = `/digital-product/{{ service.id if service else '' }}`;
-                    } else if (data.meeting_link) {
-                        window.location.href = `/meeting/{{ booking.id }}`;
-                    } else {
-                        window.location.href = '/dashboard?payment=verified';
-                    }
+                return config;
+            },
+
+            async initializePayment() {
+                if (state.isProcessingPayment) {
+                    console.log('Payment already in progress');
                     return;
                 }
                 
-                // If payment ID exists but status is still pending, try to cleanup
-                if (data.payment_status === 'pending' && data.razorpay_payment_id) {
-                    console.log('Found pending payment with ID, attempting cleanup...');
+                try {
+                    state.isProcessingPayment = true;
+                    utils.disablePaymentButton();
+                    utils.updateProgress(10);
                     
-                    try {
-                        const cleanupResponse = await fetch(`/api/cleanup-booking/{{ booking.id }}`, {
-                            method: 'POST'
-                        });
-                        const cleanupData = await cleanupResponse.json();
+                    // Validate Razorpay
+                    if (typeof Razorpay === 'undefined') {
+                        throw new Error('Payment system not loaded. Please reload the page.');
+                    }
+                    
+                    if (CONFIG.AMOUNT_IN_PAISE <= 0) {
+                        throw new Error('Invalid amount. Please contact support.');
+                    }
+                    
+                    console.log('Payment amount in paise:', CONFIG.AMOUNT_IN_PAISE);
+                    utils.updateProgress(30);
+                    
+                    // Get or create order ID
+                    let orderId = CONFIG.EXISTING_ORDER_ID;
+                    if (!orderId || orderId === 'None' || orderId === '' || orderId === 'null') {
+                        orderId = await paymentMethods.createRazorpayOrder();
+                    } else {
+                        console.log('Using existing order ID:', orderId);
+                    }
+                    
+                    utils.updateProgress(50);
+                    
+                    // Create Razorpay options
+                    const options = {
+                        key: CONFIG.RAZORPAY_KEY,
+                        amount: CONFIG.AMOUNT_IN_PAISE,
+                        currency: "INR",
+                        name: "ClearQ Mentorship",
+                        description: `Payment for ${CONFIG.SERVICE_NAME} #${CONFIG.BOOKING_ID}`,
+                        order_id: orderId,
+                        handler: async function(response) {
+                            console.log('✅ Razorpay payment handler triggered!', response);
+                            utils.updateProgress(80);
+                            utils.showModal('success', 'Payment successful! Verifying...');
+                            await paymentMethods.verifyPayment(response);
+                        },
+                        prefill: {
+                            name: CONFIG.USER_NAME,
+                            email: CONFIG.USER_EMAIL,
+                        },
+                        theme: {
+                            color: "#4F46E5"
+                        },
+                        modal: {
+                            ondismiss: function() {
+                                console.log('Payment modal closed by user');
+                                state.isProcessingPayment = false;
+                                utils.enablePaymentButton();
+                                utils.updateProgress(0);
+                            },
+                            escape: false
+                        },
+                        notes: {
+                            booking_id: CONFIG.BOOKING_ID.toString(),
+                            service_type: CONFIG.IS_DIGITAL_SERVICE ? 'digital' : 'session'
+                        },
+                        retry: {
+                            enabled: true,
+                            max_count: 2
+                        },
+                        remember_customer: false,
+                        callback_url: `/payment/callback?booking_id=${CONFIG.BOOKING_ID}`,
+                        redirect: true,
+                        method: paymentMethods.getPaymentMethodConfig()
+                    };
+                    
+                    console.log('Opening Razorpay checkout...');
+                    
+                    // Open Razorpay checkout
+                    state.currentRazorpayInstance = new Razorpay(options);
+                    
+                    // Setup event handlers
+                    state.currentRazorpayInstance.on('payment.failed', function(response) {
+                        console.error('Payment failed:', response.error);
+                        state.isProcessingPayment = false;
                         
-                        if (cleanupData.payment_status === 'paid') {
-                            // Reload to trigger redirect
-                            window.location.reload();
+                        let errorMsg = 'Payment failed. ';
+                        if (response.error && response.error.description) {
+                            errorMsg += response.error.description;
+                        } else if (response.error && response.error.reason) {
+                            errorMsg += response.error.reason;
+                        } else {
+                            errorMsg += 'Please try again or contact support.';
                         }
-                    } catch (cleanupError) {
-                        console.log('Cleanup failed:', cleanupError);
+                        
+                        utils.showModal('error', errorMsg);
+                        utils.enablePaymentButton();
+                        utils.updateProgress(0);
+                    });
+                    
+                    state.currentRazorpayInstance.open();
+                    
+                } catch (error) {
+                    console.error('Payment initialization error:', error);
+                    state.isProcessingPayment = false;
+                    utils.showModal('error', 'Error: ' + error.message);
+                    utils.enablePaymentButton();
+                    utils.updateProgress(0);
+                }
+            },
+
+            async verifyPayment(response, attempt = 1) {
+                try {
+                    console.log(`Verification attempt ${attempt}/${state.maxRetries}...`);
+                    
+                    const verifyResponse = await fetch('/api/verify-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            booking_id: CONFIG.BOOKING_ID
+                        })
+                    });
+                    
+                    const result = await verifyResponse.json();
+                    console.log('Verification response:', result);
+                    
+                    if (result.success) {
+                        console.log('✅ Payment verified successfully!');
+                        state.isProcessingPayment = false;
+                        utils.updateProgress(100);
+                        
+                        if (elements.successMessage) {
+                            elements.successMessage.textContent = CONFIG.IS_DIGITAL_SERVICE 
+                                ? 'Your digital product is now available! Redirecting...'
+                                : 'Your booking is confirmed! Redirecting...';
+                        }
+                        
+                        // Clear status check interval
+                        if (state.statusCheckInterval) {
+                            clearInterval(state.statusCheckInterval);
+                        }
+                        
+                        // Redirect after delay
+                        setTimeout(() => {
+                            window.location.href = result.redirect_url || '/dashboard?payment=success';
+                        }, 2000);
+                        
+                    } else {
+                        // Retry logic
+                        if (attempt < state.maxRetries) {
+                            console.log(`Retrying verification in ${attempt * 1000}ms...`);
+                            setTimeout(() => {
+                                paymentMethods.verifyPayment(response, attempt + 1);
+                            }, attempt * 1000);
+                        } else {
+                            throw new Error(result.message || 'Payment verification failed after retries');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Verification error:', error);
+                    
+                    if (attempt < state.maxRetries) {
+                        setTimeout(() => {
+                            paymentMethods.verifyPayment(response, attempt + 1);
+                        }, attempt * 1000);
+                    } else {
+                        state.isProcessingPayment = false;
+                        utils.showModal('error', 
+                            'Payment verification failed. Your payment was successful but we could not confirm it. ' +
+                            'Please contact support with Payment ID: ' + response.razorpay_payment_id);
+                        utils.enablePaymentButton();
+                        utils.updateProgress(0);
                     }
                 }
-            } catch (error) {
-                console.error('Status check error:', error);
             }
-        }
-        
-        // Initialize page
+        };
+
+        // ==================== BOOKING STATUS CHECK ====================
+        const bookingStatus = {
+            async checkBookingStatus() {
+                try {
+                    const response = await fetch(`/api/check-booking-status/${CONFIG.BOOKING_ID}`);
+                    const data = await response.json();
+                    
+                    console.log('Status check:', data.payment_status);
+                    
+                    if (data.payment_status === 'paid') {
+                        // Stop checking
+                        if (state.statusCheckInterval) {
+                            clearInterval(state.statusCheckInterval);
+                        }
+                        
+                        // Redirect to appropriate page
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else if (data.is_digital) {
+                            window.location.href = `/digital-product/{{ service.id if service else '' }}`;
+                        } else if (data.meeting_link) {
+                            window.location.href = `/meeting/${CONFIG.BOOKING_ID}`;
+                        } else {
+                            window.location.href = '/dashboard?payment=verified';
+                        }
+                    }
+                    
+                    // If payment ID exists but status is still pending, try to cleanup
+                    if (data.payment_status === 'pending' && data.razorpay_payment_id) {
+                        console.log('Found pending payment with ID, attempting cleanup...');
+                        await bookingStatus.cleanupBooking();
+                    }
+                } catch (error) {
+                    console.error('Status check error:', error);
+                }
+            },
+
+            async cleanupBooking() {
+                try {
+                    const cleanupResponse = await fetch(`/api/cleanup-booking/${CONFIG.BOOKING_ID}`, {
+                        method: 'POST'
+                    });
+                    const cleanupData = await cleanupResponse.json();
+                    
+                    if (cleanupData.payment_status === 'paid') {
+                        window.location.reload();
+                    }
+                } catch (cleanupError) {
+                    console.log('Cleanup failed:', cleanupError);
+                }
+            }
+        };
+
+        // ==================== EVENT HANDLERS ====================
+        const eventHandlers = {
+            copyUPI() {
+                const upiId = 'clearq@razorpay';
+                navigator.clipboard.writeText(upiId)
+                    .then(() => utils.showToast('UPI ID copied!', 'success'))
+                    .catch(err => console.error('Copy failed:', err));
+            },
+
+            closeErrorModal() {
+                utils.hideModal('error');
+            },
+
+            handleURLParameters() {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('payment_success') === 'true') {
+                    utils.showModal('success', 'Payment successful! Processing your booking...');
+                    setTimeout(bookingStatus.checkBookingStatus, 1000);
+                }
+                
+                if (urlParams.get('payment_error')) {
+                    utils.showModal('error', decodeURIComponent(urlParams.get('payment_error')));
+                }
+                
+                // Auto-open Razorpay for demo/testing
+                const autoOpen = urlParams.get('auto_open');
+                if (autoOpen === 'true' && !state.isProcessingPayment && elements.payButton) {
+                    setTimeout(() => elements.payButton.click(), 1000);
+                }
+            },
+
+            setupRetryButton() {
+                if (elements.retryButton) {
+                    elements.retryButton.addEventListener('click', function() {
+                        utils.hideModal('error');
+                        utils.enablePaymentButton();
+                        utils.updateProgress(0);
+                        state.isProcessingPayment = false;
+                    });
+                }
+            }
+        };
+
+        // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Payment page loaded');
-            console.log('Booking ID:', {{ booking.id }});
-            console.log('Payment status:', "{{ booking.payment_status }}");
-            console.log('Razorpay key available:', "{{ RAZORPAY_KEY_ID }}" ? 'Yes' : 'No');
+            console.log('Payment page initialized');
+            console.log('Config:', CONFIG);
             
             // Set default payment method
-            selectPaymentMethod('card');
+            paymentMethods.selectPaymentMethod('card');
             
-            // Setup retry button
-            const retryButton = document.getElementById('retryButton');
-            if (retryButton) {
-                retryButton.addEventListener('click', function() {
-                    closeErrorModal();
-                    resetPaymentButton();
-                    const paymentProgress = document.getElementById('paymentProgress');
-                    updateProgress(paymentProgress, 0);
-                    isProcessingPayment = false;
-                });
-            }
+            // Setup event handlers
+            eventHandlers.setupRetryButton();
+            eventHandlers.handleURLParameters();
             
             // Start checking booking status if still pending
-            {% if booking.payment_status == 'pending' %}
-            console.log('Starting status check interval...');
-            statusCheckInterval = setInterval(checkBookingStatus, 3000); // Check every 3 seconds
-            {% endif %}
+            if (CONFIG.PAYMENT_STATUS === 'pending') {
+                console.log('Starting status check interval...');
+                state.statusCheckInterval = setInterval(bookingStatus.checkBookingStatus, 3000);
+            }
             
             // Check status immediately on load
-            checkBookingStatus();
-            
-            // Handle URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('payment_success') === 'true') {
-                showSuccessModal('Payment successful! Processing your booking...');
-                setTimeout(checkBookingStatus, 1000);
-            }
-            
-            if (urlParams.get('payment_error')) {
-                showErrorModal(decodeURIComponent(urlParams.get('payment_error')));
-            }
-            
-            // Auto-open Razorpay for demo/testing (optional)
-            const autoOpen = urlParams.get('auto_open');
-            if (autoOpen === 'true' && !isProcessingPayment && document.getElementById('payButton')) {
-                setTimeout(() => {
-                    document.getElementById('payButton').click();
-                }, 1000);
-            }
+            bookingStatus.checkBookingStatus();
             
             // Clear interval when leaving page
             window.addEventListener('beforeunload', function() {
-                if (statusCheckInterval) {
-                    clearInterval(statusCheckInterval);
+                if (state.statusCheckInterval) {
+                    clearInterval(state.statusCheckInterval);
                 }
             });
         });
+
+        // ==================== GLOBAL FUNCTIONS (for onclick handlers) ====================
+        window.selectPaymentMethod = paymentMethods.selectPaymentMethod.bind(paymentMethods);
+        window.initializePayment = paymentMethods.initializePayment.bind(paymentMethods);
+        window.copyUPI = eventHandlers.copyUPI.bind(eventHandlers);
+        window.closeErrorModal = eventHandlers.closeErrorModal.bind(eventHandlers);
     </script>
 </body>
 </html>
