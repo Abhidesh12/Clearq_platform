@@ -3739,6 +3739,53 @@
         amountInput.value = availableBalance;
     }
 
+    async function processWithdrawal(withdrawalId, action) {
+    if (action === 'reject') {
+        if (!confirm('Are you sure you want to reject this withdrawal request?')) {
+            return;
+        }
+    }
+    
+    const adminNotes = document.getElementById(`adminNotesInput${withdrawalId}`).value;
+    
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    try {
+        const response = await fetch(`/api/admin/withdrawal/${withdrawalId}/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: action,
+                admin_notes: adminNotes
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(`Withdrawal ${action}d successfully!`, 'success');
+            // Reload the page to show updated status
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showNotification(data.error || `Failed to ${action} withdrawal`, 'error');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('An error occurred. Please try again.', 'error');
+        button.disabled = false;
+        button.innerHTML = originalText;
+    }
+}
+
     async function submitWithdrawal(event) {
         event.preventDefault();
         
