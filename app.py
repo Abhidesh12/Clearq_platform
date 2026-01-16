@@ -1640,10 +1640,12 @@ async def purchase_digital_product(
                    "duration": service.duration_minutes
     }
             },
+            
+            
     # Add this callback_url parameter:
-    "callback_url": "https://www.clearq.in/payment/callback",  # Replace with your actual domain
-    "callback_method": "get"  # or "post" depending on your preference
-}
+            "callback_url": "https://www.clearq.in/payment/callback",  # Replace with your actual domain
+            "callback_method": "get"  # or "post" depending on your preference
+            }
             
             razorpay_order = razorpay_client.order.create(order_data)
             
