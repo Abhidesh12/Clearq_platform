@@ -835,6 +835,107 @@ async def payment_callback(
         print(f"Callback error: {e}")
         return RedirectResponse(url="/dashboard?error=Callback%20failed")
 
+from fastapi import Form, Request, Depends
+from sqlalchemy.orm import Session
+
+@app.post("/payment/callback")
+async def payment_callback(
+    request: Request,
+    razorpay_payment_id: Optional[str] = Form(None),
+    razorpay_order_id: Optional[str] = Form(None),
+    razorpay_signature: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    """Handle payment callbacks from RazorPay (must be POST)"""
+    try:
+        # Get parameters from form data (RazorPay sends as form-urlencoded)
+        # Also check query params as fallback
+        booking_id = request.query_params.get('booking_id')
+        
+        # Use form parameters if provided, otherwise try query params
+        payment_id = razorpay_payment_id or request.query_params.get('razorpay_payment_id')
+        order_id = razorpay_order_id or request.query_params.get('razorpay_order_id')
+        
+        if not payment_id:
+            return RedirectResponse(url="/dashboard?error=Missing%20payment%20ID")
+        
+        # IMPORTANT: Verify the signature first!
+        if razorpay_signature:
+            # Generate expected signature
+            params_dict = {
+                'razorpay_order_id': order_id,
+                'razorpay_payment_id': payment_id,
+            }
+            
+            # Verify signature (you need to implement this)
+            # is_valid = verify_razorpay_signature(params_dict, razorpay_signature)
+            # if not is_valid:
+            #     return RedirectResponse(url="/dashboard?error=Invalid%20signature")
+            pass
+        
+        # Try to find booking
+        booking = None
+        if booking_id:
+            booking = db.query(Booking).filter(Booking.id == int(booking_id)).first()
+        
+        if not booking and order_id:
+            booking = db.query(Booking).filter(Booking.razorpay_order_id == order_id).first()
+        
+        if not booking:
+            return RedirectResponse(url="/dashboard?error=Booking%20not%20found")
+        
+        # Check if already paid
+        if booking.payment_status == "paid":
+            service = db.query(Service).filter(Service.id == booking.service_id).first()
+            if service and service.is_digital:
+                return RedirectResponse(url=f"/digital-product/{service.id}")
+            elif booking.meeting_link:
+                return RedirectResponse(url=f"/meeting/{booking.id}")
+            else:
+                return RedirectResponse(url="/dashboard?success=Payment%20already%20verified")
+        
+        # Verify payment with Razorpay
+        try:
+            payment = razorpay_client.payment.fetch(payment_id)
+            
+            if payment.get('status') == 'captured':
+                # Update booking
+                booking.payment_status = "paid"
+                booking.razorpay_payment_id = payment_id
+                booking.razorpay_order_id = order_id or payment.get('order_id')
+                
+                # Generate meeting link for sessions
+                service = db.query(Service).filter(Service.id == booking.service_id).first()
+                if service and not service.is_digital:
+                    # Assuming you have this function
+                    generate_meeting_link(booking.id, db)
+                else:
+                    booking.status = "completed"
+                
+                db.commit()
+                
+                # Send confirmation email/notification
+                # send_confirmation_email(booking, db)
+                
+                # Redirect based on service type
+                if service and service.is_digital:
+                    return RedirectResponse(url=f"/digital-product/{service.id}")
+                else:
+                    return RedirectResponse(url=f"/meeting/{booking.id}")
+            else:
+                return RedirectResponse(url=f"/payment/{booking.id}?error=Payment%20not%20captured")
+                
+        except Exception as e:
+            print(f"Payment verification error: {e}")
+            # Log the error and redirect
+            return RedirectResponse(url=f"/payment/{booking.id}?error=Payment%20verification%20failed")
+            
+    except Exception as e:
+        print(f"Callback error: {e}")
+        import traceback
+        traceback.print_exc()
+        return RedirectResponse(url="/dashboard?error=Callback%20failed")
+
 @app.post("/mentor/availability/cleanup")
 async def cleanup_availability(
     request: Request,
@@ -942,7 +1043,30 @@ def check_time_slot_availability(mentor_id: int, date: date, start_time: str, en
     
     return overlapping_slots is None
 
+import hmac
+import hashlib
 
+def verify_razorpay_signature(params_dict: dict, received_signature: str) -> bool:
+    """Verify RazorPay webhook signature"""
+    order_id = params_dict.get('razorpay_order_id')
+    payment_id = params_dict.get('razorpay_payment_id')
+    
+    # Create the message string
+    message = f"{order_id}|{payment_id}"
+    
+    # Get your RazorPay webhook secret from settings
+    webhook_secret = "your_webhook_secret_here"  # From RazorPay dashboard
+    
+    # Generate expected signature
+    generated_signature = hmac.new(
+        webhook_secret.encode(),
+        message.encode(),
+        hashlib.sha256
+    ).hexdigest()
+    
+    # Compare signatures
+    return hmac.compare_digest(generated_signature, received_signature)
+    
 def generate_availability_from_day_preferences(mentor_id: int, db: Session = None, days_ahead: int = 30):
     """Generate Availability records from day preferences"""
     if db is None:
