@@ -499,6 +499,8 @@
         // Global variables
         let selectedPaymentMethod = 'card';
         let currentRazorpayInstance = null;
+        let isProcessingPayment = false;
+        let statusCheckInterval = null;
         
         // Payment method selection
         function selectPaymentMethod(method) {
@@ -568,12 +570,12 @@
             const redirectProgress = document.getElementById('redirectProgress');
             let progress = 0;
             const interval = setInterval(() => {
-                progress += 1;
+                progress += 2;
                 updateProgress(redirectProgress, progress);
                 if (progress >= 100) {
                     clearInterval(interval);
                 }
-            }, 20);
+            }, 40);
         }
         
         // Show error modal
@@ -609,6 +611,12 @@
         // Initialize payment
         async function initializePayment() {
             try {
+                if (isProcessingPayment) {
+                    console.log('Payment already in progress');
+                    return;
+                }
+                
+                isProcessingPayment = true;
                 const payButton = document.getElementById('payButton');
                 const paymentProgress = document.getElementById('paymentProgress');
                 
@@ -643,7 +651,6 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-Token': '{{ csrf_token if csrf_token else "" }}'
                         },
                         body: JSON.stringify({
                             booking_id: {{ booking.id }},
@@ -669,7 +676,7 @@
                 
                 updateProgress(paymentProgress, 50);
                 
-                // Razorpay options based on selected method
+                // Razorpay options with proper handler
                 const options = {
                     key: "{{ RAZORPAY_KEY_ID }}",
                     amount: amount,
@@ -678,19 +685,22 @@
                     description: "Payment for {{ service.name if service else 'Booking' }} #{{ booking.id }}",
                     order_id: orderId,
                     handler: async function(response) {
-                        console.log('✅ Payment successful! Response:', response);
+                        console.log('✅ Razorpay payment handler triggered!');
+                        console.log('Payment ID:', response.razorpay_payment_id);
+                        console.log('Order ID:', response.razorpay_order_id);
+                        console.log('Signature:', response.razorpay_signature);
+                        
                         updateProgress(paymentProgress, 80);
                         
                         // Show success modal
-                        showSuccessModal('Verifying your payment...');
+                        showSuccessModal('Payment successful! Verifying...');
                         
-                        // Verify payment with retry logic
-                        await verifyPaymentWithRetry(response);
+                        // Immediately call verification endpoint
+                        await verifyPayment(response);
                     },
                     prefill: {
                         name: "{{ current_user.full_name }}",
                         email: "{{ current_user.email }}",
-                        contact: ""
                     },
                     theme: {
                         color: "#4F46E5"
@@ -698,17 +708,26 @@
                     modal: {
                         ondismiss: function() {
                             console.log('Payment modal closed by user');
+                            isProcessingPayment = false;
                             resetPaymentButton();
                             updateProgress(paymentProgress, 0);
-                        }
+                        },
+                        escape: false  // Prevent closing with escape key during payment
                     },
                     notes: {
                         booking_id: "{{ booking.id }}",
                         service_type: "{{ 'digital' if service and service.is_digital else 'session' }}"
-                    }
+                    },
+                    retry: {
+                        enabled: true,
+                        max_count: 2
+                    },
+                    remember_customer: false,
+                    callback_url: "/payment/callback?booking_id={{ booking.id }}",
+                    redirect: true
                 };
                 
-                // Set payment method restrictions
+                // Set payment method preferences
                 if (selectedPaymentMethod === 'card') {
                     options.method = {
                         netbanking: false,
@@ -741,8 +760,9 @@
                 // Handle payment failures
                 currentRazorpayInstance.on('payment.failed', function(response) {
                     console.error('Payment failed:', response.error);
-                    let errorMsg = 'Payment failed. ';
+                    isProcessingPayment = false;
                     
+                    let errorMsg = 'Payment failed. ';
                     if (response.error && response.error.description) {
                         errorMsg += response.error.description;
                     } else if (response.error && response.error.reason) {
@@ -756,8 +776,14 @@
                     updateProgress(paymentProgress, 0);
                 });
                 
+                // Handle successful payment but before handler
+                currentRazorpayInstance.on('payment.success', function(response) {
+                    console.log('Payment success event fired:', response);
+                });
+                
             } catch (error) {
                 console.error('Payment initialization error:', error);
+                isProcessingPayment = false;
                 showErrorModal('Error: ' + error.message);
                 resetPaymentButton();
                 const paymentProgress = document.getElementById('paymentProgress');
@@ -765,13 +791,13 @@
             }
         }
         
-        // Verify payment with retry logic
-        async function verifyPaymentWithRetry(response, attempt = 1) {
-            const maxRetries = 3;
+        // Verify payment (CORE FIX - This is the missing piece)
+        async function verifyPayment(response, attempt = 1) {
+            const maxRetries = 5;
             const paymentProgress = document.getElementById('paymentProgress');
             
             try {
-                console.log(`Payment verification attempt ${attempt}...`);
+                console.log(`Payment verification attempt ${attempt}/${maxRetries}...`);
                 
                 const verifyResponse = await fetch('/api/verify-payment', {
                     method: 'POST',
@@ -791,6 +817,7 @@
                 
                 if (result.success) {
                     console.log('✅ Payment verified successfully!');
+                    isProcessingPayment = false;
                     updateProgress(paymentProgress, 100);
                     
                     // Update success message
@@ -801,20 +828,29 @@
                         successMessage.textContent = 'Your booking is confirmed! Redirecting...';
                     }
                     
+                    // Stop status checking
+                    if (statusCheckInterval) {
+                        clearInterval(statusCheckInterval);
+                    }
+                    
                     // Redirect after delay
                     setTimeout(() => {
-                        window.location.href = result.redirect_url || '/dashboard';
+                        if (result.redirect_url) {
+                            window.location.href = result.redirect_url;
+                        } else {
+                            window.location.href = '/dashboard?payment=success';
+                        }
                     }, 2000);
                     
                 } else {
-                    // Retry logic
+                    // Retry logic with exponential backoff
                     if (attempt < maxRetries) {
-                        console.log(`Retrying verification... (${attempt}/${maxRetries})`);
+                        console.log(`Retrying verification in ${attempt * 1000}ms...`);
                         setTimeout(() => {
-                            verifyPaymentWithRetry(response, attempt + 1);
-                        }, 1000);
+                            verifyPayment(response, attempt + 1);
+                        }, attempt * 1000);
                     } else {
-                        throw new Error(result.message || 'Payment verification failed');
+                        throw new Error(result.message || 'Payment verification failed after retries');
                     }
                 }
             } catch (verifyError) {
@@ -822,20 +858,108 @@
                 
                 if (attempt < maxRetries) {
                     setTimeout(() => {
-                        verifyPaymentWithRetry(response, attempt + 1);
-                    }, 1000);
+                        verifyPayment(response, attempt + 1);
+                    }, attempt * 1000);
                 } else {
+                    isProcessingPayment = false;
                     const errorModal = document.getElementById('errorModal');
                     const errorMessage = document.getElementById('errorMessage');
                     
                     errorMessage.textContent = 
                         'Payment verification failed. Your payment was successful but we could not confirm it. ' +
-                        'Please contact support with payment ID: ' + response.razorpay_payment_id;
+                        'Please contact support with Payment ID: ' + response.razorpay_payment_id;
                     
                     errorModal.classList.remove('hidden');
                     resetPaymentButton();
                     updateProgress(paymentProgress, 0);
+                    
+                    // Setup manual verification button
+                    const retryButton = document.getElementById('retryButton');
+                    if (retryButton) {
+                        retryButton.onclick = async function() {
+                            await manualVerifyPayment(response.razorpay_payment_id, response.razorpay_order_id);
+                        };
+                    }
                 }
+            }
+        }
+        
+        // Manual verification function
+        async function manualVerifyPayment(paymentId, orderId) {
+            try {
+                const verifyResponse = await fetch('/api/verify-payment-manual', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        razorpay_payment_id: paymentId,
+                        razorpay_order_id: orderId,
+                        booking_id: {{ booking.id }}
+                    })
+                });
+                
+                const result = await verifyResponse.json();
+                if (result.success) {
+                    showSuccessModal('Payment manually verified! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = result.redirect_url || '/dashboard';
+                    }, 2000);
+                } else {
+                    showErrorModal('Manual verification failed: ' + result.message);
+                }
+            } catch (error) {
+                showErrorModal('Manual verification error: ' + error.message);
+            }
+        }
+        
+        // Check booking status periodically
+        async function checkBookingStatus() {
+            try {
+                const response = await fetch(`/api/check-booking-status/{{ booking.id }}`);
+                const data = await response.json();
+                
+                console.log('Status check:', data.payment_status);
+                
+                if (data.payment_status === 'paid') {
+                    // Stop checking
+                    if (statusCheckInterval) {
+                        clearInterval(statusCheckInterval);
+                    }
+                    
+                    // Redirect to appropriate page
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else if (data.is_digital) {
+                        window.location.href = `/digital-product/{{ service.id if service else '' }}`;
+                    } else if (data.meeting_link) {
+                        window.location.href = `/meeting/{{ booking.id }}`;
+                    } else {
+                        window.location.href = '/dashboard?payment=verified';
+                    }
+                    return;
+                }
+                
+                // If payment ID exists but status is still pending, try to cleanup
+                if (data.payment_status === 'pending' && data.razorpay_payment_id) {
+                    console.log('Found pending payment with ID, attempting cleanup...');
+                    
+                    try {
+                        const cleanupResponse = await fetch(`/api/cleanup-booking/{{ booking.id }}`, {
+                            method: 'POST'
+                        });
+                        const cleanupData = await cleanupResponse.json();
+                        
+                        if (cleanupData.payment_status === 'paid') {
+                            // Reload to trigger redirect
+                            window.location.reload();
+                        }
+                    } catch (cleanupError) {
+                        console.log('Cleanup failed:', cleanupError);
+                    }
+                }
+            } catch (error) {
+                console.error('Status check error:', error);
             }
         }
         
@@ -857,117 +981,42 @@
                     resetPaymentButton();
                     const paymentProgress = document.getElementById('paymentProgress');
                     updateProgress(paymentProgress, 0);
+                    isProcessingPayment = false;
                 });
             }
             
-            // Check if payment already completed
-            {% if booking.payment_status == 'paid' %}
-            console.log('Payment already completed');
-            {% else %}
-            console.log('Payment pending - ready to accept payment');
-            {% endif %}
-
-               // Check booking status when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    const bookingId = {{ booking.id }};
-    
-    // Function to check booking status
-    async function checkBookingStatus() {
-        try {
-            const response = await fetch(`/api/check-booking-status/${bookingId}`);
-            const data = await response.json();
-            
-            if (data.payment_status === 'paid') {
-                // Redirect to appropriate page
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                    return;
-                }
-            } else if (data.payment_status === 'pending') {
-                // Check if there's a payment ID but status is still pending
-                if (data.razorpay_payment_id) {
-                    // Try to cleanup
-                    const cleanupResponse = await fetch(`/api/cleanup-booking/${bookingId}`, {
-                        method: 'POST'
-                    });
-                    const cleanupData = await cleanupResponse.json();
-                    
-                    if (cleanupData.payment_status === 'paid') {
-                        // Reload page to trigger redirect
-                        window.location.reload();
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error checking booking status:', error);
-        }
-    }
-    
-    // Check status immediately
-    checkBookingStatus();
-    
-    // Check every 10 seconds if still on payment page
-    const statusCheckInterval = setInterval(checkBookingStatus, 10000);
-    
-    // Clear interval when leaving page
-    window.addEventListener('beforeunload', function() {
-        clearInterval(statusCheckInterval);
-    });
-});
-            
-            // Auto-check for payment status changes (polling)
+            // Start checking booking status if still pending
             {% if booking.payment_status == 'pending' %}
-            const checkInterval = setInterval(async () => {
-                try {
-                    const response = await fetch('/api/check-booking-status/{{ booking.id }}');
-                    const data = await response.json();
-                    
-                    if (data.payment_status === 'paid') {
-                        clearInterval(checkInterval);
-                        
-                        // Show success and redirect
-                        showSuccessModal('Payment confirmed! Redirecting...');
-                        setTimeout(() => {
-                            if (data.redirect_url) {
-                                window.location.href = data.redirect_url;
-                            } else {
-                                window.location.href = '/dashboard?payment=success';
-                            }
-                        }, 2000);
-                    }
-                } catch (error) {
-                    console.error('Status check error:', error);
-                }
-            }, 5000); // Check every 5 seconds
+            console.log('Starting status check interval...');
+            statusCheckInterval = setInterval(checkBookingStatus, 3000); // Check every 3 seconds
             {% endif %}
+            
+            // Check status immediately on load
+            checkBookingStatus();
             
             // Handle URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('payment_success') === 'true') {
                 showSuccessModal('Payment successful! Processing your booking...');
+                setTimeout(checkBookingStatus, 1000);
             }
             
             if (urlParams.get('payment_error')) {
                 showErrorModal(decodeURIComponent(urlParams.get('payment_error')));
             }
             
-            // Keyboard shortcuts
-            document.addEventListener('keydown', function(e) {
-                // Ctrl/Cmd + Enter to pay
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    const payButton = document.getElementById('payButton');
-                    if (payButton && !payButton.disabled) {
-                        e.preventDefault();
-                        payButton.click();
-                    }
-                }
-                
-                // Escape to close modals
-                if (e.key === 'Escape') {
-                    closeErrorModal();
-                    if (currentRazorpayInstance) {
-                        currentRazorpayInstance.close();
-                    }
+            // Auto-open Razorpay for demo/testing (optional)
+            const autoOpen = urlParams.get('auto_open');
+            if (autoOpen === 'true' && !isProcessingPayment && document.getElementById('payButton')) {
+                setTimeout(() => {
+                    document.getElementById('payButton').click();
+                }, 1000);
+            }
+            
+            // Clear interval when leaving page
+            window.addEventListener('beforeunload', function() {
+                if (statusCheckInterval) {
+                    clearInterval(statusCheckInterval);
                 }
             });
         });
