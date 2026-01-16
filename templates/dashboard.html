@@ -1,3 +1,6 @@
+preserved earning section
+
+
 {% extends "base.html" %}
 
 {% block title %}Dashboard - ClearQ{% endblock %}
@@ -49,7 +52,6 @@
         --shadow-md: 0 4px 6px -1px rgba(31, 31, 31, 0.1), 0 2px 4px -1px rgba(31, 31, 31, 0.06);
         --shadow-lg: 0 10px 15px -3px rgba(31, 31, 31, 0.1), 0 4px 6px -2px rgba(31, 31, 31, 0.05);
         --shadow-xl: 0 20px 25px -5px rgba(31, 31, 31, 0.1), 0 10px 10px -5px rgba(31, 31, 31, 0.04);
-        --shadow-2xl: 0 25px 50px -12px rgba(31, 31, 31, 0.25);
         --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         --glass-bg: rgba(255, 255, 255, 0.1);
         --glass-border: rgba(255, 255, 255, 0.2);
@@ -1484,125 +1486,6 @@
         background: linear-gradient(135deg, rgba(224, 219, 252, 0.1), white);
     }
 
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(4px);
-        z-index: 1000;
-        animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    .modal-content {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-2xl);
-        animation: slideUp 0.3s ease;
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translate(-50%, -40%);
-        }
-        to {
-            opacity: 1;
-            transform: translate(-50%, -50%);
-        }
-    }
-
-    .modal-header {
-        padding: 1.5rem;
-        border-bottom: 1px solid var(--border-light);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: linear-gradient(135deg, var(--accent-beige), white);
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    .modal-close {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: 1px solid var(--border-light);
-        color: var(--text-secondary-light);
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .modal-close:hover {
-        background: var(--border-light);
-        transform: rotate(90deg);
-    }
-
-    .modal-body {
-        padding: 1.5rem;
-    }
-
-    /* Payment Method Options */
-    .payment-method-option {
-        position: relative;
-        cursor: pointer;
-    }
-
-    .payment-method-option input[type="radio"] {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .payment-method-content {
-        padding: 1rem;
-        border: 2px solid var(--border-light);
-        border-radius: var(--radius-lg);
-        text-align: center;
-        transition: var(--transition);
-        background: white;
-    }
-
-    .payment-method-option input[type="radio"]:checked + .payment-method-content {
-        border-color: var(--accent);
-        background: rgba(255, 107, 74, 0.05);
-        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
-    }
-
-    .payment-method-option:hover .payment-method-content {
-        border-color: var(--accent);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-    }
-
-    /* Form Input Focus */
-    input:focus, textarea:focus {
-        outline: none;
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
-    }
-
     /* Responsive Design */
     @media (min-width: 640px) {
         .dashboard-header {
@@ -2698,179 +2581,80 @@
             </div>
         </div>
 
-        <!-- Earnings Section - Updated with Withdrawal System -->
+        <!-- Earnings Section -->
         <div id="mentor-earnings" class="mentor-section">
             <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
-                <!-- Earnings Summary with Withdrawal -->
+                <!-- Earnings Summary -->
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2><i class="fas fa-wallet"></i> Earnings Dashboard</h2>
-                        {% if earnings_data.available_balance > 0 %}
-                        <button onclick="openWithdrawalModal()" 
-                                class="header-action-btn" 
-                                style="background: linear-gradient(135deg, var(--card-green), #7cb342); color: white; border: none;">
-                            <i class="fas fa-money-bill-wave"></i> Request Withdrawal
-                        </button>
-                        {% endif %}
                     </div>
                     
                     <div class="card-content">
                         <div class="earnings-summary">
                             <div class="earnings-total">
                                 <div class="total-label">Total Earnings</div>
-                                <div class="total-amount">₹{{ earnings_data.total_earned|default(0)|int }}</div>
+                                <div class="total-amount">₹{{ earnings|default(0) }}</div>
                             </div>
                             
-                            <!-- Balance Breakdown -->
                             <div class="earnings-stats">
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">₹{{ earnings_data.available_balance|default(0)|int }}</div>
-                                    <div class="earning-stat-label">Available</div>
+                                    <div class="earning-stat-value">{{ upcoming_count|default(0) }}</div>
+                                    <div class="earning-stat-label">Upcoming</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">₹{{ earnings_data.total_withdrawn|default(0)|int }}</div>
-                                    <div class="earning-stat-label">Withdrawn</div>
-                                </div>
-                                
-                                <div class="earning-stat-item">
-                                    <div class="earning-stat-value">{{ earnings_data.pending_withdrawals|default(0) }}</div>
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
                                     <div class="earning-stat-label">Pending</div>
                                 </div>
                                 
                                 <div class="earning-stat-item">
-                                    <div class="earning-stat-value">{{ earnings_data.completed_withdrawals|default(0) }}</div>
-                                    <div class="earning-stat-label">Paid Out</div>
+                                    <div class="earning-stat-value">
+                                        {% if confirmed_bookings %}{{ confirmed_bookings|selectattr('payment_status', 'equalto', 'paid')|list|length }}{% else %}0{% endif %}
+                                    </div>
+                                    <div class="earning-stat-label">Paid</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
+                                    <div class="earning-stat-label">Unpaid</div>
                                 </div>
                             </div>
                             
-                            <!-- Withdrawal Info -->
                             <div class="payout-info">
                                 <div class="payout-row">
                                     <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 500;">
                                         <i class="fas fa-money-bill-wave"></i>
-                                        Available for Withdrawal
+                                        Next Payout
                                     </span>
-                                    <span style="font-size: 1.25rem; font-weight: 700; color: var(--card-green);">
-                                        ₹{{ earnings_data.available_balance|default(0)|int }}
+                                    <span style="font-size: 1rem; font-weight: 700; color: var(--primary);">
+                                        ₹{{ (earnings|default(0) * 0.8)|int }}
                                     </span>
                                 </div>
-                                
-                                {% if earnings_data.min_withdrawal_amount %}
                                 <div class="payout-row">
                                     <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
-                                        <i class="fas fa-info-circle"></i>
-                                        Minimum Withdrawal
+                                        <i class="fas fa-calendar"></i>
+                                        Payout Date
                                     </span>
                                     <span style="font-size: 0.8125rem; font-weight: 600; color: var(--accent);">
-                                        ₹{{ earnings_data.min_withdrawal_amount }}
+                                        in 3 days
                                     </span>
                                 </div>
-                                {% endif %}
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Withdrawal History -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h2><i class="fas fa-history"></i> Withdrawal History</h2>
-                    </div>
-                    
-                    <div class="card-content">
-                        {% if withdrawal_requests and withdrawal_requests|length > 0 %}
-                        <div class="bookings-table">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Amount</th>
-                                        <th>Method</th>
-                                        <th>Status</th>
-                                        <th>Requested</th>
-                                        <th>Processed</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for withdrawal in withdrawal_requests %}
-                                    <tr>
-                                        <td><strong>#{{ withdrawal.id }}</strong></td>
-                                        <td><strong style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">₹{{ withdrawal.amount|int }}</strong></td>
-                                        <td>
-                                            <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">
-                                                {{ withdrawal.payment_method|default('N/A') }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if withdrawal.status == 'approved' %}
-                                            <span class="status-badge status-confirmed" style="display: inline-flex; font-size: 0.75rem;">
-                                                <i class="fas fa-check-circle"></i> Approved
-                                            </span>
-                                            {% elif withdrawal.status == 'pending' %}
-                                            <span class="status-badge status-pending" style="display: inline-flex; font-size: 0.75rem;">
-                                                <i class="fas fa-clock"></i> Pending
-                                            </span>
-                                            {% elif withdrawal.status == 'paid' %}
-                                            <span class="status-badge status-paid" style="display: inline-flex; font-size: 0.75rem;">
-                                                <i class="fas fa-money-bill-wave"></i> Paid
-                                            </span>
-                                            {% elif withdrawal.status == 'rejected' %}
-                                            <span class="status-badge" style="background: linear-gradient(135deg, var(--card-pink), #e4b9b7); color: #8a4d49; border-color: rgba(246, 208, 206, 0.3); display: inline-flex; font-size: 0.75rem;">
-                                                <i class="fas fa-times-circle"></i> Rejected
-                                            </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
-                                                {{ withdrawal.requested_at.strftime('%Y-%m-%d') if withdrawal.requested_at else '' }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if withdrawal.processed_at %}
-                                            <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
-                                                {{ withdrawal.processed_at.strftime('%Y-%m-%d') }}
-                                            </span>
-                                            {% else %}
-                                            <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-style: italic;">
-                                                Not processed
-                                            </span>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        {% else %}
-                        <div class="empty-state" style="padding: 2rem;">
-                            <div class="empty-state-icon" style="width: 3.5rem; height: 3.5rem; background: linear-gradient(135deg, var(--accent-beige), var(--border-light)); color: var(--text-secondary-light);">
-                                <i class="fas fa-history"></i>
-                            </div>
-                            <h3>No Withdrawal History</h3>
-                            <p>You haven't made any withdrawal requests yet</p>
-                            {% if earnings_data.available_balance > 0 %}
-                            <button onclick="openWithdrawalModal()" 
-                                    class="header-action-btn" 
-                                    style="margin-top: 1.5rem; background: linear-gradient(135deg, var(--card-green), #7cb342); color: white; border: none;">
-                                <i class="fas fa-money-bill-wave"></i> Make Your First Withdrawal
-                            </button>
-                            {% endif %}
-                        </div>
-                        {% endif %}
                     </div>
                 </div>
 
                 <!-- Recent Transactions -->
                 <div class="dashboard-card">
                     <div class="card-header">
-                        <h2><i class="fas fa-receipt"></i> Recent Transactions</h2>
+                        <h2><i class="fas fa-history"></i> Recent Transactions</h2>
                     </div>
                     
                     <div class="card-content">
                         {% if confirmed_bookings and confirmed_bookings|length > 0 %}
                         <div class="sessions-list">
-                            {% for booking in confirmed_bookings[:3] %}
+                            {% for booking in confirmed_bookings[:5] %}
                             <div class="session-item">
                                 <div class="session-header">
                                     <div style="flex: 1;">
@@ -2889,10 +2673,40 @@
                                     <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
                                 </div>
                                 
-                                <div class="session-status" style="margin-top: 0.75rem;">
+                                <!-- Google Meet Button -->
+                                {% if booking.meeting_link and booking.meeting_link != "None" %}
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div style="width: 10px; height: 10px; background-color: var(--card-green); border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                        <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">Meeting link available</span>
+                                    </div>
+                                    <a href="{{ booking.meeting_link }}" 
+                                       target="_blank" 
+                                       class="join-meet-btn"
+                                       style="padding: 0.625rem 1.25rem; font-size: 0.8125rem;">
+                                        <i class="fas fa-video"></i>
+                                        Join
+                                    </a>
+                                </div>
+                                {% else %}
+                                <div style="margin-top: 1rem;">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Meeting link not ready
+                                    </span>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="session-status" style="margin-top: {% if booking.meeting_link %}1rem{% else %}0.75rem{% endif %};">
                                     <span class="status-badge {% if booking.payment_status == 'paid' %}status-paid{% else %}status-unpaid{% endif %}">
                                         {{ booking.payment_status|title }}
                                     </span>
+                                    {% if booking.meeting_id %}
+                                    <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; border-color: rgba(133, 195, 234, 0.3);">
+                                        <i class="fas fa-video"></i>
+                                        Meet ID: {{ booking.meeting_id|truncate(10) }}
+                                    </span>
+                                    {% endif %}
                                 </div>
                             </div>
                             {% endfor %}
@@ -2902,7 +2716,7 @@
                             <div class="empty-state-icon" style="width: 3.5rem; height: 3.5rem;">
                                 <i class="fas fa-receipt"></i>
                             </div>
-                            <h3>No Recent Transactions</h3>
+                            <h3>No Transactions Yet</h3>
                             <p>Your transaction history will appear here once you start receiving bookings</p>
                         </div>
                         {% endif %}
@@ -3158,151 +2972,6 @@
     </div>
 </div>
 
-<!-- Withdrawal Modal -->
-<div id="withdrawalModal" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 0.75rem;">
-                <i class="fas fa-money-bill-wave" style="color: var(--card-green);"></i>
-                Request Withdrawal
-            </h3>
-            <button onclick="closeWithdrawalModal()" class="modal-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="modal-body">
-            <form id="withdrawalForm" onsubmit="submitWithdrawal(event)">
-                <!-- Available Balance -->
-                <div style="background: linear-gradient(135deg, var(--accent-beige), white); padding: 1.25rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; border: 1px solid var(--border-light);">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-size: 0.875rem; color: var(--text-secondary-light); margin-bottom: 0.25rem; font-weight: 500;">
-                                Available Balance
-                            </div>
-                            <div style="font-size: 1.75rem; font-weight: 800; color: var(--card-green);">
-                                ₹{{ earnings_data.available_balance|default(0)|int }}
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 0.75rem; color: var(--text-secondary-light); margin-bottom: 0.25rem;">
-                                Minimum: ₹500
-                            </div>
-                            <div style="font-size: 0.75rem; color: var(--accent); font-weight: 500;">
-                                80% of total earnings
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Withdrawal Amount -->
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;">
-                        <i class="fas fa-rupee-sign"></i> Withdrawal Amount
-                    </label>
-                    <div style="position: relative;">
-                        <input type="number" 
-                               id="withdrawalAmount" 
-                               name="amount"
-                               min="500" 
-                               max="{{ earnings_data.available_balance|default(0)|int }}"
-                               step="100"
-                               required
-                               style="width: 100%; padding: 0.875rem 1rem; padding-left: 2.5rem; border: 2px solid var(--border-light); border-radius: var(--radius); font-size: 1rem; font-weight: 500; color: var(--primary); transition: var(--transition); background: white;"
-                               placeholder="Enter amount">
-                        <div style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary-light);">
-                            ₹
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
-                        <div style="font-size: 0.75rem; color: var(--text-secondary-light);">
-                            Enter amount between ₹500 - ₹{{ earnings_data.available_balance|default(0)|int }}
-                        </div>
-                        <button type="button" 
-                                onclick="setMaxAmount()" 
-                                style="font-size: 0.75rem; color: var(--accent); font-weight: 600; background: none; border: none; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); transition: var(--transition);">
-                            Use Max Amount
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Payment Method -->
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;">
-                        <i class="fas fa-credit-card"></i> Payment Method
-                    </label>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">
-                        <label class="payment-method-option">
-                            <input type="radio" name="payment_method" value="bank_transfer" required>
-                            <div class="payment-method-content">
-                                <div style="width: 2.5rem; height: 2.5rem; background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 0.5rem;">
-                                    <i class="fas fa-university"></i>
-                                </div>
-                                <div style="font-size: 0.8125rem; font-weight: 600; color: var(--primary);">
-                                    Bank Transfer
-                                </div>
-                            </div>
-                        </label>
-                        
-                        <label class="payment-method-option">
-                            <input type="radio" name="payment_method" value="upi">
-                            <div class="payment-method-content">
-                                <div style="width: 2.5rem; height: 2.5rem; background: linear-gradient(135deg, var(--card-green), #7cb342); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 0.5rem;">
-                                    <i class="fas fa-mobile-alt"></i>
-                                </div>
-                                <div style="font-size: 0.8125rem; font-weight: 600; color: var(--primary);">
-                                    UPI
-                                </div>
-                            </div>
-                        </label>
-                        
-                        <label class="payment-method-option">
-                            <input type="radio" name="payment_method" value="paypal">
-                            <div class="payment-method-content">
-                                <div style="width: 2.5rem; height: 2.5rem; background: linear-gradient(135deg, var(--card-purple), #7c3aed); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 0.5rem;">
-                                    <i class="fab fa-paypal"></i>
-                                </div>
-                                <div style="font-size: 0.8125rem; font-weight: 600; color: var(--primary);">
-                                    PayPal
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- Payment Details -->
-                <div id="paymentDetailsSection" style="display: none; margin-bottom: 1.5rem;">
-                    <label style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;">
-                        <i class="fas fa-info-circle"></i> Payment Details
-                    </label>
-                    <textarea id="paymentDetails" 
-                              name="payment_details" 
-                              rows="3"
-                              style="width: 100%; padding: 0.875rem 1rem; border: 2px solid var(--border-light); border-radius: var(--radius); font-size: 0.875rem; color: var(--primary); transition: var(--transition); resize: vertical; min-height: 80px;"
-                              placeholder="Please provide your bank account details, UPI ID, or PayPal email..."></textarea>
-                    <div style="font-size: 0.75rem; color: var(--text-secondary-light); margin-top: 0.5rem;">
-                        Please provide accurate payment details. This will be visible to admin only.
-                    </div>
-                </div>
-                
-                <!-- Action Buttons -->
-                <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">
-                    <button type="button" 
-                            onclick="closeWithdrawalModal()" 
-                            style="flex: 1; padding: 0.875rem; background: var(--accent-beige); color: var(--text-secondary-light); border: 1px solid var(--border-light); border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: var(--transition);">
-                        Cancel
-                    </button>
-                    <button type="submit" 
-                            style="flex: 2; padding: 0.875rem; background: linear-gradient(135deg, var(--card-green), #7cb342); color: white; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden;">
-                        <span id="submitBtnText">Submit Withdrawal Request</span>
-                        <i class="fas fa-spinner fa-spin" style="display: none; margin-left: 0.5rem;"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Add hover effects to all interactive elements
@@ -3365,16 +3034,6 @@
 
         // Initialize mentor section management
         initializeMentorSections();
-        
-        // Initialize payment method listeners
-        const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
-        paymentMethods.forEach(method => {
-            method.addEventListener('change', function() {
-                if (document.getElementById('paymentDetailsSection')) {
-                    document.getElementById('paymentDetailsSection').style.display = 'block';
-                }
-            });
-        });
         
         // Add pulse animation
         const style = document.createElement('style');
@@ -3524,101 +3183,6 @@
         
         document.body.removeChild(textArea);
     }
-
-    // Withdrawal Modal Functions
-    function openWithdrawalModal() {
-        const modal = document.getElementById('withdrawalModal');
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        
-        // Reset form
-        const form = document.getElementById('withdrawalForm');
-        if (form) form.reset();
-        
-        // Hide payment details initially
-        const paymentDetailsSection = document.getElementById('paymentDetailsSection');
-        if (paymentDetailsSection) {
-            paymentDetailsSection.style.display = 'none';
-        }
-    }
-
-    function closeWithdrawalModal() {
-        const modal = document.getElementById('withdrawalModal');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-
-    function setMaxAmount() {
-        const availableBalance = {{ earnings_data.available_balance|default(0)|int }};
-        const amountInput = document.getElementById('withdrawalAmount');
-        if (amountInput) {
-            amountInput.value = availableBalance;
-        }
-    }
-
-    async function submitWithdrawal(event) {
-        event.preventDefault();
-        
-        const form = event.target;
-        const formData = new FormData(form);
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const submitText = document.getElementById('submitBtnText');
-        const spinner = submitBtn.querySelector('.fa-spinner');
-        
-        // Show loading state
-        submitBtn.disabled = true;
-        submitText.textContent = 'Processing...';
-        spinner.style.display = 'inline-block';
-        
-        try {
-            const response = await fetch('/mentor/withdrawal/request', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(Object.fromEntries(formData))
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                showNotification('Withdrawal request submitted successfully! Admin will process it soon.', 'success');
-                closeWithdrawalModal();
-                
-                // Reload the page after 2 seconds to show updated balance
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            } else {
-                showNotification(data.error || 'Failed to submit withdrawal request', 'error');
-                submitBtn.disabled = false;
-                submitText.textContent = 'Submit Withdrawal Request';
-                spinner.style.display = 'none';
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showNotification('An error occurred. Please try again.', 'error');
-            submitBtn.disabled = false;
-            submitText.textContent = 'Submit Withdrawal Request';
-            spinner.style.display = 'none';
-        }
-    }
-
-    // Close modal when clicking outside
-    document.addEventListener('click', function(event) {
-        const modal = document.getElementById('withdrawalModal');
-        if (event.target === modal) {
-            closeWithdrawalModal();
-        }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(event) {
-        const modal = document.getElementById('withdrawalModal');
-        if (event.key === 'Escape' && modal.style.display === 'block') {
-            closeWithdrawalModal();
-        }
-    });
 
     // Notification system
     function showNotification(message, type) {
