@@ -3,17 +3,72 @@
 {% block title %}Register - ClearQ{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<!-- Add homepage Tailwind config and theme -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#1f1f1f",
+                    "primary-hover": "#000000",
+                    "accent": "#ff6b4a",
+                    "background-light": "#fff5ec",
+                    "background-dark": "#151022",
+                    "text-light": "#1f1f1f",
+                    "text-dark": "#ffffff",
+                    "text-secondary-light": "#555555",
+                    "text-secondary-dark": "#a09db3",
+                    "card-light": "#ffffff",
+                    "card-dark": "#1e1a2e",
+                    "border-light": "#E5E4E0",
+                    "border-dark": "#2d2a3b",
+                    "accent-beige": "#F0EFEA",
+                    "secondary": "#2D3748",
+                    "dark-card": "#232936",
+                    "card-purple": "#E0DBFC",
+                    "card-green": "#9CCB5C",
+                    "card-blue": "#85C3EA",
+                    "card-beige": "#EEE3CD",
+                    "card-teal": "#A8E1E1",
+                    "card-pink": "#F6D0CE",
+                    "brand-red": "#FF3F1F",
+                },
+                fontFamily: {
+                    "display": ["Inter", "sans-serif"]
+                },
+                borderRadius: {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "full": "9999px"
+                },
+                fontSize: {
+                    'xxs': '0.625rem',
+                }
+            },
+        }
+    }
+</script>
+
+<div class="min-h-screen bg-gradient-to-br from-background-light to-white dark:from-background-dark dark:to-card-dark flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
         <div class="text-center">
             <a href="/" class="flex items-center justify-center space-x-2 mb-8">
-                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center">
                     <i class="fas fa-graduation-cap text-white text-xl"></i>
                 </div>
-                <span class="text-2xl font-bold text-dark">Clear<span class="text-primary">Q</span></span>
+                <span class="text-2xl font-bold text-text-light dark:text-text-dark">Clear<span class="text-accent">Q</span></span>
             </a>
-            <h2 class="text-3xl font-bold text-gray-900">Create your account</h2>
-            <p class="mt-2 text-sm text-gray-600">
+            <h2 class="text-3xl font-bold text-text-light dark:text-text-dark">Create your account</h2>
+            <p class="mt-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
                 Join thousands of learners and mentors
             </p>
         </div>
@@ -21,14 +76,14 @@
         {% if google_auth_url %}
         <div class="mt-4">
             <a href="{{ google_auth_url }}" 
-               class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                <i class="fab fa-google text-red-500 mr-2"></i>
+               class="w-full flex items-center justify-center px-4 py-3 border border-border-light dark:border-border-dark rounded-lg shadow-sm text-sm font-medium text-text-light dark:text-text-dark bg-card-light dark:bg-card-dark hover:bg-accent-beige dark:hover:bg-dark-card focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all">
+                <i class="fab fa-google text-brand-red mr-2"></i>
                 Continue with Google
             </a>
             <div class="mt-4 flex items-center">
-                <div class="flex-grow border-t border-gray-300"></div>
-                <span class="flex-shrink mx-4 text-gray-500 text-sm">or</span>
-                <div class="flex-grow border-t border-gray-300"></div>
+                <div class="flex-grow border-t border-border-light dark:border-border-dark"></div>
+                <span class="flex-shrink mx-4 text-text-secondary-light dark:text-text-secondary-dark text-sm">or</span>
+                <div class="flex-grow border-t border-border-light dark:border-border-dark"></div>
             </div>
         </div>
         {% endif %}
@@ -36,129 +91,129 @@
         <form class="mt-8 space-y-6" action="/register" method="POST" id="register-form">
             <div class="rounded-md shadow-sm space-y-4">
                 <div>
-                    <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="full_name" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
                         Full Name *
                     </label>
                     <input id="full_name" name="full_name" type="text" required
-                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                           class="appearance-none relative block w-full px-3 py-3 border border-border-light dark:border-border-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark text-text-light dark:text-text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent focus:z-10 sm:text-sm bg-card-light dark:bg-card-dark"
                            placeholder="John Doe">
                 </div>
 
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="email" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
                         Email Address *
                     </label>
                     <input id="email" name="email" type="email" autocomplete="email" required
-                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                           class="appearance-none relative block w-full px-3 py-3 border border-border-light dark:border-border-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark text-text-light dark:text-text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent focus:z-10 sm:text-sm bg-card-light dark:bg-card-dark"
                            placeholder="you@example.com">
                 </div>
 
                 <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="username" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
                         Username *
                     </label>
                     <input id="username" name="username" type="text" required
-                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                           class="appearance-none relative block w-full px-3 py-3 border border-border-light dark:border-border-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark text-text-light dark:text-text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent focus:z-10 sm:text-sm bg-card-light dark:bg-card-dark"
                            placeholder="johndoe">
                 </div>
 
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="password" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
                         Password *
                     </label>
                     <input id="password" name="password" type="password" autocomplete="new-password" required
-                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                           class="appearance-none relative block w-full px-3 py-3 border border-border-light dark:border-border-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark text-text-light dark:text-text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent focus:z-10 sm:text-sm bg-card-light dark:bg-card-dark"
                            placeholder="••••••••">
                 </div>
 
                 <div>
-                    <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="role" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
                         I want to join as *
                     </label>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <input type="radio" id="learner" name="role" value="learner" class="hidden peer" checked>
                             <label for="learner" 
-                                   class="flex flex-col items-center justify-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-gray-50">
-                                <i class="fas fa-user-graduate text-primary text-2xl mb-2"></i>
-                                <span class="font-medium">Learner</span>
-                                <span class="text-xs text-gray-500 mt-1 text-center">Book sessions with mentors</span>
+                                   class="flex flex-col items-center justify-center p-4 border-2 border-border-light dark:border-border-dark rounded-lg cursor-pointer peer-checked:border-accent peer-checked:bg-accent/5 hover:bg-accent-beige dark:hover:bg-dark-card bg-card-light dark:bg-card-dark transition-all">
+                                <i class="fas fa-user-graduate text-accent text-2xl mb-2"></i>
+                                <span class="font-medium text-text-light dark:text-text-dark">Learner</span>
+                                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1 text-center">Book sessions with mentors</span>
                             </label>
                         </div>
                         <div>
                             <input type="radio" id="mentor" name="role" value="mentor" class="hidden peer">
                             <label for="mentor" 
-                                   class="flex flex-col items-center justify-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-primary peer-checked:bg-primary/5 hover:bg-gray-50">
-                                <i class="fas fa-chalkboard-teacher text-secondary text-2xl mb-2"></i>
-                                <span class="font-medium">Mentor</span>
-                                <span class="text-xs text-gray-500 mt-1 text-center">Share your expertise</span>
+                                   class="flex flex-col items-center justify-center p-4 border-2 border-border-light dark:border-border-dark rounded-lg cursor-pointer peer-checked:border-accent peer-checked:bg-accent/5 hover:bg-accent-beige dark:hover:bg-dark-card bg-card-light dark:bg-card-dark transition-all">
+                                <i class="fas fa-chalkboard-teacher text-accent text-2xl mb-2"></i>
+                                <span class="font-medium text-text-light dark:text-text-dark">Mentor</span>
+                                <span class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1 text-center">Share your expertise</span>
                             </label>
                         </div>
                     </div>
-                    <p class="mt-2 text-xs text-gray-500">
+                    <p class="mt-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         Note: Mentor accounts require admin verification before you can start accepting bookings.
                     </p>
                 </div>
 
                 <!-- Mentor Specific Fields (Hidden by default) -->
                 <div id="mentor-fields" class="space-y-4 hidden transition-all duration-300 ease-in-out">
-                    <div class="pt-4 border-t border-gray-200">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                            <i class="fas fa-graduation-cap text-secondary mr-2"></i>
+                    <div class="pt-4 border-t border-border-light dark:border-border-dark">
+                        <h3 class="text-sm font-semibold text-text-light dark:text-text-dark mb-3 flex items-center">
+                            <i class="fas fa-graduation-cap text-accent mr-2"></i>
                             Mentor Information
                         </h3>
                         
                         <!-- Bio Field -->
                         <div class="mb-4">
-                            <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="bio" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
                                 Bio
                             </label>
                             <textarea id="bio" 
                                       name="bio" 
                                       rows="3"
-                                      class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                                      class="appearance-none relative block w-full px-3 py-3 border border-border-light dark:border-border-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark text-text-light dark:text-text-dark rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent focus:z-10 sm:text-sm bg-card-light dark:bg-card-dark"
                                       placeholder="Tell learners about your experience, expertise, and mentoring style..."></textarea>
-                            <p class="mt-1 text-xs text-gray-500">This will appear on your public mentor profile</p>
+                            <p class="mt-1 text-xs text-text-secondary-light dark:text-text-secondary-dark">This will appear on your public mentor profile</p>
                         </div>
 
                        <!-- Industry Field -->
 <div class="mb-4">
-    <label for="industry" class="block text-sm font-medium text-gray-700 mb-2">
-        <i class="fas fa-industry mr-2 text-blue-500"></i>
+    <label for="industry" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
+        <i class="fas fa-industry mr-2 text-accent"></i>
         Industry
     </label>
     <input type="text" 
            id="industry" 
            name="industry" 
-           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+           class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
            placeholder="Technology, Finance, Healthcare">
 </div>
 
 <!-- Social Links Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
-        <label for="linkedin_url" class="block text-sm font-medium text-gray-700 mb-2">
-            <i class="fab fa-linkedin mr-2 text-blue-700"></i>
+        <label for="linkedin_url" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
+            <i class="fab fa-linkedin mr-2 text-[#0077b5]"></i>
             LinkedIn
         </label>
         <input type="url" 
                id="linkedin_url" 
                name="linkedin_url" 
-               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+               class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
                placeholder="https://linkedin.com/in/username">
     </div>
 
     <div>
-        <label for="instagram_username" class="block text-sm font-medium text-gray-700 mb-2">
-            <i class="fab fa-instagram mr-2 text-pink-600"></i>
+        <label for="instagram_username" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
+            <i class="fab fa-instagram mr-2 text-[#E1306C]"></i>
             Instagram Username
         </label>
         <input type="text" 
                id="instagram_username" 
                name="instagram_username" 
-               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+               class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
                placeholder="username (without @)">
-        <p class="mt-1 text-xs text-gray-500">We'll store this in the github_url field for now</p>
+        <p class="mt-1 text-xs text-text-secondary-light dark:text-text-secondary-dark">We'll store this in the github_url field for now</p>
     </div>
 </div>
                         
@@ -168,18 +223,18 @@
 
             <div class="flex items-center">
                 <input id="terms" name="terms" type="checkbox" required
-                       class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                <label for="terms" class="ml-2 block text-sm text-gray-700">
+                       class="h-4 w-4 text-accent focus:ring-accent border-border-light dark:border-border-dark rounded bg-card-light dark:bg-card-dark">
+                <label for="terms" class="ml-2 block text-sm text-text-light dark:text-text-dark">
                     I agree to the
-                    <a href="/terms" class="text-primary hover:text-primary-dark">Terms of Service</a>
+                    <a href="/terms" class="text-accent hover:text-accent/80">Terms of Service</a>
                     and
-                    <a href="/privacy" class="text-primary hover:text-primary-dark">Privacy Policy</a>
+                    <a href="/privacy" class="text-accent hover:text-accent/80">Privacy Policy</a>
                 </label>
             </div>
 
             <div>
                 <button type="submit"
-                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all transform hover:-translate-y-0.5">
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-accent to-accent/80 hover:shadow-lg hover:shadow-accent/25 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all transform hover:-translate-y-0.5">
                     <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                         <i class="fas fa-user-plus text-white/80"></i>
                     </span>
@@ -188,9 +243,9 @@
             </div>
 
             <div class="text-center">
-                <p class="text-sm text-gray-600">
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
                     Already have an account?
-                    <a href="/login" class="font-medium text-primary hover:text-primary-dark">
+                    <a href="/login" class="font-medium text-accent hover:text-accent/80">
                         Sign in
                     </a>
                 </p>
@@ -468,9 +523,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = this.value.trim();
             if (url && !isValidLinkedInUrl(url)) {
                 showNotification('Please enter a valid LinkedIn URL format', 'warning');
-                this.classList.add('border-red-300');
+                this.classList.add('border-brand-red');
             } else {
-                this.classList.remove('border-red-300');
+                this.classList.remove('border-brand-red');
             }
         });
     }
@@ -481,9 +536,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const username = this.value.trim();
             if (username && !isValidInstagramUsername(username)) {
                 showNotification('Instagram username can only contain letters, numbers, periods and underscores', 'warning');
-                this.classList.add('border-red-300');
+                this.classList.add('border-brand-red');
             } else {
-                this.classList.remove('border-red-300');
+                this.classList.remove('border-brand-red');
             }
         });
         
@@ -602,10 +657,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create notification element
         const notification = document.createElement('div');
         notification.className = `notification-toast fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 ${
-            type === 'success' ? 'bg-emerald-500 text-white border border-emerald-600' :
-            type === 'error' ? 'bg-rose-500 text-white border border-rose-600' :
-            type === 'warning' ? 'bg-amber-500 text-white border border-amber-600' :
-            'bg-blue-500 text-white border border-blue-600'
+            type === 'success' ? 'bg-card-green text-white border border-green-600' :
+            type === 'error' ? 'bg-brand-red text-white border border-red-600' :
+            type === 'warning' ? 'bg-accent text-white border border-orange-600' :
+            'bg-card-blue text-white border border-blue-600'
         }`;
         
         notification.innerHTML = `
@@ -640,11 +695,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!parent) return;
         
         input.addEventListener('focus', function() {
-            parent.classList.add('ring-2', 'ring-blue-200');
+            parent.classList.add('ring-2', 'ring-accent/20');
         });
         
         input.addEventListener('blur', function() {
-            parent.classList.remove('ring-2', 'ring-blue-200');
+            parent.classList.remove('ring-2', 'ring-accent/20');
         });
     });
     
@@ -658,8 +713,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <style>
     /* Radio button styling */
     input[type="radio"]:checked + label {
-        border-color: #2563eb;
-        background-color: rgba(37, 99, 235, 0.05);
+        border-color: var(--accent);
+        background-color: rgba(255, 107, 74, 0.05);
     }
     
     /* Animation for mentor fields */
@@ -679,9 +734,9 @@ document.addEventListener('DOMContentLoaded', function() {
     textarea:focus, input[type="url"]:focus, input[type="text"]:focus {
         outline: none;
         ring: 2px;
-        ring-color: #2563eb;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        ring-color: var(--accent);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
     }
     
     /* Style for the industry icon */
@@ -708,8 +763,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     /* Validation styles */
-    .border-red-300 {
-        border-color: #fca5a5 !important;
+    .border-brand-red {
+        border-color: #FF3F1F !important;
     }
     
     /* Loading spinner animation */
@@ -724,8 +779,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     /* Form input focus effects */
     input:focus, textarea:focus, select:focus {
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+        border-color: var(--accent) !important;
     }
     
     /* Responsive adjustments */
@@ -766,6 +821,22 @@ document.addEventListener('DOMContentLoaded', function() {
     /* Form field spacing */
     .space-y-4 > div {
         margin-bottom: 1rem;
+    }
+    
+    /* Dark mode adjustments for form */
+    .dark input, .dark textarea, .dark select {
+        background-color: var(--card-dark);
+        border-color: var(--border-dark);
+        color: var(--text-dark);
+    }
+    
+    .dark input:focus, .dark textarea:focus, .dark select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.2);
+    }
+    
+    .dark input::placeholder, .dark textarea::placeholder {
+        color: var(--text-secondary-dark);
     }
 </style>
 {% endblock %}
