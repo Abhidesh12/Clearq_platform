@@ -5,36 +5,51 @@
 {% block content %}
 <style>
     :root {
-        --primary: #3B82F6;
-        --primary-dark: #2563EB;
-        --primary-light: #60A5FA;
-        --secondary: #8B5CF6;
-        --accent: #06B6D4;
-        --success: #10B981;
-        --warning: #F59E0B;
-        --danger: #EF4444;
-        --gray-900: #0F172A;
-        --gray-800: #1E293B;
-        --gray-700: #334155;
-        --gray-600: #475569;
-        --gray-500: #64748B;
-        --gray-400: #94A3B8;
-        --gray-300: #CBD5E1;
-        --gray-200: #E2E8F0;
-        --gray-100: #F1F5F9;
-        --gray-50: #F8FAFC;
-        --white: #FFFFFF;
-        --radius-sm: 0.375rem;
+        /* Primary Colors */
+        --primary: #1f1f1f;
+        --primary-hover: #000000;
+        --accent: #ff6b4a;
+        --secondary: #2D3748;
+        --brand-red: #FF3F1F;
+        
+        /* Background Colors */
+        --background-light: #fff5ec;
+        --background-dark: #151022;
+        --card-light: #ffffff;
+        --card-dark: #1e1a2e;
+        --dark-card: #232936;
+        --accent-beige: #F0EFEA;
+        
+        /* Text Colors */
+        --text-light: #1f1f1f;
+        --text-dark: #ffffff;
+        --text-secondary-light: #555555;
+        --text-secondary-dark: #a09db3;
+        
+        /* Border Colors */
+        --border-light: #E5E4E0;
+        --border-dark: #2d2a3b;
+        
+        /* Card Color Palette */
+        --card-purple: #E0DBFC;
+        --card-green: #9CCB5C;
+        --card-blue: #85C3EA;
+        --card-beige: #EEE3CD;
+        --card-teal: #A8E1E1;
+        --card-pink: #F6D0CE;
+        
+        /* UI Variables */
+        --radius-sm: 0.25rem;
         --radius: 0.5rem;
         --radius-md: 0.75rem;
         --radius-lg: 1rem;
         --radius-xl: 1.5rem;
-        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        --transition: all 0.2s ease;
+        --shadow-sm: 0 1px 2px 0 rgba(31, 31, 31, 0.05);
+        --shadow: 0 1px 3px 0 rgba(31, 31, 31, 0.1), 0 1px 2px 0 rgba(31, 31, 31, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(31, 31, 31, 0.1), 0 2px 4px -1px rgba(31, 31, 31, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(31, 31, 31, 0.1), 0 4px 6px -2px rgba(31, 31, 31, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(31, 31, 31, 0.1), 0 10px 10px -5px rgba(31, 31, 31, 0.04);
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         --glass-bg: rgba(255, 255, 255, 0.1);
         --glass-border: rgba(255, 255, 255, 0.2);
     }
@@ -43,16 +58,19 @@
         max-width: 100%;
         margin: 0 auto;
         padding: 0;
+        background: linear-gradient(135deg, #fff5ec 0%, var(--background-light) 100%);
+        min-height: 100vh;
     }
 
-    /* Dashboard Header - Enhanced */
+    /* Dashboard Header - Enhanced with Theme */
     .dashboard-header {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        color: var(--white);
-        padding: 1rem 1.25rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--background-dark) 100%);
+        color: var(--text-dark);
+        padding: 1.5rem 1.25rem;
         position: relative;
         overflow: hidden;
         box-shadow: var(--shadow-lg);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .dashboard-header::before {
@@ -62,11 +80,8 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(45deg, 
-            transparent 0%, 
-            rgba(255, 255, 255, 0.1) 50%, 
-            transparent 100%);
-        animation: shimmer 3s infinite;
+        background: radial-gradient(circle at 30% 20%, rgba(255, 107, 74, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(255, 63, 31, 0.1) 0%, transparent 50%);
     }
 
     @keyframes shimmer {
@@ -87,27 +102,28 @@
     .user-info {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1rem;
     }
 
     .user-avatar {
-        width: 3.5rem;
-        height: 3.5rem;
+        width: 4rem;
+        height: 4rem;
         border-radius: var(--radius-lg);
         border: 3px solid rgba(255, 255, 255, 0.3);
         overflow: hidden;
-        background: linear-gradient(135deg, var(--white), var(--gray-100));
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        box-shadow: var(--shadow-md);
+        box-shadow: var(--shadow-lg);
         transition: var(--transition);
     }
 
     .user-avatar:hover {
         transform: scale(1.05);
-        box-shadow: var(--shadow-lg);
+        box-shadow: 0 12px 24px rgba(255, 107, 74, 0.3);
+        border-color: rgba(255, 107, 74, 0.5);
     }
 
     .user-avatar-img {
@@ -117,9 +133,9 @@
     }
 
     .user-avatar-initial {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        color: var(--primary);
+        color: white;
     }
 
     .user-details {
@@ -128,44 +144,46 @@
     }
 
     .user-details h1 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.125rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        color: white;
     }
 
     .user-details p {
-        font-size: 0.875rem;
+        font-size: 0.9375rem;
         opacity: 0.9;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        color: rgba(255, 255, 255, 0.9);
     }
 
     .header-actions {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.75rem;
         flex-wrap: wrap;
     }
 
     .header-action-btn {
-        padding: 0.5rem 0.875rem;
-        background: rgba(255, 255, 255, 0.2);
+        padding: 0.625rem 1.25rem;
+        background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(10px);
-        color: var(--white);
-        border-radius: var(--radius);
+        color: white;
+        border-radius: var(--radius-lg);
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 600;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: 0.5rem;
         transition: var(--transition);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.25);
         position: relative;
         overflow: hidden;
     }
@@ -189,30 +207,31 @@
     }
 
     .header-action-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.25);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--shadow-md);
+        border-color: rgba(255, 255, 255, 0.4);
     }
 
-    /* New Tab and Copy Link Buttons */
+    /* Profile Share Buttons */
     .profile-share-buttons {
         display: flex;
-        gap: 0.375rem;
+        gap: 0.75rem;
         align-items: center;
     }
 
     .share-btn {
-        padding: 0.5rem 0.875rem;
+        padding: 0.625rem 1rem;
         background: rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(10px);
-        color: var(--white);
+        color: white;
         border-radius: var(--radius);
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         font-weight: 500;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: 0.375rem;
         transition: var(--transition);
         border: 1px solid rgba(255, 255, 255, 0.25);
         cursor: pointer;
@@ -221,16 +240,16 @@
     .share-btn:hover {
         background: rgba(255, 255, 255, 0.25);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-md);
     }
 
     .share-btn i {
-        font-size: 0.65rem;
+        font-size: 0.75rem;
     }
 
     .share-btn.copied {
-        background: rgba(34, 197, 94, 0.3);
-        border-color: rgba(34, 197, 94, 0.5);
+        background: rgba(156, 203, 92, 0.3);
+        border-color: rgba(156, 203, 92, 0.5);
     }
 
     /* Mentor Menu Bar */
@@ -244,8 +263,8 @@
     .mentor-menu-bar .menu-items {
         display: flex;
         gap: 0.5rem;
-        padding: 0.25rem;
-        background: var(--gray-100);
+        padding: 0.5rem;
+        background: var(--accent-beige);
         border-radius: var(--radius-lg);
         width: max-content;
         min-width: 100%;
@@ -254,30 +273,32 @@
     .mentor-menu-bar .menu-item {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+        padding: 0.875rem 1.25rem;
         text-decoration: none;
-        color: var(--gray-700);
+        color: var(--text-secondary-light);
         border-radius: var(--radius);
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 600;
         white-space: nowrap;
         transition: var(--transition);
         border: 1px solid transparent;
+        background: white;
     }
 
     .mentor-menu-bar .menu-item:hover {
-        background: var(--white);
-        color: var(--primary);
-        border-color: var(--gray-200);
+        background: white;
+        color: var(--accent);
+        border-color: var(--accent);
         transform: translateY(-2px);
-        box-shadow: var(--shadow-sm);
+        box-shadow: var(--shadow-md);
     }
 
     .mentor-menu-bar .menu-item.active {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: var(--white);
-        box-shadow: var(--shadow-md);
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        color: white;
+        box-shadow: var(--shadow-lg);
+        border-color: var(--accent);
     }
 
     .mentor-menu-bar .menu-item i {
@@ -303,7 +324,7 @@
 
     /* Main Content */
     .dashboard-main {
-        padding: 1.25rem;
+        padding: 1.5rem;
         max-width: 1200px;
         margin: 0 auto;
         position: relative;
@@ -312,12 +333,12 @@
         gap: 1.5rem;
     }
 
-    /* Dashboard Cards - Enhanced */
+    /* Dashboard Cards - Enhanced with Theme */
     .dashboard-card {
-        background: var(--white);
-        border-radius: var(--radius-lg);
+        background: var(--card-light);
+        border-radius: var(--radius-xl);
         box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
+        border: 1px solid var(--border-light);
         margin-bottom: 1rem;
         overflow: hidden;
         transition: var(--transition);
@@ -336,7 +357,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        background: linear-gradient(90deg, var(--accent), var(--brand-red));
         opacity: 0;
         transition: opacity 0.3s ease;
     }
@@ -346,50 +367,53 @@
     }
 
     .card-header {
-        padding: 1.25rem;
-        border-bottom: 1px solid var(--gray-200);
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-light);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: var(--gray-50);
+        background: linear-gradient(135deg, var(--accent-beige) 0%, white 100%);
     }
 
     .card-header h2 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--gray-900);
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
         margin: 0;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .card-header h2 i {
-        color: var(--primary);
-        font-size: 1rem;
+        color: var(--accent);
+        font-size: 1.125rem;
     }
 
     .card-header a {
         font-size: 0.875rem;
-        color: var(--primary);
+        color: var(--accent);
         text-decoration: none;
-        font-weight: 500;
+        font-weight: 600;
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
-        padding: 0.375rem 0.75rem;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
         border-radius: var(--radius);
         transition: var(--transition);
+        background: rgba(255, 107, 74, 0.1);
+        border: 1px solid rgba(255, 107, 74, 0.2);
     }
 
     .card-header a:hover {
-        color: var(--primary-dark);
-        background: var(--gray-100);
-        transform: translateX(2px);
+        color: var(--brand-red);
+        background: rgba(255, 107, 74, 0.15);
+        transform: translateX(4px);
+        border-color: rgba(255, 107, 74, 0.3);
     }
 
     .card-content {
-        padding: 1.25rem;
+        padding: 1.5rem;
     }
 
     /* Combined Services & Availability Styles */
@@ -431,19 +455,29 @@
     }
 
     .service-item {
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
-        padding: 1.25rem;
+        background: white;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
         transition: var(--transition);
         position: relative;
         overflow: hidden;
     }
 
     .service-item:hover {
-        border-color: var(--primary-light);
-        box-shadow: var(--shadow-md);
-        transform: translateY(-2px);
+        border-color: var(--accent);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-4px);
+    }
+
+    .service-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-blue), var(--card-teal));
     }
 
     .service-item-header {
@@ -454,19 +488,19 @@
     }
 
     .service-item-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--gray-900);
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--primary);
         margin: 0;
     }
 
     .service-item-price {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--primary);
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .service-item-details {
@@ -479,62 +513,64 @@
     .service-detail {
         display: inline-flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: 0.5rem;
         font-size: 0.8125rem;
-        color: var(--gray-600);
-        padding: 0.375rem 0.75rem;
-        background: var(--gray-100);
-        border-radius: var(--radius-sm);
+        color: var(--text-secondary-light);
+        padding: 0.5rem 0.875rem;
+        background: var(--accent-beige);
+        border-radius: var(--radius);
+        border: 1px solid var(--border-light);
     }
 
     .service-detail i {
         font-size: 0.75rem;
-        color: var(--primary);
+        color: var(--accent);
     }
 
     .service-item-actions {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.75rem;
         margin-top: 1rem;
     }
 
     .service-action-btn {
-        padding: 0.5rem 1rem;
-        border: 1px solid var(--gray-300);
-        background: var(--white);
-        color: var(--gray-700);
+        padding: 0.625rem 1.25rem;
+        border: 1px solid var(--border-light);
+        background: white;
+        color: var(--text-secondary-light);
         border-radius: var(--radius);
         font-size: 0.8125rem;
-        font-weight: 500;
+        font-weight: 600;
         cursor: pointer;
         transition: var(--transition);
         display: inline-flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: 0.5rem;
         text-decoration: none;
     }
 
     .service-action-btn:hover {
-        background: var(--gray-50);
-        transform: translateY(-1px);
+        background: var(--accent-beige);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
     }
 
     .service-action-btn.edit {
-        color: var(--primary);
-        border-color: var(--primary-light);
-        background: rgba(59, 130, 246, 0.05);
+        color: var(--accent);
+        border-color: var(--accent);
+        background: rgba(255, 107, 74, 0.1);
     }
 
     .service-action-btn.delete {
-        color: var(--danger);
-        border-color: var(--danger-light);
-        background: rgba(239, 68, 68, 0.05);
+        color: var(--brand-red);
+        border-color: var(--brand-red);
+        background: rgba(255, 63, 31, 0.1);
     }
 
     .availability-summary {
-        background: linear-gradient(135deg, var(--gray-50), var(--white));
-        border-radius: var(--radius);
-        border: 1px solid var(--gray-200);
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
         padding: 1.5rem;
     }
 
@@ -549,22 +585,23 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem;
-        background: var(--white);
-        border: 1px solid var(--gray-200);
+        padding: 0.875rem;
+        background: white;
+        border: 1px solid var(--border-light);
         border-radius: var(--radius);
         transition: var(--transition);
     }
 
     .availability-day:hover {
-        border-color: var(--primary);
-        background: var(--gray-50);
+        border-color: var(--accent);
+        background: var(--accent-beige);
+        transform: translateX(4px);
     }
 
     .day-name {
         font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--gray-700);
+        font-weight: 600;
+        color: var(--primary);
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -572,54 +609,57 @@
 
     .day-status {
         font-size: 0.75rem;
-        font-weight: 500;
-        padding: 0.25rem 0.5rem;
+        font-weight: 600;
+        padding: 0.375rem 0.75rem;
         border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
     }
 
     .day-available {
-        background: var(--success-light);
-        color: var(--success-dark);
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
     }
 
     .day-unavailable {
-        background: var(--gray-200);
-        color: var(--gray-600);
+        background: var(--border-light);
+        color: var(--text-secondary-light);
     }
 
     /* Empty State - Enhanced */
     .empty-state {
         text-align: center;
-        padding: 2.5rem 1rem;
-        background: linear-gradient(135deg, var(--gray-50), var(--white));
-        border-radius: var(--radius-lg);
-        border: 2px dashed var(--gray-300);
+        padding: 3rem 1rem;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-radius: var(--radius-xl);
+        border: 2px dashed var(--border-light);
     }
 
     .empty-state-icon {
-        width: 4rem;
-        height: 4rem;
-        margin: 0 auto 1.25rem;
-        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--white);
-        font-size: 1.5rem;
-        box-shadow: var(--shadow-md);
+        color: white;
+        font-size: 1.75rem;
+        box-shadow: var(--shadow-lg);
     }
 
     .empty-state h3 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--gray-900);
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
         margin-bottom: 0.5rem;
     }
 
     .empty-state p {
-        font-size: 0.875rem;
-        color: var(--gray-600);
+        font-size: 0.9375rem;
+        color: var(--text-secondary-light);
         margin-bottom: 1.5rem;
         max-width: 300px;
         margin-left: auto;
@@ -635,11 +675,11 @@
     }
 
     .session-item {
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
-        padding: 1rem;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
         transition: var(--transition);
-        background: var(--white);
+        background: white;
         position: relative;
         overflow: hidden;
     }
@@ -650,8 +690,8 @@
         top: 0;
         left: 0;
         bottom: 0;
-        width: 3px;
-        background: linear-gradient(180deg, var(--primary), var(--secondary));
+        width: 4px;
+        background: linear-gradient(180deg, var(--accent), var(--brand-red));
         opacity: 0;
         transition: opacity 0.3s ease;
     }
@@ -661,108 +701,110 @@
     }
 
     .session-item:hover {
-        border-color: var(--primary-light);
-        background: var(--gray-50);
+        border-color: var(--accent);
+        background: var(--accent-beige);
         transform: translateX(4px);
-        box-shadow: var(--shadow-md);
+        box-shadow: var(--shadow-lg);
     }
 
     .session-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
     }
 
     .session-title {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: var(--gray-900);
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--primary);
         margin: 0;
     }
 
     .session-price {
-        font-size: 1rem;
-        font-weight: 700;
-        color: var(--primary);
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        font-size: 1.375rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .session-details {
         display: flex;
         flex-wrap: wrap;
         gap: 0.75rem;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
     }
 
     .session-detail {
         display: inline-flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: 0.5rem;
         font-size: 0.8125rem;
-        color: var(--gray-600);
-        padding: 0.25rem 0.5rem;
-        background: var(--gray-100);
-        border-radius: var(--radius-sm);
+        color: var(--text-secondary-light);
+        padding: 0.5rem 0.875rem;
+        background: var(--accent-beige);
+        border-radius: var(--radius);
+        border: 1px solid var(--border-light);
     }
 
     .session-detail i {
         font-size: 0.75rem;
-        color: var(--primary);
+        color: var(--accent);
     }
 
     .session-status {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .status-badge {
-        padding: 0.375rem 0.75rem;
+        padding: 0.5rem 1rem;
         border-radius: 1rem;
         font-size: 0.75rem;
-        font-weight: 500;
+        font-weight: 600;
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: 0.375rem;
         transition: var(--transition);
+        border: 1px solid;
     }
 
     .status-badge:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
         box-shadow: var(--shadow-sm);
     }
 
     .status-confirmed {
-        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
-        color: #065F46;
-        border: 1px solid #A7F3D0;
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
+        border-color: rgba(156, 203, 92, 0.3);
     }
 
     .status-pending {
-        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-        color: #92400E;
-        border: 1px solid #FDE68A;
+        background: linear-gradient(135deg, var(--card-beige), #e5d7b8);
+        color: #8b7355;
+        border-color: rgba(238, 227, 205, 0.3);
     }
 
     .status-completed {
-        background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
-        color: #1E40AF;
-        border: 1px solid #BFDBFE;
+        background: linear-gradient(135deg, var(--card-blue), #5d99c6);
+        color: white;
+        border-color: rgba(133, 195, 234, 0.3);
     }
 
     .status-paid {
-        background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
-        color: #065F46;
-        border: 1px solid #A7F3D0;
+        background: linear-gradient(135deg, var(--card-teal), #7bc8c8);
+        color: white;
+        border-color: rgba(168, 225, 225, 0.3);
     }
 
     .status-unpaid {
-        background: linear-gradient(135deg, #FEE2E2, #FECACA);
-        color: #991B1B;
-        border: 1px solid #FECACA;
+        background: linear-gradient(135deg, var(--card-pink), #e4b9b7);
+        color: #8a4d49;
+        border-color: rgba(246, 208, 206, 0.3);
     }
 
     /* Google Meet Button Styles */
@@ -770,18 +812,19 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        padding: 0.75rem 1.25rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
         color: white;
         border-radius: var(--radius);
         text-decoration: none;
         font-size: 0.8125rem;
-        font-weight: 500;
+        font-weight: 600;
         transition: var(--transition);
         border: none;
         cursor: pointer;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 4px 12px rgba(255, 107, 74, 0.3);
     }
 
     .join-meet-btn::before {
@@ -804,23 +847,23 @@
 
     .join-meet-btn:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+        box-shadow: 0 8px 20px rgba(255, 107, 74, 0.4);
+        background: linear-gradient(135deg, var(--brand-red), var(--accent));
     }
 
     /* Stats Grid - Enhanced */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 0.75rem;
+        gap: 1rem;
     }
 
     .stat-item {
         text-align: center;
-        padding: 1.25rem 1rem;
-        background: linear-gradient(135deg, var(--gray-50), var(--white));
-        border-radius: var(--radius);
-        border: 1px solid var(--gray-200);
+        padding: 1.5rem 1rem;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
         transition: var(--transition);
         position: relative;
         overflow: hidden;
@@ -828,8 +871,8 @@
 
     .stat-item:hover {
         transform: translateY(-4px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--primary-light);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--accent);
     }
 
     .stat-item::before {
@@ -839,7 +882,7 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        background: linear-gradient(90deg, var(--card-purple), var(--card-blue));
         opacity: 0;
         transition: opacity 0.3s ease;
     }
@@ -849,19 +892,21 @@
     }
 
     .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--gray-900);
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--primary);
         line-height: 1;
-        margin-bottom: 0.25rem;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .stat-label {
-        font-size: 0.75rem;
-        color: var(--gray-600);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-secondary-light);
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
@@ -870,19 +915,19 @@
     .quick-actions {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .quick-action {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 1rem;
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
+        gap: 1rem;
+        padding: 1.25rem;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
         text-decoration: none;
         transition: var(--transition);
-        background: var(--white);
+        background: white;
         position: relative;
         overflow: hidden;
     }
@@ -896,7 +941,7 @@
         height: 100%;
         background: linear-gradient(90deg, 
             transparent, 
-            rgba(59, 130, 246, 0.1), 
+            rgba(255, 107, 74, 0.1), 
             transparent);
         transition: left 0.5s;
     }
@@ -906,59 +951,62 @@
     }
 
     .quick-action:hover {
-        border-color: var(--primary);
-        background: var(--gray-50);
+        border-color: var(--accent);
+        background: var(--accent-beige);
         transform: translateX(8px);
-        box-shadow: var(--shadow-md);
+        box-shadow: var(--shadow-lg);
     }
 
     .action-icon {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 3rem;
+        height: 3rem;
         border-radius: var(--radius);
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
         transition: var(--transition);
+        font-size: 1.25rem;
     }
 
     .quick-action:hover .action-icon {
-        transform: scale(1.1);
+        transform: scale(1.1) rotate(5deg);
     }
 
     .icon-search {
-        background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
-        color: var(--primary);
+        background: linear-gradient(135deg, var(--card-blue), var(--card-teal));
+        color: white;
     }
 
     .icon-edit {
-        background: linear-gradient(135deg, #DCFCE7, #BBF7D0);
-        color: var(--success);
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
     }
 
     .icon-trophy {
-        background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-        color: var(--warning);
+        background: linear-gradient(135deg, var(--card-purple), #7c3aed);
+        color: white;
     }
 
     .action-text {
         flex: 1;
         font-size: 0.9375rem;
-        font-weight: 500;
-        color: var(--gray-900);
+        font-weight: 600;
+        color: var(--primary);
     }
 
     /* Alert - Enhanced */
     .alert {
-        padding: 1rem;
-        border-radius: var(--radius);
+        padding: 1.25rem;
+        border-radius: var(--radius-lg);
         margin-bottom: 1rem;
         display: flex;
         align-items: flex-start;
-        gap: 0.75rem;
+        gap: 1rem;
         border-left: 4px solid;
-        animation: slideIn 0.3s ease-out;
+        animation: slideIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        background: linear-gradient(135deg, var(--card-beige), white);
+        border: 1px solid var(--border-light);
     }
 
     @keyframes slideIn {
@@ -973,28 +1021,25 @@
     }
 
     .alert-warning {
-        background: #FFFBEB;
-        border: 1px solid #FDE68A;
-        border-left-color: #F59E0B;
+        border-left-color: var(--accent);
     }
 
     .alert-icon {
-        color: #F59E0B;
-        font-size: 1.125rem;
+        color: var(--accent);
+        font-size: 1.25rem;
         margin-top: 0.125rem;
     }
 
     .alert-content h4 {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: #92400E;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary);
         margin-bottom: 0.25rem;
     }
 
     .alert-content p {
-        font-size: 0.8125rem;
-        color: #92400E;
-        opacity: 0.9;
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
         line-height: 1.4;
     }
 
@@ -1008,25 +1053,27 @@
     .earnings-total {
         text-align: center;
         padding-bottom: 1.5rem;
-        border-bottom: 2px dashed var(--gray-200);
+        border-bottom: 2px dashed var(--border-light);
     }
 
     .total-label {
         font-size: 0.875rem;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
         margin-bottom: 0.5rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        font-weight: 600;
     }
 
     .total-amount {
-        font-size: 2.5rem;
+        font-size: 3rem;
         font-weight: 800;
-        color: var(--gray-900);
+        color: var(--primary);
         line-height: 1;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .earnings-stats {
@@ -1037,43 +1084,51 @@
 
     .earning-stat-item {
         text-align: center;
-        padding: 1rem;
-        background: var(--gray-50);
-        border-radius: var(--radius);
+        padding: 1.25rem;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
         transition: var(--transition);
     }
 
     .earning-stat-item:hover {
-        background: var(--gray-100);
-        transform: translateY(-2px);
+        background: white;
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--accent);
     }
 
     .earning-stat-value {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        color: var(--gray-900);
-        margin-bottom: 0.25rem;
+        color: var(--primary);
+        margin-bottom: 0.375rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .earning-stat-label {
-        font-size: 0.75rem;
-        color: var(--gray-600);
+        font-size: 0.8125rem;
+        color: var(--text-secondary-light);
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        font-weight: 600;
     }
 
     .payout-info {
         padding-top: 1.5rem;
-        border-top: 2px dashed var(--gray-200);
+        border-top: 2px dashed var(--border-light);
     }
 
     .payout-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.5rem;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid var(--gray-200);
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-light);
     }
 
     .payout-row:last-child {
@@ -1091,15 +1146,16 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid var(--gray-200);
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-light);
         transition: var(--transition);
     }
 
     .quick-stat-item:hover {
-        padding-left: 0.5rem;
-        background: var(--gray-50);
+        padding-left: 0.75rem;
+        background: var(--accent-beige);
         border-radius: var(--radius);
+        transform: translateX(4px);
     }
 
     .quick-stat-item:last-child {
@@ -1109,39 +1165,44 @@
 
     .stat-label-text {
         font-size: 0.875rem;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
+        font-weight: 500;
     }
 
     .stat-label-text i {
-        font-size: 0.75rem;
-        color: var(--primary);
+        font-size: 0.875rem;
+        color: var(--accent);
     }
 
     .stat-value-text {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: var(--gray-900);
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--primary);
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     /* Admin Dashboard - Enhanced */
     .pending-mentor {
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius);
-        padding: 1.25rem;
-        margin-bottom: 0.75rem;
-        background: var(--white);
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        background: white;
         transition: var(--transition);
         position: relative;
         overflow: hidden;
     }
 
     .pending-mentor:hover {
-        border-color: var(--primary);
-        box-shadow: var(--shadow-md);
-        transform: translateY(-2px);
+        border-color: var(--accent);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-4px);
     }
 
     .pending-mentor::before {
@@ -1150,8 +1211,8 @@
         top: 0;
         left: 0;
         bottom: 0;
-        width: 3px;
-        background: linear-gradient(180deg, var(--warning), var(--danger));
+        width: 4px;
+        background: linear-gradient(180deg, var(--accent), var(--brand-red));
         opacity: 0;
         transition: opacity 0.3s ease;
     }
@@ -1163,23 +1224,24 @@
     .mentor-info {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
     }
 
     .mentor-avatar {
-        width: 3rem;
-        height: 3rem;
+        width: 3.5rem;
+        height: 3.5rem;
         border-radius: 50%;
         overflow: hidden;
         flex-shrink: 0;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--white);
-        font-weight: 600;
-        box-shadow: var(--shadow-sm);
+        color: white;
+        font-weight: 700;
+        font-size: 1.25rem;
+        box-shadow: var(--shadow-md);
     }
 
     .mentor-details {
@@ -1188,19 +1250,19 @@
     }
 
     .mentor-details h3 {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin-bottom: 0.125rem;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
     .mentor-details p {
-        font-size: 0.8125rem;
-        color: var(--gray-600);
-        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+        margin-bottom: 0.75rem;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -1209,29 +1271,30 @@
     .mentor-tags {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.375rem;
+        gap: 0.5rem;
     }
 
     .mentor-tag {
-        padding: 0.125rem 0.5rem;
-        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
-        color: var(--gray-700);
+        padding: 0.375rem 0.75rem;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        color: var(--text-secondary-light);
         border-radius: 1rem;
         font-size: 0.75rem;
-        border: 1px solid var(--gray-300);
+        font-weight: 600;
+        border: 1px solid var(--border-light);
     }
 
     .mentor-actions {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .action-button {
-        padding: 0.5rem 1rem;
+        padding: 0.75rem 1.5rem;
         border: none;
         border-radius: var(--radius);
-        font-size: 0.8125rem;
-        font-weight: 500;
+        font-size: 0.875rem;
+        font-weight: 600;
         cursor: pointer;
         transition: var(--transition);
         flex: 1;
@@ -1241,6 +1304,7 @@
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
+        box-shadow: var(--shadow-md);
     }
 
     .action-button::before {
@@ -1262,25 +1326,25 @@
     }
 
     .action-approve {
-        background: linear-gradient(135deg, var(--success), #059669);
-        color: var(--white);
-        box-shadow: var(--shadow-sm);
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
     }
 
     .action-approve:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+        box-shadow: var(--shadow-lg);
+        background: linear-gradient(135deg, #7cb342, var(--card-green));
     }
 
     .action-reject {
-        background: linear-gradient(135deg, var(--danger), #DC2626);
-        color: var(--white);
-        box-shadow: var(--shadow-sm);
+        background: linear-gradient(135deg, var(--card-pink), #e4b9b7);
+        color: #8a4d49;
     }
 
     .action-reject:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
+        box-shadow: var(--shadow-lg);
+        background: linear-gradient(135deg, #e4b9b7, var(--card-pink));
     }
 
     /* Bookings Table - Enhanced */
@@ -1288,8 +1352,8 @@
         width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        border-radius: var(--radius);
-        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
     }
 
     table {
@@ -1300,15 +1364,15 @@
     }
 
     th {
-        padding: 0.75rem;
+        padding: 1rem;
         text-align: left;
         font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--gray-600);
+        font-weight: 700;
+        color: var(--text-secondary-light);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
-        border-bottom: 1px solid var(--gray-200);
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-bottom: 1px solid var(--border-light);
         white-space: nowrap;
         position: sticky;
         top: 0;
@@ -1316,12 +1380,13 @@
     }
 
     td {
-        padding: 1rem 0.75rem;
+        padding: 1.25rem 1rem;
         font-size: 0.875rem;
-        color: var(--gray-700);
-        border-bottom: 1px solid var(--gray-200);
+        color: var(--primary);
+        border-bottom: 1px solid var(--border-light);
         vertical-align: middle;
         transition: var(--transition);
+        font-weight: 500;
     }
 
     tr:last-child td {
@@ -1329,13 +1394,99 @@
     }
 
     tr:hover td {
-        background: var(--gray-50);
+        background: var(--accent-beige);
     }
 
-    /* Responsive Design - Enhanced */
+    /* Digital Products Section */
+    .digital-products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .digital-product-card {
+        background: white;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .digital-product-card:hover {
+        border-color: var(--card-purple);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-4px);
+    }
+
+    .digital-product-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-purple), var(--card-blue));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .digital-product-card:hover::before {
+        opacity: 1;
+    }
+
+    .digital-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.375rem 0.75rem;
+        background: linear-gradient(135deg, var(--card-purple), #7c3aed);
+        color: white;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    /* Service Cards */
+    .service-card {
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid;
+        text-decoration: none;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .service-blue {
+        border-color: rgba(133, 195, 234, 0.3);
+        background: linear-gradient(135deg, rgba(133, 195, 234, 0.1), white);
+    }
+
+    .service-green {
+        border-color: rgba(156, 203, 92, 0.3);
+        background: linear-gradient(135deg, rgba(156, 203, 92, 0.1), white);
+    }
+
+    .service-purple {
+        border-color: rgba(224, 219, 252, 0.3);
+        background: linear-gradient(135deg, rgba(224, 219, 252, 0.1), white);
+    }
+
+    /* Responsive Design */
     @media (min-width: 640px) {
         .dashboard-header {
-            padding: 1.5rem 1.75rem;
+            padding: 2rem 1.5rem;
         }
         
         .header-content {
@@ -1349,7 +1500,7 @@
         }
         
         .user-details h1 {
-            font-size: 1.5rem;
+            font-size: 1.75rem;
         }
         
         .header-actions {
@@ -1357,11 +1508,11 @@
         }
         
         .dashboard-main {
-            padding: 1.75rem;
+            padding: 2rem;
         }
         
         .dashboard-card {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
         }
         
         .stats-grid {
@@ -1372,13 +1523,13 @@
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
+            gap: 1rem;
         }
         
         .quick-action {
             flex-direction: column;
             text-align: center;
-            padding: 1.25rem;
+            padding: 1.5rem;
         }
         
         .action-text {
@@ -1394,7 +1545,7 @@
         .dashboard-main {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 2rem;
         }
         
         .dashboard-card {
@@ -1425,31 +1576,31 @@
 
     @media (min-width: 1024px) {
         .dashboard-header {
-            padding: 2rem;
+            padding: 2.5rem;
         }
         
         .user-avatar {
-            width: 4rem;
-            height: 4rem;
+            width: 5rem;
+            height: 5rem;
         }
         
         .dashboard-main {
-            padding: 2rem;
+            padding: 2.5rem;
         }
         
         .share-btn {
-            padding: 0.5rem 1rem;
-            font-size: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
         }
         
         .share-btn i {
-            font-size: 0.75rem;
+            font-size: 0.875rem;
         }
     }
 
     @media (min-width: 1200px) {
         .dashboard-main {
-            gap: 2.5rem;
+            gap: 3rem;
         }
     }
 </style>
@@ -1479,7 +1630,7 @@
             <div class="profile-share-buttons">
                 <!-- New Tab Button -->
                 {% if current_user.role == 'mentor' %}
-                <a href="/{{ current_user.username }}"> 
+                <a href="/{{ current_user.username }}" 
                    target="_blank" 
                    class="share-btn"
                    title="Open profile in new tab">
@@ -1510,47 +1661,57 @@
     <div class="dashboard-main">
         {% if current_user.role == 'learner' %}
         <!-- Learner Dashboard -->
-
-        <!-- Add this in the learner dashboard section -->
-{% if digital_products and digital_products|length > 0 %}
-<div class="mb-8">
-    <h3 class="text-lg font-bold text-gray-900 mb-4">Your Digital Products</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {% for booking in digital_products %}
-        <div class="bg-white rounded-xl shadow border border-gray-200 p-4">
-            <div class="flex items-start justify-between mb-3">
-                <div class="flex-1">
-                    <h4 class="font-bold text-gray-900">{{ booking.service.name }}</h4>
-                    <p class="text-sm text-gray-600 truncate">
-                        {% if booking.service and booking.service.description %}
-                            {{ booking.service.description }}
-                        {% else %}
-                            Digital product purchase
-                        {% endif %}</p>
-                </div>
-                <span class="ml-2 inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                    Digital
-                </span>
+        <!-- Digital Products Section -->
+        {% if digital_products and digital_products|length > 0 %}
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2><i class="fas fa-download"></i> Your Digital Products</h2>
             </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-500">
-                    Purchased: {{ booking.created_at.strftime('%b %d') }}
-                </span>
-                <a href="/digital-product/{% if booking.service %}{{ booking.service.id }}{% else %}#{% endif %}"
-                   class="px-3 py-1 bg-primary text-white text-sm font-medium rounded-lg hover:bg-secondary transition-colors"
-                   {% if not booking.service %}style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
-                    Access
-                </a>
+            
+            <div class="card-content">
+                <div class="digital-products-grid">
+                    {% for booking in digital_products %}
+                    <div class="digital-product-card">
+                        <div class="digital-badge">
+                            <i class="fas fa-download"></i>
+                            Digital
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
+                                {{ booking.service.name if booking.service else 'Digital Product' }}
+                            </h3>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary-light); line-height: 1.5;">
+                                {% if booking.service and booking.service.description %}
+                                    {{ booking.service.description|truncate(100) }}
+                                {% else %}
+                                    Digital product purchase
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                            <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
+                                <i class="fas fa-calendar"></i>
+                                {{ booking.created_at.strftime('%b %d, %Y') if booking.created_at else 'Recently' }}
+                            </span>
+                            <a href="/digital-product/{% if booking.service %}{{ booking.service.id }}{% else %}#{% endif %}"
+                               class="join-meet-btn"
+                               style="padding: 0.5rem 1rem; font-size: 0.8125rem;"
+                               {% if not booking.service %}style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                                <i class="fas fa-external-link-alt"></i>
+                                Access
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
+        {% endif %}
         
         <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
-            <!-- Upcoming Sessions (Confirmed & Paid with Meeting Links) -->
+            <!-- Upcoming Sessions -->
             {% if upcoming_sessions and upcoming_sessions|length > 0 %}
             <div class="dashboard-card">
                 <div class="card-header">
@@ -1569,7 +1730,7 @@
                                     <h3 class="session-title">
                                         {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
                                     </h3>
-                                    <div class="session-details" style="margin-top: 0.25rem;">
+                                    <div class="session-details" style="margin-top: 0.5rem;">
                                         <span class="session-detail">
                                             <i class="fas fa-user-tie"></i>
                                             {% if booking.mentor and booking.mentor.user %}
@@ -1591,34 +1752,37 @@
                                 <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
                             </div>
                             
-                            <!-- Google Meet Button Row -->
+                            <!-- Google Meet Button -->
                             {% if booking.meeting_link and booking.meeting_link != "None" %}
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200);">
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <div style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;"></div>
-                                    <span style="font-size: 0.8125rem; color: var(--gray-600);">Meeting link ready</span>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 10px; height: 10px; background-color: var(--card-green); border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">Meeting link ready</span>
                                 </div>
                                 <a href="{{ booking.meeting_link }}" 
+                                   target="_blank"
                                    class="join-meet-btn"
-                                   style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+                                   style="padding: 0.625rem 1.25rem; font-size: 0.8125rem;">
                                     <i class="fas fa-video"></i>
                                     Join Meeting
                                 </a>
                             </div>
                             {% else %}
-                             <span class="status-badge status-pending">
-                             <i class="fas fa-clock"></i>
-                               Meeting link not ready
-                             </span>
-                             {% endif %}
+                            <div style="margin-top: 1rem;">
+                                <span class="status-badge status-pending">
+                                    <i class="fas fa-clock"></i>
+                                    Meeting link not ready
+                                </span>
+                            </div>
+                            {% endif %}
                             
-                            <div class="session-status" style="margin-top: {% if booking.meeting_link %}0.75rem{% else %}0.5rem{% endif %};">
+                            <div class="session-status" style="margin-top: {% if booking.meeting_link %}1rem{% else %}0.75rem{% endif %};">
                                 <span class="status-badge status-confirmed">
                                     <i class="fas fa-check-circle"></i>
                                     Confirmed
                                 </span>
                                 {% if booking.meeting_id %}
-                                <span class="status-badge" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary); border: 1px solid #DBEAFE;">
+                                <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; border-color: rgba(133, 195, 234, 0.3);">
                                     <i class="fas fa-video"></i>
                                     Meet ID: {{ booking.meeting_id|truncate(10) }}
                                 </span>
@@ -1639,7 +1803,7 @@
                         </div>
                         <h3>No Upcoming Sessions</h3>
                         <p>Book your first session with an expert mentor to start your learning journey</p>
-                        <a href="/explore" class="header-action-btn" style="margin-top: 1rem;">
+                        <a href="/explore" class="header-action-btn" style="margin-top: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
                             <i class="fas fa-search"></i>
                             Find Mentors
                         </a>
@@ -1653,7 +1817,7 @@
             <div class="dashboard-card">
                 <div class="card-header">
                     <h2><i class="fas fa-clock"></i> Pending Payments</h2>
-                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 600;">
                         <i class="fas fa-hashtag"></i>
                         {{ pending_bookings|length }} awaiting payment
                     </span>
@@ -1662,13 +1826,13 @@
                 <div class="card-content">
                     <div class="sessions-list">
                         {% for booking in pending_bookings %}
-                        <div class="session-item" style="border-left: 4px solid var(--warning);">
+                        <div class="session-item" style="border-left: 4px solid var(--accent);">
                             <div class="session-header">
                                 <div style="flex: 1;">
                                     <h3 class="session-title">
                                         {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
                                     </h3>
-                                    <div class="session-details" style="margin-top: 0.25rem;">
+                                    <div class="session-details" style="margin-top: 0.5rem;">
                                         <span class="session-detail">
                                             <i class="fas fa-user-tie"></i>
                                             {% if booking.mentor and booking.mentor.user %}
@@ -1690,14 +1854,14 @@
                                 <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
                             </div>
                             
-                            <div style="margin-top: 0.75rem;">
+                            <div style="margin-top: 1rem;">
                                 <div class="session-status">
                                     <span class="status-badge status-pending">
                                         <i class="fas fa-clock"></i>
                                         Payment Pending
                                     </span>
                                     {% if booking.razorpay_order_id %}
-                                    <a href="/payment/{{ booking.id }}" class="join-meet-btn" style="background: var(--primary);">
+                                    <a href="/payment/{{ booking.id }}" class="join-meet-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red));">
                                         <i class="fas fa-credit-card"></i>
                                         Complete Payment
                                     </a>
@@ -1779,7 +1943,7 @@
         <!-- Mentor Dashboard with Sidebar Menu -->
         <!-- Menu Bar -->
         <div class="dashboard-card">
-            <div class="card-content" style="padding: 0.75rem;">
+            <div class="card-content" style="padding: 1rem;">
                 <div class="mentor-menu-bar">
                     <div class="menu-items">
                         <a href="#overview" 
@@ -1826,7 +1990,7 @@
                     <div class="card-header">
                         <div>
                             <h2><i class="fas fa-user-tie"></i> Mentor Dashboard</h2>
-                            <p style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.25rem;">
+                            <p style="font-size: 0.9375rem; color: var(--text-secondary-light); margin-top: 0.25rem; font-weight: 500;">
                                 Welcome to your mentor dashboard. Everything you need in one place.
                             </p>
                         </div>
@@ -1848,28 +2012,28 @@
                         {% endif %}
                         
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
-                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-blue" style="padding: 1.5rem; border-radius: var(--radius); border: 1px solid #DBEAFE; background: linear-gradient(135deg, #F8FAFC, #EFF6FF); text-decoration: none; transition: var(--transition); position: relative; overflow: hidden;">
-                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
+                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-blue">
+                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white;">
                                     <i class="fas fa-list-alt"></i>
                                 </div>
-                                <h3 style="font-size: 1rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.25rem;">Manage Services</h3>
-                                <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">Create and manage your mentoring services</p>
+                                <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--primary); margin-bottom: 0.375rem;">Manage Services</h3>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary-light); line-height: 1.4;">Create and manage your mentoring services</p>
                             </a>
                             
-                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-green" style="padding: 1.5rem; border-radius: var(--radius); border: 1px solid #BBF7D0; background: linear-gradient(135deg, #F0FDF4, #DCFCE7); text-decoration: none; transition: var(--transition); position: relative; overflow: hidden;">
-                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
+                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-green">
+                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, var(--card-green), #7cb342); color: white;">
                                     <i class="fas fa-calendar-alt"></i>
                                 </div>
-                                <h3 style="font-size: 1rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.25rem;">Set Availability</h3>
-                                <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">Set your available time slots for sessions</p>
+                                <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--primary); margin-bottom: 0.375rem;">Set Availability</h3>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary-light); line-height: 1.4;">Set your available time slots for sessions</p>
                             </a>
                             
-                            <a href="/profile/edit" class="service-card service-purple" style="padding: 1.5rem; border-radius: var(--radius); border: 1px solid #E9D5FF; background: linear-gradient(135deg, #FAF5FF, #F3E8FF); text-decoration: none; transition: var(--transition); position: relative; overflow: hidden;">
-                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, #FAF5FF, #F3E8FF); color: var(--secondary);">
+                            <a href="/profile/edit" class="service-card service-purple">
+                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, var(--card-purple), #7c3aed); color: white;">
                                     <i class="fas fa-user-edit"></i>
                                 </div>
-                                <h3 style="font-size: 1rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.25rem;">Edit Profile</h3>
-                                <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">Edit your public mentor profile</p>
+                                <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--primary); margin-bottom: 0.375rem;">Edit Profile</h3>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary-light); line-height: 1.4;">Edit your public mentor profile</p>
                             </a>
                         </div>
                     </div>
@@ -1945,18 +2109,21 @@
                             
                             <div class="payout-info">
                                 <div class="payout-row">
-                                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 500;">
                                         <i class="fas fa-money-bill-wave"></i>
                                         Next Payout
                                     </span>
-                                    <span style="font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);">
+                                    <span style="font-size: 1rem; font-weight: 700; color: var(--primary);">
                                         ₹{{ (earnings|default(0) * 0.8)|int }}
                                     </span>
                                 </div>
                                 <div class="payout-row">
-                                    <span style="font-size: 0.75rem; color: var(--gray-500); display: flex; align-items: center; gap: 0.25rem;">
+                                    <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
                                         <i class="fas fa-clock"></i>
                                         in 3 days
+                                    </span>
+                                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--accent);">
+                                        Pending
                                     </span>
                                 </div>
                             </div>
@@ -1973,21 +2140,21 @@
                     <div class="card-content">
                         <div class="quick-actions">
                             <a href="/mentor/dashboard/services" class="quick-action">
-                                <div class="action-icon icon-search">
+                                <div class="action-icon" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal));">
                                     <i class="fas fa-plus"></i>
                                 </div>
                                 <span class="action-text">Add New Service</span>
                             </a>
                             
                             <a href="#services" onclick="showMentorSection('services')" class="quick-action">
-                                <div class="action-icon icon-edit">
+                                <div class="action-icon" style="background: linear-gradient(135deg, var(--card-green), #7cb342);">
                                     <i class="fas fa-calendar-alt"></i>
                                 </div>
                                 <span class="action-text">Update Availability</span>
                             </a>
                             
                             <a href="/profile/edit" class="quick-action">
-                                <div class="action-icon icon-trophy">
+                                <div class="action-icon" style="background: linear-gradient(135deg, var(--card-purple), #7c3aed);">
                                     <i class="fas fa-user-edit"></i>
                                 </div>
                                 <span class="action-text">Edit Profile</span>
@@ -2006,7 +2173,7 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
-                        <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                        <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 600;">
                             <i class="fas fa-hashtag"></i>
                             {{ upcoming_sessions|length }} confirmed
                         </span>
@@ -2021,7 +2188,7 @@
                                         <h3 class="session-title">
                                             {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
                                         </h3>
-                                        <div class="session-details" style="margin-top: 0.25rem;">
+                                        <div class="session-details" style="margin-top: 0.5rem;">
                                             <span class="session-detail">
                                                 <i class="fas fa-user-graduate"></i>
                                                 {{ booking.learner.full_name if booking.learner else 'Learner' }}
@@ -2040,33 +2207,35 @@
                                 </div>
                                 
                                 {% if booking.meeting_link and booking.meeting_link != "None" %}
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200);">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <div style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;"></div>
-                                        <span style="font-size: 0.8125rem; color: var(--gray-600);">Meeting link available</span>
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div style="width: 10px; height: 10px; background-color: var(--card-green); border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                        <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">Meeting link available</span>
                                     </div>
                                     <a href="{{ booking.meeting_link }}" 
                                        target="_blank" 
                                        class="join-meet-btn"
-                                       style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+                                       style="padding: 0.625rem 1.25rem; font-size: 0.8125rem;">
                                         <i class="fas fa-video"></i>
                                         Start Meeting
                                     </a>
                                 </div>
                                 {% else %}
-                                 <span class="status-badge status-pending">
-                                  <i class="fas fa-clock"></i>
-                                    Meeting link not ready
-                                      </span>
-                                    {% endif %}
+                                <div style="margin-top: 1rem;">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Meeting link not ready
+                                    </span>
+                                </div>
+                                {% endif %}
                                 
-                                <div class="session-status" style="margin-top: {% if booking.meeting_link %}0.75rem{% else %}0.5rem{% endif %};">
+                                <div class="session-status" style="margin-top: {% if booking.meeting_link %}1rem{% else %}0.75rem{% endif %};">
                                     <span class="status-badge status-confirmed">
                                         <i class="fas fa-check-circle"></i>
                                         Confirmed
                                     </span>
                                     {% if booking.meeting_id %}
-                                    <span class="status-badge" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary); border: 1px solid #DBEAFE;">
+                                    <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; border-color: rgba(133, 195, 234, 0.3);">
                                         <i class="fas fa-video"></i>
                                         Meet ID: {{ booking.meeting_id|truncate(10) }}
                                     </span>
@@ -2089,11 +2258,11 @@
                             </div>
                             <h3>No Upcoming Sessions</h3>
                             <p>Set up your services and availability to start receiving bookings</p>
-                            <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
-                                <a href="#services" onclick="showMentorSection('services')" class="header-action-btn" style="background: var(--primary); color: white;">
+                            <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                                <a href="#services" onclick="showMentorSection('services')" class="header-action-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
                                     <i class="fas fa-plus"></i> Add Services
                                 </a>
-                                <a href="#services" onclick="showMentorSection('services')" class="header-action-btn" style="background: transparent; border-color: var(--primary); color: var(--primary);">
+                                <a href="#services" onclick="showMentorSection('services')" class="header-action-btn" style="background: transparent; border-color: var(--accent); color: var(--accent);">
                                     <i class="fas fa-calendar-alt"></i> Set Availability
                                 </a>
                             </div>
@@ -2107,7 +2276,7 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2><i class="fas fa-hourglass-half"></i> Pending Bookings</h2>
-                        <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                        <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 600;">
                             <i class="fas fa-hashtag"></i>
                             {{ pending_bookings|length }} awaiting payment
                         </span>
@@ -2116,13 +2285,13 @@
                     <div class="card-content">
                         <div class="sessions-list">
                             {% for booking in pending_bookings %}
-                            <div class="session-item" style="border-left: 4px solid var(--warning);">
+                            <div class="session-item" style="border-left: 4px solid var(--accent);">
                                 <div class="session-header">
                                     <div style="flex: 1;">
                                         <h3 class="session-title">
                                             {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
                                         </h3>
-                                        <div class="session-details" style="margin-top: 0.25rem;">
+                                        <div class="session-details" style="margin-top: 0.5rem;">
                                             <span class="session-detail">
                                                 <i class="fas fa-user-graduate"></i>
                                                 {{ booking.learner.full_name if booking.learner else 'Learner' }}
@@ -2140,12 +2309,12 @@
                                     <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
                                 </div>
                                 
-                                <div class="session-status" style="margin-top: 0.5rem;">
+                                <div class="session-status" style="margin-top: 1rem;">
                                     <span class="status-badge status-pending">
                                         <i class="fas fa-clock"></i>
                                         Awaiting Payment
                                     </span>
-                                    <span class="status-badge" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #92400E; border: 1px solid #FDE68A;">
+                                    <span class="status-badge" style="background: linear-gradient(135deg, var(--card-beige), #e5d7b8); color: #8b7355; border-color: rgba(238, 227, 205, 0.3);">
                                         <i class="fas fa-info-circle"></i>
                                         Meeting link will generate after payment
                                     </span>
@@ -2169,7 +2338,7 @@
                         <div class="dashboard-card">
                             <div class="card-header">
                                 <h2><i class="fas fa-list-alt"></i> Your Services</h2>
-                                <a href="/mentor/dashboard/services" class="header-action-btn" style="background: var(--primary); color: white;">
+                                <a href="/mentor/dashboard/services" class="header-action-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
                                     <i class="fas fa-plus"></i> Create Service
                                 </a>
                             </div>
@@ -2184,7 +2353,7 @@
                                             <div class="service-item-price">₹{{ service.price }}</div>
                                         </div>
                                         
-                                        <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 1rem; line-height: 1.5;">
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary-light); margin-bottom: 1rem; line-height: 1.5;">
                                             {{ service.description|truncate(150) }}
                                         </p>
                                         
@@ -2223,7 +2392,7 @@
                                     </div>
                                     <h3>No Services Yet</h3>
                                     <p>Create your first mentoring service to start accepting bookings</p>
-                                    <a href="/mentor/dashboard/services" class="header-action-btn" style="margin-top: 1rem;">
+                                    <a href="/mentor/dashboard/services" class="header-action-btn" style="margin-top: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
                                         <i class="fas fa-plus"></i> Create Your First Service
                                     </a>
                                 </div>
@@ -2278,7 +2447,7 @@
                         <div class="dashboard-card">
                             <div class="card-header">
                                 <h2><i class="fas fa-calendar-alt"></i> Availability</h2>
-                                <a href="/mentor/availability" class="header-action-btn" style="background: var(--primary); color: white;">
+                                <a href="/mentor/availability" class="header-action-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
                                     <i class="fas fa-edit"></i> Manage
                                 </a>
                             </div>
@@ -2286,10 +2455,10 @@
                             <div class="card-content">
                                 <div class="availability-summary">
                                     <div style="text-align: center; margin-bottom: 1.5rem;">
-                                        <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
+                                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                             {{ available_days|default(5) }}/7
                                         </div>
-                                        <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                        <div style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">
                                             Days Available This Week
                                         </div>
                                     </div>
@@ -2310,8 +2479,8 @@
                                         {% endfor %}
                                     </div>
                                     
-                                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
-                                        <div style="font-size: 0.875rem; color: var(--gray-600); text-align: center;">
+                                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                        <div style="font-size: 0.875rem; color: var(--text-secondary-light); text-align: center; font-weight: 500;">
                                             <i class="fas fa-info-circle"></i>
                                             Set specific time slots for each day in the availability manager
                                         </div>
@@ -2329,42 +2498,42 @@
                             <div class="card-content">
                                 <div style="display: flex; flex-direction: column; gap: 1rem;">
                                     <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
-                                        <div style="width: 1.5rem; height: 1.5rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; font-weight: 600;">
                                             1
                                         </div>
                                         <div>
-                                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--gray-900);">
+                                            <div style="font-size: 0.875rem; font-weight: 600; color: var(--primary);">
                                                 Set Clear Availability
                                             </div>
-                                            <div style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">
+                                            <div style="font-size: 0.8125rem; color: var(--text-secondary-light); line-height: 1.4;">
                                                 Define specific time slots to avoid scheduling conflicts
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
-                                        <div style="width: 1.5rem; height: 1.5rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; font-weight: 600;">
                                             2
                                         </div>
                                         <div>
-                                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--gray-900);">
+                                            <div style="font-size: 0.875rem; font-weight: 600; color: var(--primary);">
                                                 Price Your Services Fairly
                                             </div>
-                                            <div style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">
+                                            <div style="font-size: 0.8125rem; color: var(--text-secondary-light); line-height: 1.4;">
                                                 Research market rates and set competitive prices
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
-                                        <div style="width: 1.5rem; height: 1.5rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; font-weight: 600;">
                                             3
                                         </div>
                                         <div>
-                                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--gray-900);">
+                                            <div style="font-size: 0.875rem; font-weight: 600; color: var(--primary);">
                                                 Update Regularly
                                             </div>
-                                            <div style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4;">
+                                            <div style="font-size: 0.8125rem; color: var(--text-secondary-light); line-height: 1.4;">
                                                 Keep your availability and services up to date
                                             </div>
                                         </div>
@@ -2382,21 +2551,21 @@
                             <div class="card-content">
                                 <div class="quick-actions">
                                     <a href="/mentor/dashboard/services" class="quick-action">
-                                        <div class="action-icon" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal));">
                                             <i class="fas fa-plus"></i>
                                         </div>
                                         <span class="action-text">Add New Service</span>
                                     </a>
                                     
                                     <a href="/mentor/availability" class="quick-action">
-                                        <div class="action-icon" style="background: linear-gradient(135deg, #F0FDF4, #DCFCE7); color: var(--success);">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-green), #7cb342);">
                                             <i class="fas fa-calendar-alt"></i>
                                         </div>
                                         <span class="action-text">Manage Availability</span>
                                     </a>
                                     
                                     <a href="/mentor/dashboard/services" class="quick-action">
-                                        <div class="action-icon" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: var(--warning);">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-purple), #7c3aed);">
                                             <i class="fas fa-chart-line"></i>
                                         </div>
                                         <span class="action-text">View Analytics</span>
@@ -2451,20 +2620,20 @@
                             
                             <div class="payout-info">
                                 <div class="payout-row">
-                                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 500;">
                                         <i class="fas fa-money-bill-wave"></i>
                                         Next Payout
                                     </span>
-                                    <span style="font-size: 0.9375rem; font-weight: 600; color: var(--gray-900);">
+                                    <span style="font-size: 1rem; font-weight: 700; color: var(--primary);">
                                         ₹{{ (earnings|default(0) * 0.8)|int }}
                                     </span>
                                 </div>
                                 <div class="payout-row">
-                                    <span style="font-size: 0.75rem; color: var(--gray-500); display: flex; align-items: center; gap: 0.25rem;">
+                                    <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
                                         <i class="fas fa-calendar"></i>
                                         Payout Date
                                     </span>
-                                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--gray-700);">
+                                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--accent);">
                                         in 3 days
                                     </span>
                                 </div>
@@ -2487,7 +2656,7 @@
                                 <div class="session-header">
                                     <div style="flex: 1;">
                                         <h3 class="session-title">Session #{{ booking.id }}</h3>
-                                        <div class="session-details" style="margin-top: 0.25rem;">
+                                        <div class="session-details" style="margin-top: 0.5rem;">
                                             <span class="session-detail">
                                                 <i class="fas fa-user-graduate"></i>
                                                 {{ booking.learner.full_name if booking.learner else 'Learner' }}
@@ -2501,34 +2670,36 @@
                                     <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
                                 </div>
                                 
-                                <!-- Google Meet Button Row -->
+                                <!-- Google Meet Button -->
                                 {% if booking.meeting_link and booking.meeting_link != "None" %}
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-200);">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <div style="width: 8px; height: 8px; background-color: var(--success); border-radius: 50%;"></div>
-                                        <span style="font-size: 0.8125rem; color: var(--gray-600);">Meeting link available</span>
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div style="width: 10px; height: 10px; background-color: var(--card-green); border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                        <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">Meeting link available</span>
                                     </div>
                                     <a href="{{ booking.meeting_link }}" 
                                        target="_blank" 
                                        class="join-meet-btn"
-                                       style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+                                       style="padding: 0.625rem 1.25rem; font-size: 0.8125rem;">
                                         <i class="fas fa-video"></i>
                                         Join
                                     </a>
                                 </div>
                                 {% else %}
-                                 <span class="status-badge status-pending">
-                                 <i class="fas fa-clock"></i>
-                                 Meeting link not ready
-                                 </span>
-                                  {% endif %}
+                                <div style="margin-top: 1rem;">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Meeting link not ready
+                                    </span>
+                                </div>
+                                {% endif %}
                                 
-                                <div class="session-status" style="margin-top: {% if booking.meeting_link %}0.75rem{% else %}0.5rem{% endif %};">
+                                <div class="session-status" style="margin-top: {% if booking.meeting_link %}1rem{% else %}0.75rem{% endif %};">
                                     <span class="status-badge {% if booking.payment_status == 'paid' %}status-paid{% else %}status-unpaid{% endif %}">
                                         {{ booking.payment_status|title }}
                                     </span>
                                     {% if booking.meeting_id %}
-                                    <span class="status-badge" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary); border: 1px solid #DBEAFE;">
+                                    <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; border-color: rgba(133, 195, 234, 0.3);">
                                         <i class="fas fa-video"></i>
                                         Meet ID: {{ booking.meeting_id|truncate(10) }}
                                     </span>
@@ -2539,7 +2710,7 @@
                         </div>
                         {% else %}
                         <div class="empty-state" style="padding: 2rem;">
-                            <div class="empty-state-icon" style="width: 3rem; height: 3rem;">
+                            <div class="empty-state-icon" style="width: 3.5rem; height: 3.5rem;">
                                 <i class="fas fa-receipt"></i>
                             </div>
                             <h3>No Transactions Yet</h3>
@@ -2557,7 +2728,7 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2><i class="fas fa-user-edit"></i> Profile Management</h2>
-                        <a href="/profile/edit" class="header-action-btn" style="background: var(--primary); color: white;">
+                        <a href="/profile/edit" class="header-action-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
                             <i class="fas fa-edit"></i> Edit Profile
                         </a>
                     </div>
@@ -2567,25 +2738,25 @@
                             <!-- Profile Summary -->
                             <div>
                                 <div style="text-align: center; margin-bottom: 1.5rem;">
-                                    <div class="user-avatar" style="width: 6rem; height: 6rem; margin: 0 auto 1rem;">
+                                    <div class="user-avatar" style="width: 7rem; height: 7rem; margin: 0 auto 1.5rem; border-width: 4px; box-shadow: var(--shadow-xl);">
                                         {% if current_user.profile_image %}
                                         <img src="/static/{{ current_user.profile_image }}" 
                                              alt="{{ current_user.full_name or current_user.username }}"
                                              class="user-avatar-img">
                                         {% else %}
-                                        <div class="user-avatar-initial" style="font-size: 2rem;">
+                                        <div class="user-avatar-initial" style="font-size: 2.5rem;">
                                             {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper }}
                                         </div>
                                         {% endif %}
                                     </div>
-                                    <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--gray-900); margin-bottom: 0.25rem;">
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 0.375rem;">
                                         {{ current_user.full_name or current_user.username }}
                                     </h3>
-                                    <p style="font-size: 0.875rem; color: var(--gray-600);">
+                                    <p style="font-size: 0.9375rem; color: var(--text-secondary-light); font-weight: 500;">
                                         {{ current_user.email }}
                                     </p>
-                                    <div style="margin-top: 0.75rem;">
-                                        <span class="status-badge {% if mentor.verification_status == 'approved' %}status-confirmed{% elif mentor.verification_status == 'pending' %}status-pending{% else %}status-unpaid{% endif %}">
+                                    <div style="margin-top: 1rem;">
+                                        <span class="status-badge {% if mentor.verification_status == 'approved' %}status-confirmed{% elif mentor.verification_status == 'pending' %}status-pending{% else %}status-unpaid{% endif %}" style="font-size: 0.8125rem;">
                                             <i class="fas {% if mentor.verification_status == 'approved' %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
                                             {{ mentor.verification_status|title }}
                                         </span>
@@ -2595,44 +2766,44 @@
                             
                             <!-- Profile Info -->
                             <div>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
                                     <div>
-                                        <h4 style="font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                                        <h4 style="font-size: 0.8125rem; color: var(--text-secondary-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; font-weight: 600;">
                                             Rating
                                         </h4>
-                                        <p style="font-size: 1rem; font-weight: 600; color: var(--gray-900);">
+                                        <p style="font-size: 1.25rem; font-weight: 800; color: var(--primary); background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                             {{ mentor.rating|default('4.9') }}/5
                                         </p>
                                     </div>
                                     <div>
-                                        <h4 style="font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                                        <h4 style="font-size: 0.8125rem; color: var(--text-secondary-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; font-weight: 600;">
                                             Reviews
                                         </h4>
-                                        <p style="font-size: 1rem; font-weight: 600; color: var(--gray-900);">
+                                        <p style="font-size: 1.25rem; font-weight: 800; color: var(--primary); background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                             {{ mentor.review_count|default('0') }}
                                         </p>
                                     </div>
                                     <div>
-                                        <h4 style="font-size: 0.75rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                                        <h4 style="font-size: 0.8125rem; color: var(--text-secondary-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; font-weight: 600;">
                                             Sessions
                                         </h4>
-                                        <p style="font-size: 1rem; font-weight: 600; color: var(--gray-900);">
+                                        <p style="font-size: 1.25rem; font-weight: 800; color: var(--primary); background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                                             {{ mentor.total_sessions|default('0') }}
                                         </p>
                                     </div>
                                 </div>
                                 
                                 <!-- Profile Actions -->
-                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
                                     <a href="/profile/edit" class="quick-action">
-                                        <div class="action-icon icon-edit">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-purple), #7c3aed);">
                                             <i class="fas fa-user-edit"></i>
                                         </div>
                                         <span class="action-text">Edit Personal Information</span>
                                     </a>
                                     
                                     <a href="#services" onclick="showMentorSection('services')" class="quick-action">
-                                        <div class="action-icon" style="background: linear-gradient(135deg, #EFF6FF, #DBEAFE); color: var(--primary);">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal));">
                                             <i class="fas fa-list-alt"></i>
                                         </div>
                                         <span class="action-text">Manage Services & Availability</span>
@@ -2652,7 +2823,7 @@
             <div class="dashboard-card">
                 <div class="card-header">
                     <h2><i class="fas fa-user-clock"></i> Pending Mentor Approvals</h2>
-                    <span style="font-size: 0.875rem; color: var(--gray-600); display: flex; align-items: center; gap: 0.25rem;">
+                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 600;">
                         <i class="fas fa-hashtag"></i>
                         {{ pending_mentors|length if pending_mentors else 0 }} pending
                     </span>
@@ -2705,7 +2876,7 @@
                     </div>
                     {% else %}
                     <div class="empty-state">
-                        <div class="empty-state-icon" style="background: linear-gradient(135deg, #D1FAE5, #A7F3D0); color: var(--success);">
+                        <div class="empty-state-icon" style="background: linear-gradient(135deg, var(--card-green), #7cb342);">
                             <i class="fas fa-check"></i>
                         </div>
                         <h3>All Caught Up!</h3>
@@ -2719,7 +2890,7 @@
             <div class="dashboard-card">
                 <div class="card-header">
                     <h2><i class="fas fa-receipt"></i> Recent Bookings</h2>
-                    <a href="/admin/bookings" style="font-size: 0.75rem;">
+                    <a href="/admin/bookings" style="font-size: 0.8125rem; color: var(--accent); text-decoration: none; font-weight: 600;">
                         View All <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
@@ -2745,35 +2916,35 @@
                                     <td>
                                         {% if booking.mentor and booking.mentor.user %}
                                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <div style="width: 1.5rem; height: 1.5rem; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.625rem; font-weight: 600;">
+                                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--brand-red)); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; font-weight: 700;">
                                                 {{ (booking.mentor.user.full_name[0] if booking.mentor.user.full_name else booking.mentor.user.username[0])|upper }}
                                             </div>
-                                            {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+                                            <span style="font-weight: 500;">{{ booking.mentor.user.full_name or booking.mentor.user.username }}</span>
                                         </div>
                                         {% else %}
-                                        <span style="color: var(--gray-400);">N/A</span>
+                                        <span style="color: var(--text-secondary-light);">N/A</span>
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% if booking.learner %}
                                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                            <div style="width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--gray-300); display: flex; align-items: center; justify-content: center; color: var(--gray-700); font-size: 0.625rem; font-weight: 600;">
+                                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background: var(--accent-beige); display: flex; align-items: center; justify-content: center; color: var(--text-secondary-light); font-size: 0.75rem; font-weight: 700;">
                                                 {{ (booking.learner.full_name[0] if booking.learner.full_name else booking.learner.username[0])|upper }}
                                             </div>
-                                            {{ booking.learner.full_name or booking.learner.username }}
+                                            <span style="font-weight: 500;">{{ booking.learner.full_name or booking.learner.username }}</span>
                                         </div>
                                         {% else %}
-                                        <span style="color: var(--gray-400);">N/A</span>
+                                        <span style="color: var(--text-secondary-light);">N/A</span>
                                         {% endif %}
                                     </td>
-                                    <td><strong>₹{{ booking.amount_paid or 0 }}</strong></td>
+                                    <td><strong style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">₹{{ booking.amount_paid or 0 }}</strong></td>
                                     <td>
-                                        <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}" style="display: inline-flex;">
+                                        <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}" style="display: inline-flex; font-size: 0.75rem;">
                                             {{ booking.status|title }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span style="font-size: 0.75rem; color: var(--gray-500);">
+                                        <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
                                             {{ booking.created_at.strftime('%Y-%m-%d') if booking.created_at else '' }}
                                         </span>
                                     </td>
@@ -2801,7 +2972,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Add hover effects to all interactive elements
-        const interactiveElements = document.querySelectorAll('.session-item, .quick-action, .service-item, .action-button, .stat-item, .availability-day');
+        const interactiveElements = document.querySelectorAll('.session-item, .quick-action, .service-item, .action-button, .stat-item, .availability-day, .digital-product-card');
         
         interactiveElements.forEach(element => {
             element.addEventListener('mouseenter', function() {
@@ -2834,7 +3005,6 @@
         tables.forEach(table => {
             const wrapper = table.parentElement;
             if (wrapper && wrapper.classList.contains('bookings-table')) {
-                // Add horizontal scroll indicators
                 const checkScroll = () => {
                     const hasScroll = wrapper.scrollWidth > wrapper.clientWidth;
                     if (hasScroll) {
@@ -2842,13 +3012,13 @@
                         wrapper.style.background = `
                             linear-gradient(to right, 
                                 transparent 90%, 
-                                rgba(0,0,0,0.03) 95%, 
-                                rgba(0,0,0,0.05)
+                                rgba(31, 31, 31, 0.03) 95%, 
+                                rgba(31, 31, 31, 0.05)
                             ),
                             linear-gradient(to left, 
                                 transparent 90%, 
-                                rgba(0,0,0,0.03) 95%, 
-                                rgba(0,0,0,0.05)
+                                rgba(31, 31, 31, 0.03) 95%, 
+                                rgba(31, 31, 31, 0.05)
                             )
                         `;
                     }
@@ -2861,18 +3031,26 @@
 
         // Initialize mentor section management
         initializeMentorSections();
+        
+        // Add pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
     });
 
     // Mentor Section Management
     function initializeMentorSections() {
-        // Get current hash or default to overview
         const hash = window.location.hash.substring(1) || 'overview';
         showMentorSection(hash);
         
-        // Update active menu item based on hash
         updateActiveMenuItem(hash);
         
-        // Listen for hash changes
         window.addEventListener('hashchange', function() {
             const newHash = window.location.hash.substring(1) || 'overview';
             showMentorSection(newHash);
@@ -2881,23 +3059,19 @@
     }
 
     function showMentorSection(sectionId) {
-        // Hide all sections
         const sections = document.querySelectorAll('.mentor-section');
         sections.forEach(section => {
             section.classList.remove('active');
         });
         
-        // Show selected section
         const selectedSection = document.getElementById(`mentor-${sectionId}`);
         if (selectedSection) {
             selectedSection.classList.add('active');
         } else {
-            // Fallback to overview if section doesn't exist
             document.getElementById('mentor-overview').classList.add('active');
             updateActiveMenuItem('overview');
         }
         
-        // Update URL hash without scrolling
         if (sectionId !== 'overview') {
             history.replaceState(null, null, `#${sectionId}`);
         } else {
@@ -2906,18 +3080,15 @@
     }
 
     function updateActiveMenuItem(sectionId) {
-        // Remove active class from all menu items
         const menuItems = document.querySelectorAll('.mentor-menu-bar .menu-item');
         menuItems.forEach(item => {
             item.classList.remove('active');
         });
         
-        // Add active class to current menu item
         const activeMenuItem = document.querySelector(`.mentor-menu-bar .menu-item[href="#${sectionId}"]`);
         if (activeMenuItem) {
             activeMenuItem.classList.add('active');
         } else {
-            // Fallback to overview
             document.querySelector('.mentor-menu-bar .menu-item[href="#overview"]').classList.add('active');
         }
     }
@@ -2935,7 +3106,6 @@
             .then(data => {
                 if (data.success) {
                     showNotification('Service deleted successfully!', 'success');
-                    // Reload the page after a short delay
                     setTimeout(() => {
                         location.reload();
                     }, 1500);
@@ -2957,21 +3127,17 @@
         const originalIcon = copyBtn.querySelector('i');
         const originalText = copyBtn.querySelector('span').textContent;
         
-        // Try using the modern Clipboard API first
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(url)
                 .then(() => {
-                    // Show success feedback
                     copyBtn.classList.add('copied');
                     copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
                     
-                    // Reset after 2 seconds
                     setTimeout(() => {
                         copyBtn.classList.remove('copied');
                         copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
                     }, 2000);
                     
-                    // Show notification
                     showNotification('Dashboard link copied to clipboard! 📋', 'success');
                 })
                 .catch(err => {
@@ -2979,12 +3145,10 @@
                     fallbackCopy(url, copyBtn, originalIcon, originalText);
                 });
         } else {
-            // Fallback for older browsers
             fallbackCopy(url, copyBtn, originalIcon, originalText);
         }
     }
 
-    // Fallback copy method
     function fallbackCopy(url, copyBtn, originalIcon, originalText) {
         const textArea = document.createElement('textarea');
         textArea.value = url;
@@ -2997,17 +3161,14 @@
         try {
             const successful = document.execCommand('copy');
             if (successful) {
-                // Show success feedback
                 copyBtn.classList.add('copied');
                 copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
                 
-                // Reset after 2 seconds
                 setTimeout(() => {
                     copyBtn.classList.remove('copied');
                     copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
                 }, 2000);
                 
-                // Show notification
                 showNotification('Dashboard link copied to clipboard! 📋', 'success');
             } else {
                 showNotification('Failed to copy link. Please try again.', 'error');
@@ -3022,7 +3183,6 @@
 
     // Notification system
     function showNotification(message, type) {
-        // Remove existing notifications
         const existingNotifications = document.querySelectorAll('.custom-notification');
         existingNotifications.forEach(notification => notification.remove());
         
@@ -3041,7 +3201,6 @@
         
         document.body.appendChild(notification);
         
-        // Add animation styles if not present
         if (!document.querySelector('#notification-styles')) {
             const style = document.createElement('style');
             style.id = 'notification-styles';
@@ -3060,7 +3219,6 @@
             document.head.appendChild(style);
         }
         
-        // Remove after 4 seconds
         setTimeout(() => {
             notification.style.opacity = '0';
             notification.style.transform = 'translateX(100%)';
