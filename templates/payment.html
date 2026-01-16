@@ -866,6 +866,54 @@
             {% else %}
             console.log('Payment pending - ready to accept payment');
             {% endif %}
+
+               // Check booking status when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const bookingId = {{ booking.id }};
+    
+    // Function to check booking status
+    async function checkBookingStatus() {
+        try {
+            const response = await fetch(`/api/check-booking-status/${bookingId}`);
+            const data = await response.json();
+            
+            if (data.payment_status === 'paid') {
+                // Redirect to appropriate page
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                    return;
+                }
+            } else if (data.payment_status === 'pending') {
+                // Check if there's a payment ID but status is still pending
+                if (data.razorpay_payment_id) {
+                    // Try to cleanup
+                    const cleanupResponse = await fetch(`/api/cleanup-booking/${bookingId}`, {
+                        method: 'POST'
+                    });
+                    const cleanupData = await cleanupResponse.json();
+                    
+                    if (cleanupData.payment_status === 'paid') {
+                        // Reload page to trigger redirect
+                        window.location.reload();
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error checking booking status:', error);
+        }
+    }
+    
+    // Check status immediately
+    checkBookingStatus();
+    
+    // Check every 10 seconds if still on payment page
+    const statusCheckInterval = setInterval(checkBookingStatus, 10000);
+    
+    // Clear interval when leaving page
+    window.addEventListener('beforeunload', function() {
+        clearInterval(statusCheckInterval);
+    });
+});
             
             // Auto-check for payment status changes (polling)
             {% if booking.payment_status == 'pending' %}
