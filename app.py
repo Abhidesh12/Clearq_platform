@@ -2021,8 +2021,100 @@ async def dashboard(
     context = {"request": request, "current_user": current_user}
     
     if current_user.role == "learner":
-        # ... existing learner code remains the same ...
-        # Keep all the existing learner code as is
+        # Get ALL bookings for the learner
+        all_bookings = db.query(Booking).filter(
+            Booking.learner_id == current_user.id
+        ).order_by(Booking.created_at.desc()).all()
+        
+        # Get digital product purchases - FIXED: using correct variable name
+        digital_product_purchases = db.query(Booking).filter(
+            Booking.learner_id == current_user.id,
+            Booking.service.has(is_digital=True),
+            Booking.payment_status.in_(["paid", "free"]),
+            Booking.status == "completed"
+        ).order_by(Booking.created_at.desc()).limit(6).all()
+        
+        # Separate bookings by status and type
+        confirmed_bookings = []
+        pending_bookings = []
+        upcoming_sessions = []
+        free_sessions = []
+        digital_product_list = []  # Renamed for clarity
+        session_bookings = []  # Non-digital bookings
+        
+        today = datetime.now().date()
+        
+        for booking in all_bookings:
+            # Safely check if service exists and is digital
+            is_digital = False
+            if booking.service:
+                is_digital = booking.service.is_digital
+            
+            if is_digital:
+                # Digital product booking
+                if booking.payment_status in ["paid", "free"] and booking.status == "completed":
+                    digital_product_list.append(booking)
+                    # Add to confirmed bookings for consistency
+                    confirmed_bookings.append(booking)
+                elif booking.payment_status == "pending":
+                    pending_bookings.append(booking)
+            else:
+                # Session booking
+                if booking.payment_status in ["paid", "free"] and booking.status == "confirmed" and booking.meeting_link:
+                    # Confirmed session with meeting link
+                    if booking.booking_date >= today:
+                        upcoming_sessions.append(booking)
+                    confirmed_bookings.append(booking)
+                    
+                    if booking.payment_status == "free":
+                        free_sessions.append(booking)
+                elif booking.payment_status == "pending" or booking.status == "pending":
+                    # Pending session (awaiting payment)
+                    pending_bookings.append(booking)
+                else:
+                    # Other statuses (cancelled, completed, etc.)
+                    confirmed_bookings.append(booking)
+                
+                # Add to session bookings list
+                session_bookings.append(booking)
+        
+        # Get stats for the learner
+        total_sessions = len([b for b in session_bookings if b.payment_status in ["paid", "free"] and b.status == "confirmed"])
+        completed_sessions = len([b for b in session_bookings if b.status == "completed"])
+        pending_payments = len([b for b in pending_bookings if b.payment_status == "pending"])
+        total_digital_products = len(digital_product_list)
+        
+        # Get recent sessions (last 5)
+        recent_sessions = session_bookings[:5] if session_bookings else []
+        
+        # Get upcoming sessions (next 7 days)
+        next_week = today + timedelta(days=7)
+        upcoming_next_week = [b for b in upcoming_sessions if hasattr(b, 'booking_date') and b.booking_date and b.booking_date <= next_week][:3]
+        
+        # FIXED: Use correct variable names
+        context.update({
+            "all_bookings": all_bookings,
+            "session_bookings": session_bookings,
+            "digital_products": digital_product_list,  # FIXED: Changed from digital_bookings to digital_product_list
+            "digital_product_purchases": digital_product_purchases,  # Add this if needed
+            "upcoming_sessions": upcoming_sessions,
+            "upcoming_next_week": upcoming_next_week,
+            "confirmed_bookings": confirmed_bookings,
+            "pending_bookings": pending_bookings,
+            "free_sessions": free_sessions,
+            "recent_sessions": recent_sessions,
+            "total_sessions": total_sessions,
+            "completed_sessions": completed_sessions,
+            "pending_payments": pending_payments,
+            "total_digital_products": total_digital_products,
+            "stats": {
+                "total_sessions": total_sessions,
+                "completed_sessions": completed_sessions,
+                "pending_payments": pending_payments,
+                "digital_products": total_digital_products,
+                "total_bookings": len(all_bookings)
+            }
+        })
     
     elif current_user.role == "mentor":
         mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
@@ -2032,14 +2124,9 @@ async def dashboard(
                 Booking.mentor_id == mentor.id
             ).order_by(Booking.created_at.desc()).all()
             
-            # ======== ADDED: Get mentor balance and withdrawal data ========
+            # ============ NEW CODE: Get mentor balance and earnings data ============
             # Get or create mentor balance
             balance = get_mentor_balance(mentor.id, db)
-            
-            # Get withdrawal requests
-            withdrawal_requests = db.query(MentorPayout).filter(
-                MentorPayout.mentor_id == mentor.id
-            ).order_by(MentorPayout.request_date.desc()).all()
             
             # Calculate earnings from paid bookings
             earnings_query = db.query(Booking).filter(
@@ -2050,26 +2137,38 @@ async def dashboard(
             total_earnings = earnings_query.scalar() or 0
             
             # Update balance with actual earnings if different
-            mentor_share_total = total_earnings * 0.8  # 80% mentor share
-            if Decimal(str(mentor_share_total)) != balance.total_earnings:
-                balance.total_earnings = Decimal(str(mentor_share_total))
+            if Decimal(str(total_earnings * 0.8)) != balance.total_earnings:
+                # Calculate mentor's share (80% of total earnings)
+                mentor_share = total_earnings * 0.8
                 
-                # Recalculate available balance (total_earnings - pending - withdrawn)
-                total_withdrawn = db.query(func.sum(MentorPayout.amount)).filter(
-                    MentorPayout.mentor_id == mentor.id,
-                    MentorPayout.status == "completed"
-                ).scalar() or 0
-                
-                pending_withdrawal = db.query(func.sum(MentorPayout.amount)).filter(
-                    MentorPayout.mentor_id == mentor.id,
-                    MentorPayout.status.in_(["pending", "processing"])
-                ).scalar() or 0
-                
-                balance.available_balance = Decimal(str(mentor_share_total)) - Decimal(str(total_withdrawn)) - Decimal(str(pending_withdrawal))
-                balance.total_withdrawn = Decimal(str(total_withdrawn))
-                balance.pending_withdrawal = Decimal(str(pending_withdrawal))
-                balance.last_updated = datetime.utcnow()
-                db.commit()
+                # Update only if there's a difference
+                current_mentor_share = float(balance.total_earnings)
+                if abs(mentor_share - current_mentor_share) > 1:  # Allow small floating point differences
+                    balance.total_earnings = Decimal(str(mentor_share))
+                    
+                    # Recalculate available balance
+                    total_withdrawn = db.query(func.sum(MentorPayout.amount)).filter(
+                        MentorPayout.mentor_id == mentor.id,
+                        MentorPayout.status == "completed"
+                    ).scalar() or 0
+                    
+                    pending_withdrawal = db.query(func.sum(MentorPayout.amount)).filter(
+                        MentorPayout.mentor_id == mentor.id,
+                        MentorPayout.status.in_(["pending", "processing"])
+                    ).scalar() or 0
+                    
+                    balance.available_balance = Decimal(str(mentor_share)) - Decimal(str(total_withdrawn)) - Decimal(str(pending_withdrawal))
+                    balance.total_withdrawn = Decimal(str(total_withdrawn))
+                    balance.pending_withdrawal = Decimal(str(pending_withdrawal))
+                    balance.last_updated = datetime.utcnow()
+                    
+                    db.commit()
+                    print(f"✅ Updated mentor {mentor.id} balance: total={balance.total_earnings}, available={balance.available_balance}")
+            
+            # Get withdrawal requests
+            withdrawal_requests = db.query(MentorPayout).filter(
+                MentorPayout.mentor_id == mentor.id
+            ).order_by(MentorPayout.request_date.desc()).all()
             
             # Prepare earnings data for template
             earnings_data = {
@@ -2080,7 +2179,7 @@ async def dashboard(
                 'completed_withdrawals': len([w for w in withdrawal_requests if w.status == 'completed']),
                 'min_withdrawal_amount': 500
             }
-            # ======== END OF ADDED SECTION ========
+            # ============ END NEW CODE ============
             
             # Separate bookings by type and status
             confirmed_bookings = []
@@ -2177,10 +2276,6 @@ async def dashboard(
                 "digital_sales_count": digital_sales_count,
                 "pending_payments": pending_payments,
                 "upcoming_count": upcoming_count,
-                # ======== ADDED: Earnings and withdrawal data ========
-                "earnings_data": earnings_data,
-                "withdrawal_requests": withdrawal_requests,
-                # ======== END OF ADDED SECTION ========
                 "stats": {
                     "total": total_bookings,
                     "sessions": session_bookings_count,
@@ -2190,7 +2285,12 @@ async def dashboard(
                     "earnings": earnings,
                     "digital_earnings": digital_earnings,
                     "session_earnings": earnings - digital_earnings
-                }
+                },
+                # ============ NEW CODE: Add earnings and withdrawal data ============
+                "earnings_data": earnings_data,
+                "withdrawal_requests": withdrawal_requests,
+                # ============ END NEW CODE ============
+                "balance": balance  # Add balance object for direct access if needed
             })
         else:
             # Mentor profile doesn't exist, create one
@@ -2199,18 +2299,16 @@ async def dashboard(
             db.commit()
             db.refresh(mentor)
             
-            # Get initial balance
-            balance = get_mentor_balance(mentor.id, db)
-            
-            # Prepare empty earnings data
-            earnings_data = {
-                'total_earned': 0,
-                'total_withdrawn': 0,
-                'available_balance': 0,
-                'pending_withdrawals': 0,
-                'completed_withdrawals': 0,
-                'min_withdrawal_amount': 500
-            }
+            # Create initial balance record
+            balance = MentorBalance(
+                mentor_id=mentor.id,
+                total_earnings=Decimal('0.00'),
+                available_balance=Decimal('0.00'),
+                pending_withdrawal=Decimal('0.00'),
+                total_withdrawn=Decimal('0.00')
+            )
+            db.add(balance)
+            db.commit()
             
             context.update({
                 "mentor": mentor,
@@ -2224,34 +2322,43 @@ async def dashboard(
                 "total_bookings": 0,
                 "pending_payments": 0,
                 "upcoming_count": 0,
-                # ======== ADDED: Empty earnings data ========
-                "earnings_data": earnings_data,
-                "withdrawal_requests": [],
-                # ======== END OF ADDED SECTION ========
                 "stats": {
                     "total": 0,
                     "pending": 0,
                     "upcoming": 0,
                     "earnings": 0
-                }
+                },
+                # ============ NEW CODE: Add empty earnings and withdrawal data ============
+                "earnings_data": {
+                    'total_earned': 0,
+                    'total_withdrawn': 0,
+                    'available_balance': 0,
+                    'pending_withdrawals': 0,
+                    'completed_withdrawals': 0,
+                    'min_withdrawal_amount': 500
+                },
+                "withdrawal_requests": [],
+                # ============ END NEW CODE ============
+                "balance": balance
             })
     
     elif current_user.role == "admin":
-        # ======== ADDED: Get pending withdrawal requests for admin ========
-        pending_withdrawals = db.query(MentorPayout).filter(
-            MentorPayout.status == "pending"
-        ).order_by(MentorPayout.request_date.desc()).all()
-        
-        # Get recent withdrawals
-        recent_withdrawals = db.query(MentorPayout).order_by(
-            MentorPayout.request_date.desc()
-        ).limit(10).all()
-        # ======== END OF ADDED SECTION ========
-        
         # Pending mentor verifications
         pending_mentors = db.query(Mentor).filter(
             Mentor.verification_status == "pending"
         ).join(User).all()
+        
+        # ============ NEW CODE: Get pending withdrawal requests for admin ============
+        # Get pending withdrawal requests
+        pending_withdrawals = db.query(MentorPayout).filter(
+            MentorPayout.status == "pending"
+        ).join(Mentor).join(User).order_by(MentorPayout.request_date.desc()).all()
+        
+        # Get recent withdrawals
+        recent_withdrawals = db.query(MentorPayout).order_by(
+            MentorPayout.request_date.desc()
+        ).limit(20).all()
+        # ============ END NEW CODE ============
         
         # Get all recent bookings (last 20)
         recent_bookings = db.query(Booking).order_by(
@@ -2307,10 +2414,10 @@ async def dashboard(
             "pending_mentors": pending_mentors,
             "recent_bookings": recent_bookings,
             "recent_digital_sales": recent_digital_sales,
-            # ======== ADDED: Withdrawal data for admin ========
+            # ============ NEW CODE: Add withdrawal data for admin ============
             "pending_withdrawals": pending_withdrawals,
             "recent_withdrawals": recent_withdrawals,
-            # ======== END OF ADDED SECTION ========
+            # ============ END NEW CODE ============
             "stats": {
                 "total_users": total_users,
                 "total_mentors": total_mentors,
@@ -5723,28 +5830,6 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
         service = db.query(Service).filter(Service.id == booking.service_id).first()
         is_digital = service.is_digital if service else False
         
-        # ======== ADD THIS SECTION TO UPDATE MENTOR EARNINGS ========
-        if booking.mentor_id and booking.amount_paid:
-            try:
-                # Get mentor balance
-                balance = get_mentor_balance(booking.mentor_id, db)
-                
-                # Calculate mentor's share (80% of amount)
-                mentor_share = booking.amount_paid * 0.8
-                
-                # Update mentor balance
-                balance.total_earnings += Decimal(str(mentor_share))
-                balance.available_balance += Decimal(str(mentor_share))
-                balance.last_updated = datetime.utcnow()
-                
-                print(f"✅ Updated mentor {booking.mentor_id} earnings by ₹{mentor_share:.2f}")
-                print(f"✅ New available balance: ₹{balance.available_balance:.2f}")
-                
-            except Exception as e:
-                print(f"⚠️ Error updating mentor earnings: {str(e)}")
-                # Continue with payment verification even if earnings update fails
-        # ======== END OF ADDED SECTION ========
-        
         if is_digital:
             # For digital products, mark as completed immediately
             booking.status = "completed"
@@ -5774,6 +5859,41 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
             print("✅ Payment record created")
         except Exception as e:
             print(f"⚠️ Error creating payment record: {str(e)}")
+        
+        # ============ NEW CODE: Update mentor earnings ============
+        # Update mentor earnings (only for paid bookings)
+        if booking.mentor_id and booking.amount_paid and booking.amount_paid > 0:
+            try:
+                # Calculate mentor's share (80% of amount)
+                mentor_share = booking.amount_paid * 0.8
+                
+                # Get or create mentor balance
+                balance = db.query(MentorBalance).filter(MentorBalance.mentor_id == booking.mentor_id).first()
+                if not balance:
+                    balance = MentorBalance(
+                        mentor_id=booking.mentor_id,
+                        total_earnings=Decimal('0.00'),
+                        available_balance=Decimal('0.00'),
+                        pending_withdrawal=Decimal('0.00'),
+                        total_withdrawn=Decimal('0.00')
+                    )
+                    db.add(balance)
+                
+                # Add to total earnings (80% share)
+                balance.total_earnings += Decimal(str(mentor_share))
+                
+                # Add to available balance (80% share)
+                balance.available_balance += Decimal(str(mentor_share))
+                balance.last_updated = datetime.utcnow()
+                
+                print(f"✅ Updated mentor {booking.mentor_id} earnings by ₹{mentor_share}")
+                print(f"✅ Mentor {booking.mentor_id} total earnings: ₹{balance.total_earnings}")
+                print(f"✅ Mentor {booking.mentor_id} available balance: ₹{balance.available_balance}")
+                
+            except Exception as e:
+                print(f"⚠️ Error updating mentor earnings: {str(e)}")
+                # Don't rollback the payment because earnings update failed
+        # ============ END NEW CODE ============
         
         # Commit all changes
         db.commit()
