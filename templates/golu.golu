@@ -1,0 +1,3236 @@
+preserved earning section
+
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ClearQ{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        /* Primary Colors */
+        --primary: #1f1f1f;
+        --primary-hover: #000000;
+        --accent: #ff6b4a;
+        --secondary: #2D3748;
+        --brand-red: #FF3F1F;
+        
+        /* Background Colors */
+        --background-light: #fff5ec;
+        --background-dark: #151022;
+        --card-light: #ffffff;
+        --card-dark: #1e1a2e;
+        --dark-card: #232936;
+        --accent-beige: #F0EFEA;
+        
+        /* Text Colors */
+        --text-light: #1f1f1f;
+        --text-dark: #ffffff;
+        --text-secondary-light: #555555;
+        --text-secondary-dark: #a09db3;
+        
+        /* Border Colors */
+        --border-light: #E5E4E0;
+        --border-dark: #2d2a3b;
+        
+        /* Card Color Palette */
+        --card-purple: #E0DBFC;
+        --card-green: #9CCB5C;
+        --card-blue: #85C3EA;
+        --card-beige: #EEE3CD;
+        --card-teal: #A8E1E1;
+        --card-pink: #F6D0CE;
+        
+        /* UI Variables */
+        --radius-sm: 0.25rem;
+        --radius: 0.5rem;
+        --radius-md: 0.75rem;
+        --radius-lg: 1rem;
+        --radius-xl: 1.5rem;
+        --shadow-sm: 0 1px 2px 0 rgba(31, 31, 31, 0.05);
+        --shadow: 0 1px 3px 0 rgba(31, 31, 31, 0.1), 0 1px 2px 0 rgba(31, 31, 31, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(31, 31, 31, 0.1), 0 2px 4px -1px rgba(31, 31, 31, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(31, 31, 31, 0.1), 0 4px 6px -2px rgba(31, 31, 31, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(31, 31, 31, 0.1), 0 10px 10px -5px rgba(31, 31, 31, 0.04);
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    .dashboard-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+        background: linear-gradient(135deg, #fff5ec 0%, var(--background-light) 100%);
+        min-height: 100vh;
+    }
+
+    /* Dashboard Header - Enhanced with Theme */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--background-dark) 100%);
+        color: var(--text-dark);
+        padding: 1.5rem 1.25rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 30% 20%, rgba(255, 107, 74, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 80%, rgba(255, 63, 31, 0.1) 0%, transparent 50%);
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 4rem;
+        height: 4rem;
+        border-radius: var(--radius-lg);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        overflow: hidden;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition);
+    }
+
+    .user-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 24px rgba(255, 107, 74, 0.3);
+        border-color: rgba(255, 107, 74, 0.5);
+    }
+
+    .user-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .user-avatar-initial {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .user-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .user-details h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+
+    .user-details p {
+        font-size: 0.9375rem;
+        opacity: 0.9;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .header-action-btn {
+        padding: 0.625rem 1.25rem;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        color: white;
+        border-radius: var(--radius-lg);
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: var(--transition);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .header-action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.2), 
+            transparent);
+        transition: left 0.5s;
+    }
+
+    .header-action-btn:hover::before {
+        left: 100%;
+    }
+
+    .header-action-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Profile Share Buttons */
+    .profile-share-buttons {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .share-btn {
+        padding: 0.625rem 1rem;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        color: white;
+        border-radius: var(--radius);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        transition: var(--transition);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        cursor: pointer;
+    }
+
+    .share-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .share-btn i {
+        font-size: 0.75rem;
+    }
+
+    .share-btn.copied {
+        background: rgba(156, 203, 92, 0.3);
+        border-color: rgba(156, 203, 92, 0.5);
+    }
+
+    /* Mentor Menu Bar */
+    .mentor-menu-bar {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.5rem;
+    }
+
+    .mentor-menu-bar .menu-items {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        background: var(--accent-beige);
+        border-radius: var(--radius-lg);
+        width: max-content;
+        min-width: 100%;
+    }
+
+    .mentor-menu-bar .menu-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1.25rem;
+        text-decoration: none;
+        color: var(--text-secondary-light);
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        background: white;
+    }
+
+    .mentor-menu-bar .menu-item:hover {
+        background: white;
+        color: var(--accent);
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .mentor-menu-bar .menu-item.active {
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        color: white;
+        box-shadow: var(--shadow-lg);
+        border-color: var(--accent);
+    }
+
+    .mentor-menu-bar .menu-item i {
+        font-size: 0.875rem;
+    }
+
+    /* Mentor Sections */
+    .mentor-section {
+        display: none;
+        grid-column: 1 / -1;
+        gap: 1.5rem;
+    }
+
+    .mentor-section.active {
+        display: grid;
+    }
+
+    @media (min-width: 768px) {
+        .mentor-section {
+            grid-template-columns: 2fr 1fr;
+        }
+    }
+
+    /* Main Content */
+    .dashboard-main {
+        padding: 1.5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* Dashboard Cards - Enhanced with Theme */
+    .dashboard-card {
+        background: var(--card-light);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-light);
+        margin-bottom: 1rem;
+        overflow: hidden;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .dashboard-card:hover {
+        box-shadow: var(--shadow-xl);
+        transform: translateY(-4px);
+    }
+
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--brand-red));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .dashboard-card:hover::before {
+        opacity: 1;
+    }
+
+    .card-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, var(--accent-beige) 0%, white 100%);
+    }
+
+    .card-header h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-header h2 i {
+        color: var(--accent);
+        font-size: 1.125rem;
+    }
+
+    .card-header a {
+        font-size: 0.875rem;
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        transition: var(--transition);
+        background: rgba(255, 107, 74, 0.1);
+        border: 1px solid rgba(255, 107, 74, 0.2);
+    }
+
+    .card-header a:hover {
+        color: var(--brand-red);
+        background: rgba(255, 107, 74, 0.15);
+        transform: translateX(4px);
+        border-color: rgba(255, 107, 74, 0.3);
+    }
+
+    .card-content {
+        padding: 1.5rem;
+    }
+
+    /* Combined Services & Availability Styles */
+    .services-availability-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    @media (min-width: 1024px) {
+        .services-availability-grid {
+            grid-template-columns: 2fr 1fr;
+        }
+    }
+
+    .services-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .availability-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .services-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .services-list {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+    }
+
+    .service-item {
+        background: white;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-item:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-4px);
+    }
+
+    .service-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-blue), var(--card-teal));
+    }
+
+    .service-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .service-item-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+    }
+
+    .service-item-price {
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .service-item-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .service-detail {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8125rem;
+        color: var(--text-secondary-light);
+        padding: 0.5rem 0.875rem;
+        background: var(--accent-beige);
+        border-radius: var(--radius);
+        border: 1px solid var(--border-light);
+    }
+
+    .service-detail i {
+        font-size: 0.75rem;
+        color: var(--accent);
+    }
+
+    .service-item-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .service-action-btn {
+        padding: 0.625rem 1.25rem;
+        border: 1px solid var(--border-light);
+        background: white;
+        color: var(--text-secondary-light);
+        border-radius: var(--radius);
+        font-size: 0.8125rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .service-action-btn:hover {
+        background: var(--accent-beige);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .service-action-btn.edit {
+        color: var(--accent);
+        border-color: var(--accent);
+        background: rgba(255, 107, 74, 0.1);
+    }
+
+    .service-action-btn.delete {
+        color: var(--brand-red);
+        border-color: var(--brand-red);
+        background: rgba(255, 63, 31, 0.1);
+    }
+
+    .availability-summary {
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+        padding: 1.5rem;
+    }
+
+    .availability-days {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .availability-day {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem;
+        background: white;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius);
+        transition: var(--transition);
+    }
+
+    .availability-day:hover {
+        border-color: var(--accent);
+        background: var(--accent-beige);
+        transform: translateX(4px);
+    }
+
+    .day-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .day-status {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.375rem 0.75rem;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .day-available {
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
+    }
+
+    .day-unavailable {
+        background: var(--border-light);
+        color: var(--text-secondary-light);
+    }
+
+    /* Empty State - Enhanced */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-radius: var(--radius-xl);
+        border: 2px dashed var(--border-light);
+    }
+
+    .empty-state-icon {
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.75rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .empty-state h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        font-size: 0.9375rem;
+        color: var(--text-secondary-light);
+        margin-bottom: 1.5rem;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.5;
+    }
+
+    /* Sessions List - Enhanced */
+    .sessions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .session-item {
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        transition: var(--transition);
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .session-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--accent), var(--brand-red));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .session-item:hover::before {
+        opacity: 1;
+    }
+
+    .session-item:hover {
+        border-color: var(--accent);
+        background: var(--accent-beige);
+        transform: translateX(4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .session-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .session-title {
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+    }
+
+    .session-price {
+        font-size: 1.375rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .session-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .session-detail {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8125rem;
+        color: var(--text-secondary-light);
+        padding: 0.5rem 0.875rem;
+        background: var(--accent-beige);
+        border-radius: var(--radius);
+        border: 1px solid var(--border-light);
+    }
+
+    .session-detail i {
+        font-size: 0.75rem;
+        color: var(--accent);
+    }
+
+    .session-status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        transition: var(--transition);
+        border: 1px solid;
+    }
+
+    .status-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .status-confirmed {
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
+        border-color: rgba(156, 203, 92, 0.3);
+    }
+
+    .status-pending {
+        background: linear-gradient(135deg, var(--card-beige), #e5d7b8);
+        color: #8b7355;
+        border-color: rgba(238, 227, 205, 0.3);
+    }
+
+    .status-completed {
+        background: linear-gradient(135deg, var(--card-blue), #5d99c6);
+        color: white;
+        border-color: rgba(133, 195, 234, 0.3);
+    }
+
+    .status-paid {
+        background: linear-gradient(135deg, var(--card-teal), #7bc8c8);
+        color: white;
+        border-color: rgba(168, 225, 225, 0.3);
+    }
+
+    .status-unpaid {
+        background: linear-gradient(135deg, var(--card-pink), #e4b9b7);
+        color: #8a4d49;
+        border-color: rgba(246, 208, 206, 0.3);
+    }
+
+    /* Google Meet Button Styles */
+    .join-meet-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        color: white;
+        border-radius: var(--radius);
+        text-decoration: none;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        transition: var(--transition);
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(255, 107, 74, 0.3);
+    }
+
+    .join-meet-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.2), 
+            transparent);
+        transition: left 0.5s;
+    }
+
+    .join-meet-btn:hover::before {
+        left: 100%;
+    }
+
+    .join-meet-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 74, 0.4);
+        background: linear-gradient(135deg, var(--brand-red), var(--accent));
+    }
+
+    /* Stats Grid - Enhanced */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+        border-color: var(--accent);
+    }
+
+    .stat-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-purple), var(--card-blue));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-item:hover::before {
+        opacity: 1;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--primary);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--text-secondary-light);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Quick Actions - Enhanced */
+    .quick-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .quick-action {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        transition: var(--transition);
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .quick-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 107, 74, 0.1), 
+            transparent);
+        transition: left 0.5s;
+    }
+
+    .quick-action:hover::before {
+        left: 100%;
+    }
+
+    .quick-action:hover {
+        border-color: var(--accent);
+        background: var(--accent-beige);
+        transform: translateX(8px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .action-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: var(--transition);
+        font-size: 1.25rem;
+    }
+
+    .quick-action:hover .action-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .icon-search {
+        background: linear-gradient(135deg, var(--card-blue), var(--card-teal));
+        color: white;
+    }
+
+    .icon-edit {
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
+    }
+
+    .icon-trophy {
+        background: linear-gradient(135deg, var(--card-purple), #7c3aed);
+        color: white;
+    }
+
+    .action-text {
+        flex: 1;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    /* Alert - Enhanced */
+    .alert {
+        padding: 1.25rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        border-left: 4px solid;
+        animation: slideIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        background: linear-gradient(135deg, var(--card-beige), white);
+        border: 1px solid var(--border-light);
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .alert-warning {
+        border-left-color: var(--accent);
+    }
+
+    .alert-icon {
+        color: var(--accent);
+        font-size: 1.25rem;
+        margin-top: 0.125rem;
+    }
+
+    .alert-content h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .alert-content p {
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+        line-height: 1.4;
+    }
+
+    /* Earnings Summary - Enhanced */
+    .earnings-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .earnings-total {
+        text-align: center;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px dashed var(--border-light);
+    }
+
+    .total-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    .total-amount {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--primary);
+        line-height: 1;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .earnings-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .earning-stat-item {
+        text-align: center;
+        padding: 1.25rem;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+        transition: var(--transition);
+    }
+
+    .earning-stat-item:hover {
+        background: white;
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--accent);
+    }
+
+    .earning-stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.375rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .earning-stat-label {
+        font-size: 0.8125rem;
+        color: var(--text-secondary-light);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    .payout-info {
+        padding-top: 1.5rem;
+        border-top: 2px dashed var(--border-light);
+    }
+
+    .payout-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .payout-row:last-child {
+        border-bottom: none;
+    }
+
+    /* Quick Stats - Enhanced */
+    .quick-stats-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .quick-stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-light);
+        transition: var(--transition);
+    }
+
+    .quick-stat-item:hover {
+        padding-left: 0.75rem;
+        background: var(--accent-beige);
+        border-radius: var(--radius);
+        transform: translateX(4px);
+    }
+
+    .quick-stat-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .stat-label-text {
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+    }
+
+    .stat-label-text i {
+        font-size: 0.875rem;
+        color: var(--accent);
+    }
+
+    .stat-value-text {
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--primary);
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Admin Dashboard - Enhanced */
+    .pending-mentor {
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        background: white;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pending-mentor:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-4px);
+    }
+
+    .pending-mentor::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--accent), var(--brand-red));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .pending-mentor:hover::before {
+        opacity: 1;
+    }
+
+    .mentor-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .mentor-avatar {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.25rem;
+        box-shadow: var(--shadow-md);
+    }
+
+    .mentor-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mentor-details h3 {
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mentor-details p {
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+        margin-bottom: 0.75rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .mentor-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .mentor-tag {
+        padding: 0.375rem 0.75rem;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        color: var(--text-secondary-light);
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border: 1px solid var(--border-light);
+    }
+
+    .mentor-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .action-button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: var(--shadow-md);
+    }
+
+    .action-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.2), 
+            transparent);
+        transition: left 0.5s;
+    }
+
+    .action-button:hover::before {
+        left: 100%;
+    }
+
+    .action-approve {
+        background: linear-gradient(135deg, var(--card-green), #7cb342);
+        color: white;
+    }
+
+    .action-approve:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        background: linear-gradient(135deg, #7cb342, var(--card-green));
+    }
+
+    .action-reject {
+        background: linear-gradient(135deg, var(--card-pink), #e4b9b7);
+        color: #8a4d49;
+    }
+
+    .action-reject:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        background: linear-gradient(135deg, #e4b9b7, var(--card-pink));
+    }
+
+    /* Bookings Table - Enhanced */
+    .bookings-table {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+    }
+
+    table {
+        width: 100%;
+        min-width: 600px;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    th {
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-secondary-light);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: linear-gradient(135deg, var(--accent-beige), white);
+        border-bottom: 1px solid var(--border-light);
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    td {
+        padding: 1.25rem 1rem;
+        font-size: 0.875rem;
+        color: var(--primary);
+        border-bottom: 1px solid var(--border-light);
+        vertical-align: middle;
+        transition: var(--transition);
+        font-weight: 500;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover td {
+        background: var(--accent-beige);
+    }
+
+    /* Digital Products Section */
+    .digital-products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .digital-product-card {
+        background: white;
+        border: 1px solid var(--border-light);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .digital-product-card:hover {
+        border-color: var(--card-purple);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-4px);
+    }
+
+    .digital-product-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--card-purple), var(--card-blue));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .digital-product-card:hover::before {
+        opacity: 1;
+    }
+
+    .digital-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.375rem 0.75rem;
+        background: linear-gradient(135deg, var(--card-purple), #7c3aed);
+        color: white;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    /* Service Cards */
+    .service-card {
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid;
+        text-decoration: none;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .service-blue {
+        border-color: rgba(133, 195, 234, 0.3);
+        background: linear-gradient(135deg, rgba(133, 195, 234, 0.1), white);
+    }
+
+    .service-green {
+        border-color: rgba(156, 203, 92, 0.3);
+        background: linear-gradient(135deg, rgba(156, 203, 92, 0.1), white);
+    }
+
+    .service-purple {
+        border-color: rgba(224, 219, 252, 0.3);
+        background: linear-gradient(135deg, rgba(224, 219, 252, 0.1), white);
+    }
+
+    /* Responsive Design */
+    @media (min-width: 640px) {
+        .dashboard-header {
+            padding: 2rem 1.5rem;
+        }
+        
+        .header-content {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-details h1 {
+            font-size: 1.75rem;
+        }
+        
+        .header-actions {
+            flex: 0 0 auto;
+        }
+        
+        .dashboard-main {
+            padding: 2rem;
+        }
+        
+        .dashboard-card {
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .quick-action {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .action-text {
+            text-align: center;
+        }
+        
+        .mentor-menu-bar .menu-item span {
+            display: inline;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .dashboard-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .dashboard-card {
+            margin-bottom: 0;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+        
+        .quick-action {
+            flex-direction: row;
+            text-align: left;
+        }
+        
+        .action-text {
+            text-align: left;
+        }
+        
+        .mentor-menu-bar .menu-items {
+            justify-content: center;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .dashboard-header {
+            padding: 2.5rem;
+        }
+        
+        .user-avatar {
+            width: 5rem;
+            height: 5rem;
+        }
+        
+        .dashboard-main {
+            padding: 2.5rem;
+        }
+        
+        .share-btn {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .share-btn i {
+            font-size: 0.875rem;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .dashboard-main {
+            gap: 3rem;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="user-info">
+                <div class="user-avatar">
+                    {% if current_user.profile_image %}
+                    <img src="/static/{{ current_user.profile_image }}" 
+                         alt="{{ current_user.full_name or current_user.username }}"
+                         class="user-avatar-img">
+                    {% else %}
+                    <div class="user-avatar-initial">
+                        {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="user-details">
+                    <h1>Welcome back, {{ current_user.full_name or current_user.username }}</h1>
+                    <p>{{ current_user.role|title }} Dashboard</p>
+                </div>
+            </div>
+            
+            <div class="profile-share-buttons">
+                <!-- New Tab Button -->
+                {% if current_user.role == 'mentor' %}
+                <a href="/{{ current_user.username }}" 
+                   target="_blank" 
+                   class="share-btn"
+                   title="Open profile in new tab">
+                    <i class="fas fa-external-link-alt"></i>
+                    <span class="hidden sm:inline">New Tab</span>
+                </a>
+                {% endif %}
+                
+                <!-- Copy Link Button -->
+                <button onclick="copyDashboardUrl()" 
+                        class="share-btn" 
+                        id="copyLinkBtn"
+                        title="Copy profile link to clipboard">
+                    <i class="fas fa-copy"></i>
+                    <span class="hidden sm:inline">Copy Link</span>
+                </button>
+                
+                <!-- Edit Profile Button -->
+                <a href="/profile/edit" class="header-action-btn">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Edit Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="dashboard-main">
+        {% if current_user.role == 'learner' %}
+        <!-- Learner Dashboard -->
+        <!-- Digital Products Section -->
+        {% if digital_products and digital_products|length > 0 %}
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2><i class="fas fa-download"></i> Your Digital Products</h2>
+            </div>
+            
+            <div class="card-content">
+                <div class="digital-products-grid">
+                    {% for booking in digital_products %}
+                    <div class="digital-product-card">
+                        <div class="digital-badge">
+                            <i class="fas fa-download"></i>
+                            Digital
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
+                                {{ booking.service.name if booking.service else 'Digital Product' }}
+                            </h3>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary-light); line-height: 1.5;">
+                                {% if booking.service and booking.service.description %}
+                                    {{ booking.service.description|truncate(100) }}
+                                {% else %}
+                                    Digital product purchase
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+                            <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
+                                <i class="fas fa-calendar"></i>
+                                {{ booking.created_at.strftime('%b %d, %Y') if booking.created_at else 'Recently' }}
+                            </span>
+                            <a href="/digital-product/{% if booking.service %}{{ booking.service.id }}{% else %}#{% endif %}"
+                               class="join-meet-btn"
+                               style="padding: 0.5rem 1rem; font-size: 0.8125rem;"
+                               {% if not booking.service %}style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                                <i class="fas fa-external-link-alt"></i>
+                                Access
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+            <!-- Upcoming Sessions -->
+            {% if upcoming_sessions and upcoming_sessions|length > 0 %}
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-calendar-check"></i> Upcoming Sessions</h2>
+                    <a href="/explore">
+                        Book More <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="card-content">
+                    <div class="sessions-list">
+                        {% for booking in upcoming_sessions %}
+                        <div class="session-item">
+                            <div class="session-header">
+                                <div style="flex: 1;">
+                                    <h3 class="session-title">
+                                        {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                    </h3>
+                                    <div class="session-details" style="margin-top: 0.5rem;">
+                                        <span class="session-detail">
+                                            <i class="fas fa-user-tie"></i>
+                                            {% if booking.mentor and booking.mentor.user %}
+                                                {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+                                            {% else %}
+                                                Mentor
+                                            {% endif %}
+                                        </span>
+                                        <span class="session-detail">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                        </span>
+                                        <span class="session-detail">
+                                            <i class="fas fa-clock"></i>
+                                            {{ booking.selected_time if booking.selected_time else 'TBD' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                            </div>
+                            
+                            <!-- Google Meet Button -->
+                            {% if booking.meeting_link and booking.meeting_link != "None" %}
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 10px; height: 10px; background-color: var(--card-green); border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">Meeting link ready</span>
+                                </div>
+                                <a href="{{ booking.meeting_link }}" 
+                                   target="_blank"
+                                   class="join-meet-btn"
+                                   style="padding: 0.625rem 1.25rem; font-size: 0.8125rem;">
+                                    <i class="fas fa-video"></i>
+                                    Join Meeting
+                                </a>
+                            </div>
+                            {% else %}
+                            <div style="margin-top: 1rem;">
+                                <span class="status-badge status-pending">
+                                    <i class="fas fa-clock"></i>
+                                    Meeting link not ready
+                                </span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="session-status" style="margin-top: {% if booking.meeting_link %}1rem{% else %}0.75rem{% endif %};">
+                                <span class="status-badge status-confirmed">
+                                    <i class="fas fa-check-circle"></i>
+                                    Confirmed
+                                </span>
+                                {% if booking.meeting_id %}
+                                <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; border-color: rgba(133, 195, 234, 0.3);">
+                                    <i class="fas fa-video"></i>
+                                    Meet ID: {{ booking.meeting_id|truncate(10) }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Empty State for Learners -->
+            <div class="dashboard-card">
+                <div class="card-content">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <h3>No Upcoming Sessions</h3>
+                        <p>Book your first session with an expert mentor to start your learning journey</p>
+                        <a href="/explore" class="header-action-btn" style="margin-top: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
+                            <i class="fas fa-search"></i>
+                            Find Mentors
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Pending Payments Section -->
+            {% if pending_bookings and pending_bookings|length > 0 %}
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-clock"></i> Pending Payments</h2>
+                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 600;">
+                        <i class="fas fa-hashtag"></i>
+                        {{ pending_bookings|length }} awaiting payment
+                    </span>
+                </div>
+                
+                <div class="card-content">
+                    <div class="sessions-list">
+                        {% for booking in pending_bookings %}
+                        <div class="session-item" style="border-left: 4px solid var(--accent);">
+                            <div class="session-header">
+                                <div style="flex: 1;">
+                                    <h3 class="session-title">
+                                        {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                    </h3>
+                                    <div class="session-details" style="margin-top: 0.5rem;">
+                                        <span class="session-detail">
+                                            <i class="fas fa-user-tie"></i>
+                                            {% if booking.mentor and booking.mentor.user %}
+                                                {{ booking.mentor.user.full_name or booking.mentor.user.username }}
+                                            {% else %}
+                                                Mentor
+                                            {% endif %}
+                                        </span>
+                                        <span class="session-detail">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                        </span>
+                                        <span class="session-detail">
+                                            <i class="fas fa-clock"></i>
+                                            {{ booking.selected_time if booking.selected_time else 'TBD' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                            </div>
+                            
+                            <div style="margin-top: 1rem;">
+                                <div class="session-status">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Payment Pending
+                                    </span>
+                                    {% if booking.razorpay_order_id %}
+                                    <a href="/payment/{{ booking.id }}" class="join-meet-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red));">
+                                        <i class="fas fa-credit-card"></i>
+                                        Complete Payment
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Stats and Quick Actions Grid -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+                <!-- Stats -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> Your Learning Stats</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">{{ total_sessions|default(0) }}</div>
+                                <div class="stat-label">Total Sessions</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ completed_sessions|default(0) }}</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ pending_payments|default(0) }}</div>
+                                <div class="stat-label">Pending</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">4.5</div>
+                                <div class="stat-label">Avg Rating</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="quick-actions">
+                            <a href="/explore" class="quick-action">
+                                <div class="action-icon icon-search">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <span class="action-text">Find New Mentors</span>
+                            </a>
+                            
+                            <a href="/profile/edit" class="quick-action">
+                                <div class="action-icon icon-edit">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <span class="action-text">Update Profile</span>
+                            </a>
+                            
+                            <a href="/mentorship-program" class="quick-action">
+                                <div class="action-icon icon-trophy">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <span class="action-text">Join Program</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% elif current_user.role == 'mentor' %}
+        <!-- Mentor Dashboard with Sidebar Menu -->
+        <!-- Menu Bar -->
+        <div class="dashboard-card">
+            <div class="card-content" style="padding: 1rem;">
+                <div class="mentor-menu-bar">
+                    <div class="menu-items">
+                        <a href="#overview" 
+                           class="menu-item active" 
+                           onclick="showMentorSection('overview')">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Overview</span>
+                        </a>
+                        <a href="#sessions" 
+                           class="menu-item" 
+                           onclick="showMentorSection('sessions')">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Upcoming Sessions</span>
+                        </a>
+                        <a href="#services" 
+                           class="menu-item" 
+                           onclick="showMentorSection('services')">
+                            <i class="fas fa-list-alt"></i>
+                            <span>Services & Availability</span>
+                        </a>
+                        <a href="#earnings" 
+                           class="menu-item" 
+                           onclick="showMentorSection('earnings')">
+                            <i class="fas fa-wallet"></i>
+                            <span>Earnings</span>
+                        </a>
+                        <a href="#profile" 
+                           class="menu-item" 
+                           onclick="showMentorSection('profile')">
+                            <i class="fas fa-user-edit"></i>
+                            <span>Profile</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overview Section -->
+        <div id="mentor-overview" class="mentor-section active">
+            <!-- Left Column -->
+            <div>
+                <!-- Mentor Status Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div>
+                            <h2><i class="fas fa-user-tie"></i> Mentor Dashboard</h2>
+                            <p style="font-size: 0.9375rem; color: var(--text-secondary-light); margin-top: 0.25rem; font-weight: 500;">
+                                Welcome to your mentor dashboard. Everything you need in one place.
+                            </p>
+                        </div>
+                        <span class="status-badge {% if mentor.verification_status == 'approved' %}status-confirmed{% elif mentor.verification_status == 'pending' %}status-pending{% else %}status-unpaid{% endif %}">
+                            <i class="fas {% if mentor.verification_status == 'approved' %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
+                            {{ mentor.verification_status|title }}
+                        </span>
+                    </div>
+                    
+                    <div class="card-content">
+                        {% if mentor.verification_status == 'pending' %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle alert-icon"></i>
+                            <div class="alert-content">
+                                <h4>Profile Under Review</h4>
+                                <p>Your mentor profile is currently being reviewed. You can set up services, but they won't be visible until approved.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-blue">
+                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white;">
+                                    <i class="fas fa-list-alt"></i>
+                                </div>
+                                <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--primary); margin-bottom: 0.375rem;">Manage Services</h3>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary-light); line-height: 1.4;">Create and manage your mentoring services</p>
+                            </a>
+                            
+                            <a href="#services" onclick="showMentorSection('services')" class="service-card service-green">
+                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, var(--card-green), #7cb342); color: white;">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--primary); margin-bottom: 0.375rem;">Set Availability</h3>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary-light); line-height: 1.4;">Set your available time slots for sessions</p>
+                            </a>
+                            
+                            <a href="/profile/edit" class="service-card service-purple">
+                                <div class="service-icon" style="width: 3rem; height: 3rem; border-radius: var(--radius); margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); background: linear-gradient(135deg, var(--card-purple), #7c3aed); color: white;">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--primary); margin-bottom: 0.375rem;">Edit Profile</h3>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary-light); line-height: 1.4;">Edit your public mentor profile</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-line"></i> Quick Stats</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">{{ total_bookings|default(0) }}</div>
+                                <div class="stat-label">Total Bookings</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ mentor.rating|default('4.9') }}/5</div>
+                                <div class="stat-label">Avg Rating</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ mentor.review_count|default('0') }}</div>
+                                <div class="stat-label">Reviews</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">{{ upcoming_count|default(0) }}</div>
+                                <div class="stat-label">Upcoming</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <!-- Earnings Summary -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-wallet"></i> Earnings Summary</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="earnings-summary">
+                            <div class="earnings-total">
+                                <div class="total-label">Total Earnings</div>
+                                <div class="total-amount">₹{{ earnings|default(0) }}</div>
+                            </div>
+                            
+                            <div class="earnings-stats">
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ upcoming_count|default(0) }}</div>
+                                    <div class="earning-stat-label">Upcoming</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
+                                    <div class="earning-stat-label">Pending</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">
+                                        {% if confirmed_bookings %}{{ confirmed_bookings|selectattr('payment_status', 'equalto', 'paid')|list|length }}{% else %}0{% endif %}
+                                    </div>
+                                    <div class="earning-stat-label">Paid</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
+                                    <div class="earning-stat-label">Unpaid</div>
+                                </div>
+                            </div>
+                            
+                            <div class="payout-info">
+                                <div class="payout-row">
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 500;">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        Next Payout
+                                    </span>
+                                    <span style="font-size: 1rem; font-weight: 700; color: var(--primary);">
+                                        ₹{{ (earnings|default(0) * 0.8)|int }}
+                                    </span>
+                                </div>
+                                <div class="payout-row">
+                                    <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
+                                        <i class="fas fa-clock"></i>
+                                        in 3 days
+                                    </span>
+                                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--accent);">
+                                        Pending
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="quick-actions">
+                            <a href="/mentor/dashboard/services" class="quick-action">
+                                <div class="action-icon" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal));">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <span class="action-text">Add New Service</span>
+                            </a>
+                            
+                            <a href="#services" onclick="showMentorSection('services')" class="quick-action">
+                                <div class="action-icon" style="background: linear-gradient(135deg, var(--card-green), #7cb342);">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <span class="action-text">Update Availability</span>
+                            </a>
+                            
+                            <a href="/profile/edit" class="quick-action">
+                                <div class="action-icon" style="background: linear-gradient(135deg, var(--card-purple), #7c3aed);">
+                                    <i class="fas fa-user-edit"></i>
+                                </div>
+                                <span class="action-text">Edit Profile</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions Section -->
+        <div id="mentor-sessions" class="mentor-section">
+            <div style="grid-column: 1 / -1;">
+                <!-- Upcoming Sessions Section -->
+                {% if upcoming_sessions and upcoming_sessions|length > 0 %}
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
+                        <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 600;">
+                            <i class="fas fa-hashtag"></i>
+                            {{ upcoming_sessions|length }} confirmed
+                        </span>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="sessions-list">
+                            {% for booking in upcoming_sessions %}
+                            <div class="session-item">
+                                <div class="session-header">
+                                    <div style="flex: 1;">
+                                        <h3 class="session-title">
+                                            {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                        </h3>
+                                        <div class="session-details" style="margin-top: 0.5rem;">
+                                            <span class="session-detail">
+                                                <i class="fas fa-user-graduate"></i>
+                                                {{ booking.learner.full_name if booking.learner else 'Learner' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-clock"></i>
+                                                {{ booking.selected_time if booking.selected_time else 'TBD' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                                </div>
+                                
+                                {% if booking.meeting_link and booking.meeting_link != "None" %}
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div style="width: 10px; height: 10px; background-color: var(--card-green); border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                        <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">Meeting link available</span>
+                                    </div>
+                                    <a href="{{ booking.meeting_link }}" 
+                                       target="_blank" 
+                                       class="join-meet-btn"
+                                       style="padding: 0.625rem 1.25rem; font-size: 0.8125rem;">
+                                        <i class="fas fa-video"></i>
+                                        Start Meeting
+                                    </a>
+                                </div>
+                                {% else %}
+                                <div style="margin-top: 1rem;">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Meeting link not ready
+                                    </span>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="session-status" style="margin-top: {% if booking.meeting_link %}1rem{% else %}0.75rem{% endif %};">
+                                    <span class="status-badge status-confirmed">
+                                        <i class="fas fa-check-circle"></i>
+                                        Confirmed
+                                    </span>
+                                    {% if booking.meeting_id %}
+                                    <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; border-color: rgba(133, 195, 234, 0.3);">
+                                        <i class="fas fa-video"></i>
+                                        Meet ID: {{ booking.meeting_id|truncate(10) }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Upcoming Sessions</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <h3>No Upcoming Sessions</h3>
+                            <p>Set up your services and availability to start receiving bookings</p>
+                            <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                                <a href="#services" onclick="showMentorSection('services')" class="header-action-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
+                                    <i class="fas fa-plus"></i> Add Services
+                                </a>
+                                <a href="#services" onclick="showMentorSection('services')" class="header-action-btn" style="background: transparent; border-color: var(--accent); color: var(--accent);">
+                                    <i class="fas fa-calendar-alt"></i> Set Availability
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Pending Bookings Section -->
+                {% if pending_bookings and pending_bookings|length > 0 %}
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-hourglass-half"></i> Pending Bookings</h2>
+                        <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 600;">
+                            <i class="fas fa-hashtag"></i>
+                            {{ pending_bookings|length }} awaiting payment
+                        </span>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="sessions-list">
+                            {% for booking in pending_bookings %}
+                            <div class="session-item" style="border-left: 4px solid var(--accent);">
+                                <div class="session-header">
+                                    <div style="flex: 1;">
+                                        <h3 class="session-title">
+                                            {% if booking.service %}{{ booking.service.name }}{% else %}Mentoring Session{% endif %}
+                                        </h3>
+                                        <div class="session-details" style="margin-top: 0.5rem;">
+                                            <span class="session-detail">
+                                                <i class="fas fa-user-graduate"></i>
+                                                {{ booking.learner.full_name if booking.learner else 'Learner' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                {{ booking.booking_date.strftime('%b %d, %Y') if booking.booking_date else 'Not scheduled' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-clock"></i>
+                                                {{ booking.selected_time if booking.selected_time else 'TBD' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                                </div>
+                                
+                                <div class="session-status" style="margin-top: 1rem;">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Awaiting Payment
+                                    </span>
+                                    <span class="status-badge" style="background: linear-gradient(135deg, var(--card-beige), #e5d7b8); color: #8b7355; border-color: rgba(238, 227, 205, 0.3);">
+                                        <i class="fas fa-info-circle"></i>
+                                        Meeting link will generate after payment
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Combined Services & Availability Section -->
+        <div id="mentor-services" class="mentor-section">
+            <div style="grid-column: 1 / -1;">
+                <div class="services-availability-grid">
+                    <!-- Services Column -->
+                    <div class="services-section">
+                        <!-- Services Header -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-list-alt"></i> Your Services</h2>
+                                <a href="/mentor/dashboard/services" class="header-action-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
+                                    <i class="fas fa-plus"></i> Create Service
+                                </a>
+                            </div>
+                            
+                            <div class="card-content">
+                                {% if services and services|length > 0 %}
+                                <div class="services-list">
+                                    {% for service in services %}
+                                    <div class="service-item">
+                                        <div class="service-item-header">
+                                            <h3 class="service-item-title">{{ service.name }}</h3>
+                                            <div class="service-item-price">₹{{ service.price }}</div>
+                                        </div>
+                                        
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary-light); margin-bottom: 1rem; line-height: 1.5;">
+                                            {{ service.description|truncate(150) }}
+                                        </p>
+                                        
+                                        <div class="service-item-details">
+                                            <span class="service-detail">
+                                                <i class="fas fa-clock"></i>
+                                                {{ service.duration }} minutes
+                                            </span>
+                                            <span class="service-detail">
+                                                <i class="fas fa-video"></i>
+                                                {{ service.session_type|title }}
+                                            </span>
+                                            <span class="service-detail">
+                                                <i class="fas fa-tags"></i>
+                                                {{ service.category|default('General') }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="service-item-actions">
+                                            <a href="/mentor/dashboard/services/{{ service.id }}/edit" class="service-action-btn edit">
+                                                <i class="fas fa-edit"></i>
+                                                Edit
+                                            </a>
+                                            <button onclick="deleteService({{ service.id }})" class="service-action-btn delete">
+                                                <i class="fas fa-trash"></i>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="empty-state" style="padding: 2rem;">
+                                    <div class="empty-state-icon">
+                                        <i class="fas fa-list-alt"></i>
+                                    </div>
+                                    <h3>No Services Yet</h3>
+                                    <p>Create your first mentoring service to start accepting bookings</p>
+                                    <a href="/mentor/dashboard/services" class="header-action-btn" style="margin-top: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
+                                        <i class="fas fa-plus"></i> Create Your First Service
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-chart-bar"></i> Services Performance</h2>
+                            </div>
+                            
+                            <div class="card-content">
+                                <div class="quick-stats-list">
+                                    <div class="quick-stat-item">
+                                        <span class="stat-label-text">
+                                            <i class="fas fa-shopping-cart"></i>
+                                            Total Services
+                                        </span>
+                                        <span class="stat-value-text">{{ services|length if services else 0 }}</span>
+                                    </div>
+                                    <div class="quick-stat-item">
+                                        <span class="stat-label-text">
+                                            <i class="fas fa-calendar-check"></i>
+                                            Bookings This Month
+                                        </span>
+                                        <span class="stat-value-text">{{ monthly_bookings|default(0) }}</span>
+                                    </div>
+                                    <div class="quick-stat-item">
+                                        <span class="stat-label-text">
+                                            <i class="fas fa-star"></i>
+                                            Average Rating
+                                        </span>
+                                        <span class="stat-value-text">{{ mentor.rating|default('4.9') }}/5</span>
+                                    </div>
+                                    <div class="quick-stat-item">
+                                        <span class="stat-label-text">
+                                            <i class="fas fa-users"></i>
+                                            Active Learners
+                                        </span>
+                                        <span class="stat-value-text">{{ active_learners|default(0) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Availability Column -->
+                    <div class="availability-section">
+                        <!-- Availability Summary -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-calendar-alt"></i> Availability</h2>
+                                <a href="/mentor/availability" class="header-action-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
+                                    <i class="fas fa-edit"></i> Manage
+                                </a>
+                            </div>
+                            
+                            <div class="card-content">
+                                <div class="availability-summary">
+                                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                            {{ available_days|default(5) }}/7
+                                        </div>
+                                        <div style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">
+                                            Days Available This Week
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="availability-days">
+                                        {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+                                        {% for day in days %}
+                                        <div class="availability-day">
+                                            <span class="day-name">
+                                                <i class="fas fa-calendar-day"></i>
+                                                {{ day }}
+                                            </span>
+                                            <span class="day-status day-available">
+                                                <i class="fas fa-check"></i>
+                                                Available
+                                            </span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                        <div style="font-size: 0.875rem; color: var(--text-secondary-light); text-align: center; font-weight: 500;">
+                                            <i class="fas fa-info-circle"></i>
+                                            Set specific time slots for each day in the availability manager
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Tips -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-lightbulb"></i> Quick Tips</h2>
+                            </div>
+                            
+                            <div class="card-content">
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; font-weight: 600;">
+                                            1
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.875rem; font-weight: 600; color: var(--primary);">
+                                                Set Clear Availability
+                                            </div>
+                                            <div style="font-size: 0.8125rem; color: var(--text-secondary-light); line-height: 1.4;">
+                                                Define specific time slots to avoid scheduling conflicts
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; font-weight: 600;">
+                                            2
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.875rem; font-weight: 600; color: var(--primary);">
+                                                Price Your Services Fairly
+                                            </div>
+                                            <div style="font-size: 0.8125rem; color: var(--text-secondary-light); line-height: 1.4;">
+                                                Research market rates and set competitive prices
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                        <div style="width: 1.5rem; height: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; font-weight: 600;">
+                                            3
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.875rem; font-weight: 600; color: var(--primary);">
+                                                Update Regularly
+                                            </div>
+                                            <div style="font-size: 0.8125rem; color: var(--text-secondary-light); line-height: 1.4;">
+                                                Keep your availability and services up to date
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+                            </div>
+                            
+                            <div class="card-content">
+                                <div class="quick-actions">
+                                    <a href="/mentor/dashboard/services" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal));">
+                                            <i class="fas fa-plus"></i>
+                                        </div>
+                                        <span class="action-text">Add New Service</span>
+                                    </a>
+                                    
+                                    <a href="/mentor/availability" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-green), #7cb342);">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                        <span class="action-text">Manage Availability</span>
+                                    </a>
+                                    
+                                    <a href="/mentor/dashboard/services" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-purple), #7c3aed);">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <span class="action-text">View Analytics</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings Section -->
+        <div id="mentor-earnings" class="mentor-section">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+                <!-- Earnings Summary -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-wallet"></i> Earnings Dashboard</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="earnings-summary">
+                            <div class="earnings-total">
+                                <div class="total-label">Total Earnings</div>
+                                <div class="total-amount">₹{{ earnings|default(0) }}</div>
+                            </div>
+                            
+                            <div class="earnings-stats">
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ upcoming_count|default(0) }}</div>
+                                    <div class="earning-stat-label">Upcoming</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
+                                    <div class="earning-stat-label">Pending</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">
+                                        {% if confirmed_bookings %}{{ confirmed_bookings|selectattr('payment_status', 'equalto', 'paid')|list|length }}{% else %}0{% endif %}
+                                    </div>
+                                    <div class="earning-stat-label">Paid</div>
+                                </div>
+                                
+                                <div class="earning-stat-item">
+                                    <div class="earning-stat-value">{{ pending_payments|default(0) }}</div>
+                                    <div class="earning-stat-label">Unpaid</div>
+                                </div>
+                            </div>
+                            
+                            <div class="payout-info">
+                                <div class="payout-row">
+                                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 500;">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        Next Payout
+                                    </span>
+                                    <span style="font-size: 1rem; font-weight: 700; color: var(--primary);">
+                                        ₹{{ (earnings|default(0) * 0.8)|int }}
+                                    </span>
+                                </div>
+                                <div class="payout-row">
+                                    <span style="font-size: 0.8125rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem;">
+                                        <i class="fas fa-calendar"></i>
+                                        Payout Date
+                                    </span>
+                                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--accent);">
+                                        in 3 days
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-history"></i> Recent Transactions</h2>
+                    </div>
+                    
+                    <div class="card-content">
+                        {% if confirmed_bookings and confirmed_bookings|length > 0 %}
+                        <div class="sessions-list">
+                            {% for booking in confirmed_bookings[:5] %}
+                            <div class="session-item">
+                                <div class="session-header">
+                                    <div style="flex: 1;">
+                                        <h3 class="session-title">Session #{{ booking.id }}</h3>
+                                        <div class="session-details" style="margin-top: 0.5rem;">
+                                            <span class="session-detail">
+                                                <i class="fas fa-user-graduate"></i>
+                                                {{ booking.learner.full_name if booking.learner else 'Learner' }}
+                                            </span>
+                                            <span class="session-detail">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                {{ booking.created_at.strftime('%b %d, %Y') if booking.created_at else '' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="session-price">₹{{ booking.amount_paid if booking.amount_paid else 0 }}</div>
+                                </div>
+                                
+                                <!-- Google Meet Button -->
+                                {% if booking.meeting_link and booking.meeting_link != "None" %}
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <div style="width: 10px; height: 10px; background-color: var(--card-green); border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                        <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">Meeting link available</span>
+                                    </div>
+                                    <a href="{{ booking.meeting_link }}" 
+                                       target="_blank" 
+                                       class="join-meet-btn"
+                                       style="padding: 0.625rem 1.25rem; font-size: 0.8125rem;">
+                                        <i class="fas fa-video"></i>
+                                        Join
+                                    </a>
+                                </div>
+                                {% else %}
+                                <div style="margin-top: 1rem;">
+                                    <span class="status-badge status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Meeting link not ready
+                                    </span>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="session-status" style="margin-top: {% if booking.meeting_link %}1rem{% else %}0.75rem{% endif %};">
+                                    <span class="status-badge {% if booking.payment_status == 'paid' %}status-paid{% else %}status-unpaid{% endif %}">
+                                        {{ booking.payment_status|title }}
+                                    </span>
+                                    {% if booking.meeting_id %}
+                                    <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; border-color: rgba(133, 195, 234, 0.3);">
+                                        <i class="fas fa-video"></i>
+                                        Meet ID: {{ booking.meeting_id|truncate(10) }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state" style="padding: 2rem;">
+                            <div class="empty-state-icon" style="width: 3.5rem; height: 3.5rem;">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <h3>No Transactions Yet</h3>
+                            <p>Your transaction history will appear here once you start receiving bookings</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Section -->
+        <div id="mentor-profile" class="mentor-section">
+            <div style="grid-column: 1 / -1;">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user-edit"></i> Profile Management</h2>
+                        <a href="/profile/edit" class="header-action-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </a>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start;">
+                            <!-- Profile Summary -->
+                            <div>
+                                <div style="text-align: center; margin-bottom: 1.5rem;">
+                                    <div class="user-avatar" style="width: 7rem; height: 7rem; margin: 0 auto 1.5rem; border-width: 4px; box-shadow: var(--shadow-xl);">
+                                        {% if current_user.profile_image %}
+                                        <img src="/static/{{ current_user.profile_image }}" 
+                                             alt="{{ current_user.full_name or current_user.username }}"
+                                             class="user-avatar-img">
+                                        {% else %}
+                                        <div class="user-avatar-initial" style="font-size: 2.5rem;">
+                                            {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 0.375rem;">
+                                        {{ current_user.full_name or current_user.username }}
+                                    </h3>
+                                    <p style="font-size: 0.9375rem; color: var(--text-secondary-light); font-weight: 500;">
+                                        {{ current_user.email }}
+                                    </p>
+                                    <div style="margin-top: 1rem;">
+                                        <span class="status-badge {% if mentor.verification_status == 'approved' %}status-confirmed{% elif mentor.verification_status == 'pending' %}status-pending{% else %}status-unpaid{% endif %}" style="font-size: 0.8125rem;">
+                                            <i class="fas {% if mentor.verification_status == 'approved' %}fa-check-circle{% else %}fa-clock{% endif %}"></i>
+                                            {{ mentor.verification_status|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Profile Info -->
+                            <div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                                    <div>
+                                        <h4 style="font-size: 0.8125rem; color: var(--text-secondary-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; font-weight: 600;">
+                                            Rating
+                                        </h4>
+                                        <p style="font-size: 1.25rem; font-weight: 800; color: var(--primary); background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                            {{ mentor.rating|default('4.9') }}/5
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h4 style="font-size: 0.8125rem; color: var(--text-secondary-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; font-weight: 600;">
+                                            Reviews
+                                        </h4>
+                                        <p style="font-size: 1.25rem; font-weight: 800; color: var(--primary); background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                            {{ mentor.review_count|default('0') }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h4 style="font-size: 0.8125rem; color: var(--text-secondary-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.375rem; font-weight: 600;">
+                                            Sessions
+                                        </h4>
+                                        <p style="font-size: 1.25rem; font-weight: 800; color: var(--primary); background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                                            {{ mentor.total_sessions|default('0') }}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Profile Actions -->
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <a href="/profile/edit" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-purple), #7c3aed);">
+                                            <i class="fas fa-user-edit"></i>
+                                        </div>
+                                        <span class="action-text">Edit Personal Information</span>
+                                    </a>
+                                    
+                                    <a href="#services" onclick="showMentorSection('services')" class="quick-action">
+                                        <div class="action-icon" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal));">
+                                            <i class="fas fa-list-alt"></i>
+                                        </div>
+                                        <span class="action-text">Manage Services & Availability</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% elif current_user.role == 'admin' %}
+        <!-- Admin Dashboard -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+            <!-- Pending Mentor Approvals -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-clock"></i> Pending Mentor Approvals</h2>
+                    <span style="font-size: 0.875rem; color: var(--text-secondary-light); display: flex; align-items: center; gap: 0.375rem; font-weight: 600;">
+                        <i class="fas fa-hashtag"></i>
+                        {{ pending_mentors|length if pending_mentors else 0 }} pending
+                    </span>
+                </div>
+                
+                <div class="card-content">
+                    {% if pending_mentors and pending_mentors|length > 0 %}
+                    <div>
+                        {% for mentor in pending_mentors %}
+                        <div class="pending-mentor">
+                            <div class="mentor-info">
+                                {% if mentor.user.profile_image %}
+                                <img src="/static/{{ mentor.user.profile_image }}" 
+                                     alt="{{ mentor.user.full_name }}"
+                                     class="mentor-avatar">
+                                {% else %}
+                                <div class="mentor-avatar">
+                                    {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper }}
+                                </div>
+                                {% endif %}
+                                <div class="mentor-details">
+                                    <h3>{{ mentor.user.full_name or mentor.user.username }}</h3>
+                                    <p>{{ mentor.user.email }}</p>
+                                    <div class="mentor-tags">
+                                        {% if mentor.industry %}
+                                        <span class="mentor-tag">{{ mentor.industry }}</span>
+                                        {% endif %}
+                                        {% if mentor.experience_years %}
+                                        <span class="mentor-tag">{{ mentor.experience_years }} years exp</span>
+                                        {% endif %}
+                                        {% if mentor.job_title %}
+                                        <span class="mentor-tag">{{ mentor.job_title }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" class="mentor-actions">
+                                <button type="submit" name="action" value="approve" class="action-button action-approve">
+                                    <i class="fas fa-check"></i>
+                                    Approve
+                                </button>
+                                <button type="submit" name="action" value="reject" class="action-button action-reject">
+                                    <i class="fas fa-times"></i>
+                                    Reject
+                                </button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon" style="background: linear-gradient(135deg, var(--card-green), #7cb342);">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <h3>All Caught Up!</h3>
+                        <p>No pending mentor approvals at the moment</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Bookings -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-receipt"></i> Recent Bookings</h2>
+                    <a href="/admin/bookings" style="font-size: 0.8125rem; color: var(--accent); text-decoration: none; font-weight: 600;">
+                        View All <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+                
+                <div class="card-content">
+                    {% if recent_bookings and recent_bookings|length > 0 %}
+                    <div class="bookings-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Mentor</th>
+                                    <th>Learner</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in recent_bookings[:5] %}
+                                <tr>
+                                    <td><strong>#{{ booking.id }}</strong></td>
+                                    <td>
+                                        {% if booking.mentor and booking.mentor.user %}
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--brand-red)); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; font-weight: 700;">
+                                                {{ (booking.mentor.user.full_name[0] if booking.mentor.user.full_name else booking.mentor.user.username[0])|upper }}
+                                            </div>
+                                            <span style="font-weight: 500;">{{ booking.mentor.user.full_name or booking.mentor.user.username }}</span>
+                                        </div>
+                                        {% else %}
+                                        <span style="color: var(--text-secondary-light);">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if booking.learner %}
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background: var(--accent-beige); display: flex; align-items: center; justify-content: center; color: var(--text-secondary-light); font-size: 0.75rem; font-weight: 700;">
+                                                {{ (booking.learner.full_name[0] if booking.learner.full_name else booking.learner.username[0])|upper }}
+                                            </div>
+                                            <span style="font-weight: 500;">{{ booking.learner.full_name or booking.learner.username }}</span>
+                                        </div>
+                                        {% else %}
+                                        <span style="color: var(--text-secondary-light);">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">₹{{ booking.amount_paid or 0 }}</strong></td>
+                                    <td>
+                                        <span class="status-badge {% if booking.status == 'confirmed' %}status-confirmed{% elif booking.status == 'pending' %}status-pending{% else %}status-completed{% endif %}" style="display: inline-flex; font-size: 0.75rem;">
+                                            {{ booking.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
+                                            {{ booking.created_at.strftime('%Y-%m-%d') if booking.created_at else '' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <h3>No Recent Bookings</h3>
+                        <p>There are no recent bookings to display</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add hover effects to all interactive elements
+        const interactiveElements = document.querySelectorAll('.session-item, .quick-action, .service-item, .action-button, .stat-item, .availability-day, .digital-product-card');
+        
+        interactiveElements.forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px)';
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Handle form submissions
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const button = e.submitter;
+                if (button && button.name === 'action') {
+                    const action = button.value;
+                    if (action === 'reject') {
+                        if (!confirm('Are you sure you want to reject this mentor?')) {
+                            e.preventDefault();
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Make tables responsive on mobile
+        const tables = document.querySelectorAll('table');
+        tables.forEach(table => {
+            const wrapper = table.parentElement;
+            if (wrapper && wrapper.classList.contains('bookings-table')) {
+                const checkScroll = () => {
+                    const hasScroll = wrapper.scrollWidth > wrapper.clientWidth;
+                    if (hasScroll) {
+                        wrapper.style.position = 'relative';
+                        wrapper.style.background = `
+                            linear-gradient(to right, 
+                                transparent 90%, 
+                                rgba(31, 31, 31, 0.03) 95%, 
+                                rgba(31, 31, 31, 0.05)
+                            ),
+                            linear-gradient(to left, 
+                                transparent 90%, 
+                                rgba(31, 31, 31, 0.03) 95%, 
+                                rgba(31, 31, 31, 0.05)
+                            )
+                        `;
+                    }
+                };
+                
+                checkScroll();
+                window.addEventListener('resize', checkScroll);
+            }
+        });
+
+        // Initialize mentor section management
+        initializeMentorSections();
+        
+        // Add pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+
+    // Mentor Section Management
+    function initializeMentorSections() {
+        const hash = window.location.hash.substring(1) || 'overview';
+        showMentorSection(hash);
+        
+        updateActiveMenuItem(hash);
+        
+        window.addEventListener('hashchange', function() {
+            const newHash = window.location.hash.substring(1) || 'overview';
+            showMentorSection(newHash);
+            updateActiveMenuItem(newHash);
+        });
+    }
+
+    function showMentorSection(sectionId) {
+        const sections = document.querySelectorAll('.mentor-section');
+        sections.forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        const selectedSection = document.getElementById(`mentor-${sectionId}`);
+        if (selectedSection) {
+            selectedSection.classList.add('active');
+        } else {
+            document.getElementById('mentor-overview').classList.add('active');
+            updateActiveMenuItem('overview');
+        }
+        
+        if (sectionId !== 'overview') {
+            history.replaceState(null, null, `#${sectionId}`);
+        } else {
+            history.replaceState(null, null, ' ');
+        }
+    }
+
+    function updateActiveMenuItem(sectionId) {
+        const menuItems = document.querySelectorAll('.mentor-menu-bar .menu-item');
+        menuItems.forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        const activeMenuItem = document.querySelector(`.mentor-menu-bar .menu-item[href="#${sectionId}"]`);
+        if (activeMenuItem) {
+            activeMenuItem.classList.add('active');
+        } else {
+            document.querySelector('.mentor-menu-bar .menu-item[href="#overview"]').classList.add('active');
+        }
+    }
+
+    // Delete Service Function
+    function deleteService(serviceId) {
+        if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+            fetch(`/mentor/dashboard/services/${serviceId}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Service deleted successfully!', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showNotification('Failed to delete service. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred. Please try again.', 'error');
+            });
+        }
+    }
+
+    // Copy Dashboard URL Function
+    function copyDashboardUrl() {
+        const url = window.location.href;
+        const copyBtn = document.getElementById('copyLinkBtn');
+        const originalIcon = copyBtn.querySelector('i');
+        const originalText = copyBtn.querySelector('span').textContent;
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url)
+                .then(() => {
+                    copyBtn.classList.add('copied');
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
+                    
+                    setTimeout(() => {
+                        copyBtn.classList.remove('copied');
+                        copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
+                    }, 2000);
+                    
+                    showNotification('Dashboard link copied to clipboard! 📋', 'success');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    fallbackCopy(url, copyBtn, originalIcon, originalText);
+                });
+        } else {
+            fallbackCopy(url, copyBtn, originalIcon, originalText);
+        }
+    }
+
+    function fallbackCopy(url, copyBtn, originalIcon, originalText) {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                copyBtn.classList.add('copied');
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> <span class="hidden sm:inline">Copied!</span>';
+                
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.innerHTML = `<i class="${originalIcon.className}"></i> <span class="hidden sm:inline">${originalText}</span>`;
+                }, 2000);
+                
+                showNotification('Dashboard link copied to clipboard! 📋', 'success');
+            } else {
+                showNotification('Failed to copy link. Please try again.', 'error');
+            }
+        } catch (err) {
+            console.error('Fallback copy failed: ', err);
+            showNotification('Failed to copy link. Please copy manually.', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    // Notification system
+    function showNotification(message, type) {
+        const existingNotifications = document.querySelectorAll('.custom-notification');
+        existingNotifications.forEach(notification => notification.remove());
+        
+        const notification = document.createElement('div');
+        notification.className = `custom-notification fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
+            type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 'bg-gradient-to-r from-red-500 to-pink-600'
+        } text-white max-w-sm`;
+        notification.innerHTML = `
+            <div class="flex items-center gap-3">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} text-xl"></i>
+                <span class="font-medium">${message}</span>
+            </div>
+        `;
+        
+        notification.style.animation = 'slideInRight 0.3s ease-out';
+        
+        document.body.appendChild(notification);
+        
+        if (!document.querySelector('#notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }, 4000);
+    }
+</script>
+{% endblock %}
