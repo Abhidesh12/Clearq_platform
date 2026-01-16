@@ -2631,14 +2631,21 @@ async def payment_page(
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
     
+    # If already paid, redirect to appropriate page
     if booking.payment_status == "paid":
-        return RedirectResponse(url="/dashboard", status_code=303)
+        service = db.query(Service).filter(Service.id == booking.service_id).first()
+        if service and service.is_digital:
+            return RedirectResponse(url=f"/digital-product/{service.id}", status_code=303)
+        elif booking.meeting_link:
+            return RedirectResponse(url=f"/meeting/{booking.id}", status_code=303)
+        else:
+            return RedirectResponse(url=f"/dashboard?booking_id={booking_id}&status=paid", status_code=303)
     
     service = db.query(Service).filter(Service.id == booking.service_id).first()
     mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
     
     # Debug print
-    print(f"Payment page - Booking ID: {booking.id}, Razorpay Order ID: {booking.razorpay_order_id}")
+    print(f"Payment page - Booking ID: {booking.id}, Status: {booking.payment_status}, Razorpay Order ID: {booking.razorpay_order_id}")
     
     return templates.TemplateResponse("payment.html", {
         "request": request,
@@ -2647,6 +2654,56 @@ async def payment_page(
         "service": service,
         "mentor": mentor,
         "razorpay_key_id": RAZORPAY_KEY_ID
+    })
+
+
+@app.post("/api/cleanup-booking/{booking_id}")
+async def cleanup_booking(
+    booking_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Clean up stuck booking status"""
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    booking = db.query(Booking).filter(
+        Booking.id == booking_id,
+        Booking.learner_id == current_user.id
+    ).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # Check if booking is paid but still showing as pending
+    if booking.payment_status == "pending" and booking.razorpay_payment_id:
+        try:
+            # Verify with Razorpay
+            payment = razorpay_client.payment.fetch(booking.razorpay_payment_id)
+            if payment.get('status') == 'captured':
+                # Update booking
+                booking.payment_status = "paid"
+                booking.status = "confirmed"
+                
+                # Generate meeting link if needed
+                service = db.query(Service).filter(Service.id == booking.service_id).first()
+                if service and not service.is_digital:
+                    generate_meeting_link(booking.id, db)
+                
+                db.commit()
+                
+                return JSONResponse({
+                    "success": True,
+                    "message": "Booking status updated to paid",
+                    "payment_status": "paid"
+                })
+        except Exception as e:
+            print(f"Error verifying payment: {e}")
+    
+    return JSONResponse({
+        "success": False,
+        "message": "No cleanup needed",
+        "payment_status": booking.payment_status
     })
     
 @app.get("/mentor/dashboard/services", response_class=HTMLResponse)
@@ -3661,7 +3718,10 @@ async def check_booking_status(
         "booking_status": booking.status,
         "is_digital": service.is_digital if service else False,
         "amount_paid": booking.amount_paid,
-        "created_at": booking.created_at.isoformat() if booking.created_at else None
+        "created_at": booking.created_at.isoformat() if booking.created_at else None,
+        "meeting_link": booking.meeting_link,
+        "razorpay_order_id": booking.razorpay_order_id,
+        "razorpay_payment_id": booking.razorpay_payment_id
     }
     
     # Determine redirect URL based on current status
@@ -3671,7 +3731,7 @@ async def check_booking_status(
         elif booking.meeting_link:
             response["redirect_url"] = f"/meeting/{booking.id}"
         else:
-            response["redirect_url"] = "/dashboard?tab=upcoming"
+            response["redirect_url"] = f"/dashboard?booking_id={booking.id}&status=paid"
     elif booking.payment_status == "pending":
         response["redirect_url"] = f"/payment/{booking.id}"
     elif booking.payment_status == "free":
@@ -3680,7 +3740,7 @@ async def check_booking_status(
         elif booking.meeting_link:
             response["redirect_url"] = f"/meeting/{booking.id}"
         else:
-            response["redirect_url"] = "/dashboard"
+            response["redirect_url"] = f"/dashboard?booking_id={booking.id}&status=free"
     
     return JSONResponse(response)
 
