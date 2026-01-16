@@ -835,6 +835,66 @@ async def payment_callback(
         print(f"Callback error: {e}")
         return RedirectResponse(url="/dashboard?error=Callback%20failed")
 
+
+@app.post("/admin/fix-booking/{booking_id}")
+async def admin_fix_booking(
+    booking_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin endpoint to manually fix booking status"""
+    if not current_user or current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    print(f"=== Manual fix for booking {booking_id} ===")
+    print(f"Current: Payment={booking.payment_status}, Status={booking.status}")
+    print(f"Razorpay: Order={booking.razorpay_order_id}, Payment={booking.razorpay_payment_id}")
+    
+    # If payment ID exists, verify with Razorpay
+    if booking.razorpay_payment_id:
+        try:
+            payment = razorpay_client.payment.fetch(booking.razorpay_payment_id)
+            print(f"Razorpay payment status: {payment.get('status')}")
+            
+            if payment.get('status') == 'captured' and booking.payment_status != 'paid':
+                # Update to paid
+                booking.payment_status = 'paid'
+                booking.status = 'confirmed'
+                
+                # Generate meeting link if needed
+                service = db.query(Service).filter(Service.id == booking.service_id).first()
+                if service and not service.is_digital and not booking.meeting_link:
+                    generate_meeting_link(booking.id, db)
+                
+                db.commit()
+                db.refresh(booking)
+                
+                return JSONResponse({
+                    "success": True,
+                    "message": "Booking fixed",
+                    "new_status": {
+                        "payment_status": booking.payment_status,
+                        "booking_status": booking.status,
+                        "meeting_link": booking.meeting_link
+                    }
+                })
+        except Exception as e:
+            print(f"Error checking Razorpay: {e}")
+    
+    return JSONResponse({
+        "success": False,
+        "message": "No fix needed or unable to fix",
+        "current_status": {
+            "payment_status": booking.payment_status,
+            "booking_status": booking.status
+        }
+    })
+
 @app.post("/mentor/availability/cleanup")
 async def cleanup_availability(
     request: Request,
