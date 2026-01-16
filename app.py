@@ -499,7 +499,7 @@ def can_withdraw(mentor_id: int, amount: float, db: Session):
     
     # Minimum withdrawal amount
     if amount < 1:
-        return False, "Minimum withdrawal amount is ₹500"
+        return False, "Minimum withdrawal amount is ₹1"
     
     # Check available balance
     if amount > float(balance.available_balance):
@@ -2178,7 +2178,7 @@ async def dashboard(
                 'available_balance': float(balance.available_balance),
                 'pending_withdrawals': len([w for w in withdrawal_requests if w.status in ['pending', 'processing']]),
                 'completed_withdrawals': len([w for w in withdrawal_requests if w.status == 'completed']),
-                'min_withdrawal_amount': 500
+                'min_withdrawal_amount': 1
             }
             # ============ END NEW CODE ============
             
@@ -2336,7 +2336,7 @@ async def dashboard(
                     'available_balance': 0,
                     'pending_withdrawals': 0,
                     'completed_withdrawals': 0,
-                    'min_withdrawal_amount': 500
+                    'min_withdrawal_amount': 1
                 },
                 "withdrawal_requests": [],
                 # ============ END NEW CODE ============
@@ -4205,7 +4205,7 @@ async def mentor_payout_page(
         "withdrawal_history": withdrawal_history,
         "recent_earnings": recent_earnings,
         "upcoming_payouts": upcoming_payouts,
-        "min_withdrawal_amount": 500,  # Minimum withdrawal amount in INR
+        "min_withdrawal_amount": 1,  # Minimum withdrawal amount in INR
         "now": datetime.now()
     })
 
@@ -4238,7 +4238,7 @@ async def request_withdrawal(
         raise HTTPException(status_code=400, detail="Balance not found")
     
     # Check minimum withdrawal amount
-    if amount < 500:  # Minimum 500 INR
+    if amount < 1:  # Minimum 500 INR
         raise HTTPException(status_code=400, detail="Minimum withdrawal amount is ₹500")
     
     # Check if sufficient balance
