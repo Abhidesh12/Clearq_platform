@@ -4355,6 +4355,7 @@ async def request_withdrawal(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error processing withdrawal: {str(e)}")
+        
 
 # ============ ADMIN PAYOUT ROUTES ============
 
@@ -4414,6 +4415,121 @@ async def admin_payouts_page(
             "failed_count": db.query(MentorPayout).filter(MentorPayout.status == "failed").count(),
         }
     })
+
+@app.get("/admin/withdrawals")
+async def admin_withdrawals(
+    request: Request,
+    status: str = None,
+    page: int = 1,
+    per_page: int = 20,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin view for withdrawal requests"""
+    if not current_user or current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    try:
+        # Base query
+        query = db.query(WithdrawalRequest)
+        
+        # Filter by status if provided
+        if status and status in ["pending", "approved", "paid", "rejected"]:
+            query = query.filter(WithdrawalRequest.status == status)
+        
+        # Count total records
+        total_count = query.count()
+        
+        # Pagination
+        offset = (page - 1) * per_page
+        withdrawals = query.order_by(
+            WithdrawalRequest.requested_at.desc()
+        ).offset(offset).limit(per_page).all()
+        
+        # Prepare withdrawal data
+        withdrawal_data = []
+        for withdrawal in withdrawals:
+            withdrawal_data.append({
+                "id": withdrawal.id,
+                "mentor_id": withdrawal.mentor_id,
+                "mentor_name": withdrawal.mentor.user.full_name if withdrawal.mentor and withdrawal.mentor.user else "Unknown",
+                "mentor_email": withdrawal.mentor.user.email if withdrawal.mentor and withdrawal.mentor.user else "Unknown",
+                "amount": withdrawal.amount,
+                "payment_method": withdrawal.payment_method,
+                "payment_details": withdrawal.payment_details,
+                "status": withdrawal.status,
+                "requested_at": withdrawal.requested_at.strftime("%Y-%m-%d %H:%M") if withdrawal.requested_at else None,
+                "processed_at": withdrawal.processed_at.strftime("%Y-%m-%d %H:%M") if withdrawal.processed_at else None,
+                "admin_notes": withdrawal.admin_notes
+            })
+        
+        return templates.TemplateResponse("admin_withdrawals.html", {
+            "request": request,
+            "current_user": current_user,
+            "withdrawals": withdrawal_data,
+            "status": status,
+            "page": page,
+            "per_page": per_page,
+            "total_count": total_count,
+            "total_pages": (total_count + per_page - 1) // per_page,
+            "status_counts": {
+                "pending": db.query(WithdrawalRequest).filter(WithdrawalRequest.status == "pending").count(),
+                "paid": db.query(WithdrawalRequest).filter(WithdrawalRequest.status == "paid").count(),
+                "rejected": db.query(WithdrawalRequest).filter(WithdrawalRequest.status == "rejected").count(),
+                "all": db.query(WithdrawalRequest).count()
+            }
+        })
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading withdrawals: {str(e)}")
+
+@app.get("/admin/payouts")
+async def admin_payouts(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Admin payouts dashboard"""
+    if not current_user or current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    try:
+        # Get stats for the last 30 days
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        
+        # Recent withdrawals
+        recent_withdrawals = db.query(WithdrawalRequest).order_by(
+            WithdrawalRequest.requested_at.desc()
+        ).limit(10).all()
+        
+        # Stats
+        total_withdrawn = db.query(func.sum(WithdrawalRequest.amount)).filter(
+            WithdrawalRequest.status == "paid"
+        ).scalar() or 0
+        
+        pending_amount = db.query(func.sum(WithdrawalRequest.amount)).filter(
+            WithdrawalRequest.status == "pending"
+        ).scalar() or 0
+        
+        # Monthly stats
+        monthly_withdrawn = db.query(func.sum(WithdrawalRequest.amount)).filter(
+            WithdrawalRequest.status == "paid",
+            WithdrawalRequest.processed_at >= thirty_days_ago
+        ).scalar() or 0
+        
+        return templates.TemplateResponse("admin_payouts.html", {
+            "request": request,
+            "current_user": current_user,
+            "recent_withdrawals": recent_withdrawals,
+            "total_withdrawn": total_withdrawn,
+            "pending_amount": pending_amount,
+            "monthly_withdrawn": monthly_withdrawn,
+            "pending_count": db.query(WithdrawalRequest).filter(WithdrawalRequest.status == "pending").count(),
+            "paid_count": db.query(WithdrawalRequest).filter(WithdrawalRequest.status == "paid").count(),
+        })
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading payouts: {str(e)}")
 
 @app.post("/admin/payouts/{payout_id}/update")
 async def update_payout_status(
