@@ -1630,21 +1630,13 @@ async def purchase_digital_product(
             order_amount = service.price * 100
             order_data = {
                 "amount": order_amount,
-                "currency": order_currency,
+                "currency": "INR",
                 "payment_capture": 1,
                 "notes": {
                     "service_id": service_id,
                     "learner_id": current_user.id,
-                    "date": date_str,
-                    "time": time_slot,
-                   "duration": service.duration_minutes
-    }
-            },
-            
-            
-    # Add this callback_url parameter:
-            "callback_url": "https://www.clearq.in/payment/callback",  # Replace with your actual domain
-            "callback_method": "get"  # or "post" depending on your preference
+                    "type": "digital_product"
+                }
             }
             
             razorpay_order = razorpay_client.order.create(order_data)
