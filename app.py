@@ -2754,7 +2754,7 @@ async def payment_page(
         "booking": booking,
         "service": service,
         "mentor": mentor,
-        "razorpay_key_id": RAZORPAY_KEY_ID
+        "RAZORPAY_KEY_ID": RAZORPAY_KEY_ID
     })
 
 
