@@ -3387,7 +3387,7 @@
                         <input type="number" 
                                id="withdrawalAmount" 
                                name="amount"
-                               min="500" 
+                               min="1" 
                                max="{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}"
                                step="100"
                                required
