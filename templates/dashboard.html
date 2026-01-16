@@ -3369,7 +3369,8 @@
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 0.75rem; color: var(--text-secondary-light); margin-bottom: 0.25rem;">
-                                Minimum: ₹500
+                                Minimum: ₹1
+                            
                             </div>
                             <div style="font-size: 0.75rem; color: var(--accent); font-weight: 500;">
                                 80% of total earnings
@@ -3399,7 +3400,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
                         <div style="font-size: 0.75rem; color: var(--text-secondary-light);">
-                            Enter amount between ₹500 - ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
+                            Enter amount between ₹1 - ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
                         </div>
                         <button type="button" 
                                 onclick="setMaxAmount()" 
