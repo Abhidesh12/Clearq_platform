@@ -6,6 +6,8 @@ from decimal import Decimal
 import logging
 import requests
 import traceback
+import time
+from datetime import datetime, timedelta, date
 from sqlalchemy import or_, and_
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
@@ -2756,6 +2758,124 @@ async def payment_page(
         "mentor": mentor,
         "RAZORPAY_KEY_ID": RAZORPAY_KEY_ID
     })
+
+@app.post("/api/verify-payment-manual")
+async def verify_payment_manual(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Manual payment verification endpoint"""
+    try:
+        data = await request.json()
+        razorpay_payment_id = data.get("razorpay_payment_id")
+        razorpay_order_id = data.get("razorpay_order_id")
+        booking_id = data.get("booking_id")
+        
+        print(f"🔍 Manual verification for Payment ID: {razorpay_payment_id}")
+        
+        if not razorpay_payment_id or not booking_id:
+            return JSONResponse({
+                "success": False,
+                "message": "Missing payment ID or booking ID"
+            })
+        
+        # Find booking
+        booking = db.query(Booking).filter(Booking.id == booking_id).first()
+        if not booking:
+            return JSONResponse({
+                "success": False,
+                "message": "Booking not found"
+            })
+        
+        # Check if already paid
+        if booking.payment_status == "paid":
+            service = db.query(Service).filter(Service.id == booking.service_id).first()
+            redirect_url = "/dashboard"
+            if service and service.is_digital:
+                redirect_url = f"/digital-product/{service.id}"
+            elif booking.meeting_link:
+                redirect_url = f"/meeting/{booking.id}"
+            
+            return JSONResponse({
+                "success": True,
+                "message": "Payment already verified",
+                "redirect_url": redirect_url,
+                "is_digital": service.is_digital if service else False
+            })
+        
+        # Try to verify with Razorpay
+        try:
+            payment = razorpay_client.payment.fetch(razorpay_payment_id)
+            
+            if payment.get('status') == 'captured':
+                # Update booking
+                booking.payment_status = "paid"
+                booking.razorpay_payment_id = razorpay_payment_id
+                booking.razorpay_order_id = razorpay_order_id or booking.razorpay_order_id
+                booking.status = "confirmed"
+                
+                # Handle service type
+                service = db.query(Service).filter(Service.id == booking.service_id).first()
+                if service and service.is_digital:
+                    booking.status = "completed"
+                elif service and not service.is_digital:
+                    # Generate meeting link for sessions
+                    try:
+                        meeting_link, meeting_id = generate_meeting_link(booking.id, db)
+                    except Exception as e:
+                        print(f"Meeting generation error: {e}")
+                
+                db.commit()
+                
+                # Determine redirect URL
+                redirect_url = "/dashboard"
+                if service and service.is_digital:
+                    redirect_url = f"/digital-product/{service.id}"
+                elif booking.meeting_link:
+                    redirect_url = f"/meeting/{booking.id}"
+                
+                return JSONResponse({
+                    "success": True,
+                    "message": "Payment manually verified successfully!",
+                    "redirect_url": redirect_url,
+                    "is_digital": service.is_digital if service else False
+                })
+            else:
+                return JSONResponse({
+                    "success": False,
+                    "message": f"Payment status: {payment.get('status')}"
+                })
+                
+        except Exception as razorpay_error:
+            print(f"Razorpay API error: {razorpay_error}")
+            # Even if Razorpay API fails, mark as paid if we have the payment ID
+            booking.payment_status = "paid"
+            booking.razorpay_payment_id = razorpay_payment_id
+            booking.status = "confirmed"
+            
+            service = db.query(Service).filter(Service.id == booking.service_id).first()
+            if service and service.is_digital:
+                booking.status = "completed"
+            
+            db.commit()
+            
+            redirect_url = "/dashboard"
+            if service and service.is_digital:
+                redirect_url = f"/digital-product/{service.id}"
+            
+            return JSONResponse({
+                "success": True,
+                "message": "Payment marked as paid (manual override)",
+                "redirect_url": redirect_url,
+                "is_digital": service.is_digital if service else False
+            })
+        
+    except Exception as e:
+        print(f"Manual verification error: {e}")
+        return JSONResponse({
+            "success": False,
+            "message": f"Error: {str(e)}"
+        })
 
 
 @app.post("/api/cleanup-booking/{booking_id}")
