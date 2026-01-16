@@ -359,7 +359,7 @@
         margin-left: 0.5rem;
     }
 
-    /* Rich Text Editor Styles - Enhanced */
+    /* Rich Text Editor Styles */
     .rich-text-editor-container {
         border: 1px solid var(--gray-300);
         border-radius: var(--radius);
@@ -381,15 +381,6 @@
         flex-wrap: wrap;
         gap: 0.25rem;
         align-items: center;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    .toolbar-group {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
     }
 
     .toolbar-btn {
@@ -436,7 +427,6 @@
         outline: none;
         color: var(--gray-900);
         font-family: inherit;
-        position: relative;
     }
 
     .editor-content:focus {
@@ -445,7 +435,6 @@
 
     .editor-content p {
         margin-bottom: 0.75rem;
-        min-height: 1.2em;
     }
 
     .editor-content ul, .editor-content ol {
@@ -453,81 +442,20 @@
         margin-bottom: 0.75rem;
     }
 
-    .editor-content h1, .editor-content h2, .editor-content h3, .editor-content h4, .editor-content h5, .editor-content h6 {
+    .editor-content h2 {
+        font-size: 1.125rem;
         font-weight: 600;
         margin: 1rem 0 0.5rem;
         color: var(--gray-900);
     }
 
-    .editor-content h1 { font-size: 1.5rem; }
-    .editor-content h2 { font-size: 1.25rem; }
-    .editor-content h3 { font-size: 1.125rem; }
-    .editor-content h4 { font-size: 1rem; }
-    .editor-content h5 { font-size: 0.875rem; }
-    .editor-content h6 { font-size: 0.75rem; }
-
-    .editor-content strong { font-weight: 700; }
-    .editor-content em { font-style: italic; }
-    .editor-content u { text-decoration: underline; }
-    .editor-content s { text-decoration: line-through; }
-
     .editor-content[placeholder]:empty:before {
         content: attr(placeholder);
         color: var(--gray-400);
-        pointer-events: none;
-        position: absolute;
     }
 
     .hidden-textarea {
         display: none;
-    }
-
-    /* Color pickers */
-    .color-picker-container {
-        position: relative;
-        display: inline-block;
-    }
-
-    .color-picker {
-        width: 2rem;
-        height: 2rem;
-        border: none;
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        padding: 0;
-        background: none;
-    }
-
-    .color-picker::-webkit-color-swatch-wrapper {
-        padding: 0;
-    }
-
-    .color-picker::-webkit-color-swatch {
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius-sm);
-    }
-
-    .color-picker::-moz-color-swatch {
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius-sm);
-    }
-
-    /* Character counter */
-    .char-counter {
-        font-size: 0.75rem;
-        color: var(--gray-500);
-        text-align: right;
-        padding: 0.25rem 0.5rem;
-        background: var(--gray-50);
-        border-top: 1px solid var(--gray-200);
-    }
-
-    .char-counter.warning {
-        color: var(--warning);
-    }
-
-    .char-counter.error {
-        color: var(--danger);
     }
 
     /* Services List */
@@ -620,50 +548,6 @@
     .status-inactive {
         background: var(--gray-100);
         color: var(--gray-700);
-    }
-
-    .service-description {
-        font-size: 0.8125rem;
-        color: var(--gray-600);
-        line-height: 1.4;
-        margin-bottom: 0.5rem;
-        overflow: hidden;
-    }
-
-    .service-description * {
-        font-size: inherit !important;
-        line-height: inherit !important;
-        color: inherit !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: inline !important;
-    }
-
-    .service-description h1,
-    .service-description h2,
-    .service-description h3,
-    .service-description h4,
-    .service-description h5,
-    .service-description h6 {
-        font-weight: 600 !important;
-        display: block !important;
-        margin-bottom: 0.25rem !important;
-    }
-
-    .service-description p {
-        display: block !important;
-        margin-bottom: 0.25rem !important;
-    }
-
-    .service-description ul,
-    .service-description ol {
-        display: block !important;
-        margin: 0.25rem 0 !important;
-        padding-left: 1rem !important;
-    }
-
-    .service-description li {
-        display: list-item !important;
     }
 
     .service-footer {
@@ -779,127 +663,6 @@
         color: var(--gray-600);
     }
 
-    /* Edit Service Modal */
-    .edit-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-        backdrop-filter: blur(4px);
-    }
-
-    .edit-modal.active {
-        display: flex;
-    }
-
-    .modal-content {
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-xl);
-        max-width: 600px;
-        width: 100%;
-        max-height: 90vh;
-        overflow-y: auto;
-        animation: modalSlideIn 0.3s ease;
-    }
-
-    @keyframes modalSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .modal-header {
-        padding: 1.5rem;
-        border-bottom: 1px solid var(--gray-200);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .modal-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--gray-900);
-        margin: 0;
-    }
-
-    .modal-close {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        color: var(--gray-400);
-        cursor: pointer;
-        padding: 0;
-        width: 2rem;
-        height: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--radius);
-        transition: var(--transition);
-    }
-
-    .modal-close:hover {
-        background: var(--gray-100);
-        color: var(--gray-600);
-    }
-
-    .modal-body {
-        padding: 1.5rem;
-    }
-
-    .modal-footer {
-        padding: 1.5rem;
-        border-top: 1px solid var(--gray-200);
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-    }
-
-    .btn-secondary {
-        padding: 0.75rem 1.5rem;
-        background: var(--gray-100);
-        color: var(--gray-700);
-        border: none;
-        border-radius: var(--radius);
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .btn-secondary:hover {
-        background: var(--gray-200);
-    }
-
-    .btn-primary {
-        padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: var(--white);
-        border: none;
-        border-radius: var(--radius);
-        font-weight: 600;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-    }
-
     /* Responsive Design */
     @media (min-width: 640px) {
         .services-header {
@@ -966,10 +729,6 @@
         
         .editor-content {
             min-height: 200px;
-        }
-        
-        .modal-content {
-            max-width: 700px;
         }
     }
 
@@ -1039,11 +798,11 @@
             <!-- Create Service Form -->
             <div class="create-service-card">
                 <div class="form-header">
-                    <h2>{% if editing %}Edit Service{% else %}Create New Service{% endif %}</h2>
+                    <h2>Create New Service</h2>
                 </div>
                 
                 <div class="form-content">
-                    <form action="{% if editing %}/mentor/services/{{ editing_service.id }}/update{% else %}/mentor/services/create{% endif %}" method="POST" id="create-service-form">
+                    <form action="/mentor/services/create" method="POST" id="create-service-form">
                         <div class="form-grid">
                             <!-- Service Name -->
                             <div class="form-group">
@@ -1052,8 +811,7 @@
                                 </label>
                                 <input type="text" name="name" required 
                                        class="form-input"
-                                       placeholder="e.g., Mock Interview, Resume Review, E-Book"
-                                       value="{% if editing %}{{ editing_service.name }}{% endif %}">
+                                       placeholder="e.g., Mock Interview, Resume Review, E-Book">
                             </div>
                             
                             <!-- Category -->
@@ -1063,14 +821,14 @@
                                 </label>
                                 <select name="category" required class="form-select">
                                     <option value="">Select Category</option>
-                                    <option value="mock-interview" {% if editing and editing_service.category == 'mock-interview' %}selected{% endif %}>Mock Interview</option>
-                                    <option value="resume-review" {% if editing and editing_service.category == 'resume-review' %}selected{% endif %}>Resume Review</option>
-                                    <option value="career-guidance" {% if editing and editing_service.category == 'career-guidance' %}selected{% endif %}>Career Guidance</option>
-                                    <option value="technical-coaching" {% if editing and editing_service.category == 'technical-coaching' %}selected{% endif %}>Technical Coaching</option>
-                                    <option value="portfolio-review" {% if editing and editing_service.category == 'portfolio-review' %}selected{% endif %}>Portfolio Review</option>
-                                    <option value="salary-negotiation" {% if editing and editing_service.category == 'salary-negotiation' %}selected{% endif %}>Salary Negotiation</option>
-                                    <option value="digital-product" {% if editing and editing_service.category == 'digital-product' %}selected{% endif %}>Digital Product</option>
-                                    <option value="other" {% if editing and editing_service.category == 'other' %}selected{% endif %}>Other</option>
+                                    <option value="mock-interview">Mock Interview</option>
+                                    <option value="resume-review">Resume Review</option>
+                                    <option value="career-guidance">Career Guidance</option>
+                                    <option value="technical-coaching">Technical Coaching</option>
+                                    <option value="portfolio-review">Portfolio Review</option>
+                                    <option value="salary-negotiation">Salary Negotiation</option>
+                                    <option value="digital-product">Digital Product</option>
+                                    <option value="other">Other</option>
                                 </select>
                             </div>
                             
@@ -1081,84 +839,46 @@
                                 </label>
                                 <div class="rich-text-editor-container">
                                     <div class="editor-toolbar">
-                                        <div class="toolbar-group">
-                                            <button type="button" class="toolbar-btn" data-command="bold" title="Bold (Ctrl+B)">
-                                                <i class="fas fa-bold"></i>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="italic" title="Italic (Ctrl+I)">
-                                                <i class="fas fa-italic"></i>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="underline" title="Underline (Ctrl+U)">
-                                                <i class="fas fa-underline"></i>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="strikeThrough" title="Strikethrough">
-                                                <i class="fas fa-strikethrough"></i>
-                                            </button>
-                                        </div>
+                                        <button type="button" class="toolbar-btn" data-command="bold" title="Bold">
+                                            <i class="fas fa-bold"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="italic" title="Italic">
+                                            <i class="fas fa-italic"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="underline" title="Underline">
+                                            <i class="fas fa-underline"></i>
+                                        </button>
                                         <div class="toolbar-separator"></div>
-                                        <div class="toolbar-group">
-                                            <button type="button" class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
-                                                <i class="fas fa-list-ul"></i>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
-                                                <i class="fas fa-list-ol"></i>
-                                            </button>
-                                        </div>
+                                        <button type="button" class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
+                                            <i class="fas fa-list-ul"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
+                                            <i class="fas fa-list-ol"></i>
+                                        </button>
                                         <div class="toolbar-separator"></div>
-                                        <div class="toolbar-group">
-                                            <button type="button" class="toolbar-btn" data-command="justifyLeft" title="Align Left">
-                                                <i class="fas fa-align-left"></i>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Center">
-                                                <i class="fas fa-align-center"></i>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right">
-                                                <i class="fas fa-align-right"></i>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="justifyFull" title="Justify">
-                                                <i class="fas fa-align-justify"></i>
-                                            </button>
-                                        </div>
+                                        <button type="button" class="toolbar-btn" data-command="justifyLeft" title="Align Left">
+                                            <i class="fas fa-align-left"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Center">
+                                            <i class="fas fa-align-center"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right">
+                                            <i class="fas fa-align-right"></i>
+                                        </button>
                                         <div class="toolbar-separator"></div>
-                                        <div class="toolbar-group">
-                                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="h1" title="Heading 1">
-                                                H1
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="h2" title="Heading 2">
-                                                H2
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="h3" title="Heading 3">
-                                                H3
-                                            </button>
-                                            <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="p" title="Paragraph">
-                                                P
-                                            </button>
-                                        </div>
-                                        <div class="toolbar-separator"></div>
-                                        <div class="toolbar-group">
-                                            <div class="color-picker-container">
-                                                <input type="color" class="color-picker" id="text-color" title="Text Color" value="#000000">
-                                            </div>
-                                            <div class="color-picker-container">
-                                                <input type="color" class="color-picker" id="bg-color" title="Background Color" value="#ffffff">
-                                            </div>
-                                        </div>
+                                        <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="h2" title="Heading">
+                                            <i class="fas fa-heading"></i>
+                                        </button>
+                                        <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="p" title="Paragraph">
+                                            <i class="fas fa-paragraph"></i>
+                                        </button>
                                     </div>
                                     <div class="editor-content" contenteditable="true" id="rich-text-editor"
-                                         placeholder="Describe what learners will get from this service...">
-                                         {% if editing and editing_service.description %}
-                                         {{ editing_service.description|safe }}
-                                         {% endif %}
-                                    </div>
-                                    <div class="char-counter" id="char-counter">
-                                        <span id="char-count">0</span>/5000 characters
-                                    </div>
+                                         placeholder="Describe what learners will get from this service..."></div>
                                     <textarea name="description" rows="3" required 
                                               class="form-textarea hidden-textarea"
                                               placeholder="Describe what learners will get from this service..."
-                                              id="description-textarea">
-                                              {% if editing %}{{ editing_service.description }}{% endif %}
-                                    </textarea>
+                                              id="description-textarea"></textarea>
                                 </div>
                                 <p class="form-help">
                                     Use the toolbar to format your description. This will be displayed to learners.
@@ -1177,22 +897,18 @@
                                         <input type="number" name="price" required min="0"
                                                class="form-input"
                                                placeholder="999"
-                                               id="price-input"
-                                               value="{% if editing %}{{ editing_service.price }}{% endif %}">
+                                               id="price-input">
                                     </div>
                                 </div>
                                 
                                 <!-- Duration (for live sessions) -->
                                 <div class="form-group" style="margin-bottom: 1rem;">
                                     <label class="form-label" id="duration-label">
-                                        {% if editing and editing_service.is_digital %}Access Type{% else %}Duration (minutes){% endif %} <span class="form-required">*</span>
+                                        Duration (minutes) <span class="form-required">*</span>
                                     </label>
-                                    <input type="number" name="duration_minutes" 
-                                           {% if editing and editing_service.is_digital %}value="0" disabled{% else %}value="{{ editing_service.duration_minutes if editing else '60' }}"{% endif %}
-                                           required min="0" step="15"
+                                    <input type="number" name="duration_minutes" value="60" required min="15" step="15"
                                            class="form-input"
-                                           id="duration-input"
-                                           placeholder="{% if editing and editing_service.is_digital %}Instant Access{% else %}60{% endif %}">
+                                           id="duration-input">
                                 </div>
                                 
                                 <!-- Service Type -->
@@ -1202,17 +918,15 @@
                                     </label>
                                     <div class="radio-group">
                                         <label class="radio-option">
-                                            <input type="radio" name="is_digital" value="false" 
+                                            <input type="radio" name="is_digital" value="false" checked 
                                                    class="radio-input service-type-radio"
-                                                   data-type="live"
-                                                   {% if not editing or not editing_service.is_digital %}checked{% endif %}>
+                                                   data-type="live">
                                             <span class="radio-label">Live Session</span>
                                         </label>
                                         <label class="radio-option">
                                             <input type="radio" name="is_digital" value="true" 
                                                    class="radio-input service-type-radio"
-                                                   data-type="digital"
-                                                   {% if editing and editing_service.is_digital %}checked{% endif %}>
+                                                   data-type="digital">
                                             <span class="radio-label">Digital Product</span>
                                         </label>
                                     </div>
@@ -1221,16 +935,15 @@
                         </div>
                         
                         <!-- Digital Product Fields -->
-                        <div id="digital-product-fields" class="digital-fields {% if not editing or not editing_service.is_digital %}hidden{% endif %}">
+                        <div id="digital-product-fields" class="digital-fields hidden">
                             <div class="form-group">
                                 <label class="form-label">
-                                    Digital Product URL <span class="form-required" id="digital-url-required">{% if editing and editing_service.is_digital %}*{% endif %}</span>
+                                    Digital Product URL <span class="form-required" id="digital-url-required">*</span>
                                 </label>
                                 <input type="url" name="digital_product_url"
                                        class="form-input"
                                        placeholder="https://drive.google.com/file/... or https://clearq.in/download"
-                                       id="digital-product-url"
-                                       value="{% if editing %}{{ editing_service.digital_product_url or '' }}{% endif %}">
+                                       id="digital-product-url">
                                 <p class="form-help">
                                     Learners will get access to this URL immediately after purchase. Ensure the link is accessible.
                                 </p>
@@ -1245,21 +958,10 @@
                         
                         <!-- Form Actions -->
                         <div class="form-actions">
-                            {% if editing %}
-                            <input type="hidden" name="service_id" value="{{ editing_service.id }}">
-                            <button type="submit" class="submit-button">
-                                <i class="fas fa-save"></i>
-                                <span>Update Service</span>
-                            </button>
-                            <button type="button" onclick="window.location.href='/mentor/dashboard/services'" class="btn-secondary">
-                                Cancel
-                            </button>
-                            {% else %}
                             <button type="submit" class="submit-button">
                                 <i class="fas fa-plus"></i>
                                 <span>Create Service</span>
                             </button>
-                            {% endif %}
                         </div>
                     </form>
                 </div>
@@ -1277,16 +979,22 @@
                     {% if services and services|length > 0 %}
                     <div class="services-list">
                         {% for service in services %}
-                        <div class="service-item" data-service-id="{{ service.id }}">
+                        <div class="service-item">
                             <div class="service-header">
                                 <div>
                                     <div class="service-name">
                                         {{ service.name }}
                                         {% if service.is_digital %}
-                                        <span class="service-type-indicator type-digital">
-                                            <i class="fas fa-download"></i> Digital
-                                        </span>
-                                        {% else %}
+<div class="digital-product-info bg-blue-50 p-4 rounded-lg mb-4">
+    <h4 class="font-bold text-blue-900 mb-2">
+        <i class="fas fa-download text-blue-500 mr-2"></i>
+        Digital Product - Instant Access
+    </h4>
+    <p class="text-sm text-blue-800">
+        Purchase this product and get immediate download access. No scheduling needed!
+    </p>
+</div>
+{% else %}
                                         <span class="service-type-indicator type-live">
                                             <i class="fas fa-video"></i> Live
                                         </span>
@@ -1301,31 +1009,29 @@
                                 </span>
                             </div>
                             
-                            <div class="service-description">
-                                {% if service.description %}
-                                {{ service.description|safe }}
-                                {% else %}
-                                <p style="color: var(--gray-400);">No description provided.</p>
-                                {% endif %}
+                            <div style="margin-bottom: 0.5rem;">
+                                <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4; margin-bottom: 0.5rem;">
+                                    {{ service.description|truncate(120) }}
+                                </p>
                                 {% if service.is_digital and service.digital_product_url %}
-                                <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--primary);">
+                                <div style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--gray-500);">
                                     <i class="fas fa-link"></i>
-                                    <span>Download link available</span>
+                                    <span>Download link added</span>
                                 </div>
                                 {% endif %}
                             </div>
                             
                             <div class="service-footer">
                                 <div class="service-price">
-                                    <span class="price-amount">₹{{ service.price }}</span>
-                                    <span class="price-duration">
-                                        {% if service.is_digital %}
-                                        Instant Access
-                                        {% else %}
-                                        {{ service.duration_minutes }} min
-                                        {% endif %}
-                                    </span>
-                                </div>
+    <span class="price-amount">₹{{ service.price }}</span>
+    <span class="price-duration">
+        {% if service.is_digital %}
+        Instant Access
+        {% else %}
+        {{ service.duration_minutes }} min
+        {% endif %}
+    </span>
+</div>
                                 <div class="service-actions">
                                     <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
                                         <i class="fas fa-edit"></i>
@@ -1353,221 +1059,80 @@
     </div>
 </div>
 
-<!-- Edit Service Modal -->
-<div class="edit-modal" id="editModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 class="modal-title">Edit Service</h3>
-            <button class="modal-close" onclick="closeEditModal()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <!-- Modal content will be loaded via AJAX -->
-            <div id="modal-loader" style="display: flex; justify-content: center; padding: 2rem;">
-                <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
-            </div>
-            <div id="modal-content" style="display: none;"></div>
-        </div>
-    </div>
-</div>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Rich Text Editor Functionality
         const editor = document.getElementById('rich-text-editor');
         const textarea = document.getElementById('description-textarea');
         const toolbarButtons = document.querySelectorAll('.toolbar-btn');
-        const charCounter = document.getElementById('char-counter');
-        const charCount = document.getElementById('char-count');
-        const textColorPicker = document.getElementById('text-color');
-        const bgColorPicker = document.getElementById('bg-color');
-        const MAX_CHARS = 5000;
-
-        // Enhanced HTML sanitization with allowed tags and attributes
+        
+        // Sanitize HTML function
         function sanitizeHTML(html) {
-            if (!html) return '';
-            
-            // Create a temporary div to parse HTML
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html;
-
-            // Define allowed tags and their allowed attributes
-            const allowedTags = {
-                'p': ['style', 'class', 'align'],
-                'br': [],
-                'b': ['style', 'class'],
-                'strong': ['style', 'class'],
-                'i': ['style', 'class'],
-                'em': ['style', 'class'],
-                'u': ['style', 'class'],
-                's': ['style', 'class'],
-                'strike': ['style', 'class'],
-                'ul': ['style', 'class'],
-                'ol': ['style', 'class'],
-                'li': ['style', 'class'],
-                'h1': ['style', 'class'],
-                'h2': ['style', 'class'],
-                'h3': ['style', 'class'],
-                'h4': ['style', 'class'],
-                'h5': ['style', 'class'],
-                'h6': ['style', 'class'],
-                'a': ['href', 'target', 'rel', 'style', 'class'],
-                'span': ['style', 'class'],
-                'div': ['style', 'class'],
-                'code': ['style', 'class'],
-                'pre': ['style', 'class']
-            };
-
-            // Define allowed CSS properties
-            const allowedStyles = [
-                'color', 'background-color', 'font-weight', 'font-style',
-                'text-decoration', 'text-align', 'font-size', 'line-height',
-                'margin', 'padding', 'border', 'width', 'height'
-            ];
-
-            // Sanitize all elements
-            const sanitizeElement = (element) => {
-                // Remove disallowed tags but keep their content
-                if (!allowedTags[element.tagName.toLowerCase()]) {
-                    const fragment = document.createDocumentFragment();
-                    while (element.firstChild) {
-                        fragment.appendChild(element.firstChild);
-                    }
-                    element.parentNode.replaceChild(fragment, element);
-                    return;
-                }
-
-                // Remove disallowed attributes
-                const attributes = Array.from(element.attributes);
-                for (const attr of attributes) {
-                    const tagName = element.tagName.toLowerCase();
-                    const allowedAttrs = allowedTags[tagName];
+            
+            // Remove problematic elements and styles
+            const elementsToRemove = tempDiv.querySelectorAll('[style*="grid-column"], [style*="grid-template-columns"]');
+            elementsToRemove.forEach(el => {
+                el.remove();
+            });
+            
+            const allElements = tempDiv.querySelectorAll('*');
+            allElements.forEach(el => {
+                if (el.hasAttribute('style')) {
+                    const style = el.getAttribute('style');
+                    const cleanStyle = style.replace(/grid-column[^;]+;?/g, '')
+                                           .replace(/grid-template-columns[^;]+;?/g, '')
+                                           .replace(/display[^;]+;?/g, '')
+                                           .replace(/color[^;]+;?/g, '');
                     
-                    if (!allowedAttrs || !allowedAttrs.includes(attr.name)) {
-                        element.removeAttribute(attr.name);
-                    } else if (attr.name === 'style') {
-                        // Sanitize style attribute
-                        const styles = attr.value.split(';');
-                        const cleanStyles = [];
-                        
-                        for (const style of styles) {
-                            if (!style.trim()) continue;
-                            
-                            const [property, value] = style.split(':').map(s => s.trim());
-                            if (allowedStyles.includes(property.toLowerCase())) {
-                                cleanStyles.push(`${property}:${value}`);
-                            }
-                        }
-                        
-                        if (cleanStyles.length > 0) {
-                            element.setAttribute('style', cleanStyles.join(';'));
-                        } else {
-                            element.removeAttribute('style');
-                        }
+                    if (cleanStyle.trim() === '') {
+                        el.removeAttribute('style');
+                    } else {
+                        el.setAttribute('style', cleanStyle);
                     }
                 }
-
-                // Process child elements
-                const children = Array.from(element.children);
-                for (const child of children) {
-                    sanitizeElement(child);
-                }
-            };
-
-            // Sanitize the entire content
-            const children = Array.from(tempDiv.children);
-            for (const child of children) {
-                sanitizeElement(child);
-            }
-
-            // Remove empty attributes
-            tempDiv.querySelectorAll('*').forEach(el => {
-                el.attributes.removeNamedItem('class');
-                if (el.attributes.length === 0) {
-                    el.removeAttribute('class');
+                
+                if (el.hasAttribute('class')) {
+                    const classes = el.getAttribute('class');
+                    if (classes.includes('form-group') || classes.includes('grid-column')) {
+                        el.removeAttribute('class');
+                    }
                 }
             });
-
-            return tempDiv.innerHTML;
-        }
-
-        // Update character counter
-        function updateCharCounter() {
-            const content = editor.textContent || '';
-            const length = content.length;
-            charCount.textContent = length;
             
-            if (length > MAX_CHARS * 0.9) {
-                charCounter.className = 'char-counter warning';
-            } else if (length > MAX_CHARS) {
-                charCounter.className = 'char-counter error';
-            } else {
-                charCounter.className = 'char-counter';
-            }
-        }
-
-        // Initialize editor with sanitized content
-        function initializeEditor() {
-            const initialContent = editor.innerHTML;
-            const sanitizedContent = sanitizeHTML(initialContent);
+            let cleanedHTML = tempDiv.innerHTML;
+            cleanedHTML = cleanedHTML.replace(/style="[^"]*"/g, (match) => {
+                if (match.includes('grid-column') || match.includes('grid-template-columns') || match.includes('display:')) {
+                    return '';
+                }
+                return match;
+            });
             
-            if (initialContent !== sanitizedContent) {
-                editor.innerHTML = sanitizedContent;
-            }
-            
-            // Update textarea
-            textarea.value = sanitizedContent;
-            updateCharCounter();
+            cleanedHTML = cleanedHTML.replace(/style=""/g, '');
+            return cleanedHTML;
         }
-
-        // Update textarea with sanitized editor content
+        
+        // Initialize textarea with sanitized editor content
         function updateTextarea() {
             const originalContent = editor.innerHTML;
             const sanitizedContent = sanitizeHTML(originalContent);
-            
             textarea.value = sanitizedContent;
             
-            // Only update editor if content changed
             if (originalContent !== sanitizedContent) {
-                const selection = window.getSelection();
-                const range = selection.getRangeAt(0);
                 editor.innerHTML = sanitizedContent;
-                
-                // Try to restore cursor position
-                try {
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                } catch (e) {
-                    // If we can't restore position, focus at end
-                    editor.focus();
-                }
             }
-            
-            updateCharCounter();
         }
-
-        // Initialize editor
-        initializeEditor();
-
+        
+        // Set initial placeholder
+        if (!editor.textContent.trim()) {
+            editor.innerHTML = '';
+        }
+        
         // Update textarea when editor content changes
         editor.addEventListener('input', updateTextarea);
         editor.addEventListener('blur', updateTextarea);
-
-        // Handle paste events
-        editor.addEventListener('paste', function(e) {
-            e.preventDefault();
-            
-            // Get pasted text from clipboard
-            const text = e.clipboardData.getData('text/plain');
-            
-            // Insert text at cursor position
-            document.execCommand('insertText', false, text);
-            
-            // Sanitize after paste
-            setTimeout(updateTextarea, 0);
-        });
-
+        
         // Handle toolbar button clicks
         toolbarButtons.forEach(button => {
             button.addEventListener('click', function(e) {
@@ -1577,67 +1142,25 @@
                 
                 editor.focus();
                 
-                try {
-                    if (command === 'formatBlock' && value) {
-                        document.execCommand(command, false, value);
-                    } else {
-                        document.execCommand(command, false, null);
-                    }
-                    
-                    // Update active button state
-                    if (command === 'formatBlock' && value) {
-                        toolbarButtons.forEach(btn => {
-                            btn.classList.remove('active');
-                            if (btn.dataset.command === command && btn.dataset.value === value) {
-                                btn.classList.add('active');
-                            }
-                        });
-                    }
-                    
-                    updateTextarea();
-                } catch (error) {
-                    console.error('Editor command failed:', error);
+                if (command === 'formatBlock' && value) {
+                    document.execCommand(command, false, value);
+                } else {
+                    document.execCommand(command, false, null);
                 }
                 
+                updateTextarea();
                 editor.focus();
             });
         });
-
-        // Handle color pickers
-        textColorPicker.addEventListener('input', function() {
-            editor.focus();
-            document.execCommand('foreColor', false, this.value);
+        
+        // Clean up paste events
+        editor.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text');
+            document.execCommand('insertText', false, text);
             updateTextarea();
         });
-
-        bgColorPicker.addEventListener('input', function() {
-            editor.focus();
-            document.execCommand('backColor', false, this.value);
-            updateTextarea();
-        });
-
-        // Add keyboard shortcuts
-        editor.addEventListener('keydown', function(e) {
-            // Ctrl+B for bold
-            if (e.ctrlKey && e.key === 'b') {
-                e.preventDefault();
-                document.execCommand('bold');
-                updateTextarea();
-            }
-            // Ctrl+I for italic
-            else if (e.ctrlKey && e.key === 'i') {
-                e.preventDefault();
-                document.execCommand('italic');
-                updateTextarea();
-            }
-            // Ctrl+U for underline
-            else if (e.ctrlKey && e.key === 'u') {
-                e.preventDefault();
-                document.execCommand('underline');
-                updateTextarea();
-            }
-        });
-
+        
         // Digital product fields toggle
         const digitalProductFields = document.getElementById('digital-product-fields');
         const digitalProductUrl = document.getElementById('digital-product-url');
@@ -1646,7 +1169,7 @@
         const durationLabel = document.getElementById('duration-label');
         const priceInput = document.getElementById('price-input');
         const serviceTypeRadios = document.querySelectorAll('.service-type-radio');
-
+        
         function toggleDigitalFields() {
             const isDigital = document.querySelector('input[name="is_digital"][value="true"]').checked;
             
@@ -1675,9 +1198,7 @@
                 
                 // For live sessions, enable duration input
                 durationInput.disabled = false;
-                if (!durationInput.value || durationInput.value === '0') {
-                    durationInput.value = 60;
-                }
+                durationInput.value = 60;
                 durationLabel.innerHTML = 'Duration (minutes) <span class="form-required">*</span>';
                 durationInput.placeholder = "60";
                 
@@ -1688,15 +1209,15 @@
                 }
             }
         }
-
+        
         // Add event listeners
         serviceTypeRadios.forEach(radio => {
             radio.addEventListener('change', toggleDigitalFields);
         });
-
-        // Initialize digital fields
+        
+        // Initialize
         toggleDigitalFields();
-
+        
         // Form submission handler
         const form = document.getElementById('create-service-form');
         form.addEventListener('submit', function(e) {
@@ -1706,15 +1227,7 @@
             // Validate that description is not empty
             if (!editor.textContent.trim() || editor.innerHTML === '<br>') {
                 e.preventDefault();
-                showNotification('Please provide a description for your service.', 'error');
-                editor.focus();
-                return;
-            }
-            
-            // Validate character limit
-            if (editor.textContent.length > MAX_CHARS) {
-                e.preventDefault();
-                showNotification(`Description exceeds ${MAX_CHARS} character limit. Please shorten it.`, 'error');
+                alert('Please provide a description for your service.');
                 editor.focus();
                 return;
             }
@@ -1725,7 +1238,7 @@
                 const digitalUrl = digitalProductUrl.value.trim();
                 if (!digitalUrl) {
                     e.preventDefault();
-                    showNotification('Please provide a download URL for your digital product.', 'error');
+                    alert('Please provide a download URL for your digital product.');
                     digitalProductUrl.focus();
                     return;
                 }
@@ -1735,7 +1248,7 @@
                     new URL(digitalUrl);
                 } catch (_) {
                     e.preventDefault();
-                    showNotification('Please enter a valid URL starting with http:// or https://', 'error');
+                    alert('Please enter a valid URL starting with http:// or https://');
                     digitalProductUrl.focus();
                     return;
                 }
@@ -1744,165 +1257,23 @@
             // Show loading state
             const submitButton = this.querySelector('.submit-button');
             const originalHTML = submitButton.innerHTML;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Saving...</span>';
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Creating...</span>';
             submitButton.disabled = true;
             
             // Re-enable after 5 seconds if still on page
             setTimeout(() => {
-                if (submitButton.disabled) {
-                    submitButton.innerHTML = originalHTML;
-                    submitButton.disabled = false;
-                }
+                submitButton.innerHTML = originalHTML;
+                submitButton.disabled = false;
             }, 5000);
         });
-
+        
         // Service action buttons functions
         window.editService = function(serviceId) {
-            const modal = document.getElementById('editModal');
-            const modalContent = document.getElementById('modal-content');
-            const modalLoader = document.getElementById('modal-loader');
-            
-            // Show modal and loader
-            modal.classList.add('active');
-            modalLoader.style.display = 'flex';
-            modalContent.style.display = 'none';
-            
-            // Load service data via AJAX
-            fetch(`/mentor/services/${serviceId}/edit-form`)
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.text();
-                })
-                .then(html => {
-                    modalContent.innerHTML = html;
-                    modalLoader.style.display = 'none';
-                    modalContent.style.display = 'block';
-                    
-                    // Initialize rich text editor in modal
-                    const modalEditor = modalContent.querySelector('#rich-text-editor');
-                    const modalTextarea = modalContent.querySelector('#description-textarea');
-                    
-                    if (modalEditor && modalTextarea) {
-                        // Copy editor functionality to modal
-                        modalEditor.addEventListener('input', function() {
-                            const sanitized = sanitizeHTML(this.innerHTML);
-                            modalTextarea.value = sanitized;
-                        });
-                        
-                        // Initialize modal toolbar
-                        const modalToolbarButtons = modalContent.querySelectorAll('.toolbar-btn');
-                        modalToolbarButtons.forEach(button => {
-                            button.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                const command = this.dataset.command;
-                                const value = this.dataset.value;
-                                
-                                modalEditor.focus();
-                                
-                                if (command === 'formatBlock' && value) {
-                                    document.execCommand(command, false, value);
-                                } else {
-                                    document.execCommand(command, false, null);
-                                }
-                                
-                                // Update modal textarea
-                                const sanitized = sanitizeHTML(modalEditor.innerHTML);
-                                modalTextarea.value = sanitized;
-                                modalEditor.focus();
-                            });
-                        });
-                    }
-                    
-                    // Initialize digital fields toggle in modal
-                    const modalServiceTypeRadios = modalContent.querySelectorAll('.service-type-radio');
-                    if (modalServiceTypeRadios.length > 0) {
-                        modalServiceTypeRadios.forEach(radio => {
-                            radio.addEventListener('change', function() {
-                                const modalDigitalFields = modalContent.querySelector('#digital-product-fields');
-                                const modalDigitalUrl = modalContent.querySelector('#digital-product-url');
-                                const modalDurationInput = modalContent.querySelector('#duration-input');
-                                const modalDurationLabel = modalContent.querySelector('#duration-label');
-                                
-                                if (this.value === 'true') {
-                                    modalDigitalFields.classList.remove('hidden');
-                                    modalDigitalUrl.required = true;
-                                    modalDurationInput.value = 0;
-                                    modalDurationInput.disabled = true;
-                                    modalDurationLabel.innerHTML = 'Access Type <span class="form-required">*</span>';
-                                } else {
-                                    modalDigitalFields.classList.add('hidden');
-                                    modalDigitalUrl.required = false;
-                                    modalDurationInput.disabled = false;
-                                    if (!modalDurationInput.value || modalDurationInput.value === '0') {
-                                        modalDurationInput.value = 60;
-                                    }
-                                    modalDurationLabel.innerHTML = 'Duration (minutes) <span class="form-required">*</span>';
-                                }
-                            });
-                        });
-                    }
-                    
-                    // Handle modal form submission
-                    const modalForm = modalContent.querySelector('form');
-                    if (modalForm) {
-                        modalForm.addEventListener('submit', function(e) {
-                            e.preventDefault();
-                            
-                            const formData = new FormData(this);
-                            const submitButton = this.querySelector('.submit-button');
-                            const originalHTML = submitButton.innerHTML;
-                            
-                            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Saving...</span>';
-                            submitButton.disabled = true;
-                            
-                            fetch(this.action, {
-                                method: 'POST',
-                                body: formData
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    showNotification('Service updated successfully!', 'success');
-                                    setTimeout(() => {
-                                        location.reload();
-                                    }, 1500);
-                                } else {
-                                    showNotification('Failed to update service: ' + data.message, 'error');
-                                    submitButton.innerHTML = originalHTML;
-                                    submitButton.disabled = false;
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                showNotification('An error occurred while updating the service.', 'error');
-                                submitButton.innerHTML = originalHTML;
-                                submitButton.disabled = false;
-                            });
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    modalLoader.style.display = 'none';
-                    modalContent.innerHTML = `
-                        <div style="text-align: center; padding: 2rem;">
-                            <i class="fas fa-exclamation-circle fa-2x" style="color: var(--danger); margin-bottom: 1rem;"></i>
-                            <p style="color: var(--gray-600);">Failed to load service data. Please try again.</p>
-                            <button onclick="closeEditModal()" class="btn-secondary" style="margin-top: 1rem;">
-                                Close
-                            </button>
-                        </div>
-                    `;
-                    modalContent.style.display = 'block';
-                });
+            // In a real app, this would open an edit modal
+            // For now, redirect to edit page
+            window.location.href = `/mentor/dashboard/services/${serviceId}/edit`;
         };
-
-        window.closeEditModal = function() {
-            const modal = document.getElementById('editModal');
-            modal.classList.remove('active');
-            document.getElementById('modal-content').innerHTML = '';
-        };
-
+        
         window.deleteService = function(serviceId) {
             if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
                 fetch(`/mentor/services/${serviceId}/delete`, {
@@ -1928,19 +1299,19 @@
                 });
             }
         };
-
+        
         // Input validation
         priceInput.addEventListener('input', function() {
             if (this.value < 0) this.value = 0;
         });
-
+        
         durationInput.addEventListener('input', function() {
             if (this.disabled) return;
             if (this.value < 15) this.value = 15;
             // Round to nearest 15
             this.value = Math.round(this.value / 15) * 15;
         });
-
+        
         // Category selection handler
         const categorySelect = document.querySelector('select[name="category"]');
         categorySelect.addEventListener('change', function() {
@@ -1954,18 +1325,14 @@
                 toggleDigitalFields();
             }
         });
-
+        
         // Notification system
         window.showNotification = function(message, type) {
-            // Remove existing notifications
-            document.querySelectorAll('.notification').forEach(n => n.remove());
-            
             const notification = document.createElement('div');
-            notification.className = `fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 notification ${
+            notification.className = `fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
                 type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
                 type === 'error' ? 'bg-gradient-to-r from-red-500 to-pink-600' : 'bg-gradient-to-r from-blue-500 to-cyan-600'
             } text-white max-w-sm`;
-            notification.style.transform = 'translateX(100%)';
             notification.innerHTML = `
                 <div class="flex items-center gap-3">
                     <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} text-xl"></i>
@@ -1974,11 +1341,6 @@
             `;
             
             document.body.appendChild(notification);
-            
-            // Animate in
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 10);
             
             // Remove after 4 seconds
             setTimeout(() => {
@@ -1991,21 +1353,7 @@
                 }, 300);
             }, 4000);
         };
-
-        // Close modal on outside click
-        document.getElementById('editModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEditModal();
-            }
-        });
-
-        // Close modal on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && document.getElementById('editModal').classList.contains('active')) {
-                closeEditModal();
-            }
-        });
-
+        
         // Check for URL parameters for messages
         const urlParams = new URLSearchParams(window.location.search);
         const success = urlParams.get('success');
