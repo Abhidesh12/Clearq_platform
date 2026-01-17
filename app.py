@@ -5202,15 +5202,47 @@ async def create_booking(
             db.add(booking)
             db.commit()
             db.refresh(booking)
+
+            try:
+        # Get user details for email
+        mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
+        learner_user = db.query(User).filter(User.id == current_user.id).first()
+        service = db.query(Service).filter(Service.id == service_id).first()
+        
+        if mentor_user and learner_user and service:
+            # Format date and time
+            booking_date_str = target_date.strftime("%B %d, %Y")
             
-            return JSONResponse({
-                "success": True,
-                "booking_id": booking.id,
-                "redirect_url": f"/digital-product/{service_id}",
-                "is_digital": True,
-                "is_free": True,
-                "message": "Free digital product added to your account!"
-            })
+            # Send booking confirmation email
+            email_sent = send_booking_confirmation_email(
+                booking=booking,
+                mentor_email=mentor_user.email,
+                learner_email=learner_user.email,
+                mentor_name=mentor_user.full_name or mentor_user.username,
+                learner_name=learner_user.full_name or learner_user.username,
+                service_name=service.name
+            )
+            
+            if email_sent:
+                print(f"✅ Free session confirmation email sent")
+            else:
+                print(f"⚠️ Free session email failed to send")
+    except Exception as e:
+        print(f"⚠️ Error sending free session email: {e}")
+    # ============ END ADDITION ============
+    
+    return JSONResponse({
+        "success": True,
+        "booking_id": booking.id,
+        "redirect_url": f"/meeting/{booking.id}",
+        "meeting_link": meeting_link,
+        "meeting_id": meeting_id,
+        "is_digital": False,
+        "is_free": True,
+        "message": "Free session booked successfully!"
+    })
+            
+
         else:
             # Free session - generate meeting link
             meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
@@ -5461,6 +5493,7 @@ async def create_booking(
                 db.rollback()
                 raise HTTPException(status_code=500, detail=f"Error creating booking: {str(e)}")
 # Add this new API endpoint for generating time slots
+
 @app.post("/api/generate-time-slots")
 async def generate_time_slots(
     data: dict,
