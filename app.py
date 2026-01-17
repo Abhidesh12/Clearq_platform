@@ -3,6 +3,11 @@ import re
 import uuid
 from sqlalchemy import DECIMAL
 from decimal import Decimal
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from fastapi import BackgroundTasks
+import os
 import logging
 import requests
 import traceback
@@ -97,6 +102,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Razorpay configuration# Razorpay configuration with validation
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+EMAIL_FROM = os.getenv("EMAIL_FROM", "noreply@clearq.in")
+EMAIL_FROM_NAME = os.getenv("EMAIL_FROM_NAME", "ClearQ Mentorship")
+EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "true").lower() == "true"
 
 # Initialize Razorpay client only if credentials are available
 razorpay_client = None
@@ -838,6 +850,250 @@ def generate_meeting_link(booking_id: int, db: Session):
     send_meeting_notification(booking, meeting_link, db)
     
     return meeting_link, meeting_id
+
+# Email Utility Functions
+def send_email_sync(
+    to_email: str,
+    subject: str,
+    html_content: str,
+    text_content: str = None
+):
+    """Send email synchronously - for testing"""
+    if not EMAIL_ENABLED:
+        print(f"[EMAIL DISABLED] Would send to: {to_email}")
+        print(f"Subject: {subject}")
+        print(f"Content: {html_content[:200]}...")
+        return True
+    
+    try:
+        # Create message
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = f"{EMAIL_FROM_NAME} <{EMAIL_FROM}>"
+        msg['To'] = to_email
+        
+        # Add HTML and plain text versions
+        if text_content:
+            part1 = MIMEText(text_content, 'plain')
+            msg.attach(part1)
+        
+        part2 = MIMEText(html_content, 'html')
+        msg.attach(part2)
+        
+        # Connect to SMTP server and send
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()  # Secure the connection
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.send_message(msg)
+        
+        print(f"✅ Email sent successfully to: {to_email}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error sending email to {to_email}: {str(e)}")
+        # Don't raise exception to avoid breaking booking flow
+        return False
+
+async def send_email_async(
+    to_email: str,
+    subject: str,
+    html_content: str,
+    text_content: str = None
+):
+    """Send email asynchronously - for use with BackgroundTasks"""
+    # Run in thread pool since SMTP is blocking
+    import asyncio
+    from functools import partial
+    
+    loop = asyncio.get_event_loop()
+    func = partial(send_email_sync, to_email, subject, html_content, text_content)
+    await loop.run_in_executor(None, func)
+
+def send_booking_confirmation_email(
+    booking: Booking,
+    mentor_email: str,
+    learner_email: str,
+    mentor_name: str,
+    learner_name: str,
+    service_name: str
+):
+    """Send booking confirmation emails to both mentor and learner"""
+    
+    # Format date and time
+    booking_date = booking.booking_date.strftime("%B %d, %Y") if booking.booking_date else "Not scheduled"
+    booking_time = booking.selected_time if booking.selected_time else "To be determined"
+    
+    # ===== LEARNER EMAIL =====
+    learner_subject = f"🎉 Your Session with {mentor_name} is Confirmed!"
+    
+    learner_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: linear-gradient(135deg, #ff6b4a, #ff3f1f); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+            .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+            .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ff6b4a; }}
+            .button {{ display: inline-block; background: #ff6b4a; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; }}
+            .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 12px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Session Confirmed! 🎉</h1>
+                <p>Your mentoring session has been successfully booked</p>
+            </div>
+            <div class="content">
+                <h2>Hello {learner_name},</h2>
+                <p>Great news! Your session with <strong>{mentor_name}</strong> has been confirmed.</p>
+                
+                <div class="details">
+                    <h3>📅 Session Details:</h3>
+                    <p><strong>Service:</strong> {service_name}</p>
+                    <p><strong>Date:</strong> {booking_date}</p>
+                    <p><strong>Time:</strong> {booking_time}</p>
+                    <p><strong>Mentor:</strong> {mentor_name}</p>
+                    <p><strong>Booking ID:</strong> #{booking.id}</p>
+                </div>
+                
+                <p>📍 <strong>Meeting Link:</strong> {booking.meeting_link if booking.meeting_link else 'Will be available soon'}</p>
+                
+                <p>You can access your meeting from your dashboard when it's time for your session.</p>
+                
+                <p>Need to reschedule or have questions? Contact your mentor directly or reply to this email.</p>
+                
+                <a href="{booking.meeting_link or 'https://clearq.in/dashboard'}" class="button">Join Meeting</a>
+                
+                <div class="footer">
+                    <p>Thank you for choosing ClearQ Mentorship Platform!</p>
+                    <p>📍 <a href="https://clearq.in">clearq.in</a></p>
+                    <p>📧 <a href="mailto:support@clearq.in">support@clearq.in</a></p>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    # ===== MENTOR EMAIL =====
+    mentor_subject = f"📅 New Session Booking: {learner_name}"
+    
+    mentor_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+            .header {{ background: linear-gradient(135deg, #4CAF50, #45a049); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+            .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+            .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4CAF50; }}
+            .button {{ display: inline-block; background: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 20px; }}
+            .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 12px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>New Session Booking! 📅</h1>
+                <p>{learner_name} has booked a session with you</p>
+            </div>
+            <div class="content">
+                <h2>Hello {mentor_name},</h2>
+                <p>You have a new session booking from <strong>{learner_name}</strong>.</p>
+                
+                <div class="details">
+                    <h3>📋 Booking Details:</h3>
+                    <p><strong>Service:</strong> {service_name}</p>
+                    <p><strong>Date:</strong> {booking_date}</p>
+                    <p><strong>Time:</strong> {booking_time}</p>
+                    <p><strong>Learner:</strong> {learner_name}</p>
+                    <p><strong>Learner Email:</strong> {learner_email}</p>
+                    <p><strong>Booking ID:</strong> #{booking.id}</p>
+                </div>
+                
+                <p>📍 <strong>Meeting Link:</strong> {booking.meeting_link if booking.meeting_link else 'Will be generated automatically'}</p>
+                
+                <p>Please mark your calendar and be prepared for the session. You can view all your upcoming sessions in your dashboard.</p>
+                
+                <a href="{booking.meeting_link or 'https://clearq.in/dashboard'}" class="button">View in Dashboard</a>
+                
+                <div class="footer">
+                    <p>Thank you for mentoring on ClearQ!</p>
+                    <p>📍 <a href="https://clearq.in">clearq.in</a></p>
+                    <p>📧 <a href="mailto:support@clearq.in">support@clearq.in</a></p>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    # Send emails
+    try:
+        # Send to learner
+        send_email_sync(
+            to_email=learner_email,
+            subject=learner_subject,
+            html_content=learner_html,
+            text_content=f"""
+Session Confirmed!
+
+Hello {learner_name},
+
+Your session with {mentor_name} has been confirmed.
+
+📅 Session Details:
+Service: {service_name}
+Date: {booking_date}
+Time: {booking_time}
+Mentor: {mentor_name}
+Booking ID: #{booking.id}
+
+Meeting Link: {booking.meeting_link or 'Will be available soon'}
+
+Access your meeting from your dashboard.
+
+Thank you for choosing ClearQ!
+            """
+        )
+        
+        # Send to mentor
+        send_email_sync(
+            to_email=mentor_email,
+            subject=mentor_subject,
+            html_content=mentor_html,
+            text_content=f"""
+New Session Booking!
+
+Hello {mentor_name},
+
+{learner_name} has booked a session with you.
+
+📋 Booking Details:
+Service: {service_name}
+Date: {booking_date}
+Time: {booking_time}
+Learner: {learner_name}
+Learner Email: {learner_email}
+Booking ID: #{booking.id}
+
+Meeting Link: {booking.meeting_link or 'Will be generated automatically'}
+
+Please mark your calendar.
+
+Thank you for mentoring on ClearQ!
+            """
+        )
+        
+        return True
+        
+    except Exception as e:
+        print(f"Error sending booking emails: {str(e)}")
+        return False
 
 
 @app.get("/meta.json")
@@ -5940,7 +6196,7 @@ async def meeting_page(
     })
     
 @app.post("/api/verify-payment")
-async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
+async def verify_payment_api(request: Request,background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """Verify Razorpay payment - called from frontend"""
     try:
         data = await request.json()
@@ -6012,6 +6268,24 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
                 "redirect_url": redirect_url,
                 "is_digital": is_digital
             })
+
+            mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
+            learner = db.query(User).filter(User.id == booking.learner_id).first()
+            
+            if mentor and learner:
+                mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
+                service = db.query(Service).filter(Service.id == booking.service_id).first()
+                
+                # Add email task to background
+                background_tasks.add_task(
+                    send_booking_confirmation_email,
+                    booking=booking,
+                    mentor_email=mentor_user.email,
+                    learner_email=learner.email,
+                    mentor_name=mentor_user.full_name or mentor_user.username,
+                    learner_name=learner.full_name or learner.username,
+                    service_name=service.name if service else "Mentoring Session"
+                )
         
         # Verify payment signature if we have all required data
         if razorpay_order_id and razorpay_signature:
@@ -6172,6 +6446,7 @@ async def verify_payment_api(request: Request, db: Session = Depends(get_db)):
             "message": f"Payment verification failed: {str(e)}",
             "code": "SERVER_ERROR"
         })
+                                     
         # Update the time-slots API to support both ID and username
 @app.post("/api/time-slots/{identifier}")
 async def get_time_slots(
