@@ -858,17 +858,19 @@ def send_email_sync(
     html_content: str,
     text_content: str = None
 ):
-    """Send email synchronously"""
-    # Early return if email is disabled
+    """Send email via Gmail SMTP"""
     if not EMAIL_ENABLED:
         print(f"[EMAIL DISABLED] Would send to: {to_email}")
-        print(f"Subject: {subject}")
         return True
     
-    # Validate SMTP settings
+    # Validate configuration
     if not all([SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, EMAIL_FROM]):
-        print("❌ Missing SMTP configuration. Email not sent.")
+        print("❌ Missing SMTP configuration")
         return False
+    
+    # Gmail-specific validation
+    if SMTP_SERVER != "smtp.gmail.com":
+        print(f"⚠️ Warning: Using non-Gmail server with Gmail function")
     
     try:
         # Create message
@@ -877,17 +879,19 @@ def send_email_sync(
         msg['From'] = f"{EMAIL_FROM_NAME} <{EMAIL_FROM}>"
         msg['To'] = to_email
         
-        # Attach text version
         if text_content:
             msg.attach(MIMEText(text_content, 'plain'))
-        
-        # Attach HTML version
         msg.attach(MIMEText(html_content, 'html'))
         
-        # Connect to SMTP server
-        print(f"Connecting to SMTP server: {SMTP_SERVER}:{SMTP_PORT}")
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()  # Secure the connection
+        print(f"📧 Sending via Gmail SMTP to: {to_email}")
+        
+        # Gmail SMTP connection
+        server = smtplib.SMTP(SMTP_SERVER, int(SMTP_PORT), timeout=30)
+        
+        # Debug mode (optional)
+        # server.set_debuglevel(1)
+        
+        server.starttls()  # Secure connection
         server.login(SMTP_USERNAME, SMTP_PASSWORD)
         
         # Send email
@@ -897,9 +901,29 @@ def send_email_sync(
         print(f"✅ Email sent successfully to: {to_email}")
         return True
         
-    except Exception as e:
-        print(f"❌ Error sending email to {to_email}: {str(e)}")
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"❌ Gmail Authentication Failed: {e}")
+        print("Common fixes:")
+        print("1. Enable 2-Step Verification: https://myaccount.google.com/security")
+        print("2. Generate App Password: https://myaccount.google.com/apppasswords")
+        print("3. Use 16-character app password (NOT your Gmail password)")
         return False
+        
+    except Exception as e:
+        print(f"❌ Gmail SMTP Error: {str(e)}")
+        
+        # Try alternative port 465 (SSL)
+        try:
+            print("Trying alternative port 465 (SSL)...")
+            server = smtplib.SMTP_SSL(SMTP_SERVER, 465, timeout=30)
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.send_message(msg)
+            server.quit()
+            print(f"✅ Email sent via SSL port to: {to_email}")
+            return True
+        except Exception as ssl_error:
+            print(f"❌ SSL also failed: {ssl_error}")
+            return False
         
 async def send_email_async(
     to_email: str,
