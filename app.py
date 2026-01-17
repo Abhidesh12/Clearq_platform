@@ -337,7 +337,6 @@ class MentorPayout(Base):
     status = Column(String, default="pending")  # pending, approved, paid, rejected
     payment_method = Column(String)  # bank_transfer, upi, paypal, etc.
     payment_details = Column(Text, nullable=True)
-    bank_details=account_details# Account/UPI details provided by mentor
     admin_notes = Column(Text, nullable=True)  # Notes from admin
     requested_at = Column(DateTime, default=datetime.utcnow)  # When mentor requested
     approved_at = Column(DateTime, nullable=True)  # When admin approved
@@ -528,7 +527,7 @@ def process_withdrawal_request(mentor_id: int, amount: float, payment_method: st
             amount=amount,
             status="pending",
             payment_method=payment_method,
-            account_details=account_details,
+            payment_details=account_details,
             requested_at=datetime.utcnow()
         )
         
