@@ -1,0 +1,306 @@
+<!-- templates/admin_payouts.html -->
+{% extends "base.html" %}
+
+{% block title %}Admin Payouts - ClearQ{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #1f1f1f;
+        --accent: #ff6b4a;
+        --border-light: #E5E4E0;
+        --card-light: #ffffff;
+        --text-secondary-light: #555555;
+    }
+
+    .admin-payouts-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-light);
+    }
+
+    .status-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .status-tab {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .status-tab.active {
+        background: linear-gradient(135deg, var(--accent), #ff3f1f);
+        color: white;
+    }
+
+    .status-tab:not(.active) {
+        background: white;
+        color: var(--text-secondary-light);
+        border: 1px solid var(--border-light);
+    }
+
+    .payouts-table-container {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-light);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-secondary-light);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--border-light);
+        background: #f9f9f9;
+    }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .page-link.active {
+        background: linear-gradient(135deg, var(--accent), #ff3f1f);
+        color: white;
+    }
+
+    .page-link:not(.active) {
+        background: white;
+        color: var(--text-secondary-light);
+        border: 1px solid var(--border-light);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-approve {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .btn-reject {
+        background: linear-gradient(135deg, #f44336, #d32f2f);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .btn-process {
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+</style>
+
+<div class="admin-payouts-container">
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--primary); margin-bottom: 1.5rem;">
+        Payouts Management
+    </h1>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div style="font-size: 0.875rem; color: var(--text-secondary-light); margin-bottom: 0.5rem;">Pending Amount</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--primary);">₹{{ total_pending|default(0)|int }}</div>
+        </div>
+        <div class="stat-card">
+            <div style="font-size: 0.875rem; color: var(--text-secondary-light); margin-bottom: 0.5rem;">This Month</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--primary);">₹{{ total_this_month|default(0)|int }}</div>
+        </div>
+        <div class="stat-card">
+            <div style="font-size: 0.875rem; color: var(--text-secondary-light); margin-bottom: 0.5rem;">Total Payouts</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--primary);">{{ total_payouts|default(0) }}</div>
+        </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="status-tabs">
+        <a href="/admin/payouts?status=all" class="status-tab {% if status == 'all' %}active{% endif %}">
+            All ({{ total_payouts|default(0) }})
+        </a>
+        <a href="/admin/payouts?status=pending" class="status-tab {% if status == 'pending' %}active{% endif %}">
+            Pending ({{ stats.pending_count|default(0) }})
+        </a>
+        <a href="/admin/payouts?status=processing" class="status-tab {% if status == 'processing' %}active{% endif %}">
+            Processing ({{ stats.processing_count|default(0) }})
+        </a>
+        <a href="/admin/payouts?status=completed" class="status-tab {% if status == 'completed' %}active{% endif %}">
+            Completed ({{ stats.completed_count|default(0) }})
+        </a>
+        <a href="/admin/payouts?status=failed" class="status-tab {% if status == 'failed' %}active{% endif %}">
+            Failed ({{ stats.failed_count|default(0) }})
+        </a>
+    </div>
+
+    <!-- Payouts Table -->
+    <div class="payouts-table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Mentor</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Requested</th>
+                    <th>Processed</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payout in payouts %}
+                <tr>
+                    <td><strong>#{{ payout.id }}</strong></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 2rem; height: 2rem; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #ff3f1f); 
+                                 display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                {{ payout.mentor.user.full_name[0] if payout.mentor and payout.mentor.user and payout.mentor.user.full_name else 'M' }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">{{ payout.mentor.user.full_name if payout.mentor and payout.mentor.user else 'Unknown' }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary-light);">{{ payout.mentor.user.email if payout.mentor and payout.mentor.user else '' }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><strong style="color: var(--primary);">₹{{ payout.amount|int }}</strong></td>
+                    <td>{{ payout.payment_method|default('N/A')|title }}</td>
+                    <td>
+                        {% if payout.status == 'pending' %}
+                        <span style="background: #FFA726; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">Pending</span>
+                        {% elif payout.status == 'processing' %}
+                        <span style="background: #2196F3; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">Processing</span>
+                        {% elif payout.status == 'completed' %}
+                        <span style="background: #4CAF50; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">Completed</span>
+                        {% elif payout.status == 'failed' %}
+                        <span style="background: #f44336; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">Failed</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ payout.requested_at.strftime('%Y-%m-%d') if payout.requested_at else '' }}</td>
+                    <td>{{ payout.processed_at.strftime('%Y-%m-%d') if payout.processed_at else 'Not processed' }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            {% if payout.status == 'pending' %}
+                            <button onclick="processPayout({{ payout.id }}, 'completed')" class="btn-approve">Approve</button>
+                            <button onclick="processPayout({{ payout.id }}, 'failed')" class="btn-reject">Reject</button>
+                            {% elif payout.status == 'processing' %}
+                            <button onclick="processPayout({{ payout.id }}, 'completed')" class="btn-process">Mark as Paid</button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% for page_num in range(1, total_pages + 1) %}
+        <a href="/admin/payouts?status={{ status }}&page={{ page_num }}" class="page-link {% if page == page_num %}active{% endif %}">
+            {{ page_num }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    async function processPayout(payoutId, action) {
+        if (!confirm(`Are you sure you want to ${action} this payout?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/admin/withdrawal/${payoutId}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: action,
+                    admin_notes: ''
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert(`Payout ${action}d successfully!`);
+                location.reload();
+            } else {
+                alert(data.error || 'Failed to process payout');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        }
+    }
+</script>
+{% endblock %}
