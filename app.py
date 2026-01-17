@@ -528,7 +528,7 @@ def process_withdrawal_request(mentor_id: int, amount: float, payment_method: st
             status="pending",
             payment_method=payment_method,
             account_details=account_details,
-            request_date=datetime.utcnow()
+            requested_a=datetime.utcnow()
         )
         
         db.add(withdrawal)
@@ -2171,7 +2171,7 @@ async def dashboard(
             # Get withdrawal requests
             withdrawal_requests = db.query(MentorPayout).filter(
                 MentorPayout.mentor_id == mentor.id
-            ).order_by(MentorPayout.request_date.desc()).all()
+            ).order_by(MentorPayout.requested_a.desc()).all()
             
             # Prepare earnings data for template
             earnings_data = {
@@ -2355,11 +2355,11 @@ async def dashboard(
         # Get pending withdrawal requests
         pending_withdrawals = db.query(MentorPayout).filter(
             MentorPayout.status == "pending"
-        ).join(Mentor).join(User).order_by(MentorPayout.request_date.desc()).all()
+        ).join(Mentor).join(User).order_by(MentorPayout.requested_a.desc()).all()
         
         # Get recent withdrawals
         recent_withdrawals = db.query(MentorPayout).order_by(
-            MentorPayout.request_date.desc()
+            MentorPayout.requested_a.desc()
         ).limit(20).all()
         # ============ END NEW CODE ============
         
@@ -2536,7 +2536,7 @@ async def get_withdrawal_history(
     if status:
         query = query.filter(MentorPayout.status == status)
     
-    withdrawals = query.order_by(MentorPayout.request_date.desc()).limit(limit).all()
+    withdrawals = query.order_by(MentorPayout.requested_a.desc()).limit(limit).all()
     
     # Format response
     withdrawals_data = []
@@ -2546,7 +2546,7 @@ async def get_withdrawal_history(
             "amount": float(w.amount),
             "payment_method": w.payment_method,
             "status": w.status,
-            "request_date": w.request_date.isoformat() if w.request_date else None,
+            "requested_a": w.requested_a.isoformat() if w.requested_a else None,
             "processed_date": w.processed_date.isoformat() if w.processed_date else None,
             "notes": w.notes
         })
@@ -4264,7 +4264,7 @@ async def mentor_payout_page(
     # Get withdrawal history
     withdrawal_history = db.query(MentorPayout).filter(
         MentorPayout.mentor_id == mentor.id
-    ).order_by(MentorPayout.request_date.desc()).limit(20).all()
+    ).order_by(MentorPayout.requested_a.desc()).limit(20).all()
     
     # Get recent earnings (last 30 days)
     thirty_days_ago = datetime.now() - timedelta(days=30)
@@ -4339,7 +4339,7 @@ async def request_withdrawal(
             status="pending",
             payment_method=payment_method,
             account_details=account_details,
-            request_date=datetime.utcnow()
+            requested_a=datetime.utcnow()
         )
         
         db.add(withdrawal)
@@ -4389,7 +4389,7 @@ async def admin_payouts_page(
     
     # Apply pagination
     offset = (page - 1) * limit
-    payouts = query.order_by(MentorPayout.request_date.desc()).offset(offset).limit(limit).all()
+    payouts = query.order_by(MentorPayout.requested_a.desc()).offset(offset).limit(limit).all()
     
     # Calculate total pending amount
     total_pending = db.query(func.sum(MentorPayout.amount)).filter(
@@ -4448,7 +4448,7 @@ async def admin_withdrawals(
         # Pagination
         offset = (page - 1) * per_page
         withdrawals = query.order_by(
-            MentorPayout.request_date.desc()
+            MentorPayout.requested_a.desc()
         ).offset(offset).limit(per_page).all()
         
         # Calculate total pending amount
@@ -4473,7 +4473,7 @@ async def admin_withdrawals(
                 "payment_method": withdrawal.payment_method,
                 "account_details": withdrawal.account_details,
                 "status": withdrawal.status,
-                "request_date": withdrawal.request_date,
+                "requested_a": withdrawal.requested_a,
                 "processed_date": withdrawal.processed_date,
                 "notes": withdrawal.notes
             })
