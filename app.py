@@ -334,12 +334,14 @@ class MentorPayout(Base):
     id = Column(Integer, primary_key=True, index=True)
     mentor_id = Column(Integer, ForeignKey("mentors.id"))
     amount = Column(DECIMAL(10, 2), nullable=False)  # in INR
-    status = Column(String, default="pending")  # pending, processing, completed, failed
-    request_date = Column(DateTime, default=datetime.utcnow)
-    processed_date = Column(DateTime, nullable=True)
-    payment_method = Column(String)  # bank_transfer, upi, etc.
-    account_details = Column(Text, nullable=True)  # Store encrypted account details
-    notes = Column(Text, nullable=True)
+    status = Column(String, default="pending")  # pending, approved, paid, rejected
+    payment_method = Column(String)  # bank_transfer, upi, paypal, etc.
+    payment_details = Column(Text, nullable=True)  # Account/UPI details provided by mentor
+    admin_notes = Column(Text, nullable=True)  # Notes from admin
+    requested_at = Column(DateTime, default=datetime.utcnow)  # When mentor requested
+    approved_at = Column(DateTime, nullable=True)  # When admin approved
+    processed_at = Column(DateTime, nullable=True)  # When admin marked as paid
+    processed_by = Column(String, nullable=True)  # Which admin processed it
     
     # Relationships
     mentor = relationship("Mentor")
