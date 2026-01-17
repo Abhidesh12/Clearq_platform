@@ -22,28 +22,29 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* Custom CSS Variables with fallback colors */
+        /* Custom CSS Variables with new theme colors */
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --primary-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            --secondary: #7c3aed;
-            --dark: #0f172a;
-            --text-body: #334155;
-            --text-light: #64748b;
-            --bg-light: #f8fafc;
+            --primary: #1f1f1f;
+            --primary-hover: #000000;
+            --primary-gradient: linear-gradient(135deg, #1f1f1f 0%, #ff6b4a 100%);
+            --accent: #ff6b4a;
+            --secondary: #2D3748;
+            --dark: #151022;
+            --text-body: #1f1f1f;
+            --text-light: #555555;
+            --bg-light: #fff5ec;
             --white: #ffffff;
             
-            --border-radius: 16px;
+            --border-radius: 0.25rem;
             --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
             --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-            --shadow-color: rgba(37, 99, 235, 0.2);
+            --shadow-color: rgba(31, 31, 31, 0.2);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             line-height: 1.6;
             color: var(--text-body);
             background-color: var(--bg-light);
@@ -53,19 +54,19 @@
         }
 
         h1, h2, h3, h4 {
-            color: var(--dark);
+            color: var(--primary);
             font-weight: 700;
             letter-spacing: -0.025em;
         }
 
         /* Focus styles for accessibility */
         :focus {
-            outline: 2px solid var(--primary);
+            outline: 2px solid var(--accent);
             outline-offset: 2px;
         }
 
         .focus-visible {
-            outline: 2px solid var(--primary);
+            outline: 2px solid var(--accent);
             outline-offset: 2px;
         }
 
@@ -144,7 +145,7 @@
 
         /* Hero Background */
         .hero-bg {
-            background: radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.08) 0%, rgba(37, 99, 235, 0.03) 70%, transparent 100%);
+            background: radial-gradient(circle at 80% 20%, rgba(255, 107, 74, 0.08) 0%, rgba(31, 31, 31, 0.03) 70%, transparent 100%);
         }
 
         /* Stats Counter */
@@ -197,18 +198,18 @@
         }
         
         .notification-success {
-            background-color: #10b981;
-            color: white;
+            background-color: #9CCB5C;
+            color: #1f1f1f;
         }
         
         .notification-error {
-            background-color: #ef4444;
+            background-color: #FF3F1F;
             color: white;
         }
         
         .notification-info {
-            background-color: #3b82f6;
-            color: white;
+            background-color: #85C3EA;
+            color: #1f1f1f;
         }
         
         @keyframes slideIn {
@@ -308,8 +309,8 @@
         }
     }
     /* Optional: Add smooth transition for FAQ accordion */
-    [class*="border border-gray-200"] > button:focus + div,
-    [class*="border border-gray-200"] > button:active + div {
+    [class*="border border-light"] > button:focus + div,
+    [class*="border border-light"] > button:active + div {
         transition: all 0.3s ease;
     }
     </style>
@@ -317,16 +318,49 @@
     <!-- Custom Tailwind Configuration -->
     <script>
         tailwind.config = {
+            darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        primary: '#2563eb',
-                        'primary-dark': '#1d4ed8',
-                        secondary: '#7c3aed',
-                        dark: '#0f172a',
+                        "primary": "#1f1f1f",
+                        "primary-hover": "#000000",
+                        "accent": "#ff6b4a",
+                        "background-light": "#fff5ec",
+                        "background-dark": "#151022",
+                        "text-light": "#1f1f1f",
+                        "text-dark": "#ffffff",
+                        "text-secondary-light": "#555555",
+                        "text-secondary-dark": "#a09db3",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1e1a2e",
+                        "border-light": "#E5E4E0",
+                        "border-dark": "#2d2a3b",
+                        "accent-beige": "#F0EFEA",
+                        "secondary": "#2D3748",
+                        "dark-card": "#232936",
+                        "card-purple": "#E0DBFC",
+                        "card-green": "#9CCB5C",
+                        "card-blue": "#85C3EA",
+                        "card-beige": "#EEE3CD",
+                        "card-teal": "#A8E1E1",
+                        "card-pink": "#F6D0CE",
+                        "brand-red": "#FF3F1F",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    fontSize: {
+                        'xxs': '0.625rem',
                     },
                     backgroundImage: {
-                        'gradient-primary': 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                        'gradient-primary': 'linear-gradient(135deg, #1f1f1f 0%, #ff6b4a 100%)',
                     },
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
@@ -347,46 +381,46 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 flex flex-col min-h-screen">
+<body class="bg-background-light flex flex-col min-h-screen">
 
     <!-- Skip to main content (Accessibility) -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
     <!-- Modern Header -->
-    <header id="mainHeader" class="bg-white/85 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-100">
+    <header id="mainHeader" class="bg-white/85 backdrop-blur-xl sticky top-0 z-50 border-b border-light">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <a href="/" class="flex-shrink-0 flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg p-1">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <a href="/" class="flex-shrink-0 flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 rounded-lg p-1">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                         <i class="fas fa-graduation-cap text-white text-sm" aria-hidden="true"></i>
                     </div>
-                    <span class="text-xl font-bold text-dark">Clear<span class="text-primary">Q</span></span>
+                    <span class="text-xl font-bold text-primary">Clear<span class="text-accent">Q</span></span>
                 </a>
 
                 <!-- Desktop Navigation -->
                 <nav class="hidden md:flex items-center space-x-8" aria-label="Main navigation">
                     <a href="/explore" 
-                       class="text-gray-700 hover:text-primary font-medium transition-colors focus:outline-none focus:text-primary">
+                       class="text-secondary hover:text-accent font-medium transition-colors duration-300 focus:outline-none focus:text-accent">
                         Find Mentors
                     </a>
                     <a href="#how-it-works" 
-                       class="text-gray-700 hover:text-primary font-medium transition-colors focus:outline-none focus:text-primary">
+                       class="text-secondary hover:text-accent font-medium transition-colors duration-300 focus:outline-none focus:text-accent">
                         How It Works
                     </a>
                     <a href="/mentorship-program" 
-                       class="text-gray-700 hover:text-primary font-medium transition-colors focus:outline-none focus:text-primary">
+                       class="text-secondary hover:text-accent font-medium transition-colors duration-300 focus:outline-none focus:text-accent">
                         Program
                     </a>
                     
                     {% if current_user %}
                         <a href="/dashboard" 
-                           class="text-gray-700 hover:text-primary font-medium transition-colors focus:outline-none focus:text-primary">
+                           class="text-secondary hover:text-accent font-medium transition-colors duration-300 focus:outline-none focus:text-accent">
                             Dashboard
                         </a>
                         {% if current_user.role == 'admin' %}
                             <a href="/admin/dashboard" 
-                               class="text-gray-700 hover:text-primary font-medium transition-colors focus:outline-none focus:text-primary">
+                               class="text-secondary hover:text-accent font-medium transition-colors duration-300 focus:outline-none focus:text-accent">
                                 Admin
                             </a>
                         {% endif %}
@@ -395,22 +429,22 @@
                                 <!-- Same profile image for all users -->
                                 <img src="https://cdn-icons-png.flaticon.com/512/5951/5951752.png" 
                                      alt="{{ current_user.full_name or current_user.username }}"
-                                     class="w-8 h-8 rounded-full object-cover border-2 border-primary/20">
-                                <span class="text-sm text-gray-600">Hi, {{ current_user.full_name or current_user.username }}</span>
+                                     class="w-8 h-8 rounded-full object-cover border-2 border-accent/20">
+                                <span class="text-sm text-text-secondary-light">Hi, {{ current_user.full_name or current_user.username }}</span>
                             </div>
                             <a href="/logout" 
-                               class="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-medium hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                               class="px-4 py-2 rounded-lg bg-gradient-to-r from-brand-red to-red-600 text-white font-medium hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2">
                                 Logout
                             </a>
                         </div>
                     {% else %}
                         <div class="flex items-center space-x-4">
                             <a href="/login" 
-                               class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                               class="px-4 py-2 rounded-lg border border-light text-secondary font-medium hover:bg-accent-beige transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
                                 Log In
                             </a>
                             <a href="/register" 
-                               class="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                               class="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
                                 Get Started
                             </a>
                         </div>
@@ -419,7 +453,7 @@
 
                 <!-- Mobile Menu Button -->
                 <button id="mobileMenuButton" 
-                        class="md:hidden text-gray-700 p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+                        class="md:hidden text-secondary p-2 rounded-lg hover:bg-accent-beige focus:outline-none focus:ring-2 focus:ring-accent"
                         aria-label="Toggle mobile menu"
                         aria-expanded="false"
                         aria-controls="mobileMenu">
@@ -435,60 +469,60 @@
                  aria-hidden="true">
                 <div class="py-4 space-y-3">
                     <a href="/explore" 
-                       class="block py-2 text-gray-700 hover:text-primary px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                       class="block py-2 text-secondary hover:text-accent px-4 rounded-lg hover:bg-accent-beige focus:outline-none focus:bg-accent-beige"
                        role="menuitem">
                         Find Mentors
                     </a>
                     <a href="#how-it-works" 
-                       class="block py-2 text-gray-700 hover:text-primary px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                       class="block py-2 text-secondary hover:text-accent px-4 rounded-lg hover:bg-accent-beige focus:outline-none focus:bg-accent-beige"
                        role="menuitem">
                         How It Works
                     </a>
                     <a href="/mentorship-program" 
-                       class="block py-2 text-gray-700 hover:text-primary px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                       class="block py-2 text-secondary hover:text-accent px-4 rounded-lg hover:bg-accent-beige focus:outline-none focus:bg-accent-beige"
                        role="menuitem">
                         Program
                     </a>
                     
                     {% if current_user %}
                         <a href="/dashboard" 
-                           class="block py-2 text-gray-700 hover:text-primary px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                           class="block py-2 text-secondary hover:text-accent px-4 rounded-lg hover:bg-accent-beige focus:outline-none focus:bg-accent-beige"
                            role="menuitem">
                             Dashboard
                         </a>
                         {% if current_user.role == 'admin' %}
                             <a href="/admin/dashboard" 
-                               class="block py-2 text-gray-700 hover:text-primary px-4 rounded-lg hover:bg-gray-50 focus:outline-none focus:bg-gray-50"
+                               class="block py-2 text-secondary hover:text-accent px-4 rounded-lg hover:bg-accent-beige focus:outline-none focus:bg-accent-beige"
                                role="menuitem">
                                 Admin
                             </a>
                         {% endif %}
-                        <div class="pt-4 border-t border-gray-200">
+                        <div class="pt-4 border-t border-light">
                             <div class="flex items-center space-x-3 mb-4 px-4">
                                 <!-- Same profile image for all users (mobile) -->
                                 <img src="https://cdn-icons-png.flaticon.com/512/5951/5951752.png" 
                                      alt="{{ current_user.full_name or current_user.username }}"
-                                     class="w-10 h-10 rounded-full object-cover border-2 border-primary/20">
+                                     class="w-10 h-10 rounded-full object-cover border-2 border-accent/20">
                                 <div>
-                                    <p class="font-medium text-gray-900">{{ current_user.full_name or current_user.username }}</p>
-                                    <p class="text-sm text-gray-500">{{ current_user.role|title }}</p>
+                                    <p class="font-medium text-primary">{{ current_user.full_name or current_user.username }}</p>
+                                    <p class="text-sm text-text-secondary-light">{{ current_user.role|title }}</p>
                                 </div>
                             </div>
                             <a href="/logout" 
-                               class="block w-full text-center py-3 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white font-medium mx-4 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                               class="block w-full text-center py-3 rounded-lg bg-gradient-to-r from-brand-red to-red-600 text-white font-medium mx-4 focus:outline-none focus:ring-2 focus:ring-brand-red focus:ring-offset-2"
                                role="menuitem">
                                 Logout
                             </a>
                         </div>
                     {% else %}
-                        <div class="pt-4 border-t border-gray-200 space-y-3">
+                        <div class="pt-4 border-t border-light space-y-3">
                             <a href="/login" 
-                               class="block w-full text-center py-3 rounded-lg border border-gray-300 text-gray-700 font-medium mx-4 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                               class="block w-full text-center py-3 rounded-lg border border-light text-secondary font-medium mx-4 hover:bg-accent-beige focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
                                role="menuitem">
                                 Log In
                             </a>
                             <a href="/register" 
-                               class="block w-full text-center py-3 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-medium mx-4 hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                               class="block w-full text-center py-3 rounded-lg bg-gradient-to-r from-primary to-accent text-white font-medium mx-4 hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
                                role="menuitem">
                                 Get Started
                             </a>
@@ -505,35 +539,35 @@
     </main>
 
     <!-- Enhanced Footer -->
-    <footer class="bg-dark text-white mt-16" role="contentinfo">
+    <footer class="bg-background-dark text-text-dark mt-16" role="contentinfo">
         <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <!-- Company Info -->
                 <div>
-                    <a href="/" class="flex items-center space-x-2 mb-6 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-dark rounded-lg p-1 inline-block">
-                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <a href="/" class="flex items-center space-x-2 mb-6 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-background-dark rounded-lg p-1 inline-block">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                             <i class="fas fa-graduation-cap text-white" aria-hidden="true"></i>
                         </div>
-                        <span class="text-xl font-bold text-white">Clear<span class="text-primary">Q</span></span>
+                        <span class="text-xl font-bold text-white">Clear<span class="text-accent">Q</span></span>
                     </a>
-                    <p class="text-gray-400 mb-6 max-w-xs">
+                    <p class="text-text-secondary-dark mb-6 max-w-xs">
                         Democratizing mentorship for everyone. Connect with industry experts to accelerate your career growth.
                     </p>
                     <div class="flex space-x-4">
                         <a href="#" 
-                           class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                           class="w-10 h-10 rounded-full bg-secondary hover:bg-primary-hover flex items-center justify-center transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-white"
                            aria-label="Twitter">
-                            <i class="fab fa-twitter text-gray-400 hover:text-white" aria-hidden="true"></i>
+                            <i class="fab fa-twitter text-text-secondary-dark hover:text-white" aria-hidden="true"></i>
                         </a>
                         <a href="#" 
-                           class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                           class="w-10 h-10 rounded-full bg-secondary hover:bg-primary-hover flex items-center justify-center transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-white"
                            aria-label="LinkedIn">
-                            <i class="fab fa-linkedin-in text-gray-400 hover:text-white" aria-hidden="true"></i>
+                            <i class="fab fa-linkedin-in text-text-secondary-dark hover:text-white" aria-hidden="true"></i>
                         </a>
                         <a href="#" 
-                           class="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-white"
+                           class="w-10 h-10 rounded-full bg-secondary hover:bg-primary-hover flex items-center justify-center transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-white"
                            aria-label="Instagram">
-                            <i class="fab fa-instagram text-gray-400 hover:text-white" aria-hidden="true"></i>
+                            <i class="fab fa-instagram text-text-secondary-dark hover:text-white" aria-hidden="true"></i>
                         </a>
                     </div>
                 </div>
@@ -543,15 +577,15 @@
                     <h3 class="text-lg font-semibold mb-6">Quick Links</h3>
                     <ul class="space-y-3">
                         <li><a href="/explore" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             Find Mentors
                         </a></li>
                         <li><a href="/register" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             Become a Mentor
                         </a></li>
                         <li><a href="/mentorship-program" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             Mentorship Program
                         </a></li>
                     </ul>
@@ -562,15 +596,15 @@
                     <h3 class="text-lg font-semibold mb-6">Resources</h3>
                     <ul class="space-y-3">
                         <li><a href="#" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             Career Guides
                         </a></li>
                         <li><a href="#" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             Interview Prep
                         </a></li>
                         <li><a href="#" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             FAQ
                         </a></li>
                     </ul>
@@ -581,19 +615,19 @@
                     <h3 class="text-lg font-semibold mb-6">Contact & Legal</h3>
                     <ul class="space-y-3">
                         <li><a href="mailto:support@clearq.in" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             support@clearq.in
                         </a></li>
                         <li><a href="/privacy" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             Privacy Policy
                         </a></li>
                         <li><a href="/terms" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             Terms of Service
                         </a></li>
                         <li><a href="#" 
-                               class="text-gray-400 hover:text-white transition-colors focus:outline-none focus:text-white">
+                               class="text-text-secondary-dark hover:text-white transition-colors duration-300 focus:outline-none focus:text-white">
                             Cookie Policy
                         </a></li>
                     </ul>
@@ -601,11 +635,11 @@
             </div>
 
             <!-- Copyright -->
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
+            <div class="border-t border-dark mt-8 pt-8 text-center text-text-secondary-dark text-sm">
                 <div class="flex flex-col md:flex-row justify-between items-center">
                     <p>&copy; {{ now.year }} ClearQ.in. All rights reserved.</p>
                     <p class="mt-2 md:mt-0">
-                        Made with <i class="fas fa-heart text-red-500 mx-1" aria-label="love"></i> for the community
+                        Made with <i class="fas fa-heart text-brand-red mx-1" aria-label="love"></i> for the community
                     </p>
                 </div>
             </div>
