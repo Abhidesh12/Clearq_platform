@@ -3,241 +3,356 @@
 {% block title %}Terms of Service - ClearQ{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-            <!-- Header -->
-            <div class="text-center mb-12">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Terms of Service</h1>
-                <p class="text-gray-600">Last updated: {{ now.strftime('%B %d, %Y') }}</p>
-            </div>
+<script>
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#1f1f1f",
+                    "primary-hover": "#000000",
+                    "accent": "#ff6b4a",
+                    "background-light": "#fff5ec",
+                    "background-dark": "#151022",
+                    "text-light": "#1f1f1f",
+                    "text-dark": "#ffffff",
+                    "text-secondary-light": "#555555",
+                    "text-secondary-dark": "#a09db3",
+                    "card-light": "#ffffff",
+                    "card-dark": "#1e1a2e",
+                    "border-light": "#E5E4E0",
+                    "border-dark": "#2d2a3b",
+                    "accent-beige": "#F0EFEA",
+                    "secondary": "#2D3748",
+                    "dark-card": "#232936",
+                },
+                fontFamily: {
+                    "display": ["Inter", "sans-serif"]
+                },
+                borderRadius: {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "full": "9999px"
+                },
+                fontSize: {
+                    'xxs': '0.625rem',
+                }
+            },
+        }
+    }
+</script>
 
-            <!-- Content -->
-            <div class="prose prose-lg max-w-none">
-                <p class="text-lg text-gray-700 mb-8">
+<style>
+    :root {
+        --primary: #1f1f1f;
+        --primary-hover: #000000;
+        --accent: #ff6b4a;
+        --secondary: #2D3748;
+        --brand-red: #FF3F1F;
+        --background-light: #fff5ec;
+        --background-dark: #151022;
+        --card-light: #ffffff;
+        --card-dark: #1e1a2e;
+        --text-light: #1f1f1f;
+        --text-dark: #ffffff;
+        --text-secondary-light: #555555;
+        --text-secondary-dark: #a09db3;
+        --border-light: #E5E4E0;
+        --border-dark: #2d2a3b;
+    }
+
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+</style>
+
+<div class="min-h-screen bg-background-light">
+    <div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light group/design-root overflow-x-hidden max-w-md mx-auto">
+        <!-- TopAppBar -->
+        <div class="sticky top-0 z-10 flex items-center bg-background-light p-4 pb-2 justify-between border-b border-light">
+            <a href="/" aria-label="Go back" class="text-accent flex size-12 shrink-0 items-center cursor-pointer">
+                <span class="material-symbols-outlined text-[28px]">arrow_back_ios</span>
+            </a>
+            <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Terms of Service</h2>
+        </div>
+        
+        <div class="flex flex-col px-4">
+            <!-- HeadlineText -->
+            <div class="pt-6 pb-1">
+                <h1 class="text-primary tracking-light text-[32px] font-bold leading-tight text-left">ClearQ Terms of Service</h1>
+            </div>
+            
+            <!-- MetaText -->
+            <div class="pb-6 border-b border-light">
+                <p class="text-text-secondary-light text-sm font-normal leading-normal pt-1">Last updated: {{ now.strftime('%B %d, %Y') }}</p>
+            </div>
+            
+            <!-- Intro BodyText -->
+            <div class="pt-6">
+                <p class="text-text-light text-base font-normal leading-relaxed pb-3">
                     Welcome to ClearQ! These Terms of Service ("Terms") govern your use of the ClearQ mentorship platform ("Platform"). By accessing or using our Platform, you agree to be bound by these Terms.
                 </p>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">1. Acceptance of Terms</h2>
-                    
-                    <p class="text-gray-700 mb-4">
-                        By registering for an account or using our Platform, you acknowledge that you have read, understood, and agree to be bound by these Terms. If you do not agree with any part of these Terms, you must not use our Platform.
-                    </p>
-                    
-                    <p class="text-gray-700">
-                        We reserve the right to modify these Terms at any time. We will provide notice of significant changes by posting the updated Terms on our Platform and updating the "Last updated" date.
-                    </p>
-                </section>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">2. Account Registration</h2>
-                    
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">2.1 Eligibility</h3>
-                    <p class="text-gray-700 mb-4">
-                        To use our Platform, you must:
-                    </p>
-                    <ul class="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                        <li>Be at least 18 years old</li>
-                        <li>Have the legal capacity to enter into binding contracts</li>
-                        <li>Provide accurate and complete registration information</li>
-                        <li>Maintain the security of your account credentials</li>
-                    </ul>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">2.2 Account Types</h3>
-                    <ul class="list-disc pl-6 text-gray-700 space-y-2">
-                        <li><strong>Learner Accounts:</strong> For individuals seeking mentorship</li>
-                        <li><strong>Mentor Accounts:</strong> For experts providing mentorship services</li>
-                        <li><strong>Admin Accounts:</strong> For platform administrators</li>
-                    </ul>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3 mt-4">2.3 Account Security</h3>
-                    <p class="text-gray-700">
-                        You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account.
-                    </p>
-                </section>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">3. Platform Services</h2>
-                    
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">3.1 Mentor Services</h3>
-                    <p class="text-gray-700 mb-4">
-                        Mentors on our Platform offer various services including:
-                    </p>
-                    <ul class="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                        <li>1:1 mentoring sessions</li>
-                        <li>Mock interviews</li>
-                        <li>Resume reviews</li>
-                        <li>Career guidance</li>
-                        <li>Technical coaching</li>
-                        <li>Digital products</li>
-                    </ul>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">3.2 Booking and Payments</h3>
-                    <ul class="list-disc pl-6 text-gray-700 space-y-2">
-                        <li>All sessions must be booked through our Platform</li>
-                        <li>Payments are processed via Razorpay</li>
-                        <li>Cancellation policies are set by individual mentors</li>
-                        <li>Refunds are subject to our Refund Policy</li>
-                    </ul>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3 mt-4">3.3 Platform as Venue</h3>
-                    <p class="text-gray-700">
-                        ClearQ acts as a venue to connect mentors and learners. We are not a party to any agreements between mentors and learners, nor are we responsible for the quality of services provided by mentors.
-                    </p>
-                </section>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">4. Fees and Payments</h2>
-                    
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">4.1 Service Fees</h3>
-                    <p class="text-gray-700 mb-4">
-                        Mentors set their own prices for services. ClearQ charges a platform fee of 15% on all completed bookings.
-                    </p>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">4.2 Payment Processing</h3>
-                    <ul class="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                        <li>Payments are processed through Razorpay</li>
-                        <li>We do not store credit card information</li>
-                        <li>All prices are in Indian Rupees (INR)</li>
-                        <li>Taxes are the responsibility of the mentor</li>
-                    </ul>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">4.3 Payouts to Mentors</h3>
-                    <p class="text-gray-700">
-                        Mentor earnings are paid out on a monthly basis, minus the platform fee. Payouts are processed within 7 business days after the end of each month.
-                    </p>
-                </section>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">5. User Conduct</h2>
-                    
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">5.1 Prohibited Activities</h3>
-                    <p class="text-gray-700 mb-4">
-                        You agree not to:
-                    </p>
-                    <ul class="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                        <li>Use the Platform for any illegal purpose</li>
-                        <li>Harass, abuse, or harm other users</li>
-                        <li>Share false or misleading information</li>
-                        <li>Circumvent payment systems</li>
-                        <li>Use automated systems to access the Platform</li>
-                        <li>Share confidential information without consent</li>
-                        <li>Violate intellectual property rights</li>
-                    </ul>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">5.2 Content Standards</h3>
-                    <p class="text-gray-700">
-                        All content posted on our Platform must be:
-                    </p>
-                    <ul class="list-disc pl-6 text-gray-700 mt-2 space-y-2">
-                        <li>Accurate and truthful</li>
-                        <li>Respectful and professional</li>
-                        <li>Appropriate for a professional mentorship platform</li>
-                        <li>Free from offensive or discriminatory language</li>
-                    </ul>
-                </section>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">6. Intellectual Property</h2>
-                    
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">6.1 Platform Content</h3>
-                    <p class="text-gray-700 mb-4">
-                        All Platform content, including logos, design, text, and software, is owned by ClearQ and protected by intellectual property laws.
-                    </p>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">6.2 User Content</h3>
-                    <p class="text-gray-700">
-                        By posting content on our Platform, you grant ClearQ a worldwide, non-exclusive license to use, display, and distribute that content for Platform operations.
-                    </p>
-                </section>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">7. Disclaimer of Warranties</h2>
-                    
-                    <p class="text-gray-700 mb-4">
-                        THE PLATFORM IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.
-                    </p>
-                    
-                    <p class="text-gray-700">
-                        We do not guarantee that:
-                    </p>
-                    <ul class="list-disc pl-6 text-gray-700 mt-2 space-y-2">
-                        <li>The Platform will be available at all times</li>
-                        <li>The Platform will be error-free</li>
-                        <li>Mentor services will meet your expectations</li>
-                        <li>Career outcomes will be achieved</li>
-                    </ul>
-                </section>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">8. Limitation of Liability</h2>
-                    
-                    <p class="text-gray-700 mb-4">
-                        TO THE MAXIMUM EXTENT PERMITTED BY LAW, CLEARQ SHALL NOT BE LIABLE FOR:
-                    </p>
-                    
-                    <ul class="list-disc pl-6 text-gray-700 space-y-2">
-                        <li>Indirect, incidental, or consequential damages</li>
-                        <li>Loss of profits, data, or business opportunities</li>
-                        <li>Damages resulting from mentor-learner interactions</li>
-                        <li>Third-party conduct or content</li>
-                        <li>Platform interruptions or errors</li>
-                    </ul>
-                    
-                    <p class="text-gray-700 mt-4">
-                        Our total liability to you for any claim shall not exceed the amount paid by you to ClearQ in the 12 months preceding the claim.
-                    </p>
-                </section>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">9. Termination</h2>
-                    
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">9.1 By User</h3>
-                    <p class="text-gray-700 mb-4">
-                        You may terminate your account at any time by contacting us or through your account settings.
-                    </p>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">9.2 By ClearQ</h3>
-                    <p class="text-gray-700">
-                        We may terminate or suspend your account if:
-                    </p>
-                    <ul class="list-disc pl-6 text-gray-700 mt-2 space-y-2">
-                        <li>You violate these Terms</li>
-                        <li>You engage in fraudulent activity</li>
-                        <li>Required by law or court order</li>
-                        <li>For operational reasons</li>
-                    </ul>
-                </section>
-
-                <section class="mb-10">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">10. Dispute Resolution</h2>
-                    
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">10.1 Governing Law</h3>
-                    <p class="text-gray-700 mb-4">
-                        These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions.
-                    </p>
-
-                    <h3 class="text-xl font-semibold text-gray-900 mb-3">10.2 Arbitration</h3>
-                    <p class="text-gray-700">
-                        Any disputes arising from these Terms or your use of the Platform shall be resolved through binding arbitration in accordance with the Arbitration and Conciliation Act, 1996.
-                    </p>
-                </section>
-
-                <section>
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">11. Contact Information</h2>
-                    
-                    <p class="text-gray-700">
-                        If you have any questions about these Terms, please contact us:
-                    </p>
-                    
-                    <div class="bg-gray-50 rounded-lg p-6 mt-4">
-                        <p class="text-gray-700"><strong>Email:</strong> <a href="mailto:legal@clearq.in" class="text-primary hover:text-primary-dark">legal@clearq.in</a></p>
-                        <p class="text-gray-700 mt-2"><strong>Address:</strong> ClearQ Mentorship Platform</p>
-                    </div>
-                </section>
             </div>
+            
+            <!-- SectionHeader: 1 -->
+            <div class="pt-4">
+                <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">1. Acceptance of Terms</h2>
+            </div>
+            
+            <!-- BodyText Content -->
+            <div class="pb-4">
+                <p class="text-text-light text-base font-normal leading-relaxed">
+                    By registering for an account or using our Platform, you acknowledge that you have read, understood, and agree to be bound by these Terms. If you do not agree with any part of these Terms, you must not use our Platform.
+                </p>
+                <p class="text-text-light text-base font-normal leading-relaxed mt-3">
+                    We reserve the right to modify these Terms at any time. We will provide notice of significant changes by posting the updated Terms on our Platform and updating the "Last updated" date.
+                </p>
+            </div>
+            
+            <!-- SectionHeader: 2 -->
+            <div class="pt-6">
+                <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">2. Account Registration</h2>
+            </div>
+            
+            <!-- BodyText Content -->
+            <div class="pb-4">
+                <p class="text-text-light text-base font-normal leading-relaxed mb-3">
+                    To use our Platform, you must:
+                </p>
+                <ul class="space-y-2 pl-2">
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Be at least 18 years old</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Have the legal capacity to enter into binding contracts</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Provide accurate and complete registration information</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Maintain the security of your account credentials</p>
+                    </li>
+                </ul>
+                
+                <p class="text-text-light text-base font-normal leading-relaxed mt-4 mb-3">
+                    <strong>Account Types:</strong>
+                </p>
+                <ul class="space-y-2 pl-2">
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base"><strong>Learner Accounts:</strong> For individuals seeking mentorship</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base"><strong>Mentor Accounts:</strong> For experts providing mentorship services</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base"><strong>Admin Accounts:</strong> For platform administrators</p>
+                    </li>
+                </ul>
+                
+                <p class="text-text-light text-base font-normal leading-relaxed mt-4">
+                    <strong>Account Security:</strong> You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account.
+                </p>
+            </div>
+            
+            <!-- SectionHeader: 3 -->
+            <div class="pt-6">
+                <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">3. Platform Services</h2>
+            </div>
+            
+            <!-- BodyText Content -->
+            <div class="pb-4">
+                <p class="text-text-light text-base font-normal leading-relaxed mb-3">
+                    <strong>Mentor Services:</strong> Mentors on our Platform offer various services including:
+                </p>
+                <ul class="space-y-2 pl-2">
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">1:1 mentoring sessions</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Mock interviews</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Resume reviews</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Career guidance</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Technical coaching</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Digital products</p>
+                    </li>
+                </ul>
+                
+                <p class="text-text-light text-base font-normal leading-relaxed mt-4 mb-3">
+                    <strong>Booking and Payments:</strong>
+                </p>
+                <ul class="space-y-2 pl-2">
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">All sessions must be booked through our Platform</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Payments are processed via Razorpay</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Cancellation policies are set by individual mentors</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Refunds are subject to our Refund Policy</p>
+                    </li>
+                </ul>
+                
+                <p class="text-text-light text-base font-normal leading-relaxed mt-4">
+                    <strong>Platform as Venue:</strong> ClearQ acts as a venue to connect mentors and learners. We are not a party to any agreements between mentors and learners, nor are we responsible for the quality of services provided by mentors.
+                </p>
+            </div>
+            
+            <!-- SectionHeader: 4 -->
+            <div class="pt-6">
+                <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">4. Fees and Payments</h2>
+            </div>
+            
+            <!-- BodyText Content -->
+            <div class="pb-4">
+                <p class="text-text-light text-base font-normal leading-relaxed mb-3">
+                    <strong>Service Fees:</strong> Mentors set their own prices for services. ClearQ charges a platform fee of 15% on all completed bookings.
+                </p>
+                
+                <p class="text-text-light text-base font-normal leading-relaxed mt-4 mb-3">
+                    <strong>Payment Processing:</strong>
+                </p>
+                <ul class="space-y-2 pl-2">
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Payments are processed through Razorpay</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">We do not store credit card information</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">All prices are in Indian Rupees (INR)</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Taxes are the responsibility of the mentor</p>
+                    </li>
+                </ul>
+                
+                <p class="text-text-light text-base font-normal leading-relaxed mt-4">
+                    <strong>Payouts to Mentors:</strong> Mentor earnings are paid out on a monthly basis, minus the platform fee. Payouts are processed within 7 business days after the end of each month.
+                </p>
+            </div>
+            
+            <!-- SectionHeader: 5 -->
+            <div class="pt-6">
+                <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3">5. User Conduct</h2>
+            </div>
+            
+            <!-- BodyText Content -->
+            <div class="pb-8">
+                <p class="text-text-light text-base font-normal leading-relaxed mb-3">
+                    <strong>Prohibited Activities:</strong> You agree not to:
+                </p>
+                <ul class="space-y-2 pl-2">
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Use the Platform for any illegal purpose</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Harass, abuse, or harm other users</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Share false or misleading information</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Circumvent payment systems</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Use automated systems to access the Platform</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Share confidential information without consent</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Violate intellectual property rights</p>
+                    </li>
+                </ul>
+                
+                <p class="text-text-light text-base font-normal leading-relaxed mt-4 mb-3">
+                    <strong>Content Standards:</strong> All content posted on our Platform must be:
+                </p>
+                <ul class="space-y-2 pl-2">
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Accurate and truthful</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Respectful and professional</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Appropriate for a professional mentorship platform</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-accent font-bold mt-1">•</span>
+                        <p class="text-text-light text-base">Free from offensive or discriminatory language</p>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Important Note -->
+            <div class="my-8 p-6 bg-accent-beige rounded-xl border border-light text-center">
+                <h3 class="text-primary font-bold text-lg mb-2">Questions?</h3>
+                <p class="text-text-secondary-light text-sm mb-4">If you have any questions about these Terms, please contact our legal team.</p>
+                <a class="inline-block px-6 py-2 bg-accent text-white font-bold rounded-lg transition-opacity hover:opacity-90" href="mailto:legal@clearq.in">
+                    Contact Legal Team
+                </a>
+            </div>
+            
+            <div class="h-10"></div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add back button functionality
+        const backButton = document.querySelector('[aria-label="Go back"]');
+        if (backButton) {
+            backButton.addEventListener('click', function() {
+                window.history.back();
+            });
+        }
+    });
+</script>
+
 {% endblock %}
