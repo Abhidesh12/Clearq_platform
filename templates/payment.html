@@ -16,9 +16,35 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     
     <style>
+        /* Theme CSS Variables */
+        :root {
+            --primary: #1f1f1f;
+            --primary-hover: #000000;
+            --accent: #ff6b4a;
+            --secondary: #2D3748;
+            --brand-red: #FF3F1F;
+            --background-light: #fff5ec;
+            --background-dark: #151022;
+            --card-light: #ffffff;
+            --card-dark: #1e1a2e;
+            --text-light: #1f1f1f;
+            --text-dark: #ffffff;
+            --text-secondary-light: #555555;
+            --text-secondary-dark: #a09db3;
+            --border-light: #E5E4E0;
+            --border-dark: #2d2a3b;
+            --card-green: #9CCB5C;
+            --card-blue: #85C3EA;
+        }
+
+        body {
+            background-color: var(--background-light);
+            font-family: Inter, sans-serif;
+        }
+
         .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border: 3px solid var(--border-light);
+            border-top: 3px solid var(--accent);
             border-radius: 50%;
             width: 20px;
             height: 20px;
@@ -26,6 +52,7 @@
             display: inline-block;
             margin-right: 10px;
         }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -59,16 +86,16 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: #e5e7eb;
+            background: var(--border-light);
         }
         
         .status-dot.active {
-            background: #10b981;
+            background: var(--card-green);
             animation: pulse 2s infinite;
         }
         
         .status-dot.completed {
-            background: #10b981;
+            background: var(--card-green);
         }
         
         @keyframes pulse {
@@ -80,7 +107,7 @@
         .progress-container {
             width: 100%;
             height: 6px;
-            background: #e5e7eb;
+            background: var(--border-light);
             border-radius: 3px;
             overflow: hidden;
             margin: 20px 0;
@@ -88,7 +115,7 @@
         
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #10b981, #3b82f6);
+            background: linear-gradient(90deg, var(--card-green), var(--card-blue));
             width: 0%;
             transition: width 0.3s ease;
         }
@@ -110,30 +137,30 @@
         
         .payment-option:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(31, 31, 31, 0.1);
         }
         
         .payment-option.active {
-            border-color: #4f46e5;
-            background-color: #f5f3ff;
+            border-color: var(--accent);
+            background-color: var(--background-light);
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-background-light">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm">
+    <nav class="bg-card-light shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="/dashboard" class="text-xl font-bold text-blue-600">
+                    <a href="/dashboard" class="text-xl font-bold text-accent">
                         <i class="fas fa-graduation-cap mr-2"></i>ClearQ
                     </a>
                 </div>
                 <div class="flex items-center">
-                    <span class="text-gray-700 mr-4">
+                    <span class="text-text-secondary-light mr-4">
                         <i class="fas fa-user mr-1"></i>{{ current_user.full_name }}
                     </span>
-                    <a href="/logout" class="text-red-500 hover:text-red-700">
+                    <a href="/logout" class="text-brand-red hover:text-red-700">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </div>
@@ -144,16 +171,16 @@
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <!-- Back Button -->
-        <a href="/dashboard" class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+        <a href="/dashboard" class="inline-flex items-center text-accent hover:text-primary-hover mb-6">
             <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
         </a>
 
         <!-- Page Header -->
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+            <h1 class="text-3xl font-bold text-primary mb-2">
                 <i class="fas fa-credit-card mr-2"></i>Complete Your Payment
             </h1>
-            <p class="text-gray-600">
+            <p class="text-text-secondary-light">
                 {% if mentor and mentor.user %}
                     Secure payment for your booking with {{ mentor.user.full_name }}
                 {% elif mentor %}
@@ -167,49 +194,49 @@
         <!-- Status Indicator -->
         <div class="status-indicator mb-6">
             <div class="status-dot completed"></div>
-            <div class="text-sm text-gray-500">Select Service</div>
-            <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
+            <div class="text-sm text-text-secondary-light">Select Service</div>
+            <div class="flex-1 h-0.5 bg-border-light mx-4"></div>
             <div class="status-dot completed"></div>
-            <div class="text-sm text-gray-500">Choose Time</div>
-            <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
+            <div class="text-sm text-text-secondary-light">Choose Time</div>
+            <div class="flex-1 h-0.5 bg-border-light mx-4"></div>
             <div class="status-dot active"></div>
-            <div class="text-sm font-medium text-blue-600">Make Payment</div>
+            <div class="text-sm font-medium text-accent">Make Payment</div>
         </div>
 
         <!-- Booking Summary -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4 pb-3 border-b">
+        <div class="bg-card-light rounded-xl shadow-lg p-6 mb-8 border border-border-light">
+            <h2 class="text-xl font-semibold text-primary mb-4 pb-3 border-b border-border-light">
                 <i class="fas fa-receipt mr-2"></i>Booking Summary
             </h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Service Details -->
                 <div>
-                    <h3 class="font-medium text-gray-700 mb-3">Service Details</h3>
+                    <h3 class="font-medium text-text-secondary-light mb-3">Service Details</h3>
                     <div class="space-y-3">
                         {% if service %}
                         <div class="flex items-center">
-                            <i class="fas fa-book text-blue-500 w-6"></i>
+                            <i class="fas fa-book text-card-blue w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Service:</span>
-                                <span class="font-medium ml-2">{{ service.name }}</span>
+                                <span class="text-text-secondary-light">Service:</span>
+                                <span class="font-medium ml-2 text-primary">{{ service.name }}</span>
                             </span>
                         </div>
                         <div class="flex items-center">
-                            <i class="fas fa-money-bill text-green-500 w-6"></i>
+                            <i class="fas fa-money-bill text-card-green w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Price:</span>
-                                <span class="font-medium ml-2">₹{{ booking.amount_paid if booking.amount_paid else service.price }}</span>
+                                <span class="text-text-secondary-light">Price:</span>
+                                <span class="font-medium ml-2 text-primary">₹{{ booking.amount_paid if booking.amount_paid else service.price }}</span>
                             </span>
                         </div>
                         {% endif %}
                         
                         {% if mentor and mentor.user %}
                         <div class="flex items-center">
-                            <i class="fas fa-user-tie text-purple-500 w-6"></i>
+                            <i class="fas fa-user-tie text-accent w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Mentor:</span>
-                                <span class="font-medium ml-2">{{ mentor.user.full_name }}</span>
+                                <span class="text-text-secondary-light">Mentor:</span>
+                                <span class="font-medium ml-2 text-primary">{{ mentor.user.full_name }}</span>
                             </span>
                         </div>
                         {% endif %}
@@ -218,22 +245,22 @@
 
                 <!-- Booking & Payment Details -->
                 <div>
-                    <h3 class="font-medium text-gray-700 mb-3">Booking & Payment Details</h3>
+                    <h3 class="font-medium text-text-secondary-light mb-3">Booking & Payment Details</h3>
                     <div class="space-y-3">
                         <div class="flex items-center">
-                            <i class="fas fa-calendar-alt text-orange-500 w-6"></i>
+                            <i class="fas fa-calendar-alt text-primary w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Booking ID:</span>
-                                <span class="font-medium ml-2">#{{ booking.id }}</span>
+                                <span class="text-text-secondary-light">Booking ID:</span>
+                                <span class="font-medium ml-2 text-primary">#{{ booking.id }}</span>
                             </span>
                         </div>
                         
                         {% if booking.booking_date %}
                         <div class="flex items-center">
-                            <i class="fas fa-calendar-day text-blue-500 w-6"></i>
+                            <i class="fas fa-calendar-day text-card-blue w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Date:</span>
-                                <span class="font-medium ml-2">
+                                <span class="text-text-secondary-light">Date:</span>
+                                <span class="font-medium ml-2 text-primary">
                                     {% if booking.booking_date is string %}
                                         {{ booking.booking_date }}
                                     {% else %}
@@ -246,20 +273,20 @@
                         
                         {% if booking.selected_time %}
                         <div class="flex items-center">
-                            <i class="fas fa-clock text-green-500 w-6"></i>
+                            <i class="fas fa-clock text-card-green w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Time:</span>
-                                <span class="font-medium ml-2">{{ booking.selected_time }}</span>
+                                <span class="text-text-secondary-light">Time:</span>
+                                <span class="font-medium ml-2 text-primary">{{ booking.selected_time }}</span>
                             </span>
                         </div>
                         {% endif %}
                         
                         <!-- Amount to Pay -->
-                        <div class="flex items-center pt-3 border-t">
-                            <i class="fas fa-money-check-alt text-yellow-500 w-6"></i>
+                        <div class="flex items-center pt-3 border-t border-border-light">
+                            <i class="fas fa-money-check-alt text-accent w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Amount to Pay:</span>
-                                <span class="font-bold text-lg ml-2">
+                                <span class="text-text-secondary-light">Amount to Pay:</span>
+                                <span class="font-bold text-lg ml-2 text-primary">
                                     ₹{{ booking.amount_paid if booking.amount_paid else (service.price if service else 0) }}
                                 </span>
                             </span>
@@ -267,15 +294,15 @@
                         
                         <!-- Payment Status -->
                         <div class="flex items-center">
-                            <i class="fas fa-tag text-red-500 w-6"></i>
+                            <i class="fas fa-tag text-brand-red w-6"></i>
                             <span class="ml-3">
-                                <span class="text-gray-600">Status:</span>
+                                <span class="text-text-secondary-light">Status:</span>
                                 <span class="font-medium ml-2 capitalize px-3 py-1 rounded-full text-sm 
                                     {% if booking.payment_status == 'pending' %}bg-yellow-100 text-yellow-800
-                                    {% elif booking.payment_status == 'paid' %}bg-green-100 text-green-800
-                                    {% elif booking.payment_status == 'failed' %}bg-red-100 text-red-800
-                                    {% elif booking.payment_status == 'refunded' %}bg-blue-100 text-blue-800
-                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {% elif booking.payment_status == 'paid' %}bg-card-green text-green-800
+                                    {% elif booking.payment_status == 'failed' %}bg-brand-red text-red-800
+                                    {% elif booking.payment_status == 'refunded' %}bg-card-blue text-blue-800
+                                    {% else %}bg-border-light text-primary{% endif %}">
                                     {{ booking.payment_status if booking.payment_status else 'pending' }}
                                 </span>
                             </span>
@@ -286,12 +313,12 @@
         </div>
 
         <!-- Payment Section -->
-        <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="bg-card-light rounded-xl shadow-lg p-6 border border-border-light">
             <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold text-gray-800">
+                <h2 class="text-xl font-semibold text-primary">
                     <i class="fas fa-lock mr-2"></i>Secure Payment
                 </h2>
-                <div class="flex items-center text-green-600">
+                <div class="flex items-center text-card-green">
                     <i class="fas fa-shield-alt mr-2"></i>
                     <span class="text-sm">256-bit SSL Secured</span>
                 </div>
@@ -300,67 +327,67 @@
             <!-- Payment Methods -->
             <div class="mb-8">
                 <div class="flex items-center justify-center mb-6">
-                    <div class="bg-blue-50 px-4 py-2 rounded-lg">
+                    <div class="bg-accent-beige px-4 py-2 rounded-lg">
                         <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" class="h-8">
                     </div>
                 </div>
                 
                 <!-- Payment Method Selection -->
                 <div class="mb-8">
-                    <h3 class="font-medium text-gray-700 mb-4">Choose Payment Method:</h3>
+                    <h3 class="font-medium text-text-secondary-light mb-4">Choose Payment Method:</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Credit/Debit Card -->
-                        <div class="payment-option p-4 border-2 border-gray-200 rounded-lg cursor-pointer text-center hover:border-blue-400" 
+                        <div class="payment-option p-4 border-2 border-border-light rounded-lg cursor-pointer text-center hover:border-accent" 
                              onclick="selectPaymentMethod('card')" id="cardOption">
-                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i class="fas fa-credit-card text-blue-600 text-xl"></i>
+                            <div class="w-12 h-12 bg-accent-beige rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-credit-card text-accent text-xl"></i>
                             </div>
-                            <p class="font-medium">Credit/Debit Card</p>
-                            <p class="text-xs text-gray-500 mt-1">Visa, MasterCard, RuPay</p>
+                            <p class="font-medium text-primary">Credit/Debit Card</p>
+                            <p class="text-xs text-text-secondary-light mt-1">Visa, MasterCard, RuPay</p>
                         </div>
                         
                         <!-- UPI -->
-                        <div class="payment-option p-4 border-2 border-gray-200 rounded-lg cursor-pointer text-center hover:border-green-400"
+                        <div class="payment-option p-4 border-2 border-border-light rounded-lg cursor-pointer text-center hover:border-card-green"
                              onclick="selectPaymentMethod('upi')" id="upiOption">
-                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i class="fas fa-mobile-alt text-green-600 text-xl"></i>
+                            <div class="w-12 h-12 bg-card-green/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-mobile-alt text-card-green text-xl"></i>
                             </div>
-                            <p class="font-medium">UPI</p>
-                            <p class="text-xs text-gray-500 mt-1">Google Pay, PhonePe, Paytm</p>
+                            <p class="font-medium text-primary">UPI</p>
+                            <p class="text-xs text-text-secondary-light mt-1">Google Pay, PhonePe, Paytm</p>
                         </div>
                         
                         <!-- Net Banking -->
-                        <div class="payment-option p-4 border-2 border-gray-200 rounded-lg cursor-pointer text-center hover:border-purple-400"
+                        <div class="payment-option p-4 border-2 border-border-light rounded-lg cursor-pointer text-center hover:border-accent"
                              onclick="selectPaymentMethod('netbanking')" id="netbankingOption">
-                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i class="fas fa-university text-purple-600 text-xl"></i>
+                            <div class="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-university text-accent text-xl"></i>
                             </div>
-                            <p class="font-medium">Net Banking</p>
-                            <p class="text-xs text-gray-500 mt-1">All major banks</p>
+                            <p class="font-medium text-primary">Net Banking</p>
+                            <p class="text-xs text-text-secondary-light mt-1">All major banks</p>
                         </div>
                     </div>
                     
                     <!-- Selected method indicator -->
-                    <div id="selectedMethod" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hidden">
+                    <div id="selectedMethod" class="mt-4 p-3 bg-accent-beige border border-accent rounded-lg hidden">
                         <div class="flex items-center">
-                            <i class="fas fa-check-circle text-blue-600 mr-2"></i>
-                            <span class="font-medium" id="selectedMethodText"></span>
+                            <i class="fas fa-check-circle text-accent mr-2"></i>
+                            <span class="font-medium text-primary" id="selectedMethodText"></span>
                         </div>
                     </div>
                 </div>
                 
-                <p class="text-gray-600 text-center mb-6">
+                <p class="text-text-secondary-light text-center mb-6">
                     You'll be redirected to Razorpay's secure payment gateway to complete your transaction.
                 </p>
                 
                 <!-- Display the amount -->
                 <div class="text-center mb-6">
                     {% set payment_amount = booking.amount_paid if booking.amount_paid else (service.price if service else 0) %}
-                    <div class="inline-block bg-gray-50 px-6 py-3 rounded-lg">
-                        <p class="text-sm text-gray-600">Total Amount</p>
-                        <p class="text-3xl font-bold text-gray-900">₹{{ payment_amount }}</p>
-                        <p class="text-xs text-gray-500 mt-1">+ Razorpay processing fees may apply</p>
+                    <div class="inline-block bg-accent-beige px-6 py-3 rounded-lg">
+                        <p class="text-sm text-text-secondary-light">Total Amount</p>
+                        <p class="text-3xl font-bold text-primary">₹{{ payment_amount }}</p>
+                        <p class="text-xs text-text-secondary-light mt-1">+ Razorpay processing fees may apply</p>
                     </div>
                 </div>
             </div>
@@ -370,31 +397,31 @@
                 {% set payment_amount = booking.amount_paid if booking.amount_paid else (service.price if service else 0) %}
                 
                 {% if booking.payment_status == 'paid' %}
-                <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-4 payment-success">
-                    <i class="fas fa-check-circle text-green-500 text-4xl mb-3"></i>
-                    <p class="text-green-700 font-medium text-lg mb-1">Payment Already Completed</p>
-                    <p class="text-green-600">Your booking is confirmed and paid.</p>
+                <div class="bg-card-green/10 border border-card-green rounded-lg p-6 mb-4 payment-success">
+                    <i class="fas fa-check-circle text-card-green text-4xl mb-3"></i>
+                    <p class="text-card-green font-medium text-lg mb-1">Payment Already Completed</p>
+                    <p class="text-card-green">Your booking is confirmed and paid.</p>
                     <div class="mt-4">
                         {% if service and service.is_digital %}
                         <a href="/digital-product/{{ service.id }}" 
-                           class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300 mr-2">
+                           class="inline-block bg-card-green hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition duration-300 mr-2">
                             Access Digital Product
                         </a>
                         {% elif booking.meeting_link %}
                         <a href="/meeting/{{ booking.id }}" 
-                           class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300 mr-2">
+                           class="inline-block bg-card-green hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition duration-300 mr-2">
                             Go to Meeting
                         </a>
                         {% endif %}
                         <a href="/dashboard" 
-                           class="inline-block bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300">
+                           class="inline-block bg-secondary hover:bg-primary-hover text-white font-bold py-2 px-6 rounded-lg transition duration-300">
                             Go to Dashboard
                         </a>
                     </div>
                 </div>
                 {% else %}
                 <button id="payButton" 
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-lg 
+                        class="bg-accent hover:bg-brand-red text-white font-bold py-4 px-10 rounded-lg 
                                transition duration-300 transform hover:scale-105 shadow-lg 
                                flex items-center justify-center mx-auto"
                         onclick="initializePayment()">
@@ -403,19 +430,19 @@
                 </button>
                 
                 <!-- Manual UPI Payment Option -->
-                <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    <h4 class="font-medium text-gray-700 mb-2">
+                <div class="mt-4 p-4 bg-accent-beige border border-border-light rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">
                         <i class="fas fa-mobile-alt mr-2"></i>Manual UPI Payment
                     </h4>
-                    <p class="text-sm text-gray-600 mb-2">
+                    <p class="text-sm text-text-secondary-light mb-2">
                         Scan QR code or use UPI ID:
                     </p>
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="font-mono text-blue-600">clearq@razorpay</p>
-                            <p class="text-xs text-gray-500">Include Booking ID: #{{ booking.id }}</p>
+                            <p class="font-mono text-accent">clearq@razorpay</p>
+                            <p class="text-xs text-text-secondary-light">Include Booking ID: #{{ booking.id }}</p>
                         </div>
-                        <button onclick="copyUPI()" class="px-3 py-1 bg-blue-100 text-blue-600 rounded text-sm hover:bg-blue-200">
+                        <button onclick="copyUPI()" class="px-3 py-1 bg-accent-beige text-accent rounded text-sm hover:bg-accent/20">
                             <i class="fas fa-copy mr-1"></i>Copy
                         </button>
                     </div>
@@ -425,19 +452,19 @@
                     <div class="progress-bar" id="paymentProgress"></div>
                 </div>
                 
-                <p class="text-gray-500 text-sm mt-4">
+                <p class="text-text-secondary-light text-sm mt-4">
                     <i class="fas fa-info-circle mr-1"></i>
-                    By proceeding, you agree to our <a href="/terms" class="text-blue-600 hover:underline">Terms of Service</a> and <a href="/privacy" class="text-blue-600 hover:underline">Privacy Policy</a>
+                    By proceeding, you agree to our <a href="/terms" class="text-accent hover:underline">Terms of Service</a> and <a href="/privacy" class="text-accent hover:underline">Privacy Policy</a>
                 </p>
                 {% endif %}
             </div>
 
             <!-- Important Notes -->
-            <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <h3 class="font-medium text-yellow-800 mb-2">
-                    <i class="fas fa-exclamation-circle mr-2"></i>Important Notes
+            <div class="mt-8 p-4 bg-accent/10 border border-accent/20 rounded-lg">
+                <h3 class="font-medium text-primary mb-2">
+                    <i class="fas fa-exclamation-circle mr-2 text-accent"></i>Important Notes
                 </h3>
-                <ul class="text-sm text-yellow-700 space-y-1">
+                <ul class="text-sm text-primary space-y-1">
                     <li>• Your booking will be confirmed only after successful payment</li>
                     <li>• The meeting link will be shared after payment confirmation</li>
                     <li>• You can cancel and get a refund up to 24 hours before the session</li>
@@ -449,10 +476,10 @@
 
         <!-- Support Info -->
         <div class="mt-8 text-center">
-            <p class="text-gray-600">
+            <p class="text-text-secondary-light">
                 <i class="fas fa-question-circle mr-2"></i>
                 Need help? 
-                <a href="mailto:support@clearq.in" class="text-blue-600 hover:underline">
+                <a href="mailto:support@clearq.in" class="text-accent hover:underline">
                     Contact Support
                 </a> or call +91-XXXXXXXXXX
             </p>
@@ -461,33 +488,33 @@
 
     <!-- Success Modal (Hidden by default) -->
     <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center">
-            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-check text-green-500 text-3xl"></i>
+        <div class="bg-card-light rounded-2xl p-8 max-w-md mx-4 text-center border border-border-light">
+            <div class="w-20 h-20 bg-card-green/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-check text-card-green text-3xl"></i>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful! 🎉</h3>
-            <p class="text-gray-600 mb-6" id="successMessage">Your payment has been verified. Redirecting...</p>
+            <h3 class="text-2xl font-bold text-primary mb-2">Payment Successful! 🎉</h3>
+            <p class="text-text-secondary-light mb-6" id="successMessage">Your payment has been verified. Redirecting...</p>
             <div class="loader mx-auto mb-4"></div>
             <div class="progress-container">
                 <div class="progress-bar" id="redirectProgress" style="width: 0%"></div>
             </div>
-            <p class="text-sm text-gray-500 mt-4">Please wait while we confirm your booking...</p>
+            <p class="text-sm text-text-secondary-light mt-4">Please wait while we confirm your booking...</p>
         </div>
     </div>
 
     <!-- Error Modal -->
     <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center error-alert">
-            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
+        <div class="bg-card-light rounded-2xl p-8 max-w-md mx-4 text-center error-alert border border-border-light">
+            <div class="w-20 h-20 bg-brand-red/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-exclamation-triangle text-brand-red text-3xl"></i>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h3>
-            <p class="text-gray-600 mb-6" id="errorMessage">There was an issue processing your payment.</p>
+            <h3 class="text-2xl font-bold text-primary mb-2">Payment Failed</h3>
+            <p class="text-text-secondary-light mb-6" id="errorMessage">There was an issue processing your payment.</p>
             <div class="flex gap-4 justify-center">
-                <button id="retryButton" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                <button id="retryButton" class="px-6 py-2 bg-accent text-white rounded-lg hover:bg-brand-red transition">
                     <i class="fas fa-redo mr-2"></i>Try Again
                 </button>
-                <button onclick="closeErrorModal()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+                <button onclick="closeErrorModal()" class="px-6 py-2 bg-border-light text-primary rounded-lg hover:bg-border-dark transition">
                     <i class="fas fa-times mr-2"></i>Cancel
                 </button>
             </div>
@@ -507,15 +534,15 @@
             // Update UI
             document.querySelectorAll('.payment-option').forEach(option => {
                 option.classList.remove('active');
-                option.classList.remove('border-blue-400', 'border-green-400', 'border-purple-400');
+                option.classList.remove('border-accent', 'border-card-green');
             });
             
             const selectedOption = document.getElementById(method + 'Option');
             if (selectedOption) {
                 selectedOption.classList.add('active');
-                if (method === 'card') selectedOption.classList.add('border-blue-400');
-                if (method === 'upi') selectedOption.classList.add('border-green-400');
-                if (method === 'netbanking') selectedOption.classList.add('border-purple-400');
+                if (method === 'card') selectedOption.classList.add('border-accent');
+                if (method === 'upi') selectedOption.classList.add('border-card-green');
+                if (method === 'netbanking') selectedOption.classList.add('border-accent');
             }
             
             // Show selected method
@@ -537,7 +564,7 @@
                 .then(() => {
                     // Show toast
                     const toast = document.createElement('div');
-                    toast.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50';
+                    toast.className = 'fixed top-4 right-4 bg-card-green/10 border border-card-green text-card-green px-4 py-3 rounded z-50';
                     toast.innerHTML = '<i class="fas fa-check-circle mr-2"></i> UPI ID copied!';
                     document.body.appendChild(toast);
                     setTimeout(() => toast.remove(), 3000);
@@ -693,7 +720,7 @@
                         contact: ""
                     },
                     theme: {
-                        color: "#4F46E5"
+                        color: "#ff6b4a"
                     },
                     modal: {
                         ondismiss: function() {
