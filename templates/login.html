@@ -3,76 +3,169 @@
 {% block title %}Login - ClearQ{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<!-- Add Tailwind Configuration -->
+<script>
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                "primary": "#1f1f1f",
+                "primary-hover": "#000000",
+                "accent": "#ff6b4a",
+                "background-light": "#fff5ec",
+                "background-dark": "#151022",
+                "text-light": "#1f1f1f",
+                "text-dark": "#ffffff",
+                "text-secondary-light": "#555555",
+                "text-secondary-dark": "#a09db3",
+                "card-light": "#ffffff",
+                "card-dark": "#1e1a2e",
+                "border-light": "#E5E4E0",
+                "border-dark": "#2d2a3b",
+                "accent-beige": "#F0EFEA",
+                "secondary": "#2D3748",
+                "dark-card": "#232936",
+                "card-purple": "#E0DBFC",
+                "card-green": "#9CCB5C",
+                "card-blue": "#85C3EA",
+                "card-beige": "#EEE3CD",
+                "card-teal": "#A8E1E1",
+                "card-pink": "#F6D0CE",
+                "brand-red": "#FF3F1F",
+            },
+            fontFamily: {
+                "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "2xl": "1rem",
+                "full": "9999px"
+            },
+            fontSize: {
+                'xxs': '0.625rem',
+            }
+        },
+    }
+}
+</script>
+
+<style>
+    :root {
+        /* Primary Colors */
+        --primary: #1f1f1f;
+        --primary-hover: #000000;
+        --accent: #ff6b4a;
+        --secondary: #2D3748;
+        --brand-red: #FF3F1F;
+        
+        /* Background Colors */
+        --background-light: #fff5ec;
+        --background-dark: #151022;
+        --card-light: #ffffff;
+        --card-dark: #1e1a2e;
+        --dark-card: #232936;
+        --accent-beige: #F0EFEA;
+        
+        /* Text Colors */
+        --text-light: #1f1f1f;
+        --text-dark: #ffffff;
+        --text-secondary-light: #555555;
+        --text-secondary-dark: #a09db3;
+        
+        /* Border Colors */
+        --border-light: #E5E4E0;
+        --border-dark: #2d2a3b;
+        
+        /* Card Color Palette */
+        --card-purple: #E0DBFC;
+        --card-green: #9CCB5C;
+        --card-blue: #85C3EA;
+        --card-beige: #EEE3CD;
+        --card-teal: #A8E1E1;
+        --card-pink: #F6D0CE;
+    }
+</style>
+
+<div class="min-h-screen bg-gradient-to-br from-[#fff5ec] to-[#F0EFEA] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
+        <!-- Logo and Header -->
         <div class="text-center">
             <a href="/" class="flex items-center justify-center space-x-2 mb-8">
-                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-[#1f1f1f] to-[#151022] flex items-center justify-center shadow-lg">
                     <i class="fas fa-graduation-cap text-white text-xl"></i>
                 </div>
-                <span class="text-2xl font-bold text-dark">Clear<span class="text-primary">Q</span></span>
+                <span class="text-2xl font-bold text-[#1f1f1f] font-display">Clear<span class="text-[#ff6b4a]">Q</span></span>
             </a>
-            <h2 class="text-3xl font-bold text-gray-900">Welcome back</h2>
-            <p class="mt-2 text-sm text-gray-600">
+            <h2 class="text-3xl font-bold text-[#1f1f1f] font-display">Welcome back</h2>
+            <p class="mt-2 text-sm text-[#555555]">
                 Sign in to your account to continue
             </p>
         </div>
 
+        <!-- Google Sign In -->
         {% if google_auth_url %}
         <div class="mt-4">
             <a href="{{ google_auth_url }}" 
-               class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all">
+               class="w-full flex items-center justify-center px-4 py-3 border border-[#E5E4E0] rounded-lg shadow-sm text-sm font-medium text-[#1f1f1f] bg-white hover:bg-[#F0EFEA] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff6b4a] transition-all duration-200 hover:border-[#ff6b4a]">
                 <i class="fab fa-google text-red-500 mr-2"></i>
                 Continue with Google
             </a>
             <div class="mt-4 flex items-center">
-                <div class="flex-grow border-t border-gray-300"></div>
-                <span class="flex-shrink mx-4 text-gray-500 text-sm">or</span>
-                <div class="flex-grow border-t border-gray-300"></div>
+                <div class="flex-grow border-t border-[#E5E4E0]"></div>
+                <span class="flex-shrink mx-4 text-[#555555] text-sm">or</span>
+                <div class="flex-grow border-t border-[#E5E4E0]"></div>
             </div>
         </div>
         {% endif %}
 
+        <!-- Login Form -->
         <form class="mt-8 space-y-6" action="/login" method="POST">
             <div class="rounded-md shadow-sm space-y-4">
+                <!-- Email Input -->
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="email" class="block text-sm font-medium text-[#1f1f1f] mb-1">
                         Email Address
                     </label>
                     <input id="email" name="email" type="email" autocomplete="email" required
-                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                           class="appearance-none relative block w-full px-3 py-3 border border-[#E5E4E0] placeholder-[#555555]/60 text-[#1f1f1f] bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff6b4a] focus:border-transparent focus:z-10 sm:text-sm transition-all duration-200 hover:border-[#ff6b4a]/50"
                            placeholder="you@example.com">
                 </div>
 
+                <!-- Password Input -->
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                    <label for="password" class="block text-sm font-medium text-[#1f1f1f] mb-1">
                         Password
                     </label>
                     <input id="password" name="password" type="password" autocomplete="current-password" required
-                           class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent focus:z-10 sm:text-sm"
+                           class="appearance-none relative block w-full px-3 py-3 border border-[#E5E4E0] placeholder-[#555555]/60 text-[#1f1f1f] bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff6b4a] focus:border-transparent focus:z-10 sm:text-sm transition-all duration-200 hover:border-[#ff6b4a]/50"
                            placeholder="••••••••">
                 </div>
             </div>
 
+            <!-- Remember Me & Forgot Password -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <input id="remember_me" name="remember_me" type="checkbox"
-                           class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                    <label for="remember_me" class="ml-2 block text-sm text-gray-700">
+                           class="h-4 w-4 text-[#ff6b4a] focus:ring-[#ff6b4a] border-[#E5E4E0] rounded transition-all duration-200 hover:border-[#ff6b4a]">
+                    <label for="remember_me" class="ml-2 block text-sm text-[#555555]">
                         Remember me
                     </label>
                 </div>
 
                 <div class="text-sm">
-                    <a href="#" class="font-medium text-primary hover:text-primary-dark">
+                    <a href="#" class="font-medium text-[#ff6b4a] hover:text-[#FF3F1F] transition-colors duration-200">
                         Forgot your password?
                     </a>
                 </div>
             </div>
 
+            <!-- Submit Button -->
             <div>
                 <button type="submit"
-                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all transform hover:-translate-y-0.5">
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-[#ff6b4a] to-[#FF3F1F] hover:shadow-lg hover:shadow-[#ff6b4a]/25 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff6b4a] transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
                     <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                         <i class="fas fa-sign-in-alt text-white/80"></i>
                     </span>
@@ -80,10 +173,11 @@
                 </button>
             </div>
 
+            <!-- Sign Up Link -->
             <div class="text-center">
-                <p class="text-sm text-gray-600">
+                <p class="text-sm text-[#555555]">
                     Don't have an account?
-                    <a href="/register" class="font-medium text-primary hover:text-primary-dark">
+                    <a href="/register" class="font-medium text-[#ff6b4a] hover:text-[#FF3F1F] transition-colors duration-200">
                         Sign up
                     </a>
                 </p>
@@ -91,4 +185,91 @@
         </form>
     </div>
 </div>
+
+<!-- Add Custom Styles for Better Theme Integration -->
+<style>
+    .min-h-screen {
+        background: linear-gradient(135deg, var(--background-light) 0%, var(--accent-beige) 100%);
+    }
+    
+    .font-display {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    input:focus, button:focus, a:focus {
+        outline: none;
+        ring-width: 2px;
+        ring-color: var(--accent);
+    }
+    
+    .hover\:bg-\[\#F0EFEA\]:hover {
+        background-color: var(--accent-beige);
+    }
+    
+    .border-\[\#E5E4E0\] {
+        border-color: var(--border-light);
+    }
+    
+    .text-\[\#1f1f1f\] {
+        color: var(--text-light);
+    }
+    
+    .text-\[\#555555\] {
+        color: var(--text-secondary-light);
+    }
+    
+    .text-\[\#ff6b4a\] {
+        color: var(--accent);
+    }
+    
+    .hover\:text-\[\#FF3F1F\]:hover {
+        color: var(--brand-red);
+    }
+    
+    .bg-gradient-to-r {
+        background-size: 200% 200%;
+        animation: gradient 3s ease infinite;
+    }
+    
+    @keyframes gradient {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+    
+    /* Enhanced input focus styles */
+    input:focus {
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+    }
+    
+    /* Enhanced button hover effect */
+    button:hover {
+        box-shadow: 0 10px 25px -5px rgba(255, 107, 74, 0.3);
+    }
+    
+    /* Card-like styling for form container */
+    .max-w-md {
+        background: var(--card-light);
+        padding: 2.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 20px 60px rgba(31, 31, 31, 0.1);
+        border: 1px solid var(--border-light);
+    }
+    
+    /* Google button specific styling */
+    .fa-google {
+        background: conic-gradient(from -45deg, #ea4335 110deg, #4285f4 90deg 180deg, #34a853 180deg 270deg, #fbbc05 270deg) 73% 55%/150% 150% no-repeat;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+    }
+</style>
+
 {% endblock %}
