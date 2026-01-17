@@ -953,6 +953,10 @@ def send_booking_confirmation_email(
     """Send booking confirmation emails to both mentor and learner"""
     
     # Format date and time
+    service = db.query(Service).filter(Service.id == booking.service_id).first()
+    if service and service.is_digital:
+        print(f"Skipping email for digital product: {service.name}")
+        return True
     booking_date = booking.booking_date.strftime("%B %d, %Y") if booking.booking_date else "Not scheduled"
     booking_time = booking.selected_time if booking.selected_time else "To be determined"
     
@@ -1131,6 +1135,10 @@ Thank you for mentoring on ClearQ!
 # Add this function after your other helper functions (around line 800)
 def send_meeting_notification(booking: Booking, meeting_link: str, db: Session):
     """Send meeting notification emails to both mentor and learner"""
+    service = db.query(Service).filter(Service.id == booking.service_id).first()
+    if service and service.is_digital:
+        print(f"Skipping meeting notification for digital product: {service.name}")
+        return False
     try:
         # Get user details
         mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
@@ -5206,10 +5214,14 @@ async def create_booking(
             try:
         # Get user details for email
         mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
-        learner_user = db.query(User).filter(User.id == current_user.id).first()
-        service = db.query(Service).filter(Service.id == service_id).first()
-        
-        if mentor_user and learner_user and service:
+    learner_user = db.query(User).filter(User.id == current_user.id).first()
+    service = db.query(Service).filter(Service.id == service_id).first()
+    
+    if mentor_user and learner_user and service:
+        # Check if it's a digital product
+        if service.is_digital:
+            print(f"Skipping email for free digital product: {service.name}")
+        else:
             # Format date and time
             booking_date_str = target_date.strftime("%B %d, %Y")
             
@@ -5227,8 +5239,8 @@ async def create_booking(
                 print(f"✅ Free session confirmation email sent")
             else:
                 print(f"⚠️ Free session email failed to send")
-    except Exception as e:
-        print(f"⚠️ Error sending free session email: {e}")
+except Exception as e:
+    print(f"⚠️ Error sending free session email: {e}")
     # ============ END ADDITION ============
     
     return JSONResponse({
@@ -6447,7 +6459,7 @@ async def meeting_page(
     })
     
 @app.post("/api/verify-payment")
-async def verify_payment_api(request: Request,background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+async def verify_payment_api(request: Request, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """Verify Razorpay payment - called from frontend"""
     try:
         data = await request.json()
@@ -6519,24 +6531,6 @@ async def verify_payment_api(request: Request,background_tasks: BackgroundTasks,
                 "redirect_url": redirect_url,
                 "is_digital": is_digital
             })
-
-            mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
-            learner = db.query(User).filter(User.id == booking.learner_id).first()
-            
-            if mentor and learner:
-                mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
-                service = db.query(Service).filter(Service.id == booking.service_id).first()
-                
-                # Add email task to background
-                background_tasks.add_task(
-                    send_booking_confirmation_email,
-                    booking=booking,
-                    mentor_email=mentor_user.email,
-                    learner_email=learner.email,
-                    mentor_name=mentor_user.full_name or mentor_user.username,
-                    learner_name=learner.full_name or learner.username,
-                    service_name=service.name if service else "Mentoring Session"
-                )
         
         # Verify payment signature if we have all required data
         if razorpay_order_id and razorpay_signature:
@@ -6630,7 +6624,32 @@ async def verify_payment_api(request: Request,background_tasks: BackgroundTasks,
         except Exception as e:
             print(f"⚠️ Error creating payment record: {str(e)}")
         
-        # ============ NEW CODE: Update mentor earnings ============
+        # ============ ADD EMAIL NOTIFICATION FOR SESSIONS ONLY ============
+        if not is_digital:  # Only send emails for live sessions, not digital products
+            try:
+                mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
+                learner = db.query(User).filter(User.id == booking.learner_id).first()
+                
+                if mentor and learner:
+                    mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
+                    service = db.query(Service).filter(Service.id == booking.service_id).first()
+                    
+                    # Add email task to background
+                    background_tasks.add_task(
+                        send_booking_confirmation_email,
+                        booking=booking,
+                        mentor_email=mentor_user.email,
+                        learner_email=learner.email,
+                        mentor_name=mentor_user.full_name or mentor_user.username,
+                        learner_name=learner.full_name or learner.username,
+                        service_name=service.name if service else "Mentoring Session"
+                    )
+                    print("✅ Email notification queued for session")
+            except Exception as email_error:
+                print(f"⚠️ Error setting up email notification: {email_error}")
+                # Don't fail the payment if email fails
+        
+        # ============ UPDATE MENTOR EARNINGS ============
         # Update mentor earnings (only for paid bookings)
         if booking.mentor_id and booking.amount_paid and booking.amount_paid > 0:
             try:
@@ -6663,6 +6682,7 @@ async def verify_payment_api(request: Request,background_tasks: BackgroundTasks,
             except Exception as e:
                 print(f"⚠️ Error updating mentor earnings: {str(e)}")
                 # Don't rollback the payment because earnings update failed
+        
         # ============ END NEW CODE ============
         
         # Commit all changes
@@ -6697,7 +6717,7 @@ async def verify_payment_api(request: Request,background_tasks: BackgroundTasks,
             "message": f"Payment verification failed: {str(e)}",
             "code": "SERVER_ERROR"
         })
-                                     
+        
         # Update the time-slots API to support both ID and username
 @app.post("/api/time-slots/{identifier}")
 async def get_time_slots(
