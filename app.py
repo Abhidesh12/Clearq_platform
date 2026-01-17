@@ -4433,11 +4433,11 @@ async def admin_withdrawals(
         raise HTTPException(status_code=403, detail="Access denied")
     
     try:
-        # Base query - Use MentorPayout instead of WithdrawalRequest
-        query = db.query(MentorPayout)
+        # Base query
+        query = db.query(MentorPayout).join(Mentor).join(User)
         
         # Filter by status if provided
-        if status and status in ["pending", "processing", "completed", "failed"]:
+        if status and status != "all":
             query = query.filter(MentorPayout.status == status)
         
         # Count total records
@@ -4449,65 +4449,38 @@ async def admin_withdrawals(
             MentorPayout.request_date.desc()
         ).offset(offset).limit(per_page).all()
         
-        # Prepare withdrawal data
+        # Calculate total pending amount
+        total_pending = db.query(func.sum(MentorPayout.amount)).filter(
+            MentorPayout.status == "pending"
+        ).scalar() or 0
+        
+        # Prepare withdrawal data for template
         withdrawal_data = []
         for withdrawal in withdrawals:
             withdrawal_data.append({
                 "id": withdrawal.id,
                 "mentor_id": withdrawal.mentor_id,
-                "mentor_name": withdrawal.mentor.user.full_name if withdrawal.mentor and withdrawal.mentor.user else "Unknown",
-                "mentor_email": withdrawal.mentor.user.email if withdrawal.mentor and withdrawal.mentor.user else "Unknown",
+                "mentor": {
+                    "user": {
+                        "full_name": withdrawal.mentor.user.full_name if withdrawal.mentor and withdrawal.mentor.user else "Unknown",
+                        "username": withdrawal.mentor.user.username if withdrawal.mentor and withdrawal.mentor.user else "Unknown",
+                        "email": withdrawal.mentor.user.email if withdrawal.mentor and withdrawal.mentor.user else "Unknown"
+                    }
+                } if withdrawal.mentor else None,
                 "amount": float(withdrawal.amount),
                 "payment_method": withdrawal.payment_method,
-                "payment_details": withdrawal.account_details,
+                "account_details": withdrawal.account_details,
                 "status": withdrawal.status,
-                "requested_at": withdrawal.request_date.strftime("%Y-%m-%d %H:%M") if withdrawal.request_date else None,
-                "processed_at": withdrawal.processed_date.strftime("%Y-%m-%d %H:%M") if withdrawal.processed_date else None,
+                "request_date": withdrawal.request_date,
+                "processed_date": withdrawal.processed_date,
                 "notes": withdrawal.notes
             })
         
-        # Calculate stats for each status
-        status_counts = {
-            "pending": db.query(MentorPayout).filter(MentorPayout.status == "pending").count(),
-            "processing": db.query(MentorPayout).filter(MentorPayout.status == "processing").count(),
-            "completed": db.query(MentorPayout).filter(MentorPayout.status == "completed").count(),
-            "failed": db.query(MentorPayout).filter(MentorPayout.status == "failed").count(),
-            "all": db.query(MentorPayout).count()
-        }
-        
-        # Calculate total amounts
-        total_pending_amount = db.query(func.sum(MentorPayout.amount)).filter(
-            MentorPayout.status == "pending"
-        ).scalar() or 0
-        
-        total_processing_amount = db.query(func.sum(MentorPayout.amount)).filter(
-            MentorPayout.status == "processing"
-        ).scalar() or 0
-        
-        total_completed_amount = db.query(func.sum(MentorPayout.amount)).filter(
-            MentorPayout.status == "completed"
-        ).scalar() or 0
-        
-        total_failed_amount = db.query(func.sum(MentorPayout.amount)).filter(
-            MentorPayout.status == "failed"
-        ).scalar() or 0
-        
-        total_all_amount = db.query(func.sum(MentorPayout.amount)).scalar() or 0
-        
-        # Prepare stats object
-        stats = {
-            "status_counts": status_counts,
-            "amounts": {
-                "pending": float(total_pending_amount),
-                "processing": float(total_processing_amount),
-                "completed": float(total_completed_amount),
-                "failed": float(total_failed_amount),
-                "all": float(total_all_amount)
-            },
-            "total_count": total_count,
-            "current_page": page,
-            "total_pages": (total_count + per_page - 1) // per_page
-        }
+        # Calculate status counts for stats
+        pending_count = db.query(MentorPayout).filter(MentorPayout.status == "pending").count()
+        processing_count = db.query(MentorPayout).filter(MentorPayout.status == "processing").count()
+        completed_count = db.query(MentorPayout).filter(MentorPayout.status == "completed").count()
+        failed_count = db.query(MentorPayout).filter(MentorPayout.status == "failed").count()
         
         return templates.TemplateResponse("admin_withdrawals.html", {
             "request": request,
@@ -4516,11 +4489,16 @@ async def admin_withdrawals(
             "status": status,
             "page": page,
             "per_page": per_page,
-            "stats": stats,  # Add stats to context
-            "status_counts": status_counts,  # Also include separately for compatibility
             "total_count": total_count,
             "total_pages": (total_count + per_page - 1) // per_page,
-            "now": datetime.now()
+            "total_pending": total_pending,
+            "stats": {
+                "pending_count": pending_count,
+                "processing_count": processing_count,
+                "completed_count": completed_count,
+                "failed_count": failed_count,
+                "all_count": pending_count + processing_count + completed_count + failed_count
+            }
         })
         
     except Exception as e:
@@ -4528,7 +4506,7 @@ async def admin_withdrawals(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error loading withdrawals: {str(e)}")
-
+        
 @app.get("/admin/payouts")
 async def admin_payouts(
     request: Request,
