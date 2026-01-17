@@ -338,7 +338,7 @@ class MentorPayout(Base):
     payment_method = Column(String)  # bank_transfer, upi, paypal, etc.
     payment_details = Column(Text, nullable=True)  # Account/UPI details provided by mentor
     admin_notes = Column(Text, nullable=True)  # Notes from admin
-    requested_attt = Column(DateTime, default=datetime.utcnow)  # When mentor requested
+    requested_at = Column(DateTime, default=datetime.utcnow)  # When mentor requested
     approved_at = Column(DateTime, nullable=True)  # When admin approved
     processed_at = Column(DateTime, nullable=True)  # When admin marked as paid
     processed_by = Column(String, nullable=True)  # Which admin processed it
@@ -528,7 +528,7 @@ def process_withdrawal_request(mentor_id: int, amount: float, payment_method: st
             status="pending",
             payment_method=payment_method,
             account_details=account_details,
-            requested_att=datetime.utcnow()
+            requested_at=datetime.utcnow()
         )
         
         db.add(withdrawal)
@@ -2171,7 +2171,7 @@ async def dashboard(
             # Get withdrawal requests
             withdrawal_requests = db.query(MentorPayout).filter(
                 MentorPayout.mentor_id == mentor.id
-            ).order_by(MentorPayout.requested_att.desc()).all()
+            ).order_by(MentorPayout.requested_at.desc()).all()
             
             # Prepare earnings data for template
             earnings_data = {
@@ -2355,11 +2355,11 @@ async def dashboard(
         # Get pending withdrawal requests
         pending_withdrawals = db.query(MentorPayout).filter(
             MentorPayout.status == "pending"
-        ).join(Mentor).join(User).order_by(MentorPayout.requested_att.desc()).all()
+        ).join(Mentor).join(User).order_by(MentorPayout.requested_at.desc()).all()
         
         # Get recent withdrawals
         recent_withdrawals = db.query(MentorPayout).order_by(
-            MentorPayout.requested_att.desc()
+            MentorPayout.requested_at.desc()
         ).limit(20).all()
         # ============ END NEW CODE ============
         
@@ -2536,7 +2536,7 @@ async def get_withdrawal_history(
     if status:
         query = query.filter(MentorPayout.status == status)
     
-    withdrawals = query.order_by(MentorPayout.requested_att.desc()).limit(limit).all()
+    withdrawals = query.order_by(MentorPayout.requested_at.desc()).limit(limit).all()
     
     # Format response
     withdrawals_data = []
@@ -2546,7 +2546,7 @@ async def get_withdrawal_history(
             "amount": float(w.amount),
             "payment_method": w.payment_method,
             "status": w.status,
-            "requested_att": w.requested_att.isoformat() if w.requested_att else None,
+            "requested_at": w.requested_at.isoformat() if w.requested_at else None,
             "processed_date": w.processed_date.isoformat() if w.processed_date else None,
             "notes": w.notes
         })
@@ -4264,7 +4264,7 @@ async def mentor_payout_page(
     # Get withdrawal history
     withdrawal_history = db.query(MentorPayout).filter(
         MentorPayout.mentor_id == mentor.id
-    ).order_by(MentorPayout.requested_att.desc()).limit(20).all()
+    ).order_by(MentorPayout.requested_at.desc()).limit(20).all()
     
     # Get recent earnings (last 30 days)
     thirty_days_ago = datetime.now() - timedelta(days=30)
@@ -4339,7 +4339,7 @@ async def request_withdrawal(
             status="pending",
             payment_method=payment_method,
             account_details=account_details,
-            requested_att=datetime.utcnow()
+            requested_at=datetime.utcnow()
         )
         
         db.add(withdrawal)
@@ -4389,7 +4389,7 @@ async def admin_payouts_page(
     
     # Apply pagination
     offset = (page - 1) * limit
-    payouts = query.order_by(MentorPayout.requested_att.desc()).offset(offset).limit(limit).all()
+    payouts = query.order_by(MentorPayout.requested_at.desc()).offset(offset).limit(limit).all()
     
     # Calculate total pending amount
     total_pending = db.query(func.sum(MentorPayout.amount)).filter(
@@ -4448,7 +4448,7 @@ async def admin_withdrawals(
         # Pagination
         offset = (page - 1) * per_page
         withdrawals = query.order_by(
-            MentorPayout.requested_att.desc()
+            MentorPayout.requested_at.desc()
         ).offset(offset).limit(per_page).all()
         
         # Calculate total pending amount
@@ -4473,7 +4473,7 @@ async def admin_withdrawals(
                 "payment_method": withdrawal.payment_method,
                 "account_details": withdrawal.account_details,
                 "status": withdrawal.status,
-                "requested_att": withdrawal.requested_att,
+                "requested_at": withdrawal.requested_at,
                 "processed_date": withdrawal.processed_date,
                 "notes": withdrawal.notes
             })
@@ -4546,7 +4546,7 @@ async def admin_payouts(
         
         # Recent withdrawals
         recent_withdrawals = db.query(WithdrawalRequest).order_by(
-            WithdrawalRequest.requested_attt.desc()
+            WithdrawalRequest.requested_at.desc()
         ).limit(10).all()
         
         # Stats
