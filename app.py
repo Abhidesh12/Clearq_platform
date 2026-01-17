@@ -46,12 +46,6 @@ import shutil
 from sqlalchemy import func, Date
 from starlette.middleware.base import BaseHTTPMiddleware
 
-context = ssl.create_default_context()
-server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-server.starttls(context=context)
-
-
-
 # Load environment variables
 load_dotenv()
 
@@ -1800,7 +1794,8 @@ async def startup_event():
             # Test SMTP connection
             try:
                 server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-                server.starttls()
+                context = ssl.create_default_context()
+                server.starttls(context=context)
                 server.login(SMTP_USERNAME, SMTP_PASSWORD)
                 server.quit()
                 print("✅ SMTP connection test successful")
