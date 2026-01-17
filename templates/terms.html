@@ -66,14 +66,30 @@
     .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
+    
+    .back-button-icon {
+        font-family: 'Material Symbols Outlined';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 28px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-feature-settings: 'liga';
+        -webkit-font-smoothing: antialiased;
+    }
 </style>
 
 <div class="min-h-screen bg-background-light">
     <div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light group/design-root overflow-x-hidden max-w-md mx-auto">
         <!-- TopAppBar -->
         <div class="sticky top-0 z-10 flex items-center bg-background-light p-4 pb-2 justify-between border-b border-light">
-            <a href="/" aria-label="Go back" class="text-accent flex size-12 shrink-0 items-center cursor-pointer">
-                <span class="material-symbols-outlined text-[28px]"></span>
+            <a href="/" aria-label="Go back" class="text-primary flex size-12 shrink-0 items-center cursor-pointer">
+                <span class="back-button-icon">arrow_back_ios</span>
             </a>
             <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Terms of Service</h2>
         </div>
