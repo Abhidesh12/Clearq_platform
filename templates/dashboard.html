@@ -1703,15 +1703,9 @@
         <div class="header-content">
             <div class="user-info">
                 <div class="user-avatar">
-    {% if current_user.profile_image %}
-    <img src="/static/{{ current_user.profile_image }}" 
-         alt="{{ current_user.full_name or current_user.username }}"
-         class="user-avatar-img">
-    {% else %}
     <img src="https://cdn-icons-png.flaticon.com/512/5951/5951752.png" 
          alt="{{ current_user.full_name or current_user.username }}"
          class="user-avatar-img">
-    {% endif %}
 </div>
                 <div class="user-details">
                     <h1>Welcome back, {{ current_user.full_name or current_user.username }}</h1>
