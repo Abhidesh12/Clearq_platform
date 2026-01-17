@@ -2775,25 +2775,35 @@
                                             </span>
                                         </td>
                                         <td>
-                                            {% if withdrawal.status == 'approved' %}
-                                            <span class="status-badge status-confirmed" style="display: inline-flex; font-size: 0.75rem;">
-                                                <i class="fas fa-check-circle"></i> Approved
-                                            </span>
-                                            {% elif withdrawal.status == 'pending' %}
-                                            <span class="status-badge status-pending" style="display: inline-flex; font-size: 0.75rem;">
-                                                <i class="fas fa-clock"></i> Pending
-                                            </span>
-                                            {% elif withdrawal.status == 'paid' %}
-                                            <span class="status-badge status-paid" style="display: inline-flex; font-size: 0.75rem;">
-                                                <i class="fas fa-money-bill-wave"></i> Paid
-                                            </span>
-                                            {% elif withdrawal.status == 'rejected' %}
-                                            <span class="status-badge" style="background: linear-gradient(135deg, var(--card-pink), #e4b9b7); color: #8a4d49; border-color: rgba(246, 208, 206, 0.3); display: inline-flex; font-size: 0.75rem;">
-                                                <i class="fas fa-times-circle"></i> Rejected
-                                            </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
+    {% if withdrawal.status == 'paid' %}
+        <span class="status-badge status-paid" style="display: inline-flex; font-size: 0.75rem;">
+            <i class="fas fa-check-circle"></i> Paid
+        </span>
+    {% elif withdrawal.status == 'approved' %}
+        <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; display: inline-flex; font-size: 0.75rem;">
+            <i class="fas fa-check"></i> Approved
+        </span>
+    {% elif withdrawal.status == 'pending' %}
+        <span class="status-badge status-pending" style="display: inline-flex; font-size: 0.75rem;">
+            <i class="fas fa-clock"></i> Pending
+        </span>
+    {% elif withdrawal.status == 'rejected' %}
+        <span class="status-badge" style="background: linear-gradient(135deg, var(--card-pink), #e4b9b7); color: #8a4d49; display: inline-flex; font-size: 0.75rem;">
+            <i class="fas fa-times-circle"></i> Rejected
+        </span>
+    {% endif %}
+</td>
+<td>
+    {% if withdrawal.processed_at %}
+        <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
+            {{ withdrawal.processed_at.strftime('%Y-%m-%d') }}
+        </span>
+    {% else %}
+        <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-style: italic;">
+            {% if withdrawal.status == 'paid' %}Paid{% else %}Not processed{% endif %}
+        </span>
+    {% endif %}
+</td>
                                             <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
                                                 {{ withdrawal.requested_at.strftime('%Y-%m-%d') if withdrawal.requested_at else '' }}
                                             </span>
@@ -3049,7 +3059,13 @@
             onclick="processWithdrawal({{ withdrawal.id }}, 'approve')" 
             class="action-button action-approve">
         <i class="fas fa-check"></i>
-        Approve & Mark Paid
+        Approve Request
+    </button>
+    <button type="button" 
+            onclick="processWithdrawal({{ withdrawal.id }}, 'mark_paid')" 
+            class="action-button" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white;">
+        <i class="fas fa-money-bill-wave"></i>
+        Mark as Paid
     </button>
     <button type="button" 
             onclick="processWithdrawal({{ withdrawal.id }}, 'reject')" 
@@ -3057,7 +3073,6 @@
         <i class="fas fa-times"></i>
         Reject
     </button>
-    <input type="hidden" id="adminNotesInput{{ withdrawal.id }}" value="{{ withdrawal.admin_notes or '' }}">
 </div>
                             
                             <script>
