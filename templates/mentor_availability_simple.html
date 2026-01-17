@@ -6,21 +6,121 @@
     <title>Manage Availability - ClearQ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1f1f1f",
+                        "primary-hover": "#000000",
+                        "accent": "#ff6b4a",
+                        "background-light": "#fff5ec",
+                        "background-dark": "#151022",
+                        "text-light": "#1f1f1f",
+                        "text-dark": "#ffffff",
+                        "text-secondary-light": "#555555",
+                        "text-secondary-dark": "#a09db3",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1e1a2e",
+                        "border-light": "#E5E4E0",
+                        "border-dark": "#2d2a3b",
+                        "accent-beige": "#F0EFEA",
+                        "secondary": "#2D3748",
+                        "dark-card": "#232936",
+                        "card-purple": "#E0DBFC",
+                        "card-green": "#9CCB5C",
+                        "card-blue": "#85C3EA",
+                        "card-beige": "#EEE3CD",
+                        "card-teal": "#A8E1E1",
+                        "card-pink": "#F6D0CE",
+                        "brand-red": "#FF3F1F",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    fontSize: {
+                        'xxs': '0.625rem',
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1f1f1f;
+            --primary-hover: #000000;
+            --accent: #ff6b4a;
+            --secondary: #2D3748;
+            --brand-red: #FF3F1F;
+            --background-light: #fff5ec;
+            --background-dark: #151022;
+            --card-light: #ffffff;
+            --card-dark: #1e1a2e;
+            --text-light: #1f1f1f;
+            --text-dark: #ffffff;
+            --text-secondary-light: #555555;
+            --text-secondary-dark: #a09db3;
+            --border-light: #E5E4E0;
+            --border-dark: #2d2a3b;
+            --accent-beige: #F0EFEA;
+            --card-green: #9CCB5C;
+            --card-blue: #85C3EA;
+        }
+        
+        body {
+            font-family: Inter, sans-serif;
+            background-color: var(--background-light);
+        }
+        
+        .active-day {
+            background-color: rgba(255, 107, 74, 0.05);
+            border-color: var(--accent);
+        }
+        
+        .checkbox-custom:checked {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .checkbox-custom:focus {
+            box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+        }
+        
+        .time-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+        }
+        
+        .date-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-background-light">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm">
+    <nav class="bg-card-light shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="/dashboard" class="text-xl font-bold text-blue-600">ClearQ</a>
+                    <a href="/dashboard" class="text-xl font-bold text-accent">ClearQ</a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="/dashboard" class="text-gray-700 hover:text-blue-600">
-                        <i class="fas fa-home"></i> Dashboard
+                    <a href="/dashboard" class="text-text-secondary-light hover:text-accent transition-colors duration-200">
+                        <i class="fas fa-home mr-1"></i> Dashboard
                     </a>
-                    <a href="/logout" class="text-gray-700 hover:text-blue-600">
-                        <i class="fas fa-sign-out-alt"></i> Logout
+                    <a href="/logout" class="text-text-secondary-light hover:text-accent transition-colors duration-200">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Logout
                     </a>
                 </div>
             </div>
@@ -30,38 +130,38 @@
     <!-- Main Content -->
     <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Manage Your Availability</h1>
-            <p class="text-gray-600 mt-2">Set your regular weekly schedule</p>
+            <h1 class="text-3xl font-bold text-primary">Manage Your Availability</h1>
+            <p class="text-text-secondary-light mt-2">Set your regular weekly schedule</p>
         </div>
 
-        <div class="bg-white shadow rounded-lg p-6 mb-8">
-            <h2 class="text-xl font-semibold mb-4">Weekly Schedule</h2>
-            <p class="text-gray-600 mb-6">Select the days you're available each week. You can also set custom hours for each day.</p>
+        <div class="bg-card-light shadow rounded-lg p-6 mb-8 border border-light">
+            <h2 class="text-xl font-semibold mb-4 text-primary">Weekly Schedule</h2>
+            <p class="text-text-secondary-light mb-6">Select the days you're available each week. You can also set custom hours for each day.</p>
             
             <div id="days-container" class="space-y-4">
                 <!-- Days will be loaded here -->
             </div>
             
             <div class="mt-6">
-                <button onclick="saveAvailability()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium">
+                <button onclick="saveAvailability()" class="bg-accent text-white px-6 py-3 rounded-lg hover:bg-primary-hover font-medium transition-colors duration-200 shadow-md hover:shadow-lg">
                     <i class="fas fa-save mr-2"></i> Save Schedule
                 </button>
-                <button onclick="resetToDefault()" class="ml-4 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 font-medium">
+                <button onclick="resetToDefault()" class="ml-4 bg-accent-beige text-primary px-6 py-3 rounded-lg hover:bg-border-light font-medium transition-colors duration-200">
                     <i class="fas fa-undo mr-2"></i> Reset to Default
                 </button>
             </div>
         </div>
 
-        <div class="bg-white shadow rounded-lg p-6">
-            <h2 class="text-xl font-semibold mb-4">Special Dates</h2>
-            <p class="text-gray-600 mb-6">Mark specific dates as unavailable (holidays, vacations, etc.)</p>
+        <div class="bg-card-light shadow rounded-lg p-6 border border-light">
+            <h2 class="text-xl font-semibold mb-4 text-primary">Special Dates</h2>
+            <p class="text-text-secondary-light mb-6">Mark specific dates as unavailable (holidays, vacations, etc.)</p>
             
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Add Unavailable Date</label>
+                <label class="block text-sm font-medium text-primary mb-2">Add Unavailable Date</label>
                 <div class="flex space-x-2">
-                    <input type="date" id="exception-date" min="{{ today }}" class="flex-1 border border-gray-300 rounded-lg px-4 py-2">
-                    <input type="text" id="exception-reason" placeholder="Reason (optional)" class="flex-1 border border-gray-300 rounded-lg px-4 py-2">
-                    <button onclick="addException()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                    <input type="date" id="exception-date" min="{{ today }}" class="flex-1 border border-light rounded-lg px-4 py-2 date-input focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent">
+                    <input type="text" id="exception-reason" placeholder="Reason (optional)" class="flex-1 border border-light rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent">
+                    <button onclick="addException()" class="bg-brand-red text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200">
                         <i class="fas fa-ban mr-2"></i> Mark Unavailable
                     </button>
                 </div>
@@ -115,34 +215,34 @@
             
             daysData.forEach(day => {
                 const dayHtml = `
-                    <div class="border border-gray-200 rounded-lg p-4 ${day.is_active ? 'bg-blue-50 border-blue-200' : ''}">
+                    <div class="border border-light rounded-lg p-4 transition-all duration-200 ${day.is_active ? 'active-day border-accent' : ''}">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <input type="checkbox" 
                                        id="day-${day.id}" 
                                        ${day.is_active ? 'checked' : ''}
                                        onchange="toggleDay(${day.id})"
-                                       class="h-5 w-5 text-blue-600 rounded">
-                                <label for="day-${day.id}" class="ml-3 text-lg font-medium text-gray-900">
+                                       class="checkbox-custom h-5 w-5 text-accent rounded border-light focus:ring-accent">
+                                <label for="day-${day.id}" class="ml-3 text-lg font-medium text-primary">
                                     ${day.name}
                                 </label>
                             </div>
                             <div class="flex items-center space-x-4 ${day.is_active ? '' : 'opacity-50'}" id="time-controls-${day.id}">
                                 <div>
-                                    <label class="block text-sm text-gray-600">Start</label>
+                                    <label class="block text-sm text-text-secondary-light">Start</label>
                                     <input type="time" 
                                            value="${day.start_time}" 
                                            ${!day.is_active ? 'disabled' : ''}
                                            onchange="updateTime(${day.id}, 'start', this.value)"
-                                           class="mt-1 border border-gray-300 rounded px-3 py-2">
+                                           class="mt-1 border border-light rounded px-3 py-2 time-input focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent">
                                 </div>
                                 <div>
-                                    <label class="block text-sm text-gray-600">End</label>
+                                    <label class="block text-sm text-text-secondary-light">End</label>
                                     <input type="time" 
                                            value="${day.end_time}" 
                                            ${!day.is_active ? 'disabled' : ''}
                                            onchange="updateTime(${day.id}, 'end', this.value)"
-                                           class="mt-1 border border-gray-300 rounded px-3 py-2">
+                                           class="mt-1 border border-light rounded px-3 py-2 time-input focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent">
                                 </div>
                             </div>
                         </div>
@@ -180,7 +280,7 @@
                 end_time: "21:00"
             }));
             renderDays();
-            alert('Reset to default schedule (Monday-Friday, 9 AM - 5 PM)');
+            alert('Reset to default schedule (Monday-Friday, 9 AM - 9 PM)');
         }
 
         async function saveAvailability() {
@@ -242,19 +342,19 @@
         function renderExceptions(exceptions) {
             const container = document.getElementById('exceptions-list');
             if (!exceptions.length) {
-                container.innerHTML = '<p class="text-gray-500 italic">No special dates marked</p>';
+                container.innerHTML = '<p class="text-text-secondary-light italic">No special dates marked</p>';
                 return;
             }
             
-            let html = '<h3 class="font-medium text-gray-900 mb-2">Upcoming Unavailable Dates:</h3><ul class="space-y-2">';
+            let html = '<h3 class="font-medium text-primary mb-2">Upcoming Unavailable Dates:</h3><ul class="space-y-2">';
             exceptions.forEach(exception => {
                 html += `
-                    <li class="flex items-center justify-between bg-red-50 p-3 rounded">
+                    <li class="flex items-center justify-between bg-red-50 p-3 rounded border border-red-200">
                         <div>
-                            <span class="font-medium">${exception.date}</span>
-                            ${exception.reason ? `<span class="text-gray-600 ml-2">(${exception.reason})</span>` : ''}
+                            <span class="font-medium text-primary">${exception.date}</span>
+                            ${exception.reason ? `<span class="text-text-secondary-light ml-2">(${exception.reason})</span>` : ''}
                         </div>
-                        <button onclick="removeException(${exception.id})" class="text-red-600 hover:text-red-800">
+                        <button onclick="removeException(${exception.id})" class="text-brand-red hover:text-red-800 transition-colors duration-200">
                             <i class="fas fa-times"></i>
                         </button>
                     </li>
