@@ -4396,11 +4396,11 @@ async def admin_payouts_page(
         MentorPayout.status == "pending"
     ).scalar() or 0
     
-    # Calculate total processed this month
+    # Calculate total processed this month - FIXED HERE
     start_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     total_this_month = db.query(func.sum(MentorPayout.amount)).filter(
         MentorPayout.status == "completed",
-        MentorPayout.processed_date >= start_of_month
+        MentorPayout.processed_at >= start_of_month  # ← CHANGED FROM processed_date TO processed_at
     ).scalar() or 0
     
     return templates.TemplateResponse("admin_payouts.html", {
@@ -4420,7 +4420,7 @@ async def admin_payouts_page(
             "failed_count": db.query(MentorPayout).filter(MentorPayout.status == "failed").count(),
         }
     })
-
+    
 @app.get("/admin/withdrawals")
 async def admin_withdrawals(
     request: Request,
