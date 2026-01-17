@@ -336,7 +336,8 @@ class MentorPayout(Base):
     amount = Column(DECIMAL(10, 2), nullable=False)  # in INR
     status = Column(String, default="pending")  # pending, approved, paid, rejected
     payment_method = Column(String)  # bank_transfer, upi, paypal, etc.
-    payment_details = Column(Text, nullable=True)  # Account/UPI details provided by mentor
+    payment_details = Column(Text, nullable=True)
+    bank_details=account_details# Account/UPI details provided by mentor
     admin_notes = Column(Text, nullable=True)  # Notes from admin
     requested_at = Column(DateTime, default=datetime.utcnow)  # When mentor requested
     approved_at = Column(DateTime, nullable=True)  # When admin approved
