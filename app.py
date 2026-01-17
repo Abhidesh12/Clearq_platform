@@ -4506,6 +4506,27 @@ async def admin_withdrawals(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error loading withdrawals: {str(e)}")
+
+@app.post("/admin/payouts/update-notes")
+async def update_payout_notes(
+    request: Request,
+    withdrawal_id: int = Form(...),
+    notes: str = Form(None),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update payout notes"""
+    if not current_user or current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    payout = db.query(MentorPayout).filter(MentorPayout.id == withdrawal_id).first()
+    if not payout:
+        raise HTTPException(status_code=404, detail="Payout not found")
+    
+    payout.notes = notes
+    db.commit()
+    
+    return RedirectResponse(url=f"/admin/withdrawals?status={payout.status}", status_code=303)
         
 @app.get("/admin/payouts")
 async def admin_payouts(
