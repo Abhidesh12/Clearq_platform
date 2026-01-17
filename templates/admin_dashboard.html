@@ -3,36 +3,104 @@
 {% block title %}Admin Dashboard - ClearQ{% endblock %}
 
 {% block content %}
+<!-- Add Tailwind Configuration -->
+<script>
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                "primary": "#1f1f1f",
+                "primary-hover": "#000000",
+                "accent": "#ff6b4a",
+                "background-light": "#fff5ec",
+                "background-dark": "#151022",
+                "text-light": "#1f1f1f",
+                "text-dark": "#ffffff",
+                "text-secondary-light": "#555555",
+                "text-secondary-dark": "#a09db3",
+                "card-light": "#ffffff",
+                "card-dark": "#1e1a2e",
+                "border-light": "#E5E4E0",
+                "border-dark": "#2d2a3b",
+                "accent-beige": "#F0EFEA",
+                "secondary": "#2D3748",
+                "dark-card": "#232936",
+                "card-purple": "#E0DBFC",
+                "card-green": "#9CCB5C",
+                "card-blue": "#85C3EA",
+                "card-beige": "#EEE3CD",
+                "card-teal": "#A8E1E1",
+                "card-pink": "#F6D0CE",
+                "brand-red": "#FF3F1F",
+            },
+            fontFamily: {
+                "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "2xl": "1rem",
+                "full": "9999px"
+            },
+            fontSize: {
+                'xxs': '0.625rem',
+            }
+        },
+    }
+}
+</script>
+
 <style>
+    /* Initialize CSS Variables with your theme */
     :root {
-        --primary: #3B82F6;
-        --primary-dark: #2563EB;
-        --success: #10B981;
-        --warning: #F59E0B;
-        --danger: #EF4444;
-        --gray-900: #0F172A;
-        --gray-800: #1E293B;
-        --gray-700: #334155;
-        --gray-600: #475569;
-        --gray-500: #64748B;
-        --gray-400: #94A3B8;
-        --gray-300: #CBD5E1;
-        --gray-200: #E2E8F0;
-        --gray-100: #F1F5F9;
-        --gray-50: #F8FAFC;
-        --white: #FFFFFF;
+        /* Primary Colors */
+        --primary: #1f1f1f;
+        --primary-hover: #000000;
+        --accent: #ff6b4a;
+        --secondary: #2D3748;
+        --brand-red: #FF3F1F;
+        
+        /* Background Colors */
+        --background-light: #fff5ec;
+        --background-dark: #151022;
+        --card-light: #ffffff;
+        --card-dark: #1e1a2e;
+        --dark-card: #232936;
+        --accent-beige: #F0EFEA;
+        
+        /* Text Colors */
+        --text-light: #1f1f1f;
+        --text-dark: #ffffff;
+        --text-secondary-light: #555555;
+        --text-secondary-dark: #a09db3;
+        
+        /* Border Colors */
+        --border-light: #E5E4E0;
+        --border-dark: #2d2a3b;
+        
+        /* Card Color Palette */
+        --card-purple: #E0DBFC;
+        --card-green: #9CCB5C;
+        --card-blue: #85C3EA;
+        --card-beige: #EEE3CD;
+        --card-teal: #A8E1E1;
+        --card-pink: #F6D0CE;
     }
 
     .admin-container {
         max-width: 1400px;
         margin: 0 auto;
         padding: 1rem;
+        background: var(--background-light);
+        min-height: 100vh;
     }
 
     /* Header */
     .admin-header {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        color: white;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--background-dark) 100%);
+        color: var(--text-dark);
         border-radius: 1rem;
         padding: 2rem;
         margin-bottom: 2rem;
@@ -47,7 +115,7 @@
         right: 0;
         width: 200px;
         height: 200px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(255, 107, 74, 0.1) 0%, transparent 70%);
         border-radius: 50%;
     }
 
@@ -57,6 +125,7 @@
         margin-bottom: 0.5rem;
         position: relative;
         z-index: 1;
+        font-family: 'Inter', sans-serif;
     }
 
     .admin-header p {
@@ -87,17 +156,17 @@
     }
 
     .stat-card {
-        background: var(--white);
+        background: var(--card-light);
         border-radius: 1rem;
         padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border: 1px solid var(--gray-200);
+        box-shadow: 0 4px 6px -1px rgba(31, 31, 31, 0.1);
+        border: 1px solid var(--border-light);
         transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 15px -3px rgba(31, 31, 31, 0.15);
     }
 
     .stat-header {
@@ -109,7 +178,7 @@
 
     .stat-label {
         font-size: 0.875rem;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
@@ -124,18 +193,18 @@
         font-size: 1.25rem;
     }
 
-    .icon-users { background: #EFF6FF; color: var(--primary); }
-    .icon-mentors { background: #F0FDF4; color: var(--success); }
-    .icon-bookings { background: #FAF5FF; color: var(--primary-dark); }
-    .icon-revenue { background: #FEF3C7; color: var(--warning); }
-    .icon-growth { background: #FCE7F3; color: #DB2777; }
-    .icon-digital { background: #F0FDFA; color: #0D9488; }
-    .icon-pending { background: #FEF3C7; color: #D97706; }
+    .icon-users { background: rgba(255, 107, 74, 0.1); color: var(--accent); }
+    .icon-mentors { background: rgba(156, 203, 92, 0.1); color: var(--card-green); }
+    .icon-bookings { background: var(--card-purple); color: #7c3aed; }
+    .icon-revenue { background: rgba(255, 159, 10, 0.1); color: #f59e0b; }
+    .icon-growth { background: var(--card-pink); color: #db2777; }
+    .icon-digital { background: var(--card-teal); color: #0d9488; }
+    .icon-pending { background: rgba(255, 159, 10, 0.1); color: #d97706; }
 
     .stat-value {
         font-size: 2rem;
         font-weight: 700;
-        color: var(--gray-900);
+        color: var(--text-light);
         line-height: 1;
         margin-bottom: 0.5rem;
     }
@@ -147,9 +216,9 @@
         font-size: 0.875rem;
     }
 
-    .change-up { color: var(--success); }
-    .change-down { color: var(--danger); }
-    .change-text { color: var(--gray-500); }
+    .change-up { color: var(--card-green); }
+    .change-down { color: var(--brand-red); }
+    .change-text { color: var(--text-secondary-light); }
 
     /* Tabs */
     .admin-tabs {
@@ -157,7 +226,7 @@
         gap: 0.5rem;
         margin-bottom: 2rem;
         padding: 0.5rem;
-        background: var(--gray-100);
+        background: var(--accent-beige);
         border-radius: 0.75rem;
         overflow-x: auto;
     }
@@ -166,43 +235,45 @@
         padding: 0.75rem 1.5rem;
         border: none;
         background: transparent;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
         font-weight: 500;
         border-radius: 0.5rem;
         cursor: pointer;
         white-space: nowrap;
         transition: all 0.2s;
+        font-family: 'Inter', sans-serif;
     }
 
     .tab-button:hover {
-        background: rgba(255, 255, 255, 0.5);
-        color: var(--gray-900);
+        background: var(--card-light);
+        color: var(--text-light);
     }
 
     .tab-button.active {
-        background: var(--white);
-        color: var(--primary);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: var(--card-light);
+        color: var(--accent);
+        box-shadow: 0 2px 4px rgba(31, 31, 31, 0.1);
     }
 
     /* Data Tables */
     .data-card {
-        background: var(--white);
+        background: var(--card-light);
         border-radius: 1rem;
         padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border: 1px solid var(--gray-200);
+        box-shadow: 0 4px 6px -1px rgba(31, 31, 31, 0.1);
+        border: 1px solid var(--border-light);
         margin-bottom: 2rem;
     }
 
     .data-card h2 {
         font-size: 1.25rem;
         font-weight: 600;
-        color: var(--gray-900);
+        color: var(--text-light);
         margin-bottom: 1.5rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        font-family: 'Inter', sans-serif;
     }
 
     .data-table {
@@ -212,7 +283,7 @@
     }
 
     .data-table thead {
-        background: var(--gray-50);
+        background: var(--accent-beige);
     }
 
     .data-table th {
@@ -220,10 +291,10 @@
         text-align: left;
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 1px solid var(--gray-200);
+        border-bottom: 1px solid var(--border-light);
     }
 
     .data-table tbody tr {
@@ -231,13 +302,13 @@
     }
 
     .data-table tbody tr:hover {
-        background: var(--gray-50);
+        background: var(--accent-beige);
     }
 
     .data-table td {
         padding: 1rem;
-        border-bottom: 1px solid var(--gray-200);
-        color: var(--gray-700);
+        border-bottom: 1px solid var(--border-light);
+        color: var(--text-light);
         vertical-align: middle;
     }
 
@@ -266,13 +337,13 @@
 
     .user-name {
         font-weight: 500;
-        color: var(--gray-900);
+        color: var(--text-light);
         margin-bottom: 0.125rem;
     }
 
-    .user-email {
+    .user-email, .user-username {
         font-size: 0.875rem;
-        color: var(--gray-500);
+        color: var(--text-secondary-light);
     }
 
     .role-badge {
@@ -284,9 +355,9 @@
         text-transform: capitalize;
     }
 
-    .role-learner { background: #DBEAFE; color: #1E40AF; }
-    .role-mentor { background: #D1FAE5; color: #065F46; }
-    .role-admin { background: #FEF3C7; color: #92400E; }
+    .role-learner { background: rgba(255, 107, 74, 0.1); color: var(--accent); }
+    .role-mentor { background: rgba(156, 203, 92, 0.1); color: var(--card-green); }
+    .role-admin { background: rgba(255, 159, 10, 0.1); color: #f59e0b; }
 
     .status-badge {
         display: inline-block;
@@ -297,11 +368,11 @@
         text-transform: capitalize;
     }
 
-    .status-active { background: #D1FAE5; color: #065F46; }
-    .status-inactive { background: #FEE2E2; color: #991B1B; }
-    .status-pending { background: #FEF3C7; color: #92400E; }
-    .status-verified { background: #D1FAE5; color: #065F46; }
-    .status-unverified { background: #FEE2E2; color: #991B1B; }
+    .status-active { background: rgba(156, 203, 92, 0.1); color: var(--card-green); }
+    .status-inactive { background: rgba(255, 63, 31, 0.1); color: var(--brand-red); }
+    .status-pending { background: rgba(255, 159, 10, 0.1); color: #f59e0b; }
+    .status-verified { background: rgba(156, 203, 92, 0.1); color: var(--card-green); }
+    .status-unverified { background: rgba(255, 63, 31, 0.1); color: var(--brand-red); }
 
     .action-buttons {
         display: flex;
@@ -314,7 +385,7 @@
         border: none;
         border-radius: 0.5rem;
         background: transparent;
-        color: var(--gray-400);
+        color: var(--border-light);
         cursor: pointer;
         transition: all 0.2s;
         display: flex;
@@ -323,18 +394,18 @@
     }
 
     .action-btn:hover {
-        background: var(--gray-100);
+        background: var(--accent-beige);
     }
 
-    .action-view:hover { color: var(--primary); }
-    .action-edit:hover { color: var(--warning); }
-    .action-delete:hover { color: var(--danger); }
+    .action-view:hover { color: var(--accent); }
+    .action-edit:hover { color: #f59e0b; }
+    .action-delete:hover { color: var(--brand-red); }
 
     /* Empty State */
     .empty-state {
         text-align: center;
         padding: 3rem 1rem;
-        color: var(--gray-500);
+        color: var(--text-secondary-light);
     }
 
     .empty-state i {
@@ -351,22 +422,22 @@
         gap: 0.5rem;
         margin-top: 1.5rem;
         padding-top: 1.5rem;
-        border-top: 1px solid var(--gray-200);
+        border-top: 1px solid var(--border-light);
     }
 
     .pagination-button {
         padding: 0.5rem 1rem;
-        border: 1px solid var(--gray-300);
-        background: var(--white);
-        color: var(--gray-700);
+        border: 1px solid var(--border-light);
+        background: var(--card-light);
+        color: var(--text-secondary-light);
         border-radius: 0.5rem;
         cursor: pointer;
         transition: all 0.2s;
     }
 
     .pagination-button:hover:not(:disabled) {
-        background: var(--gray-50);
-        border-color: var(--gray-400);
+        background: var(--accent-beige);
+        border-color: var(--accent);
     }
 
     .pagination-button:disabled {
@@ -375,9 +446,9 @@
     }
 
     .pagination-button.active {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
+        background: var(--accent);
+        color: var(--text-dark);
+        border-color: var(--accent);
     }
 
     /* Quick Stats */
@@ -389,14 +460,14 @@
     }
 
     .quick-stat {
-        background: var(--white);
+        background: var(--card-light);
         border-radius: 1rem;
         padding: 1rem;
         display: flex;
         align-items: center;
         gap: 1rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        border: 1px solid var(--gray-200);
+        box-shadow: 0 2px 4px rgba(31, 31, 31, 0.05);
+        border: 1px solid var(--border-light);
     }
 
     .quick-stat-icon {
@@ -411,14 +482,14 @@
 
     .quick-stat-content h3 {
         font-size: 0.875rem;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
         margin-bottom: 0.25rem;
     }
 
     .quick-stat-value {
         font-size: 1.25rem;
         font-weight: 700;
-        color: var(--gray-900);
+        color: var(--text-light);
     }
 
     /* Responsive Tables */
@@ -451,26 +522,76 @@
     .search-input {
         width: 100%;
         padding: 0.75rem 1rem;
-        border: 1px solid var(--gray-300);
+        border: 1px solid var(--border-light);
         border-radius: 0.5rem;
         font-size: 0.875rem;
-        color: var(--gray-900);
+        color: var(--text-light);
+        background: var(--card-light);
         transition: border-color 0.2s;
     }
 
     .search-input:focus {
         outline: none;
-        border-color: var(--primary);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
     }
 
     .filter-select {
         padding: 0.75rem 1rem;
-        border: 1px solid var(--gray-300);
+        border: 1px solid var(--border-light);
         border-radius: 0.5rem;
         font-size: 0.875rem;
-        color: var(--gray-900);
-        background: var(--white);
+        color: var(--text-light);
+        background: var(--card-light);
         min-width: 150px;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+    }
+
+    /* Form buttons */
+    .form-button {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+    }
+
+    .form-button-approve {
+        background: rgba(156, 203, 92, 0.1);
+        color: var(--card-green);
+        border: 1px solid rgba(156, 203, 92, 0.2);
+    }
+
+    .form-button-approve:hover {
+        background: rgba(156, 203, 92, 0.2);
+    }
+
+    .form-button-reject {
+        background: rgba(255, 63, 31, 0.1);
+        color: var(--brand-red);
+        border: 1px solid rgba(255, 63, 31, 0.2);
+    }
+
+    .form-button-reject:hover {
+        background: rgba(255, 63, 31, 0.2);
+    }
+
+    /* Skill tags */
+    .skill-tag {
+        padding: 0.25rem 0.5rem;
+        background: var(--card-blue);
+        color: var(--text-light);
+        font-size: 0.75rem;
+        border-radius: 0.25rem;
+        margin-right: 0.25rem;
+        margin-bottom: 0.25rem;
+        display: inline-block;
     }
 </style>
 
@@ -641,7 +762,7 @@
                                          alt="{{ user.full_name or user.username }}"
                                          class="user-avatar">
                                     {% else %}
-                                    <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                    <div class="user-avatar" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
                                         {{ (user.full_name[0] if user.full_name else user.username[0])|upper if user.full_name or user.username else 'U' }}
                                     </div>
                                     {% endif %}
@@ -723,7 +844,7 @@
     <!-- Mentors Tab -->
     <div id="mentors-tab" class="tab-content">
         <div class="data-card">
-            <h2>All Mentors <span class="text-sm text-gray-500">({{ all_mentors|length }})</span></h2>
+            <h2>All Mentors <span class="text-sm" style="color: var(--text-secondary-light);">({{ all_mentors|length }})</span></h2>
             
             <div class="table-container">
                 <table class="data-table">
@@ -748,7 +869,7 @@
                                          alt="{{ mentor.user.full_name or mentor.user.username }}"
                                          class="user-avatar">
                                     {% else %}
-                                    <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                    <div class="user-avatar" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
                                         {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper if mentor.user.full_name or mentor.user.username else 'M' }}
                                     </div>
                                     {% endif %}
@@ -762,9 +883,9 @@
                             <td>{{ mentor.industry or 'Not specified' }}</td>
                             <td>
                                 <div style="display: flex; align-items: center; gap: 0.25rem;">
-                                    <i class="fas fa-star text-amber-500"></i>
+                                    <i class="fas fa-star" style="color: #f59e0b;"></i>
                                     <span>{{ "%.1f"|format(mentor.rating) if mentor.rating else 'N/A' }}</span>
-                                    <span class="text-gray-400 text-sm">({{ mentor.review_count }})</span>
+                                    <span style="color: var(--text-secondary-light); font-size: 0.75rem;">({{ mentor.review_count }})</span>
                                 </div>
                             </td>
                             <td>{{ mentor.total_sessions }}</td>
@@ -807,7 +928,7 @@
     <!-- Pending Approvals Tab -->
     <div id="pending-tab" class="tab-content">
         <div class="data-card">
-            <h2>Pending Mentor Approvals <span class="text-sm text-gray-500">({{ pending_mentors|length }})</span></h2>
+            <h2>Pending Mentor Approvals <span class="text-sm" style="color: var(--text-secondary-light);">({{ pending_mentors|length }})</span></h2>
             
             {% if pending_mentors and pending_mentors|length > 0 %}
             <div class="table-container">
@@ -831,7 +952,7 @@
                                          alt="{{ mentor.user.full_name or mentor.user.username }}"
                                          class="user-avatar">
                                     {% else %}
-                                    <div class="user-avatar" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                    <div class="user-avatar" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
                                         {{ (mentor.user.full_name[0] if mentor.user.full_name else mentor.user.username[0])|upper if mentor.user.full_name or mentor.user.username else 'M' }}
                                     </div>
                                     {% endif %}
@@ -846,18 +967,18 @@
                                 {% if mentor.skills %}
                                 <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
                                     {% for skill in mentor.skills.split(',')[:3] %}
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                    <span class="skill-tag">
                                         {{ skill.strip() }}
                                     </span>
                                     {% endfor %}
                                     {% if mentor.skills.split(',')|length > 3 %}
-                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                    <span style="padding: 0.25rem 0.5rem; background: var(--accent-beige); color: var(--text-secondary-light); font-size: 0.75rem; border-radius: 0.25rem;">
                                         +{{ mentor.skills.split(',')|length - 3 }}
                                     </span>
                                     {% endif %}
                                 </div>
                                 {% else %}
-                                <span class="text-gray-400">No skills listed</span>
+                                <span style="color: var(--text-secondary-light);">No skills listed</span>
                                 {% endif %}
                             </td>
                             <td>{{ mentor.created_at.strftime('%d %b %Y') }}</td>
@@ -865,11 +986,11 @@
                                 <div style="display: flex; gap: 0.5rem;">
                                     <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" style="display: inline;">
                                         <button type="submit" name="action" value="approve" 
-                                                class="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">
+                                                class="form-button form-button-approve">
                                             <i class="fas fa-check mr-1"></i> Approve
                                         </button>
                                         <button type="submit" name="action" value="reject" 
-                                                class="px-3 py-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">
+                                                class="form-button form-button-reject">
                                             <i class="fas fa-times mr-1"></i> Reject
                                         </button>
                                     </form>
@@ -916,24 +1037,24 @@
                                 {% if booking.learner %}
                                 {{ booking.learner.full_name or booking.learner.username }}
                                 {% else %}
-                                <span class="text-gray-400">Deleted User</span>
+                                <span style="color: var(--text-secondary-light);">Deleted User</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if booking.mentor and booking.mentor.user %}
                                 {{ booking.mentor.user.full_name or booking.mentor.user.username }}
                                 {% else %}
-                                <span class="text-gray-400">Deleted Mentor</span>
+                                <span style="color: var(--text-secondary-light);">Deleted Mentor</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if booking.service %}
                                 {{ booking.service.name }}
                                 {% if booking.service.is_digital %}
-                                <span class="text-xs text-blue-600">(Digital)</span>
+                                <span style="font-size: 0.75rem; color: var(--accent);">(Digital)</span>
                                 {% endif %}
                                 {% else %}
-                                <span class="text-gray-400">Deleted Service</span>
+                                <span style="color: var(--text-secondary-light);">Deleted Service</span>
                                 {% endif %}
                             </td>
                             <td>₹{{ booking.amount_paid or 0 }}</td>
