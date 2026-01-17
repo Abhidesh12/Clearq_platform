@@ -3054,6 +3054,7 @@
                             
                             <!-- Action Buttons -->
                             <!-- AJAX version: -->
+<!-- AJAX version: -->
 <div class="mentor-actions">
     <button type="button" 
             onclick="processWithdrawal({{ withdrawal.id }}, 'approve')" 
@@ -3062,7 +3063,7 @@
         Approve Request
     </button>
     <button type="button" 
-            onclick="processWithdrawal({{ withdrawal.id }}, 'mark_paid')" 
+            onclick="processWithdrawal({{ withdrawal.id }}, 'mark_paid')"  <!-- ADDED withdrawal.id -->
             class="action-button" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white;">
         <i class="fas fa-money-bill-wave"></i>
         Mark as Paid
@@ -3755,13 +3756,16 @@
     }
 
     async function processWithdrawal(withdrawalId, action) {
-    if (action === 'reject') {
-        if (!confirm('Are you sure you want to reject this withdrawal request?')) {
+    // Map 'mark_paid' to 'completed' for the backend
+    const backendAction = action === 'mark_paid' ? 'completed' : action;
+    
+    if (action === 'reject' || action === 'mark_paid') {
+        if (!confirm(`Are you sure you want to ${action === 'mark_paid' ? 'mark as paid' : 'reject'} this withdrawal request?`)) {
             return;
         }
     }
     
-    const adminNotes = document.getElementById(`adminNotesInput${withdrawalId}`).value;
+    const adminNotes = document.getElementById(`adminNotes${withdrawalId}`).value;
     
     const button = event.target;
     const originalText = button.innerHTML;
@@ -3775,7 +3779,7 @@
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                action: action,
+                action: backendAction,
                 admin_notes: adminNotes
             })
         });
@@ -3783,7 +3787,7 @@
         const data = await response.json();
         
         if (data.success) {
-            showNotification(`Withdrawal ${action}d successfully!`, 'success');
+            showNotification(`Withdrawal ${action === 'mark_paid' ? 'marked as paid' : backendAction}d successfully!`, 'success');
             // Reload the page to show updated status
             setTimeout(() => {
                 location.reload();
@@ -3800,7 +3804,6 @@
         button.innerHTML = originalText;
     }
 }
-
     async function submitWithdrawal(event) {
         event.preventDefault();
         
