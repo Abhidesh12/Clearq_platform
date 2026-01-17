@@ -53,6 +53,7 @@ tailwind.config = {
 </script>
 
 <style>
+    /* Initialize CSS Variables with your theme */
     :root {
         /* Primary Colors */
         --primary: #1f1f1f;
@@ -87,189 +88,444 @@ tailwind.config = {
         --card-teal: #A8E1E1;
         --card-pink: #F6D0CE;
     }
+
+    .login-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--background-light) 0%, var(--accent-beige) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 28rem;
+        background: var(--card-light);
+        border-radius: 1rem;
+        box-shadow: 0 20px 60px rgba(31, 31, 31, 0.1);
+        border: 1px solid var(--border-light);
+        padding: 2.5rem;
+    }
+
+    /* Logo and Header */
+    .logo-container {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .logo-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+    }
+
+    .logo-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--background-dark) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-dark);
+        font-size: 1.25rem;
+        box-shadow: 0 8px 24px rgba(31, 31, 31, 0.15);
+    }
+
+    .logo-text {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: var(--text-light);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .logo-text span {
+        color: var(--accent);
+    }
+
+    .welcome-title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: var(--text-light);
+        font-family: 'Inter', sans-serif;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+    }
+
+    /* Google Sign In */
+    .google-section {
+        margin-top: 1rem;
+    }
+
+    .google-button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--border-light);
+        border-radius: 0.75rem;
+        background: var(--card-light);
+        color: var(--text-light);
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        gap: 0.5rem;
+    }
+
+    .google-button:hover {
+        background: var(--accent-beige);
+        border-color: var(--accent);
+        transform: translateY(-1px);
+    }
+
+    .google-button:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+    }
+
+    .google-icon {
+        color: #EA4335;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 1.5rem 0;
+    }
+
+    .divider-line {
+        flex-grow: 1;
+        height: 1px;
+        background-color: var(--border-light);
+    }
+
+    .divider-text {
+        padding: 0 1rem;
+        color: var(--text-secondary-light);
+        font-size: 0.75rem;
+    }
+
+    /* Login Form */
+    .login-form {
+        margin-top: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1px solid var(--border-light);
+        border-radius: 0.75rem;
+        background: var(--card-light);
+        color: var(--text-light);
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
+    }
+
+    .form-input:hover {
+        border-color: var(--accent);
+    }
+
+    .form-input::placeholder {
+        color: var(--text-secondary-light);
+        opacity: 0.6;
+    }
+
+    /* Options */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .checkbox {
+        width: 1rem;
+        height: 1rem;
+        border: 1px solid var(--border-light);
+        border-radius: 0.25rem;
+        background: var(--card-light);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .checkbox:checked {
+        background: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .checkbox-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+        cursor: pointer;
+    }
+
+    .forgot-password {
+        font-size: 0.875rem;
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .forgot-password:hover {
+        color: var(--brand-red);
+        text-decoration: underline;
+    }
+
+    /* Submit Button */
+    .submit-button {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        color: var(--text-dark);
+        border: none;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .submit-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(255, 107, 74, 0.3);
+    }
+
+    .submit-button:active {
+        transform: translateY(0);
+    }
+
+    .submit-button:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.3);
+    }
+
+    .button-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    /* Sign Up Link */
+    .signup-link-container {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border-light);
+    }
+
+    .signup-text {
+        font-size: 0.875rem;
+        color: var(--text-secondary-light);
+    }
+
+    .signup-link {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .signup-link:hover {
+        color: var(--brand-red);
+        text-decoration: underline;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 640px) {
+        .login-container {
+            padding: 1rem;
+        }
+        
+        .login-card {
+            padding: 2rem 1.5rem;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+        }
+        
+        .welcome-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-options {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .forgot-password {
+            align-self: flex-end;
+        }
+    }
 </style>
 
-<div class="min-h-screen bg-gradient-to-br from-[#fff5ec] to-[#F0EFEA] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
+<div class="login-container">
+    <div class="login-card">
         <!-- Logo and Header -->
-        <div class="text-center">
-            <a href="/" class="flex items-center justify-center space-x-2 mb-8">
-                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-[#1f1f1f] to-[#151022] flex items-center justify-center shadow-lg">
-                    <i class="fas fa-graduation-cap text-white text-xl"></i>
+        <div class="logo-container">
+            <a href="/" class="logo-link">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
                 </div>
-                <span class="text-2xl font-bold text-[#1f1f1f] font-display">Clear<span class="text-[#ff6b4a]">Q</span></span>
+                <span class="logo-text">Clear<span>Q</span></span>
             </a>
-            <h2 class="text-3xl font-bold text-[#1f1f1f] font-display">Welcome back</h2>
-            <p class="mt-2 text-sm text-[#555555]">
-                Sign in to your account to continue
-            </p>
+            <h2 class="welcome-title">Welcome back</h2>
+            <p class="welcome-subtitle">Sign in to your account to continue</p>
         </div>
 
         <!-- Google Sign In -->
         {% if google_auth_url %}
-        <div class="mt-4">
-            <a href="{{ google_auth_url }}" 
-               class="w-full flex items-center justify-center px-4 py-3 border border-[#E5E4E0] rounded-lg shadow-sm text-sm font-medium text-[#1f1f1f] bg-white hover:bg-[#F0EFEA] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff6b4a] transition-all duration-200 hover:border-[#ff6b4a]">
-                <i class="fab fa-google text-red-500 mr-2"></i>
+        <div class="google-section">
+            <a href="{{ google_auth_url }}" class="google-button">
+                <i class="fab fa-google google-icon"></i>
                 Continue with Google
             </a>
-            <div class="mt-4 flex items-center">
-                <div class="flex-grow border-t border-[#E5E4E0]"></div>
-                <span class="flex-shrink mx-4 text-[#555555] text-sm">or</span>
-                <div class="flex-grow border-t border-[#E5E4E0]"></div>
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">or</span>
+                <div class="divider-line"></div>
             </div>
         </div>
         {% endif %}
 
         <!-- Login Form -->
-        <form class="mt-8 space-y-6" action="/login" method="POST">
-            <div class="rounded-md shadow-sm space-y-4">
-                <!-- Email Input -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-[#1f1f1f] mb-1">
-                        Email Address
-                    </label>
-                    <input id="email" name="email" type="email" autocomplete="email" required
-                           class="appearance-none relative block w-full px-3 py-3 border border-[#E5E4E0] placeholder-[#555555]/60 text-[#1f1f1f] bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff6b4a] focus:border-transparent focus:z-10 sm:text-sm transition-all duration-200 hover:border-[#ff6b4a]/50"
-                           placeholder="you@example.com">
-                </div>
+        <form class="login-form" action="/login" method="POST">
+            <!-- Email Input -->
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input id="email" name="email" type="email" autocomplete="email" required
+                       class="form-input"
+                       placeholder="you@example.com">
+            </div>
 
-                <!-- Password Input -->
-                <div>
-                    <label for="password" class="block text-sm font-medium text-[#1f1f1f] mb-1">
-                        Password
-                    </label>
-                    <input id="password" name="password" type="password" autocomplete="current-password" required
-                           class="appearance-none relative block w-full px-3 py-3 border border-[#E5E4E0] placeholder-[#555555]/60 text-[#1f1f1f] bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff6b4a] focus:border-transparent focus:z-10 sm:text-sm transition-all duration-200 hover:border-[#ff6b4a]/50"
-                           placeholder="••••••••">
-                </div>
+            <!-- Password Input -->
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required
+                       class="form-input"
+                       placeholder="••••••••">
             </div>
 
             <!-- Remember Me & Forgot Password -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <input id="remember_me" name="remember_me" type="checkbox"
-                           class="h-4 w-4 text-[#ff6b4a] focus:ring-[#ff6b4a] border-[#E5E4E0] rounded transition-all duration-200 hover:border-[#ff6b4a]">
-                    <label for="remember_me" class="ml-2 block text-sm text-[#555555]">
-                        Remember me
-                    </label>
+            <div class="form-options">
+                <div class="remember-me">
+                    <input id="remember_me" name="remember_me" type="checkbox" class="checkbox">
+                    <label for="remember_me" class="checkbox-label">Remember me</label>
                 </div>
-
-                <div class="text-sm">
-                    <a href="#" class="font-medium text-[#ff6b4a] hover:text-[#FF3F1F] transition-colors duration-200">
-                        Forgot your password?
-                    </a>
-                </div>
+                <a href="#" class="forgot-password">Forgot your password?</a>
             </div>
 
             <!-- Submit Button -->
-            <div>
-                <button type="submit"
-                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-[#ff6b4a] to-[#FF3F1F] hover:shadow-lg hover:shadow-[#ff6b4a]/25 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ff6b4a] transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0">
-                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                        <i class="fas fa-sign-in-alt text-white/80"></i>
-                    </span>
-                    Sign in
-                </button>
-            </div>
+            <button type="submit" class="submit-button">
+                <i class="fas fa-sign-in-alt button-icon"></i>
+                Sign in
+            </button>
 
             <!-- Sign Up Link -->
-            <div class="text-center">
-                <p class="text-sm text-[#555555]">
+            <div class="signup-link-container">
+                <p class="signup-text">
                     Don't have an account?
-                    <a href="/register" class="font-medium text-[#ff6b4a] hover:text-[#FF3F1F] transition-colors duration-200">
-                        Sign up
-                    </a>
+                    <a href="/register" class="signup-link">Sign up</a>
                 </p>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Add Custom Styles for Better Theme Integration -->
-<style>
-    .min-h-screen {
-        background: linear-gradient(135deg, var(--background-light) 0%, var(--accent-beige) 100%);
-    }
-    
-    .font-display {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    input:focus, button:focus, a:focus {
-        outline: none;
-        ring-width: 2px;
-        ring-color: var(--accent);
-    }
-    
-    .hover\:bg-\[\#F0EFEA\]:hover {
-        background-color: var(--accent-beige);
-    }
-    
-    .border-\[\#E5E4E0\] {
-        border-color: var(--border-light);
-    }
-    
-    .text-\[\#1f1f1f\] {
-        color: var(--text-light);
-    }
-    
-    .text-\[\#555555\] {
-        color: var(--text-secondary-light);
-    }
-    
-    .text-\[\#ff6b4a\] {
-        color: var(--accent);
-    }
-    
-    .hover\:text-\[\#FF3F1F\]:hover {
-        color: var(--brand-red);
-    }
-    
-    .bg-gradient-to-r {
-        background-size: 200% 200%;
-        animation: gradient 3s ease infinite;
-    }
-    
-    @keyframes gradient {
-        0% {
-            background-position: 0% 50%;
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add hover effects to interactive elements
+        const googleButton = document.querySelector('.google-button');
+        const submitButton = document.querySelector('.submit-button');
+        const formInputs = document.querySelectorAll('.form-input');
+        
+        if (googleButton) {
+            googleButton.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-1px)';
+            });
+            
+            googleButton.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
         }
-        50% {
-            background-position: 100% 50%;
+        
+        if (submitButton) {
+            submitButton.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            submitButton.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
         }
-        100% {
-            background-position: 0% 50%;
+        
+        // Add focus effects to inputs
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+        
+        // Add animation to form card
+        const loginCard = document.querySelector('.login-card');
+        if (loginCard) {
+            loginCard.style.opacity = '0';
+            loginCard.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                loginCard.style.transition = 'all 0.5s ease';
+                loginCard.style.opacity = '1';
+                loginCard.style.transform = 'translateY(0)';
+            }, 100);
         }
-    }
-    
-    /* Enhanced input focus styles */
-    input:focus {
-        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
-    }
-    
-    /* Enhanced button hover effect */
-    button:hover {
-        box-shadow: 0 10px 25px -5px rgba(255, 107, 74, 0.3);
-    }
-    
-    /* Card-like styling for form container */
-    .max-w-md {
-        background: var(--card-light);
-        padding: 2.5rem;
-        border-radius: 1rem;
-        box-shadow: 0 20px 60px rgba(31, 31, 31, 0.1);
-        border: 1px solid var(--border-light);
-    }
-    
-    /* Google button specific styling */
-    .fa-google {
-        background: conic-gradient(from -45deg, #ea4335 110deg, #4285f4 90deg 180deg, #34a853 180deg 270deg, #fbbc05 270deg) 73% 55%/150% 150% no-repeat;
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        -webkit-text-fill-color: transparent;
-    }
-</style>
+    });
+</script>
 
 {% endblock %}
