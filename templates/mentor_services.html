@@ -1128,60 +1128,23 @@ tailwind.config = {
                                 </select>
                             </div>
                             
-                            <!-- Description with Rich Text Editor -->
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-align-left"></i>
-                                    Description <span class="form-required">*</span>
-                                </label>
-                                <div class="rich-text-editor-container">
-                                    <div class="editor-toolbar">
-                                        <button type="button" class="toolbar-btn" data-command="bold" title="Bold">
-                                            <i class="fas fa-bold"></i>
-                                        </button>
-                                        <button type="button" class="toolbar-btn" data-command="italic" title="Italic">
-                                            <i class="fas fa-italic"></i>
-                                        </button>
-                                        <button type="button" class="toolbar-btn" data-command="underline" title="Underline">
-                                            <i class="fas fa-underline"></i>
-                                        </button>
-                                        <div class="toolbar-separator"></div>
-                                        <button type="button" class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
-                                            <i class="fas fa-list-ul"></i>
-                                        </button>
-                                        <button type="button" class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
-                                            <i class="fas fa-list-ol"></i>
-                                        </button>
-                                        <div class="toolbar-separator"></div>
-                                        <button type="button" class="toolbar-btn" data-command="justifyLeft" title="Align Left">
-                                            <i class="fas fa-align-left"></i>
-                                        </button>
-                                        <button type="button" class="toolbar-btn" data-command="justifyCenter" title="Center">
-                                            <i class="fas fa-align-center"></i>
-                                        </button>
-                                        <button type="button" class="toolbar-btn" data-command="justifyRight" title="Align Right">
-                                            <i class="fas fa-align-right"></i>
-                                        </button>
-                                        <div class="toolbar-separator"></div>
-                                        <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="h2" title="Heading">
-                                            <i class="fas fa-heading"></i>
-                                        </button>
-                                        <button type="button" class="toolbar-btn" data-command="formatBlock" data-value="p" title="Paragraph">
-                                            <i class="fas fa-paragraph"></i>
-                                        </button>
-                                    </div>
-                                    <div class="editor-content" contenteditable="true" id="rich-text-editor"
-                                         placeholder="Describe what learners will get from this service..."></div>
-                                    <textarea name="description" rows="3" required 
-                                              class="form-textarea hidden-textarea"
-                                              placeholder="Describe what learners will get from this service..."
-                                              id="description-textarea"></textarea>
-                                </div>
-                                <p class="form-help">
-                                    <i class="fas fa-lightbulb"></i>
-                                    Use the toolbar to format your description. This will be displayed to learners.
-                                </p>
-                            </div>
+                            <!-- Simple Description Box -->
+<div class="form-group">
+    <label class="form-label">
+        <i class="fas fa-align-left mr-2"></i>
+        Description <span class="form-required">*</span>
+    </label>
+    <textarea name="description" 
+              rows="5" 
+              required 
+              class="form-textarea w-full"
+              placeholder="Describe what learners will get from this service..."
+              id="description-textarea"></textarea>
+    <p class="form-help mt-2">
+        <i class="fas fa-lightbulb mr-1"></i>
+        Describe what makes your service valuable to learners.
+    </p>
+</div>
                             
                             <!-- Price, Duration, Type -->
                             <div class="form-group">
