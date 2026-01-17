@@ -858,12 +858,17 @@ def send_email_sync(
     html_content: str,
     text_content: str = None
 ):
-    """Send email synchronously - for testing"""
+    """Send email synchronously"""
+    # Early return if email is disabled
     if not EMAIL_ENABLED:
         print(f"[EMAIL DISABLED] Would send to: {to_email}")
         print(f"Subject: {subject}")
-        print(f"Content: {html_content[:200]}...")
         return True
+    
+    # Validate SMTP settings
+    if not all([SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, EMAIL_FROM]):
+        print("❌ Missing SMTP configuration. Email not sent.")
+        return False
     
     try:
         # Create message
@@ -872,28 +877,30 @@ def send_email_sync(
         msg['From'] = f"{EMAIL_FROM_NAME} <{EMAIL_FROM}>"
         msg['To'] = to_email
         
-        # Add HTML and plain text versions
+        # Attach text version
         if text_content:
-            part1 = MIMEText(text_content, 'plain')
-            msg.attach(part1)
+            msg.attach(MIMEText(text_content, 'plain'))
         
-        part2 = MIMEText(html_content, 'html')
-        msg.attach(part2)
+        # Attach HTML version
+        msg.attach(MIMEText(html_content, 'html'))
         
-        # Connect to SMTP server and send
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()  # Secure the connection
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-            server.send_message(msg)
+        # Connect to SMTP server
+        print(f"Connecting to SMTP server: {SMTP_SERVER}:{SMTP_PORT}")
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()  # Secure the connection
+        server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        
+        # Send email
+        server.send_message(msg)
+        server.quit()
         
         print(f"✅ Email sent successfully to: {to_email}")
         return True
         
     except Exception as e:
         print(f"❌ Error sending email to {to_email}: {str(e)}")
-        # Don't raise exception to avoid breaking booking flow
         return False
-
+        
 async def send_email_async(
     to_email: str,
     subject: str,
@@ -903,11 +910,14 @@ async def send_email_async(
     """Send email asynchronously - for use with BackgroundTasks"""
     # Run in thread pool since SMTP is blocking
     import asyncio
-    from functools import partial
+    from concurrent.futures import ThreadPoolExecutor
     
     loop = asyncio.get_event_loop()
-    func = partial(send_email_sync, to_email, subject, html_content, text_content)
-    await loop.run_in_executor(None, func)
+    with ThreadPoolExecutor() as pool:
+        await loop.run_in_executor(
+            pool, 
+            lambda: send_email_sync(to_email, subject, html_content, text_content)
+        )
 
 def send_booking_confirmation_email(
     booking: Booking,
@@ -1093,6 +1103,168 @@ Thank you for mentoring on ClearQ!
         
     except Exception as e:
         print(f"Error sending booking emails: {str(e)}")
+        return False
+
+# Add this function after your other helper functions (around line 800)
+def send_meeting_notification(booking: Booking, meeting_link: str, db: Session):
+    """Send meeting notification emails to both mentor and learner"""
+    try:
+        # Get user details
+        mentor = db.query(Mentor).filter(Mentor.id == booking.mentor_id).first()
+        learner = db.query(User).filter(User.id == booking.learner_id).first()
+        
+        if not mentor or not learner:
+            print("Missing mentor or learner details for email")
+            return False
+        
+        mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
+        if not mentor_user:
+            print("Mentor user not found")
+            return False
+        
+        service = db.query(Service).filter(Service.id == booking.service_id).first()
+        service_name = service.name if service else "Mentoring Session"
+        
+        # Format date and time
+        booking_date = booking.booking_date.strftime("%B %d, %Y") if booking.booking_date else "TBD"
+        booking_time = booking.selected_time if booking.selected_time else "TBD"
+        
+        # ===== LEARNER EMAIL =====
+        learner_subject = f"🎉 Session Confirmed: {service_name} with {mentor_user.full_name}"
+        
+        learner_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }}
+                .header {{ background: #4f46e5; color: white; padding: 20px; text-align: center; }}
+                .content {{ padding: 20px; background: #f9fafb; }}
+                .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4f46e5; }}
+                .button {{ display: inline-block; background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Session Confirmed! 🎉</h1>
+            </div>
+            <div class="content">
+                <h2>Hello {learner.full_name or learner.username},</h2>
+                <p>Your session has been successfully booked!</p>
+                
+                <div class="details">
+                    <h3>📅 Session Details</h3>
+                    <p><strong>Service:</strong> {service_name}</p>
+                    <p><strong>Date:</strong> {booking_date}</p>
+                    <p><strong>Time:</strong> {booking_time}</p>
+                    <p><strong>Mentor:</strong> {mentor_user.full_name or mentor_user.username}</p>
+                    <p><strong>Meeting Link:</strong> <a href="{meeting_link}">{meeting_link}</a></p>
+                </div>
+                
+                <p>Click below to join the meeting:</p>
+                <a href="{meeting_link}" class="button">Join Meeting</a>
+                
+                <div class="footer">
+                    <p>Need help? Contact us at support@clearq.in</p>
+                    <p>© 2024 ClearQ Mentorship Platform. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # ===== MENTOR EMAIL =====
+        mentor_subject = f"📅 New Session Booking: {learner.full_name or learner.username}"
+        
+        mentor_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }}
+                .header {{ background: #10b981; color: white; padding: 20px; text-align: center; }}
+                .content {{ padding: 20px; background: #f9fafb; }}
+                .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }}
+                .button {{ display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }}
+                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>New Session Booking! 📅</h1>
+            </div>
+            <div class="content">
+                <h2>Hello {mentor_user.full_name or mentor_user.username},</h2>
+                <p>You have a new session booking.</p>
+                
+                <div class="details">
+                    <h3>📋 Booking Details</h3>
+                    <p><strong>Service:</strong> {service_name}</p>
+                    <p><strong>Date:</strong> {booking_date}</p>
+                    <p><strong>Time:</strong> {booking_time}</p>
+                    <p><strong>Learner:</strong> {learner.full_name or learner.username}</p>
+                    <p><strong>Learner Email:</strong> {learner.email}</p>
+                    <p><strong>Meeting Link:</strong> <a href="{meeting_link}">{meeting_link}</a></p>
+                </div>
+                
+                <a href="{meeting_link}" class="button">View Meeting Details</a>
+                
+                <div class="footer">
+                    <p>© 2024 ClearQ Mentorship Platform. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Send emails
+        learner_sent = send_email_sync(
+            to_email=learner.email,
+            subject=learner_subject,
+            html_content=learner_html,
+            text_content=f"""Session Confirmed!
+
+Hello {learner.full_name or learner.username},
+
+Your session has been confirmed:
+
+Service: {service_name}
+Date: {booking_date}
+Time: {booking_time}
+Mentor: {mentor_user.full_name or mentor_user.username}
+Meeting Link: {meeting_link}
+
+Thank you for choosing ClearQ!
+"""
+        )
+        
+        mentor_sent = send_email_sync(
+            to_email=mentor_user.email,
+            subject=mentor_subject,
+            html_content=mentor_html,
+            text_content=f"""New Session Booking!
+
+Hello {mentor_user.full_name or mentor_user.username},
+
+You have a new session booking:
+
+Service: {service_name}
+Date: {booking_date}
+Time: {booking_time}
+Learner: {learner.full_name or learner.username}
+Learner Email: {learner.email}
+Meeting Link: {meeting_link}
+
+Please be prepared for the session.
+"""
+        )
+        
+        print(f"✅ Meeting notification emails sent. Learner: {learner_sent}, Mentor: {mentor_sent}")
+        return learner_sent and mentor_sent
+        
+    except Exception as e:
+        print(f"❌ Error sending meeting notification: {str(e)}")
         return False
 
 
@@ -1588,6 +1760,28 @@ async def startup_event():
     db = SessionLocal()
     try:
         create_admin_user(db)
+        
+        if EMAIL_ENABLED:
+            print("=== Email Configuration ===")
+            print(f"SMTP Server: {SMTP_SERVER}:{SMTP_PORT}")
+            print(f"SMTP Username: {SMTP_USERNAME}")
+            print(f"Email From: {EMAIL_FROM}")
+            print(f"Email Enabled: {EMAIL_ENABLED}")
+            
+            # Test SMTP connection
+            try:
+                server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+                server.starttls()
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.quit()
+                print("✅ SMTP connection test successful")
+            except Exception as e:
+                print(f"❌ SMTP connection test failed: {e}")
+                print("⚠️ Emails will not be sent until SMTP is configured correctly")
+        else:
+            print("⚠️ Email sending is disabled (EMAIL_ENABLED=false)")
+        
+        
         
         # Ensure all mentors have day preferences
         mentors = db.query(Mentor).all()
