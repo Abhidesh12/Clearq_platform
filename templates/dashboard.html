@@ -1703,16 +1703,16 @@
         <div class="header-content">
             <div class="user-info">
                 <div class="user-avatar">
-                    {% if current_user.profile_image %}
-                    <img src="/static/{{ current_user.profile_image }}" 
-                         alt="{{ current_user.full_name or current_user.username }}"
-                         class="user-avatar-img">
-                    {% else %}
-                    <div class="user-avatar-initial">
-                        {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper }}
-                    </div>
-                    {% endif %}
-                </div>
+    {% if current_user.profile_image %}
+    <img src="/static/{{ current_user.profile_image }}" 
+         alt="{{ current_user.full_name or current_user.username }}"
+         class="user-avatar-img">
+    {% else %}
+    <img src="https://cdn-icons-png.flaticon.com/512/5951/5951752.png" 
+         alt="{{ current_user.full_name or current_user.username }}"
+         class="user-avatar-img">
+    {% endif %}
+</div>
                 <div class="user-details">
                     <h1>Welcome back, {{ current_user.full_name or current_user.username }}</h1>
                     <p>{{ current_user.role|title }} Dashboard</p>
