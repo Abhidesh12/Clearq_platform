@@ -3624,7 +3624,7 @@ async def process_withdrawal_admin(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Admin process withdrawal request"""
+    """Admin process withdrawal request - FIXED: Use MentorPayout instead of WithdrawalRequest"""
     if not current_user or current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Access denied")
     
@@ -3639,9 +3639,9 @@ async def process_withdrawal_admin(
                 "error": "Invalid action"
             })
         
-        # Get withdrawal request
-        withdrawal = db.query(WithdrawalRequest).filter(
-            WithdrawalRequest.id == withdrawal_id
+        # Get withdrawal request - FIXED: Use MentorPayout
+        withdrawal = db.query(MentorPayout).filter(
+            MentorPayout.id == withdrawal_id
         ).first()
         
         if not withdrawal:
@@ -3650,36 +3650,39 @@ async def process_withdrawal_admin(
                 "error": "Withdrawal request not found"
             })
         
+        # Get mentor balance
+        balance = db.query(MentorBalance).filter(
+            MentorBalance.mentor_id == withdrawal.mentor_id
+        ).first()
+        
+        if not balance:
+            return JSONResponse({
+                "success": False,
+                "error": "Mentor balance not found"
+            })
+        
         # Process withdrawal
         if action == "approve":
-            # Mark as paid
-            withdrawal.status = "paid"
-            withdrawal.processed_at = datetime.utcnow()
-            withdrawal.admin_notes = admin_notes
+            # Mark as completed
+            withdrawal.status = "completed"
+            withdrawal.processed_date = datetime.utcnow()
+            withdrawal.notes = admin_notes
             
-            # Update mentor earnings (deduct from total_withdrawn)
-            earnings = db.query(MentorEarnings).filter_by(
-                mentor_id=withdrawal.mentor_id
-            ).first()
-            
-            if earnings:
-                earnings.total_withdrawn += withdrawal.amount
-                earnings.last_updated = datetime.utcnow()
+            # Update mentor balance
+            balance.pending_withdrawal -= withdrawal.amount
+            balance.total_withdrawn += withdrawal.amount
+            balance.last_updated = datetime.utcnow()
         
         elif action == "reject":
             # Reject withdrawal and return amount to available balance
-            withdrawal.status = "rejected"
-            withdrawal.processed_at = datetime.utcnow()
-            withdrawal.admin_notes = admin_notes
+            withdrawal.status = "failed"
+            withdrawal.processed_date = datetime.utcnow()
+            withdrawal.notes = admin_notes
             
             # Return amount to available balance
-            earnings = db.query(MentorEarnings).filter_by(
-                mentor_id=withdrawal.mentor_id
-            ).first()
-            
-            if earnings:
-                earnings.available_balance += withdrawal.amount
-                earnings.last_updated = datetime.utcnow()
+            balance.available_balance += withdrawal.amount
+            balance.pending_withdrawal -= withdrawal.amount
+            balance.last_updated = datetime.utcnow()
         
         db.commit()
         
@@ -3696,7 +3699,7 @@ async def process_withdrawal_admin(
             "success": False,
             "error": f"Error processing withdrawal: {str(e)}"
         })
-
+        
 @app.get("/debug/availability/{mentor_id}")
 async def debug_availability(
     mentor_id: int,
@@ -4430,12 +4433,12 @@ async def admin_withdrawals(
         raise HTTPException(status_code=403, detail="Access denied")
     
     try:
-        # Base query
-        query = db.query(WithdrawalRequest)
+        # Base query - FIXED: Use MentorPayout instead of WithdrawalRequest
+        query = db.query(MentorPayout)
         
         # Filter by status if provided
-        if status and status in ["pending", "approved", "paid", "rejected"]:
-            query = query.filter(WithdrawalRequest.status == status)
+        if status and status in ["pending", "processing", "completed", "failed"]:
+            query = query.filter(MentorPayout.status == status)
         
         # Count total records
         total_count = query.count()
@@ -4443,7 +4446,7 @@ async def admin_withdrawals(
         # Pagination
         offset = (page - 1) * per_page
         withdrawals = query.order_by(
-            WithdrawalRequest.requested_at.desc()
+            MentorPayout.request_date.desc()
         ).offset(offset).limit(per_page).all()
         
         # Prepare withdrawal data
@@ -4454,13 +4457,13 @@ async def admin_withdrawals(
                 "mentor_id": withdrawal.mentor_id,
                 "mentor_name": withdrawal.mentor.user.full_name if withdrawal.mentor and withdrawal.mentor.user else "Unknown",
                 "mentor_email": withdrawal.mentor.user.email if withdrawal.mentor and withdrawal.mentor.user else "Unknown",
-                "amount": withdrawal.amount,
+                "amount": float(withdrawal.amount),
                 "payment_method": withdrawal.payment_method,
-                "payment_details": withdrawal.payment_details,
+                "payment_details": withdrawal.account_details,
                 "status": withdrawal.status,
-                "requested_at": withdrawal.requested_at.strftime("%Y-%m-%d %H:%M") if withdrawal.requested_at else None,
-                "processed_at": withdrawal.processed_at.strftime("%Y-%m-%d %H:%M") if withdrawal.processed_at else None,
-                "admin_notes": withdrawal.admin_notes
+                "requested_at": withdrawal.request_date.strftime("%Y-%m-%d %H:%M") if withdrawal.request_date else None,
+                "processed_at": withdrawal.processed_date.strftime("%Y-%m-%d %H:%M") if withdrawal.processed_date else None,
+                "notes": withdrawal.notes
             })
         
         return templates.TemplateResponse("admin_withdrawals.html", {
@@ -4473,10 +4476,11 @@ async def admin_withdrawals(
             "total_count": total_count,
             "total_pages": (total_count + per_page - 1) // per_page,
             "status_counts": {
-                "pending": db.query(WithdrawalRequest).filter(WithdrawalRequest.status == "pending").count(),
-                "paid": db.query(WithdrawalRequest).filter(WithdrawalRequest.status == "paid").count(),
-                "rejected": db.query(WithdrawalRequest).filter(WithdrawalRequest.status == "rejected").count(),
-                "all": db.query(WithdrawalRequest).count()
+                "pending": db.query(MentorPayout).filter(MentorPayout.status == "pending").count(),
+                "processing": db.query(MentorPayout).filter(MentorPayout.status == "processing").count(),
+                "completed": db.query(MentorPayout).filter(MentorPayout.status == "completed").count(),
+                "failed": db.query(MentorPayout).filter(MentorPayout.status == "failed").count(),
+                "all": db.query(MentorPayout).count()
             }
         })
         
