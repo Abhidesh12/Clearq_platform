@@ -9,6 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from fastapi import BackgroundTasks
 import os
 import logging
+import ssl
 import requests
 import traceback
 from sqlalchemy import or_, and_
@@ -44,6 +45,10 @@ from fastapi.responses import JSONResponse
 import shutil
 from sqlalchemy import func, Date
 from starlette.middleware.base import BaseHTTPMiddleware
+
+context = ssl.create_default_context()
+server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+server.starttls(context=context)
 
 
 
