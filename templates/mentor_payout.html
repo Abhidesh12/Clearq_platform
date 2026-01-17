@@ -5,22 +5,24 @@
 {% block content %}
 <style>
     :root {
-        --primary: #3B82F6;
-        --primary-dark: #2563EB;
-        --success: #10B981;
-        --warning: #F59E0B;
-        --danger: #EF4444;
-        --gray-900: #0F172A;
-        --gray-800: #1E293B;
-        --gray-700: #334155;
-        --gray-600: #475569;
-        --gray-500: #64748B;
-        --gray-400: #94A3B8;
-        --gray-300: #CBD5E1;
-        --gray-200: #E2E8F0;
-        --gray-100: #F1F5F9;
-        --gray-50: #F8FAFC;
-        --white: #FFFFFF;
+        --primary: #1f1f1f;
+        --primary-hover: #000000;
+        --accent: #ff6b4a;
+        --secondary: #2D3748;
+        --brand-red: #FF3F1F;
+        --background-light: #fff5ec;
+        --background-dark: #151022;
+        --card-light: #ffffff;
+        --card-dark: #1e1a2e;
+        --text-light: #1f1f1f;
+        --text-dark: #ffffff;
+        --text-secondary-light: #555555;
+        --text-secondary-dark: #a09db3;
+        --border-light: #E5E4E0;
+        --border-dark: #2d2a3b;
+        --card-green: #9CCB5C;
+        --card-blue: #85C3EA;
+        --card-purple: #E0DBFC;
     }
 
     .payout-container {
@@ -30,8 +32,8 @@
     }
 
     .payout-header {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-        color: white;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        color: var(--text-dark);
         border-radius: 1rem;
         padding: 2rem;
         margin-bottom: 2rem;
@@ -80,22 +82,22 @@
     }
 
     .balance-card {
-        background: var(--white);
+        background: var(--card-light);
         border-radius: 1rem;
         padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border: 1px solid var(--gray-200);
+        box-shadow: 0 4px 6px -1px rgba(31, 31, 31, 0.1);
+        border: 1px solid var(--border-light);
         transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .balance-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 15px -3px rgba(31, 31, 31, 0.1);
     }
 
     .balance-card h3 {
         font-size: 0.875rem;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-bottom: 0.5rem;
@@ -104,7 +106,7 @@
     .balance-amount {
         font-size: 2rem;
         font-weight: 700;
-        color: var(--gray-900);
+        color: var(--text-light);
         margin-bottom: 0.5rem;
     }
 
@@ -116,27 +118,27 @@
     }
 
     .balance-change.positive {
-        color: var(--success);
+        color: var(--card-green);
     }
 
     .balance-change.negative {
-        color: var(--danger);
+        color: var(--brand-red);
     }
 
     /* Withdrawal Form */
     .withdrawal-card {
-        background: var(--white);
+        background: var(--card-light);
         border-radius: 1rem;
         padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border: 1px solid var(--gray-200);
+        box-shadow: 0 4px 6px -1px rgba(31, 31, 31, 0.1);
+        border: 1px solid var(--border-light);
         margin-bottom: 2rem;
     }
 
     .withdrawal-card h2 {
         font-size: 1.25rem;
         font-weight: 600;
-        color: var(--gray-900);
+        color: var(--text-light);
         margin-bottom: 1.5rem;
     }
 
@@ -164,27 +166,29 @@
     .form-label {
         font-size: 0.875rem;
         font-weight: 500;
-        color: var(--gray-700);
+        color: var(--text-secondary-light);
         margin-bottom: 0.5rem;
     }
 
     .form-input {
         padding: 0.75rem 1rem;
-        border: 1px solid var(--gray-300);
+        border: 1px solid var(--border-light);
         border-radius: 0.5rem;
         font-size: 1rem;
-        color: var(--gray-900);
+        color: var(--text-light);
+        background: var(--card-light);
         transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .form-input:focus {
         outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
     }
 
     .form-input::placeholder {
-        color: var(--gray-400);
+        color: var(--text-secondary-light);
+        opacity: 0.6;
     }
 
     .amount-input {
@@ -196,7 +200,7 @@
         left: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--gray-500);
+        color: var(--text-secondary-light);
         font-weight: 500;
     }
 
@@ -206,14 +210,14 @@
 
     .form-select {
         padding: 0.75rem 1rem;
-        border: 1px solid var(--gray-300);
+        border: 1px solid var(--border-light);
         border-radius: 0.5rem;
         font-size: 1rem;
-        color: var(--gray-900);
-        background: var(--white);
+        color: var(--text-light);
+        background: var(--card-light);
         cursor: pointer;
         appearance: none;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23555555' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
         background-position: right 0.5rem center;
         background-repeat: no-repeat;
         background-size: 1.5em 1.5em;
@@ -222,15 +226,15 @@
 
     .form-select:focus {
         outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
     }
 
     .withdraw-button {
         grid-column: 1 / -1;
         padding: 1rem;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        color: var(--text-dark);
         border: none;
         border-radius: 0.5rem;
         font-size: 1rem;
@@ -245,7 +249,7 @@
 
     .withdraw-button:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 10px 25px rgba(255, 107, 74, 0.3);
     }
 
     .withdraw-button:disabled {
@@ -255,23 +259,23 @@
 
     .form-info {
         font-size: 0.875rem;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
         margin-top: 0.5rem;
     }
 
     /* History Table */
     .history-card {
-        background: var(--white);
+        background: var(--card-light);
         border-radius: 1rem;
         padding: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        border: 1px solid var(--gray-200);
+        box-shadow: 0 4px 6px -1px rgba(31, 31, 31, 0.1);
+        border: 1px solid var(--border-light);
     }
 
     .history-card h2 {
         font-size: 1.25rem;
         font-weight: 600;
-        color: var(--gray-900);
+        color: var(--text-light);
         margin-bottom: 1.5rem;
     }
 
@@ -282,7 +286,7 @@
     }
 
     .history-table thead {
-        background: var(--gray-50);
+        background: var(--background-light);
     }
 
     .history-table th {
@@ -290,10 +294,10 @@
         text-align: left;
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--gray-600);
+        color: var(--text-secondary-light);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 1px solid var(--gray-200);
+        border-bottom: 1px solid var(--border-light);
     }
 
     .history-table tbody tr {
@@ -301,13 +305,13 @@
     }
 
     .history-table tbody tr:hover {
-        background: var(--gray-50);
+        background: var(--background-light);
     }
 
     .history-table td {
         padding: 1rem;
-        border-bottom: 1px solid var(--gray-200);
-        color: var(--gray-700);
+        border-bottom: 1px solid var(--border-light);
+        color: var(--text-secondary-light);
     }
 
     .history-table td:first-child {
@@ -331,29 +335,29 @@
     }
 
     .status-pending {
-        background: #FEF3C7;
-        color: #92400E;
+        background: rgba(255, 107, 74, 0.1);
+        color: var(--accent);
     }
 
     .status-processing {
-        background: #DBEAFE;
-        color: #1E40AF;
+        background: rgba(133, 195, 234, 0.1);
+        color: var(--card-blue);
     }
 
     .status-completed {
-        background: #D1FAE5;
-        color: #065F46;
+        background: rgba(156, 203, 92, 0.1);
+        color: var(--card-green);
     }
 
     .status-failed {
-        background: #FEE2E2;
-        color: #991B1B;
+        background: rgba(255, 63, 31, 0.1);
+        color: var(--brand-red);
     }
 
     .empty-state {
         text-align: center;
         padding: 3rem 1rem;
-        color: var(--gray-500);
+        color: var(--text-secondary-light);
     }
 
     .empty-state i {
@@ -390,21 +394,21 @@
     }
 
     .flash-success {
-        background: #D1FAE5;
-        color: #065F46;
-        border: 1px solid #A7F3D0;
+        background: rgba(156, 203, 92, 0.1);
+        color: var(--card-green);
+        border: 1px solid rgba(156, 203, 92, 0.3);
     }
 
     .flash-error {
-        background: #FEE2E2;
-        color: #991B1B;
-        border: 1px solid #FECACA;
+        background: rgba(255, 63, 31, 0.1);
+        color: var(--brand-red);
+        border: 1px solid rgba(255, 63, 31, 0.3);
     }
 
     .flash-warning {
-        background: #FEF3C7;
-        color: #92400E;
-        border: 1px solid #FDE68A;
+        background: rgba(255, 107, 74, 0.1);
+        color: var(--accent);
+        border: 1px solid rgba(255, 107, 74, 0.3);
     }
 </style>
 
@@ -514,7 +518,7 @@
             <div class="form-group full-width">
                 <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
                     <input type="checkbox" id="terms-agreement" required>
-                    <label for="terms-agreement" style="font-size: 0.875rem; color: var(--gray-600);">
+                    <label for="terms-agreement" style="font-size: 0.875rem; color: var(--text-secondary-light);">
                         I agree to the payout terms. Processing time is 3-5 business days. 
                         A 2% transaction fee may apply for amounts below ₹1000.
                     </label>
@@ -677,12 +681,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputs = form.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
         input.addEventListener('invalid', function() {
-            this.style.borderColor = 'var(--danger)';
+            this.style.borderColor = 'var(--brand-red)';
         });
         
         input.addEventListener('input', function() {
             if (this.checkValidity()) {
-                this.style.borderColor = 'var(--gray-300)';
+                this.style.borderColor = 'var(--border-light)';
             }
         });
     });
