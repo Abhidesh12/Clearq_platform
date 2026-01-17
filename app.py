@@ -85,7 +85,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Templates and static files
-
+async def add_now_to_context(request: Request):
+    return {"now": datetime.now()}
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["now"] = datetime.now()
@@ -96,6 +97,7 @@ pwd_context = CryptContext(
 )
 
 # Security
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Razorpay configuration# Razorpay configuration with validation
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
@@ -131,6 +133,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # Google OAuth configuration
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
 
 # ============ DATABASE MODELS ============
@@ -1584,6 +1587,121 @@ def verify_razorpay_signature(params_dict: dict, received_signature: str) -> boo
     # Compare signatures
     return hmac.compare_digest(generated_signature, received_signature)
     
+def generate_availability_from_day_preferences(mentor_id: int, db: Session = None, days_ahead: int = 30):
+    """Generate Availability records from day preferences"""
+    if db is None:
+        db = SessionLocal()
+        should_close = True
+    else:
+        should_close = False
+    
+    try:
+        # Get day preferences
+        day_preferences = db.query(AvailabilityDay).filter(
+            AvailabilityDay.mentor_id == mentor_id,
+            AvailabilityDay.is_active == True
+        ).all()
+        
+        if not day_preferences:
+            print(f"No active day preferences found for mentor {mentor_id}")
+            # Create default with 9AM-9PM
+            default_days = [
+                {"day_of_week": 0, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                {"day_of_week": 1, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                {"day_of_week": 2, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                {"day_of_week": 3, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                {"day_of_week": 4, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+                {"day_of_week": 5, "start_time": "10:00", "end_time": "21:00", "is_active": False},
+                {"day_of_week": 6, "start_time": "10:00", "end_time": "21:00", "is_active": False},
+            ]
+            
+            for day_data in default_days:
+                day_pref = AvailabilityDay(
+                    mentor_id=mentor_id,
+                    day_of_week=day_data["day_of_week"],
+                    start_time=day_data["start_time"],
+                    end_time=day_data["end_time"],
+                    is_active=day_data["is_active"],
+                    created_at=datetime.utcnow()
+                )
+                db.add(day_pref)
+            
+            db.commit()
+            print(f"✅ Created default 9AM-9PM schedule for mentor {mentor_id}")
+            
+            # Reload preferences
+            day_preferences = db.query(AvailabilityDay).filter(
+                AvailabilityDay.mentor_id == mentor_id,
+                AvailabilityDay.is_active == True
+            ).all()
+        
+        # Get exceptions
+        exceptions = db.query(AvailabilityException).filter(
+            AvailabilityException.mentor_id == mentor_id
+        ).all()
+        exception_dates = {ex.date: ex.is_available for ex in exceptions}
+        
+        today = datetime.now().date()
+        end_date = today + timedelta(days=days_ahead)
+        
+        generated_count = 0
+        updated_count = 0
+        
+        # Generate for each day
+        current_date = today
+        while current_date <= end_date:
+            day_of_week = current_date.weekday()  # 0=Monday, 6=Sunday
+            
+            # Check if mentor is available on this day
+            day_pref = next((dp for dp in day_preferences if dp.day_of_week == day_of_week), None)
+            
+            # Check for exceptions
+            is_available = False
+            if current_date in exception_dates:
+                is_available = exception_dates[current_date]
+            elif day_pref:
+                is_available = True
+            
+            if is_available and day_pref:
+                # Check if availability already exists
+                existing = db.query(Availability).filter(
+                    Availability.mentor_id == mentor_id,
+                    Availability.date == current_date
+                ).first()
+                
+                if not existing:
+                    # Create new availability with 9AM-9PM
+                    availability = Availability(
+                        mentor_id=mentor_id,
+                        date=current_date,
+                        start_time=day_pref.start_time,
+                        end_time=day_pref.end_time,
+                        is_booked=False,  # Start as not booked
+                        created_at=datetime.utcnow()
+                    )
+                    db.add(availability)
+                    generated_count += 1
+                else:
+                    # Update existing availability if times changed
+                    if existing.start_time != day_pref.start_time or existing.end_time != day_pref.end_time:
+                        existing.start_time = day_pref.start_time
+                        existing.end_time = day_pref.end_time
+                        updated_count += 1
+            
+            current_date += timedelta(days=1)
+        
+        db.commit()
+        print(f"✅ Generated {generated_count} new and updated {updated_count} availability records for mentor {mentor_id} (9AM-9PM)")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error generating availability: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        if should_close and db:
+            db.close()
+
 
 def create_admin_user(db: Session):
     """Create an admin user if not exists"""
@@ -1710,7 +1828,19 @@ async def startup_event():
         
 
         
+def load_availabilities_with_retry(mentor_id, db, retries=3):
+    for i in range(retries):
+        try:
+            return db.query(Availability).filter(
+                Availability.mentor_id == mentor_id,
+                Availability.date >= datetime.now().date()
+            ).order_by(Availability.date).all()
+        except Exception as e:
+            if i == retries - 1:
+                raise e
+            time.sleep(1)
             
+
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -2206,6 +2336,13 @@ async def login_user(
     response = RedirectResponse(url="/dashboard", status_code=303)
     response.set_cookie(key="access_token", value=access_token, httponly=True)
     return response
+
+@app.get("/auth/google/callback")
+async def google_auth_callback(request: Request, code: str, db: Session = Depends(get_db)):
+    # Implement Google OAuth callback
+    # This would involve exchanging code for token, getting user info
+    # For simplicity, we'll redirect to register with Google info
+    return RedirectResponse(url="/register")
 
 
 @app.get("/explore", response_class=HTMLResponse)
@@ -4953,7 +5090,7 @@ async def create_booking(
     if not current_user or current_user.role != "learner":
         raise HTTPException(status_code=403, detail="Only learners can book sessions")
 
-    
+    target_date = None
     
     service_id = booking_data.get("service_id")
     date_str = booking_data.get("date")
