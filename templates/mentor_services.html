@@ -663,6 +663,31 @@
         color: var(--gray-600);
     }
 
+    /* Deleted Services Link */
+    .view-deleted-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        background: var(--gray-50);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        color: var(--gray-600);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: var(--transition);
+        margin-top: 1rem;
+        gap: 0.5rem;
+    }
+
+    .view-deleted-link:hover {
+        background: var(--gray-100);
+        border-color: var(--gray-300);
+        color: var(--gray-900);
+        transform: translateY(-1px);
+    }
+
     /* Responsive Design */
     @media (min-width: 640px) {
         .services-header {
@@ -985,16 +1010,10 @@
                                     <div class="service-name">
                                         {{ service.name }}
                                         {% if service.is_digital %}
-<div class="digital-product-info bg-blue-50 p-4 rounded-lg mb-4">
-    <h4 class="font-bold text-blue-900 mb-2">
-        <i class="fas fa-download text-blue-500 mr-2"></i>
-        Digital Product - Instant Access
-    </h4>
-    <p class="text-sm text-blue-800">
-        Purchase this product and get immediate download access. No scheduling needed!
-    </p>
-</div>
-{% else %}
+                                        <span class="service-type-indicator type-digital">
+                                            <i class="fas fa-download"></i> Digital
+                                        </span>
+                                        {% else %}
                                         <span class="service-type-indicator type-live">
                                             <i class="fas fa-video"></i> Live
                                         </span>
@@ -1023,15 +1042,15 @@
                             
                             <div class="service-footer">
                                 <div class="service-price">
-    <span class="price-amount">₹{{ service.price }}</span>
-    <span class="price-duration">
-        {% if service.is_digital %}
-        Instant Access
-        {% else %}
-        {{ service.duration_minutes }} min
-        {% endif %}
-    </span>
-</div>
+                                    <span class="price-amount">₹{{ service.price }}</span>
+                                    <span class="price-duration">
+                                        {% if service.is_digital %}
+                                        Instant Access
+                                        {% else %}
+                                        {{ service.duration_minutes }} min
+                                        {% endif %}
+                                    </span>
+                                </div>
                                 <div class="service-actions">
                                     <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
                                         <i class="fas fa-edit"></i>
@@ -1044,6 +1063,13 @@
                         </div>
                         {% endfor %}
                     </div>
+                    
+                    <!-- View Deleted Services Link -->
+                    <a href="/mentor/services/deleted" class="view-deleted-link">
+                        <i class="fas fa-trash-restore"></i>
+                        View Deleted Services
+                    </a>
+                    
                     {% else %}
                     <div class="empty-state">
                         <div class="empty-icon">
@@ -1274,29 +1300,67 @@
             window.location.href = `/mentor/dashboard/services/${serviceId}/edit`;
         };
         
-        window.deleteService = function(serviceId) {
-            if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
-                fetch(`/mentor/services/${serviceId}/delete`, {
+        window.deleteService = async function(serviceId) {
+            const confirmed = confirm('Are you sure you want to delete this service? This action cannot be undone.');
+            if (!confirmed) return;
+            
+            try {
+                // Create FormData object
+                const formData = new FormData();
+                formData.append('confirm', 'false');
+                
+                // First request - check if confirmation is needed
+                const response = await fetch(`/mentor/services/${serviceId}/delete`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Service deleted successfully!', 'success');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        showNotification('Failed to delete service: ' + data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('An error occurred while deleting the service.', 'error');
+                    body: formData
                 });
+                
+                const data = await response.json();
+                
+                if (data.requires_confirmation) {
+                    const confirmDelete = confirm(data.message);
+                    if (confirmDelete) {
+                        // Send confirmation
+                        const confirmFormData = new FormData();
+                        confirmFormData.append('confirm', 'true');
+                        
+                        const confirmResponse = await fetch(`/mentor/services/${serviceId}/delete`, {
+                            method: 'POST',
+                            body: confirmFormData
+                        });
+                        
+                        const confirmResult = await confirmResponse.json();
+                        
+                        if (confirmResult.success) {
+                            showNotification('Service deleted successfully!', 'success');
+                            // Reload the page after a short delay
+                            setTimeout(() => {
+                                if (confirmResult.redirect_url) {
+                                    window.location.href = confirmResult.redirect_url;
+                                } else {
+                                    location.reload();
+                                }
+                            }, 1500);
+                        } else {
+                            showNotification('Failed to delete service: ' + confirmResult.message, 'error');
+                        }
+                    }
+                } else if (data.success) {
+                    showNotification('Service deleted successfully!', 'success');
+                    // Reload the page after a short delay
+                    setTimeout(() => {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            location.reload();
+                        }
+                    }, 1500);
+                } else {
+                    showNotification('Failed to delete service: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting service:', error);
+                showNotification('An error occurred while deleting the service.', 'error');
             }
         };
         
@@ -1328,10 +1392,17 @@
         
         // Notification system
         window.showNotification = function(message, type) {
+            // Remove any existing notifications
+            const existingNotifications = document.querySelectorAll('.notification-toast');
+            existingNotifications.forEach(notification => {
+                notification.remove();
+            });
+            
             const notification = document.createElement('div');
-            notification.className = `fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
+            notification.className = `notification-toast fixed top-6 right-6 px-6 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 ${
                 type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
-                type === 'error' ? 'bg-gradient-to-r from-red-500 to-pink-600' : 'bg-gradient-to-r from-blue-500 to-cyan-600'
+                type === 'error' ? 'bg-gradient-to-r from-red-500 to-pink-600' : 
+                type === 'warning' ? 'bg-gradient-to-r from-yellow-500 to-orange-600' : 'bg-gradient-to-r from-blue-500 to-cyan-600'
             } text-white max-w-sm`;
             notification.innerHTML = `
                 <div class="flex items-center gap-3">
@@ -1341,6 +1412,12 @@
             `;
             
             document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateY(0)';
+                notification.style.opacity = '1';
+            }, 10);
             
             // Remove after 4 seconds
             setTimeout(() => {
