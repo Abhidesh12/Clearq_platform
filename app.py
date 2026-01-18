@@ -1211,7 +1211,51 @@ Thank you for mentoring on ClearQ!
         return False
 
 
-
+def save_profile_image_fixed(file: UploadFile, user_id: int) -> str:
+    """Save uploaded profile image and return filename - FIXED VERSION"""
+    print(f"💾 Saving profile image for user {user_id}: {file.filename}")
+    
+    # Validate file type
+    ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {ALLOWED_EXTENSIONS}")
+    
+    # Create uploads/profile_images directory if it doesn't exist
+    profile_images_dir = UPLOAD_DIR / "profile_images"
+    profile_images_dir.mkdir(parents=True, exist_ok=True)
+    print(f"📁 Upload directory: {profile_images_dir}")
+    
+    # Generate unique filename
+    filename = f"profile_{user_id}_{uuid.uuid4().hex[:8]}.{ext}"
+    file_path = profile_images_dir / filename
+    
+    print(f"💿 Saving file to: {file_path}")
+    
+    # Save file
+    try:
+        # Reset file pointer to beginning
+        await file.seek(0) if hasattr(file, 'seek') else file.file.seek(0)
+        
+        # Read file content
+        content = await file.read() if hasattr(file, 'read') else file.file.read()
+        
+        # Write to file
+        with open(file_path, "wb") as buffer:
+            buffer.write(content)
+        
+        print(f"✅ File saved successfully: {filename}")
+        
+    except Exception as e:
+        print(f"❌ Error saving file: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error saving file: {str(e)}")
+    
+    # Return relative path for database storage
+    relative_path = f"uploads/profile_images/{filename}"
+    print(f"📝 Returning relative path: {relative_path}")
+    return relative_path
+    
 def generate_reset_token() -> str:
     """Generate a secure password reset token"""
     return secrets.token_urlsafe(32)
@@ -2447,7 +2491,7 @@ def allowed_file(filename: str) -> bool:
 
 
 def save_profile_image(file: UploadFile, user_id: int) -> str:
-    """Save uploaded profile image and return filename"""
+    """Save uploaded profile image and return filename - OLD VERSION (keep for compatibility)"""
     print(f"Saving profile image for user {user_id}: {file.filename}")
     
     if not allowed_file(file.filename):
@@ -2477,13 +2521,14 @@ def save_profile_image(file: UploadFile, user_id: int) -> str:
         print(f"File saved successfully: {filename}")
     except Exception as e:
         print(f"Error saving file: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise
     
     # Return relative path for database storage
     relative_path = f"uploads/profile_images/{filename}"
     print(f"Returning relative path: {relative_path}")
     return relative_path
-
 # ============ ROUTES ============
 
 @app.get("/", response_class=HTMLResponse)
@@ -3814,54 +3859,65 @@ async def update_profile(
             print(f"Updated full_name: {full_name}")
         
         # Handle profile photo upload
-        if profile_photo and profile_photo.filename:
-            print(f"Processing profile photo: {profile_photo.filename}")
-            
-            # Validate file type
-            if not allowed_file(profile_photo.filename):
-                error_msg = "Invalid file type. Allowed: PNG, JPG, JPEG, GIF"
-                print(error_msg)
-                return RedirectResponse(
-                    url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
-                    status_code=303
-                )
-            
-            # Check file size (max 5MB) without consuming the file
-            try:
-                # Read a small chunk to check size
-                chunk = await profile_photo.read(5 * 1024 * 1024 + 1)  # Read 5MB + 1 byte
-                file_size = len(chunk)
-                print(f"File size: {file_size} bytes")
-                
-                if file_size > 5 * 1024 * 1024:  # 5MB
-                    error_msg = "File size must be less than 5MB"
-                    print(error_msg)
-                    return RedirectResponse(
-                        url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
-                        status_code=303
-                    )
-                
-                # Reset file pointer for save_profile_image
-                await profile_photo.seek(0)
-                
-                # Delete old profile image if exists and not default
-                if user.profile_image and user.profile_image != "default-avatar.png":
-                    old_image_path = UPLOAD_DIR / user.profile_image
-                    if old_image_path.exists():
-                        print(f"Deleting old image: {old_image_path}")
-                        old_image_path.unlink()
-                
-                # Save new profile image (use await if function is async, remove await if sync)
-                filename = save_profile_image(profile_photo, current_user.id)  # No await needed now
-                user.profile_image = filename
-                print(f"✅ New profile image saved: {filename}")
-                
-            except Exception as e:
-                print(f"❌ Error processing profile photo: {str(e)}")
-                return RedirectResponse(
-                    url=f"/profile/edit?error=Error%20processing%20profile%20photo%20-%20{str(e).replace(' ', '%20')}",
-                    status_code=303
-                )
+        # Handle profile photo upload
+if profile_photo and profile_photo.filename:
+    print(f"📸 Processing profile photo: {profile_photo.filename}")
+    
+    # Validate file type
+    if not allowed_file(profile_photo.filename):
+        error_msg = "Invalid file type. Allowed: PNG, JPG, JPEG, GIF"
+        print(f"❌ {error_msg}")
+        return RedirectResponse(
+            url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
+            status_code=303
+        )
+    
+    try:
+        # IMPORTANT: Read file contents once and store in memory
+        file_contents = await profile_photo.read()
+        file_size = len(file_contents)
+        print(f"📊 File size: {file_size} bytes")
+        
+        if file_size > 5 * 1024 * 1024:  # 5MB
+            error_msg = "File size must be less than 5MB"
+            print(f"❌ {error_msg}")
+            return RedirectResponse(
+                url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
+                status_code=303
+            )
+        
+        # Delete old profile image if exists and not default
+        if user.profile_image and user.profile_image != "default-avatar.png":
+            old_image_path = UPLOAD_DIR / user.profile_image
+            if old_image_path.exists():
+                print(f"🗑️ Deleting old image: {old_image_path}")
+                old_image_path.unlink()
+        
+        # Save new profile image using the file contents
+        # Create a new BytesIO object from the file contents
+        from io import BytesIO
+        file_like = BytesIO(file_contents)
+        
+        # Create a new UploadFile-like object
+        from fastapi import UploadFile
+        temp_upload_file = UploadFile(
+            filename=profile_photo.filename,
+            file=file_like
+        )
+        
+        # Save using the modified function
+        filename = save_profile_image_fixed(temp_upload_file, current_user.id)
+        user.profile_image = filename
+        print(f"✅ New profile image saved: {filename}")
+        
+    except Exception as e:
+        print(f"❌ Error processing profile photo: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return RedirectResponse(
+            url=f"/profile/edit?error=Error%20processing%20profile%20photo%20-%20{str(e).replace(' ', '%20')}",
+            status_code=303
+        )
         
         # Update mentor profile if exists
         if current_user.role == "mentor":
