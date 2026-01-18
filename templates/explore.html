@@ -296,64 +296,58 @@ tailwind.config = {
         margin-top: 0.5rem;
     }
 
-    /* Mentors Grid */
+    /* NEW: Minimal Mentor Card Design */
     .mentors-grid {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
     }
 
-    /* Mentor Card */
     .mentor-card {
         background: var(--card-light);
         border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-md);
         border: 1px solid var(--border-light);
         overflow: hidden;
         transition: var(--transition);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
         position: relative;
     }
 
     .mentor-card:hover {
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
         border-color: var(--accent);
+        transform: translateY(-2px);
     }
 
+    /* Card Header - Compact */
     .card-header {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border-light);
-        background: linear-gradient(135deg, var(--accent-beige), var(--card-light));
+        padding: 1.25rem 1.25rem 0.75rem;
+        position: relative;
     }
 
     .mentor-info {
         display: flex;
-        gap: 0.75rem;
-        align-items: flex-start;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
     }
 
-    /* Updated Avatar Styles */
+    /* Minimal Avatar */
     .mentor-avatar {
-        width: 3.5rem;
-        height: 3.5rem;
+        width: 2.5rem;
+        height: 2.5rem;
         border-radius: var(--radius);
-        overflow: hidden;
-        flex-shrink: 0;
-        position: relative;
-        background: linear-gradient(135deg, var(--accent), var(--brand-red));
-        border: 3px solid rgba(255, 255, 255, 0.8);
-        box-shadow: var(--shadow-sm);
         display: flex;
         align-items: center;
         justify-content: center;
-    }
-
-    .avatar-initials {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-dark);
-        text-transform: uppercase;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: white;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
     }
 
     .mentor-details {
@@ -363,58 +357,49 @@ tailwind.config = {
 
     .mentor-name-row {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 0.25rem;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.125rem;
     }
 
     .mentor-name {
-        font-size: 1rem;
+        font-size: 0.9375rem;
         font-weight: 600;
         color: var(--text-light);
         margin: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        line-height: 1.2;
     }
 
     .verified-badge {
+        background: var(--card-green);
+        color: white;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
-        background: linear-gradient(135deg, var(--card-green), #7cb342);
-        color: var(--text-dark);
-        padding: 0.125rem 0.5rem;
-        border-radius: 1rem;
-        font-size: 0.75rem;
-        font-weight: 500;
+        justify-content: center;
+        font-size: 0.625rem;
         flex-shrink: 0;
     }
 
     .mentor-title {
-        font-size: 0.875rem;
-        color: var(--text-secondary-light);
-        margin-bottom: 0.25rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .mentor-company {
         font-size: 0.8125rem;
         color: var(--text-secondary-light);
-        margin-bottom: 0.5rem;
+        margin: 0;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
         overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
-    /* Rating */
+    /* Rating - Minimal */
     .mentor-rating {
         display: flex;
         align-items: center;
         gap: 0.375rem;
-        margin-top: 0.25rem;
+        margin-top: 0.5rem;
     }
 
     .rating-stars {
@@ -424,90 +409,73 @@ tailwind.config = {
 
     .star-filled {
         color: #FFD166;
-        font-size: 0.875rem;
-    }
-
-    .star-empty {
-        color: var(--border-light);
-        font-size: 0.875rem;
+        font-size: 0.75rem;
     }
 
     .rating-value {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         font-weight: 600;
         color: var(--text-light);
     }
 
     .rating-count {
-        font-size: 0.8125rem;
-        color: var(--text-secondary-light);
-    }
-
-    /* Card Body */
-    .card-body {
-        padding: 1rem;
-    }
-
-    /* Skills */
-    .skills-section {
-        margin-bottom: 1rem;
-    }
-
-    .skills-label {
         font-size: 0.75rem;
         color: var(--text-secondary-light);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
+    }
+
+    /* Card Body - Compact */
+    .card-body {
+        padding: 0 1.25rem;
+        flex: 1;
+    }
+
+    /* Skills - Minimal Tags */
+    .skills-section {
+        margin-bottom: 0.75rem;
     }
 
     .skills-list {
         display: flex;
         flex-wrap: wrap;
         gap: 0.375rem;
+        margin-top: 0.25rem;
     }
 
     .skill-tag {
-        padding: 0.25rem 0.5rem;
-        background: var(--card-blue);
-        color: var(--text-light);
-        border-radius: 1rem;
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-
-    .skill-more {
-        padding: 0.25rem 0.5rem;
+        padding: 0.125rem 0.375rem;
         background: var(--accent-beige);
         color: var(--text-secondary-light);
-        border-radius: 1rem;
-        font-size: 0.75rem;
+        border-radius: 0.25rem;
+        font-size: 0.6875rem;
         font-weight: 500;
+        border: 1px solid var(--border-light);
     }
 
-    /* Stats */
+    /* Stats - Minimal */
     .mentor-stats {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-        margin-bottom: 1rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        margin: 0.75rem 0;
+        padding: 0.75rem 0;
+        border-top: 1px solid var(--border-light);
+        border-bottom: 1px solid var(--border-light);
     }
 
     .stat-item {
         text-align: center;
-        padding: 0.5rem;
-        background: var(--accent-beige);
-        border-radius: var(--radius);
     }
 
     .stat-label {
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         color: var(--text-secondary-light);
         margin-bottom: 0.125rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
     }
 
     .stat-value {
-        font-size: 0.9375rem;
+        font-size: 0.8125rem;
         font-weight: 600;
         color: var(--text-light);
     }
@@ -516,15 +484,15 @@ tailwind.config = {
         color: var(--accent);
     }
 
-    /* Bio */
+    /* Bio - Compact */
     .bio-section {
-        margin-bottom: 1rem;
+        margin: 0.75rem 0;
     }
 
     .bio-text {
         font-size: 0.8125rem;
         color: var(--text-secondary-light);
-        line-height: 1.5;
+        line-height: 1.4;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -532,11 +500,11 @@ tailwind.config = {
         margin: 0;
     }
 
-    /* Card Footer */
+    /* Card Footer - Clean */
     .card-footer {
-        padding: 1rem;
+        padding: 1rem 1.25rem;
         border-top: 1px solid var(--border-light);
-        background: var(--accent-beige);
+        background: var(--card-light);
     }
 
     .card-actions {
@@ -546,28 +514,25 @@ tailwind.config = {
     }
 
     .view-profile-btn {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         color: var(--accent);
         text-decoration: none;
         font-weight: 500;
         transition: var(--transition);
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
+        padding: 0.375rem 0;
     }
 
     .view-profile-btn:hover {
         color: var(--brand-red);
-        text-decoration: underline;
     }
 
     .book-btn {
         padding: 0.5rem 1rem;
-        background: linear-gradient(135deg, var(--accent), var(--brand-red));
-        color: var(--text-dark);
+        background: var(--accent);
+        color: white;
         border: none;
         border-radius: var(--radius);
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         font-weight: 500;
         cursor: pointer;
         transition: var(--transition);
@@ -575,12 +540,25 @@ tailwind.config = {
         display: inline-flex;
         align-items: center;
         gap: 0.375rem;
+        white-space: nowrap;
     }
 
     .book-btn:hover {
+        background: var(--brand-red);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(255, 107, 74, 0.3);
-        background: linear-gradient(135deg, var(--brand-red), var(--accent));
+    }
+
+    /* Price Badge */
+    .price-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: linear-gradient(135deg, var(--accent), var(--brand-red));
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
     }
 
     /* Empty State */
@@ -689,6 +667,71 @@ tailwind.config = {
     }
 
     /* Responsive Design */
+    @media (max-width: 640px) {
+        .explore-hero {
+            padding: 1.5rem 1rem;
+        }
+        
+        .hero-title {
+            font-size: 1.5rem;
+        }
+        
+        .hero-description {
+            font-size: 0.9375rem;
+        }
+        
+        .search-input {
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .filters-section {
+            padding: 0.875rem 1rem;
+        }
+        
+        .filters-form {
+            gap: 0.375rem;
+        }
+        
+        .filter-select {
+            min-width: 120px;
+            font-size: 0.8125rem;
+            padding: 0.5rem 0.625rem;
+        }
+        
+        .explore-main {
+            padding: 1rem;
+        }
+        
+        .mentors-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .mentor-card {
+            max-width: 100%;
+        }
+        
+        .mentor-stats {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.375rem;
+            padding: 0.5rem 0;
+        }
+        
+        .stat-label {
+            font-size: 0.625rem;
+        }
+        
+        .stat-value {
+            font-size: 0.75rem;
+        }
+        
+        .book-btn {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+    }
+
     @media (min-width: 640px) {
         .explore-hero {
             padding: 3rem 1.75rem;
@@ -722,11 +765,6 @@ tailwind.config = {
         .explore-main {
             padding: 1.75rem;
         }
-        
-        .mentors-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.25rem;
-        }
     }
 
     @media (min-width: 768px) {
@@ -756,6 +794,10 @@ tailwind.config = {
         .results-count-display {
             margin-top: 0;
         }
+        
+        .mentors-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     @media (min-width: 1024px) {
@@ -775,25 +817,11 @@ tailwind.config = {
             grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
         }
-        
-        .mentor-card {
-            min-height: 380px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .card-body {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .bio-section {
-            flex: 1;
-        }
-        
-        .bio-text {
-            -webkit-line-clamp: 3;
+    }
+
+    @media (min-width: 1280px) {
+        .mentors-grid {
+            grid-template-columns: repeat(4, 1fr);
         }
     }
 </style>
@@ -902,25 +930,28 @@ tailwind.config = {
         <div class="mentors-grid">
             {% for mentor in mentors %}
             <div class="mentor-card">
+                <!-- Price Badge -->
+                <div class="price-badge">
+                    ₹{{ mentor.services[0].price|default('999') if mentor.services else '999' }}
+                </div>
+                
                 <!-- Card Header -->
                 <div class="card-header">
                     <div class="mentor-info">
                         <!-- Avatar with Initials -->
                         <div class="mentor-avatar">
-                            <div class="avatar-initials">
-                                {% if mentor.user.full_name %}
-                                    {% set name = mentor.user.full_name %}
-                                    {% set words = name.strip().split() %}
-                                    {% if words|length == 1 %}
-                                        {{ words[0][:2]|upper }}
-                                    {% else %}
-                                        {{ (words[0][0] + words[-1][0])|upper }}
-                                    {% endif %}
+                            {% if mentor.user.full_name %}
+                                {% set name = mentor.user.full_name %}
+                                {% set words = name.strip().split() %}
+                                {% if words|length == 1 %}
+                                    {{ words[0][:1]|upper }}
                                 {% else %}
-                                    {% set name = mentor.user.username %}
-                                    {{ name[:2]|upper }}
+                                    {{ (words[0][0] + words[-1][0])|upper }}
                                 {% endif %}
-                            </div>
+                            {% else %}
+                                {% set name = mentor.user.username %}
+                                {{ name[:2]|upper }}
+                            {% endif %}
                         </div>
                         
                         <!-- Details -->
@@ -929,15 +960,12 @@ tailwind.config = {
                                 <h3 class="mentor-name">{{ mentor.user.full_name or mentor.user.username }}</h3>
                                 {% if mentor.is_verified_by_admin %}
                                 <span class="verified-badge">
-                                    <i class="fas fa-check-circle"></i> Verified
+                                    <i class="fas fa-check"></i>
                                 </span>
                                 {% endif %}
                             </div>
                             
-                            <p class="mentor-title">{{ mentor.job_title or 'Expert Mentor' }}</p>
-                            {% if mentor.company %}
-                            <p class="mentor-company">{{ mentor.company }}</p>
-                            {% endif %}
+                            <p class="mentor-title">{{ mentor.job_title or 'Expert Mentor' }}{% if mentor.company %} • {{ mentor.company }}{% endif %}</p>
                             
                             <!-- Rating -->
                             <div class="mentor-rating">
@@ -949,7 +977,7 @@ tailwind.config = {
                                     {% elif i < rating %}
                                     <i class="fas fa-star-half-alt star-filled"></i>
                                     {% else %}
-                                    <i class="far fa-star star-empty"></i>
+                                    <i class="far fa-star star-filled" style="opacity: 0.3;"></i>
                                     {% endif %}
                                     {% endfor %}
                                 </div>
@@ -965,14 +993,13 @@ tailwind.config = {
                     <!-- Skills -->
                     {% if mentor.skills %}
                     <div class="skills-section">
-                        <div class="skills-label">Expertise</div>
                         <div class="skills-list">
                             {% set skills_list = mentor.skills.split(',')[:3] %}
                             {% for skill in skills_list %}
                             <span class="skill-tag">{{ skill.strip() }}</span>
                             {% endfor %}
                             {% if mentor.skills.split(',')|length > 3 %}
-                            <span class="skill-more">+{{ mentor.skills.split(',')|length - 3 }}</span>
+                            <span class="skill-tag">+{{ mentor.skills.split(',')|length - 3 }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -985,15 +1012,19 @@ tailwind.config = {
                             <div class="stat-value">{{ mentor.experience_years|default('5+') }} yrs</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-label">Starting from</div>
-                            <div class="stat-value stat-price">₹{{ mentor.services[0].price|default('999') if mentor.services else '999' }}</div>
+                            <div class="stat-label">Sessions</div>
+                            <div class="stat-value">{{ mentor.session_count|default('10+') }}+</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Rating</div>
+                            <div class="stat-value">{{ "%.1f"|format(mentor.rating or 0) }}</div>
                         </div>
                     </div>
                     
                     <!-- Bio -->
                     <div class="bio-section">
                         <p class="bio-text">
-                            {{ mentor.bio[:120] if mentor.bio else 'Experienced professional with a passion for mentoring and helping others grow in their careers.' }}
+                            {{ mentor.bio[:100] if mentor.bio else 'Experienced professional passionate about mentoring and career growth.' }}
                         </p>
                     </div>
                 </div>
@@ -1002,10 +1033,10 @@ tailwind.config = {
                 <div class="card-footer">
                     <div class="card-actions">
                         <a href="/{{ mentor.user.username }}" class="view-profile-btn">
-                            View Profile →
+                            View Profile
                         </a>
                         <a href="/{{ mentor.user.username }}" class="book-btn">
-                            <i class="fas fa-calendar-alt"></i> Book Session
+                            <i class="fas fa-calendar-alt"></i> Book Now
                         </a>
                     </div>
                 </div>
@@ -1117,7 +1148,6 @@ tailwind.config = {
         
         // Add click effects to buttons
         const bookButtons = document.querySelectorAll('.book-btn');
-        const viewProfileButtons = document.querySelectorAll('.view-profile-btn');
         
         bookButtons.forEach(btn => {
             btn.addEventListener('mouseenter', function() {
@@ -1126,16 +1156,6 @@ tailwind.config = {
             
             btn.addEventListener('mouseleave', function() {
                 this.style.transform = 'translateY(0)';
-            });
-        });
-        
-        viewProfileButtons.forEach(btn => {
-            btn.addEventListener('mouseenter', function() {
-                this.style.textDecoration = 'underline';
-            });
-            
-            btn.addEventListener('mouseleave', function() {
-                this.style.textDecoration = 'none';
             });
         });
     });
