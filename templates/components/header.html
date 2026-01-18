@@ -1,0 +1,111 @@
+<!-- templates/components/header.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClearQ - Mentorship Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <style>
+        /* Custom styles that might be missing from your setup */
+        .notification-toast {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center">
+                        <span class="text-xl font-bold text-indigo-600">ClearQ</span>
+                        <span class="ml-1 text-sm text-gray-500">Mentorship</span>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="flex items-center space-x-4">
+                    {% if current_user %}
+                        <!-- User menu -->
+                        <div class="relative">
+                            <button class="flex items-center space-x-2 focus:outline-none" id="user-menu-button">
+                                {% if current_user.profile_image %}
+                                    <img src="/static/{{ current_user.profile_image }}" 
+                                         alt="{{ current_user.full_name }}"
+                                         class="w-8 h-8 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                        <span class="text-indigo-600 font-semibold">
+                                            {{ current_user.full_name[0] if current_user.full_name else current_user.username[0] }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+                                <span class="text-sm font-medium text-gray-700">
+                                    {{ current_user.full_name if current_user.full_name else current_user.username }}
+                                </span>
+                                <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                            </button>
+
+                            <!-- Dropdown menu -->
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden" 
+                                 id="user-menu">
+                                <a href="/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                                </a>
+                                <a href="/profile/edit" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user-edit mr-2"></i>Edit Profile
+                                </a>
+                                {% if current_user.role == "mentor" %}
+                                    <a href="/mentor/dashboard/services" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-list-alt mr-2"></i>My Services
+                                    </a>
+                                    <a href="/mentor/availability" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-calendar-alt mr-2"></i>Availability
+                                    </a>
+                                {% endif %}
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Login/Register buttons -->
+                        <a href="/login" class="text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium">
+                            Login
+                        </a>
+                        <a href="/register" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-md text-sm font-medium">
+                            Sign Up
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        // Toggle user dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userMenu.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!userMenu.contains(e.target) && !userMenuButton.contains(e.target)) {
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
