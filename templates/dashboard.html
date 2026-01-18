@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Dashboard - ClearQ{% endblock %}
@@ -2430,89 +2431,60 @@
                             </div>
                             
                             <div class="card-content">
-                                <div>
-    <div class="services-list-card">
-        <div class="list-header">
-            <h2>Your Services</h2>
-        </div>
-        
-        <div class="list-content">
-            {% if services and services|length > 0 %}
-            <div class="services-list">
-                {% for service in services %}
-                <div class="service-item">
-                    <div class="service-header">
-                        <div>
-                            <div class="service-name">
-                                {{ service.name }}
-                                {% if service.is_digital %}
-                                <span class="service-type-indicator type-digital">
-                                    <i class="fas fa-download"></i> Digital
-                                </span>
+                                {% if services and services|length > 0 %}
+                                <div class="services-list">
+                                    {% for service in services %}
+                                    <div class="service-item">
+                                        <div class="service-item-header">
+                                            <h3 class="service-item-title">{{ service.name }}</h3>
+                                            <div class="service-item-price">₹{{ service.price }}</div>
+                                        </div>
+                                        
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary-light); margin-bottom: 1rem; line-height: 1.5;">
+                                            {{ service.description|truncate(150) }}
+                                        </p>
+                                        
+                                        <div class="service-item-details">
+                                            <span class="service-detail">
+                                                <i class="fas fa-clock"></i>
+                                                {{ service.duration }} minutes
+                                            </span>
+                                            <span class="service-detail">
+                                                <i class="fas fa-video"></i>
+                                                {{ service.session_type|title }}
+                                            </span>
+                                            <span class="service-detail">
+                                                <i class="fas fa-tags"></i>
+                                                {{ service.category|default('General') }}
+                                            </span>
+                                        </div>
+                                        
+                                        <div class="service-item-actions">
+                                            <a href="/mentor/dashboard/services/{{ service.id }}/edit" class="service-action-btn edit">
+                                                <i class="fas fa-edit"></i>
+                                                Edit
+                                            </a>
+                                            <button onclick="deleteService({{ service.id }})" class="service-action-btn delete">
+                                                <i class="fas fa-trash"></i>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                                 {% else %}
-                                <span class="service-type-indicator type-live">
-                                    <i class="fas fa-video"></i> Live
-                                </span>
+                                <div class="empty-state" style="padding: 2rem;">
+                                    <div class="empty-state-icon">
+                                        <i class="fas fa-list-alt"></i>
+                                    </div>
+                                    <h3>No Services Yet</h3>
+                                    <p>Create your first mentoring service to start accepting bookings</p>
+                                    <a href="/mentor/dashboard/services" class="header-action-btn" style="margin-top: 1.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
+                                        <i class="fas fa-plus"></i> Create Your First Service
+                                    </a>
+                                </div>
                                 {% endif %}
                             </div>
-                            <div class="service-category">
-                                {{ service.category|replace('-', ' ')|title }}
-                            </div>
-                        </div>
-                        <span class="service-status {% if service.is_active %}status-active{% else %}status-inactive{% endif %}">
-                            {{ 'Active' if service.is_active else 'Inactive' }}
-                        </span>
-                    </div>
-                    
-                    <div style="margin-bottom: 0.5rem;">
-                        <p style="font-size: 0.8125rem; color: var(--gray-600); line-height: 1.4; margin-bottom: 0.5rem;">
-                            {{ service.description|truncate(120) }}
-                        </p>
-                        {% if service.is_digital and service.digital_product_url %}
-                        <div style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--gray-500);">
-                            <i class="fas fa-link"></i>
-                            <span>Download link added</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="service-footer">
-                        <div class="service-price">
-                            <span class="price-amount">₹{{ service.price }}</span>
-                            <span class="price-duration">
-                                {% if service.is_digital %}
-                                Instant Access
-                                {% else %}
-                                {{ service.duration_minutes }} min
-                                {% endif %}
-                            </span>
-                        </div>
-                        <div class="service-actions">
-                            <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="action-button delete-button" title="Delete Service" onclick="deleteService({{ service.id }})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            
-            {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-list-alt"></i>
-                </div>
-                <h3>No Services Yet</h3>
-                <p>Create your first service to start accepting bookings</p>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-                            
                         </div>
 
                         <!-- Quick Stats -->
