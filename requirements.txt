@@ -11,6 +11,8 @@ python-multipart
 jinja2
 pydantic
 email-validator
+boto3>=1.34.0
+botocore>=1.34.0
 bcrypt==4.0.1
 requests
 uuid
