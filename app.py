@@ -102,10 +102,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Razorpay configuration# Razorpay configuration with validation
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 EMAIL_FROM = os.getenv("EMAIL_FROM", "noreply@clearq.in")
 EMAIL_FROM_NAME = os.getenv("EMAIL_FROM_NAME", "ClearQ Mentorship")
 EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "true").lower() == "true"
@@ -858,97 +854,27 @@ def send_email_sync(
     html_content: str,
     text_content: str = None
 ):
-    """Send email via Hostinger SMTP"""
+    """Main email sending function with Amazon SES"""
+    
     if not EMAIL_ENABLED:
         print(f"[EMAIL DISABLED] Would send to: {to_email}")
-        print(f"[EMAIL DISABLED] Subject: {subject}")
         return True
     
-    # Validate configuration
-    if not all([SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, EMAIL_FROM]):
-        print("❌ Missing SMTP configuration")
-        print(f"  SMTP_SERVER: {SMTP_SERVER}")
-        print(f"  SMTP_PORT: {SMTP_PORT}")
-        print(f"  SMTP_USERNAME: {SMTP_USERNAME}")
-        print(f"  EMAIL_FROM: {EMAIL_FROM}")
-        return False
+    # Get email backend preference
+    email_backend = os.getenv("EMAIL_BACKEND", "ses").lower()
     
-    try:
-        # Create message
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = f"{EMAIL_FROM_NAME} <{EMAIL_FROM}>"
-        msg['To'] = to_email
-        
-        if text_content:
-            msg.attach(MIMEText(text_content, 'plain'))
-        msg.attach(MIMEText(html_content, 'html'))
-        
-        print(f"📧 Sending email via Hostinger to: {to_email}")
-        print(f"📧 Using server: {SMTP_SERVER}:{SMTP_PORT}")
-        print(f"📧 From: {EMAIL_FROM}")
-        
-        # Hostinger typically uses SSL (port 465)
-        if str(SMTP_PORT) == "465":
-            print("Using SSL connection...")
-            server = smtplib.SMTP_SSL(SMTP_SERVER, int(SMTP_PORT), timeout=30)
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        else:
-            print("Using TLS connection...")
-            server = smtplib.SMTP(SMTP_SERVER, int(SMTP_PORT), timeout=30)
-            server.starttls()
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        
-        # Send email
-        server.send_message(msg)
-        server.quit()
-        
-        print(f"✅ Email sent successfully to: {to_email}")
+    if email_backend == "ses":
+        return send_email_ses(to_email, subject, html_content, text_content)
+    elif email_backend == "test":
+        print(f"[TEST MODE] Email would be sent:")
+        print(f"  To: {to_email}")
+        print(f"  Subject: {subject}")
+        print(f"  Content preview: {html_content[:100]}...")
         return True
-        
-    except smtplib.SMTPAuthenticationError as e:
-        print(f"❌ Authentication Failed for {SMTP_USERNAME}")
-        print(f"Error: {e}")
-        print("Please check:")
-        print("1. Email password is correct")
-        print("2. You're using the right SMTP settings for Hostinger")
-        print("3. Email account is properly set up in Hostinger")
+    else:
+        print(f"❌ Unknown email backend: {email_backend}")
         return False
         
-    except Exception as e:
-        print(f"❌ Email sending failed: {str(e)}")
-        
-        # Try alternative ports
-        print("🔄 Trying alternative configurations...")
-        
-        # Try port 587 if 465 failed
-        if str(SMTP_PORT) == "465":
-            try:
-                print("Trying port 587 with TLS...")
-                server = smtplib.SMTP(SMTP_SERVER, 587, timeout=30)
-                server.starttls()
-                server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                server.send_message(msg)
-                server.quit()
-                print(f"✅ Email sent via port 587")
-                return True
-            except Exception as e2:
-                print(f"❌ Port 587 also failed: {e2}")
-        
-        # Try with mail.clearq.in domain
-        try:
-            print("Trying with mail.clearq.in domain...")
-            server = smtplib.SMTP_SSL("mail.clearq.in", 465, timeout=30)
-            server.login(SMTP_USERNAME, SMTP_PASSWORD)
-            server.send_message(msg)
-            server.quit()
-            print(f"✅ Email sent via mail.clearq.in")
-            return True
-        except Exception as e3:
-            print(f"❌ mail.clearq.in also failed: {e3}")
-        
-        return False
-
 import boto3
 from botocore.exceptions import ClientError
 
@@ -959,8 +885,9 @@ def send_email_ses(
     text_content: str = None
 ):
     """Send email using Amazon SES API"""
+    import boto3
+    from botocore.exceptions import ClientError
     
-    # Get AWS configuration from environment
     aws_region = os.getenv("AWS_SES_REGION", "ap-south-1")
     aws_access_key = os.getenv("AWS_SES_ACCESS_KEY_ID")
     aws_secret_key = os.getenv("AWS_SES_SECRET_ACCESS_KEY")
@@ -1005,93 +932,29 @@ def send_email_ses(
         
         # Send email
         response = ses_client.send_email(
-            Destination={
-                'ToAddresses': [to_email],
-            },
+            Destination={'ToAddresses': [to_email]},
             Message=email_message,
-            Source=f"{from_name} <{from_email}>",
-            # Optional: Reply-To address
-            ReplyToAddresses=["noreply@clearq.in"] if from_email != "noreply@clearq.in" else []
+            Source=f"{from_name} <{from_email}>"
         )
         
         message_id = response.get('MessageId', 'unknown')
         print(f"✅ Email sent via Amazon SES! Message ID: {message_id}")
-        print(f"   From: {from_email}")
-        print(f"   To: {to_email}")
-        print(f"   Subject: {subject}")
-        
         return True
         
     except ClientError as e:
-        error_code = e.response['Error']['Code']
-        error_msg = e.response['Error']['Message']
-        print(f"❌ Amazon SES Error ({error_code}): {error_msg}")
-        
-        # Common errors and solutions
-        if error_code == "MessageRejected":
-            print("ℹ️  Email address not verified in SES. Verify both sender and recipient.")
-        elif error_code == "AccessDenied":
-            print("ℹ️  Check IAM permissions for SES")
-        elif error_code == "InvalidParameterValue":
-            print("ℹ️  Check email format and charset")
-        
+        print(f"❌ Amazon SES Error: {e.response['Error']['Message']}")
         return False
-        
     except Exception as e:
         print(f"❌ Error sending email via SES: {str(e)}")
         return False
-
-def send_email_smtp(
-    to_email: str,
-    subject: str,
-    html_content: str,
-    text_content: str = None
-):
-    """Send email using Amazon SES SMTP (fallback)"""
-    
-    smtp_server = os.getenv("SMTP_SERVER", "email-smtp.ap-south-1.amazonaws.com")
-    smtp_port = int(os.getenv("SMTP_PORT", 587))
-    smtp_username = os.getenv("SMTP_USERNAME")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-    from_email = os.getenv("AWS_SES_FROM_EMAIL", "support@clearq.in")
-    from_name = os.getenv("AWS_SES_FROM_NAME", "ClearQ Mentorship")
-    
-    if not all([smtp_username, smtp_password]):
-        print("❌ Missing SMTP credentials")
-        return False
-    
-    try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = f"{from_name} <{from_email}>"
-        msg['To'] = to_email
         
-        if text_content:
-            msg.attach(MIMEText(text_content, 'plain'))
-        msg.attach(MIMEText(html_content, 'html'))
-        
-        print(f"📧 Sending via Amazon SES SMTP to: {to_email}")
-        
-        server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
-        server.starttls()
-        server.login(smtp_username, smtp_password)
-        server.send_message(msg)
-        server.quit()
-        
-        print(f"✅ Email sent via SES SMTP to: {to_email}")
-        return True
-        
-    except Exception as e:
-        print(f"❌ SES SMTP failed: {str(e)}")
-        return False
-
 def send_email_sync(
     to_email: str,
     subject: str,
     html_content: str,
     text_content: str = None
 ):
-    """Main email sending function with fallback options"""
+    """Main email sending function - Amazon SES only"""
     
     if not EMAIL_ENABLED:
         print(f"[EMAIL DISABLED] Would send to: {to_email}")
@@ -1103,27 +966,19 @@ def send_email_sync(
     print(f"📧 Using email backend: {email_backend}")
     
     if email_backend == "ses":
-        # Try Amazon SES API first
-        success = send_email_ses(to_email, subject, html_content, text_content)
-        if not success:
-            print("🔄 Falling back to SES SMTP...")
-            return send_email_smtp(to_email, subject, html_content, text_content)
-        return success
-        
-    elif email_backend == "smtp":
-        # Use SMTP (could be SES SMTP or other)
-        return send_email_smtp(to_email, subject, html_content, text_content)
+        # Use Amazon SES API
+        return send_email_ses(to_email, subject, html_content, text_content)
         
     elif email_backend == "test":
         # Just log for testing
         print(f"[TEST MODE] Email would be sent:")
         print(f"  To: {to_email}")
         print(f"  Subject: {subject}")
-        print(f"  Content: {html_content[:100]}...")
+        print(f"  Content preview: {html_content[:100]}...")
         return True
         
     else:
-        print(f"❌ Unknown email backend: {email_backend}")
+        print(f"❌ Unknown email backend: {email_backend}. Use 'ses' or 'test'")
         return False
         
 async def send_email_async(
@@ -1133,7 +988,7 @@ async def send_email_async(
     text_content: str = None
 ):
     """Send email asynchronously - for use with BackgroundTasks"""
-    # Run in thread pool since SMTP is blocking
+    # Run in thread pool since email sending is blocking
     import asyncio
     from concurrent.futures import ThreadPoolExecutor
     
@@ -1154,11 +1009,18 @@ def send_booking_confirmation_email(
 ):
     """Send booking confirmation emails to both mentor and learner"""
     
-    # Format date and time
-    service = db.query(Service).filter(Service.id == booking.service_id).first()
-    if service and service.is_digital:
-        print(f"Skipping email for digital product: {service.name}")
-        return True
+    # Add this check at the beginning:
+    # Check if this is a digital product (skip emails for digital products)
+    db = SessionLocal()
+    try:
+        service = db.query(Service).filter(Service.id == booking.service_id).first()
+        if service and service.is_digital:
+            print(f"📧 Skipping email for digital product: {service.name}")
+            return True
+    except:
+        pass
+    finally:
+        db.close()
     booking_date = booking.booking_date.strftime("%B %d, %Y") if booking.booking_date else "Not scheduled"
     booking_time = booking.selected_time if booking.selected_time else "To be determined"
     
@@ -1336,10 +1198,12 @@ Thank you for mentoring on ClearQ!
 
 # Add this function after your other helper functions (around line 800)
 def send_meeting_notification(booking: Booking, meeting_link: str, db: Session):
-    """Send meeting notification emails to both mentor and learner"""
+    """Send meeting notification emails to both mentor and learner - FOR SESSIONS ONLY"""
+    
+    # Check if this is a digital product (skip for digital products)
     service = db.query(Service).filter(Service.id == booking.service_id).first()
     if service and service.is_digital:
-        print(f"Skipping meeting notification for digital product: {service.name}")
+        print(f"📧 Skipping meeting notification for digital product: {service.name}")
         return False
     try:
         # Get user details
@@ -2038,6 +1902,26 @@ async def startup_event():
                     except:
                         print(f"⚠️ Could not verify email status")
                         
+                    # Send test email
+                    print("\n📧 Sending test email...")
+                    test_result = send_email_sync(
+                        to_email=os.getenv("TEST_EMAIL", "sumitkumara6502@gmail.com"),
+                        subject="ClearQ - Amazon SES Test",
+                        html_content="""
+                        <h1>Amazon SES Test Successful!</h1>
+                        <p>Your ClearQ email system is now using Amazon SES.</p>
+                        <p>Backend: <strong>SES</strong></p>
+                        <p>Region: <strong>{aws_region}</strong></p>
+                        <p>From: <strong>{from_email}</strong></p>
+                        """.format(aws_region=aws_region, from_email=from_email),
+                        text_content="Amazon SES Test Successful! Your ClearQ email system is now using Amazon SES."
+                    )
+                    
+                    if test_result:
+                        print("✅ Test email sent successfully!")
+                    else:
+                        print("⚠️ Test email failed to send")
+                        
                 except Exception as e:
                     print(f"❌ Amazon SES connection failed: {e}")
                     print("   Please check:")
@@ -2046,36 +1930,18 @@ async def startup_event():
                     print("   3. AWS region is correct")
                     print("   4. Email is verified in SES")
                     
-            elif email_backend == "smtp":
-                smtp_server = os.getenv("SMTP_SERVER")
-                smtp_port = os.getenv("SMTP_PORT")
-                from_email = os.getenv("EMAIL_FROM")
-                print(f"SMTP Server: {smtp_server}:{smtp_port}")
-                print(f"From Email: {from_email}")
+            elif email_backend == "test":
+                print("⚠️ Running in TEST mode - emails will be logged but not sent")
+                
+                # Log test email
+                print("\n📧 [TEST MODE] Email would be sent:")
+                print(f"   To: {os.getenv('TEST_EMAIL', 'sumitkumara6502@gmail.com')}")
+                print(f"   Subject: ClearQ - Email System Test")
                 
             else:
-                print(f"⚠️ Running in {email_backend} mode - emails won't be sent")
+                print(f"❌ Unknown email backend: {email_backend}")
+                print("   Valid options: 'ses' or 'test'")
                 
-            # Send test email
-            if email_backend in ["ses", "smtp"]:
-                print("\n📧 Sending test email...")
-                test_result = send_email_sync(
-                    to_email=os.getenv("TEST_EMAIL", "sumitkumara6502@gmail.com"),
-                    subject="ClearQ - Amazon SES Test",
-                    html_content="""
-                    <h1>Amazon SES Test Successful!</h1>
-                    <p>Your ClearQ email system is now using Amazon SES.</p>
-                    <p>Backend: <strong>{email_backend}</strong></p>
-                    <p>Region: <strong>{aws_region}</strong></p>
-                    <p>From: <strong>{from_email}</strong></p>
-                    """,
-                    text_content="Amazon SES Test Successful! Your ClearQ email system is now using Amazon SES."
-                )
-                
-                if test_result:
-                    print("✅ Test email sent successfully!")
-                else:
-                    print("⚠️ Test email failed to send")
         else:
             print("⚠️ Email sending is disabled (EMAIL_ENABLED=false)")
         
