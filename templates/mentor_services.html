@@ -1313,9 +1313,9 @@ tailwind.config = {
                                     <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="action-button delete-button" title="Delete Service" onclick="deleteService({{ service.id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+<button class="action-button delete-button" title="Delete Service" onclick="deleteService({{ service.id }})">
+    <i class="fas fa-trash"></i>
+</button>
                                 </div>
                             </div>
                         </div>
@@ -1561,33 +1561,62 @@ tailwind.config = {
         };
         
         window.deleteService = function(serviceId) {
-            showNotification('Are you sure you want to delete this service? This action cannot be undone.', 'info');
-            
-            // Create confirmation dialog
-            if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
-                fetch(`/mentor/services/${serviceId}/delete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Service deleted successfully!', 'success');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        showNotification('Failed to delete service: ' + data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('An error occurred while deleting the service.', 'error');
-                });
-            }
+    // Single confirmation dialog
+    if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+        // Get CSRF token if you're using Django
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+        
+        // Configure headers
+        const headers = {
+            'Content-Type': 'application/json',
         };
+        
+        // Add CSRF token if exists
+        if (csrfToken) {
+            headers['X-CSRFToken'] = csrfToken;
+        }
+        
+        // For Laravel or other frameworks using XSRF-TOKEN
+        const xsrfToken = document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1];
+        if (xsrfToken) {
+            headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
+        }
+        
+        fetch(`/mentor/services/${serviceId}/delete`, {
+            method: 'POST',
+            headers: headers,
+            credentials: 'same-origin' // Important for sending cookies/session
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('Service deleted successfully!', 'success');
+                // Remove the service row from table instead of reloading
+                const serviceRow = document.querySelector(`[data-service-id="${serviceId}"]`);
+                if (serviceRow) {
+                    serviceRow.remove();
+                } else {
+                    // Fallback to reload if element not found
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                }
+            } else {
+                showNotification('Failed to delete service: ' + (data.message || 'Unknown error'), 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred while deleting the service.', 'error');
+        });
+    }
+};
         
         // Input validation
         priceInput.addEventListener('input', function() {
