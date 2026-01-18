@@ -1,6 +1,9 @@
 import os
 import re
 import uuid
+import secrets
+import string
+from fastapi.responses import RedirectResponse
 from sqlalchemy import DECIMAL
 from decimal import Decimal
 import boto3
@@ -201,6 +204,7 @@ class Service(Base):
     digital_product_file = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    deleted_at = Column(DateTime, nullable=True)
     
     # Relationships
     mentor = relationship("Mentor", back_populates="services")
@@ -422,6 +426,16 @@ class WithdrawalRequest(BaseModel):
 class PayoutUpdate(BaseModel):
     status: str
     notes: Optional[str] = None
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+# Password reset token storage (in production, use Redis or database)
+password_reset_tokens = {}
 # ============ DEPENDENCIES ============
 # Add this function after your database models
 
@@ -1195,6 +1209,296 @@ Thank you for mentoring on ClearQ!
     except Exception as e:
         print(f"Error sending booking emails: {str(e)}")
         return False
+
+
+
+def generate_reset_token() -> str:
+    """Generate a secure password reset token"""
+    return secrets.token_urlsafe(32)
+
+@app.get("/forgot-password", response_class=HTMLResponse)
+async def forgot_password_page(
+    request: Request,
+    current_user = Depends(get_current_user)
+):
+    """Forgot password page"""
+    if current_user:
+        return RedirectResponse(url="/dashboard", status_code=303)
+    
+    return templates.TemplateResponse("forgot_password.html", {
+        "request": request,
+        "current_user": current_user
+    })
+
+@app.post("/forgot-password")
+async def forgot_password(
+    email: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Handle forgot password request"""
+    # Find user by email
+    user = db.query(User).filter(User.email == email).first()
+    
+    # For security, always return success even if email doesn't exist
+    if not user:
+        # Still return success to prevent email enumeration
+        return RedirectResponse(
+            url="/forgot-password?success=If%20an%20account%20exists%20with%20this%20email,%20you%20will%20receive%20reset%20instructions.",
+            status_code=303
+        )
+    
+    # Generate reset token
+    reset_token = generate_reset_token()
+    
+    # Store token with expiry (1 hour)
+    password_reset_tokens[reset_token] = {
+        "user_id": user.id,
+        "email": user.email,
+        "expires": datetime.utcnow() + timedelta(hours=1)
+    }
+    
+    # Generate reset link
+    reset_link = f"https://clearq.in/reset-password/{reset_token}"
+    
+    # Send password reset email
+    subject = "🔐 Reset Your ClearQ Password"
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }}
+            .header {{ background: #4f46e5; color: white; padding: 20px; text-align: center; }}
+            .content {{ padding: 20px; background: #f9fafb; }}
+            .button {{ display: inline-block; background: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }}
+            .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }}
+            .warning {{ background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin: 20px 0; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Password Reset Request</h1>
+        </div>
+        <div class="content">
+            <h2>Hello {user.full_name or user.username},</h2>
+            <p>We received a request to reset your password for your ClearQ account.</p>
+            <p>Click the button below to reset your password:</p>
+            
+            <div style="text-align: center;">
+                <a href="{reset_link}" class="button">Reset Password</a>
+            </div>
+            
+            <div class="warning">
+                <p><strong>⚠️ Important:</strong> This link will expire in 1 hour.</p>
+                <p>If you didn't request a password reset, please ignore this email.</p>
+            </div>
+            
+            <p>Or copy and paste this link in your browser:</p>
+            <p><code>{reset_link}</code></p>
+            
+            <div class="footer">
+                <p>Thank you,</p>
+                <p>The ClearQ Team</p>
+                <p>📍 <a href="https://clearq.in">clearq.in</a></p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    text_content = f"""
+Password Reset Request
+
+Hello {user.full_name or user.username},
+
+We received a request to reset your password for your ClearQ account.
+
+Click the link below to reset your password:
+{reset_link}
+
+⚠️ Important: This link will expire in 1 hour.
+
+If you didn't request a password reset, please ignore this email.
+
+Thank you,
+The ClearQ Team
+clearq.in
+"""
+    
+    # Send email
+    try:
+        send_email_sync(
+            to_email=user.email,
+            subject=subject,
+            html_content=html_content,
+            text_content=text_content
+        )
+        print(f"✅ Password reset email sent to {user.email}")
+    except Exception as e:
+        print(f"❌ Error sending password reset email: {e}")
+    
+    return RedirectResponse(
+        url="/forgot-password?success=If%20an%20account%20exists%20with%20this%20email,%20you%20will%20receive%20reset%20instructions.",
+        status_code=303
+    )
+
+@app.get("/reset-password/{token}", response_class=HTMLResponse)
+async def reset_password_page(
+    request: Request,
+    token: str,
+    current_user = Depends(get_current_user)
+):
+    """Reset password page"""
+    if current_user:
+        return RedirectResponse(url="/dashboard", status_code=303)
+    
+    # Check if token is valid
+    token_data = password_reset_tokens.get(token)
+    if not token_data:
+        return templates.TemplateResponse("reset_password.html", {
+            "request": request,
+            "current_user": current_user,
+            "error": "Invalid or expired reset link. Please request a new password reset.",
+            "valid_token": False
+        })
+    
+    # Check if token is expired
+    if datetime.utcnow() > token_data["expires"]:
+        del password_reset_tokens[token]
+        return templates.TemplateResponse("reset_password.html", {
+            "request": request,
+            "current_user": current_user,
+            "error": "Reset link has expired. Please request a new password reset.",
+            "valid_token": False
+        })
+    
+    return templates.TemplateResponse("reset_password.html", {
+        "request": request,
+        "current_user": current_user,
+        "token": token,
+        "valid_token": True
+    })
+
+@app.post("/reset-password/{token}")
+async def reset_password(
+    token: str,
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """Handle password reset"""
+    # Validate token
+    token_data = password_reset_tokens.get(token)
+    if not token_data:
+        return RedirectResponse(
+            url=f"/reset-password/{token}?error=Invalid%20or%20expired%20reset%20link.%20Please%20request%20a%20new%20password%20reset.",
+            status_code=303
+        )
+    
+    # Check if token is expired
+    if datetime.utcnow() > token_data["expires"]:
+        del password_reset_tokens[token]
+        return RedirectResponse(
+            url=f"/reset-password/{token}?error=Reset%20link%20has%20expired.%20Please%20request%20a%20new%20password%20reset.",
+            status_code=303
+        )
+    
+    # Check if passwords match
+    if new_password != confirm_password:
+        return RedirectResponse(
+            url=f"/reset-password/{token}?error=Passwords%20do%20not%20match.",
+            status_code=303
+        )
+    
+    # Validate password strength
+    if len(new_password) < 8:
+        return RedirectResponse(
+            url=f"/reset-password/{token}?error=Password%20must%20be%20at%20least%208%20characters%20long.",
+            status_code=303
+        )
+    
+    # Get user
+    user = db.query(User).filter(User.id == token_data["user_id"]).first()
+    if not user:
+        return RedirectResponse(
+            url=f"/reset-password/{token}?error=User%20not%20found.",
+            status_code=303
+        )
+    
+    # Update password
+    user.password_hash = pwd_context.hash(new_password)
+    db.commit()
+    
+    # Delete used token
+    del password_reset_tokens[token]
+    
+    # Send confirmation email
+    subject = "✅ Password Reset Successful"
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }}
+            .header {{ background: #10b981; color: white; padding: 20px; text-align: center; }}
+            .content {{ padding: 20px; background: #f9fafb; }}
+            .button {{ display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }}
+            .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>Password Reset Successful</h1>
+        </div>
+        <div class="content">
+            <h2>Hello {user.full_name or user.username},</h2>
+            <p>Your password has been successfully reset.</p>
+            <p>You can now log in with your new password.</p>
+            
+            <div style="text-align: center;">
+                <a href="https://clearq.in/login" class="button">Login to ClearQ</a>
+            </div>
+            
+            <div class="footer">
+                <p>If you did not reset your password, please contact support immediately.</p>
+                <p>📍 <a href="mailto:support@clearq.in">support@clearq.in</a></p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    text_content = f"""
+Password Reset Successful
+
+Hello {user.full_name or user.username},
+
+Your password has been successfully reset.
+
+You can now log in with your new password:
+https://clearq.in/login
+
+If you did not reset your password, please contact support immediately at support@clearq.in.
+"""
+    
+    try:
+        send_email_sync(
+            to_email=user.email,
+            subject=subject,
+            html_content=html_content,
+            text_content=text_content
+        )
+        print(f"✅ Password reset confirmation sent to {user.email}")
+    except Exception as e:
+        print(f"❌ Error sending confirmation email: {e}")
+    
+    return RedirectResponse(
+        url="/login?success=Password%20reset%20successfully!%20Please%20login%20with%20your%20new%20password.",
+        status_code=303
+    )
+    
 
 # Add this function after your other helper functions (around line 800)
 def send_meeting_notification(booking: Booking, meeting_link: str, db: Session):
@@ -3602,6 +3906,285 @@ async def upload_profile_photo_api(
             content={"success": False, "message": f"Failed to upload photo: {str(e)}"}
         )
 from fastapi.responses import FileResponse
+
+# ============ DELETE SERVICE FUNCTIONALITY ============
+
+@app.post("/mentor/services/{service_id}/delete")
+async def delete_service(
+    service_id: int,
+    confirm: bool = Form(False),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Soft delete a service"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get mentor
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    # Get service
+    service = db.query(Service).filter(
+        Service.id == service_id,
+        Service.mentor_id == mentor.id,
+        Service.deleted_at == None  # Only get non-deleted services
+    ).first()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Check for active bookings
+    active_bookings = db.query(Booking).filter(
+        Booking.service_id == service_id,
+        Booking.status.in_(["pending", "confirmed"]),
+        Booking.payment_status.in_(["pending", "paid", "free"])
+    ).count()
+    
+    if active_bookings > 0 and not confirm:
+        # Ask for confirmation if there are active bookings
+        return JSONResponse({
+            "success": False,
+            "requires_confirmation": True,
+            "message": f"This service has {active_bookings} active booking(s). Deleting will cancel all future bookings. Are you sure you want to delete this service?",
+            "active_bookings": active_bookings
+        })
+    
+    try:
+        # Soft delete the service
+        service.deleted_at = datetime.utcnow()
+        service.is_active = False
+        
+        # If there are active bookings, mark them as cancelled
+        if active_bookings > 0:
+            active_booking_records = db.query(Booking).filter(
+                Booking.service_id == service_id,
+                Booking.status.in_(["pending", "confirmed"])
+            ).all()
+            
+            for booking in active_booking_records:
+                booking.status = "cancelled"
+                booking.notes = f"Service deleted by mentor on {datetime.utcnow().strftime('%Y-%m-%d')}"
+                
+                # Send cancellation emails
+                try:
+                    # Get users
+                    learner = db.query(User).filter(User.id == booking.learner_id).first()
+                    mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
+                    
+                    if learner and mentor_user:
+                        # Send email to learner
+                        learner_subject = f"❌ Session Cancelled: {service.name}"
+                        learner_html = f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <style>
+                                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }}
+                                .header {{ background: #ef4444; color: white; padding: 20px; text-align: center; }}
+                                .content {{ padding: 20px; background: #f9fafb; }}
+                                .details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444; }}
+                                .footer {{ text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h1>Session Cancelled</h1>
+                            </div>
+                            <div class="content">
+                                <h2>Hello {learner.full_name or learner.username},</h2>
+                                <p>Your session has been cancelled because the service has been removed by the mentor.</p>
+                                
+                                <div class="details">
+                                    <h3>Cancelled Session Details:</h3>
+                                    <p><strong>Service:</strong> {service.name}</p>
+                                    <p><strong>Mentor:</strong> {mentor_user.full_name or mentor_user.username}</p>
+                                    <p><strong>Booking ID:</strong> #{booking.id}</p>
+                                </div>
+                                
+                                <p>If you paid for this session, a refund will be processed within 5-7 business days.</p>
+                                <p>You can browse other mentors and services on our platform.</p>
+                                
+                                <div class="footer">
+                                    <p>Need help? Contact us at support@clearq.in</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """
+                        
+                        send_email_sync(
+                            to_email=learner.email,
+                            subject=learner_subject,
+                            html_content=learner_html,
+                            text_content=f"Session Cancelled: {service.name} has been cancelled because the service was removed by the mentor."
+                        )
+                except Exception as e:
+                    print(f"❌ Error sending cancellation email: {e}")
+        
+        db.commit()
+        
+        # Log the deletion
+        print(f"✅ Service {service_id} deleted by mentor {mentor.id}")
+        
+        return JSONResponse({
+            "success": True,
+            "message": "Service deleted successfully!",
+            "redirect_url": "/mentor/dashboard/services?success=Service%20deleted%20successfully."
+        })
+        
+    except Exception as e:
+        db.rollback()
+        print(f"❌ Error deleting service: {e}")
+        return JSONResponse({
+            "success": False,
+            "message": f"Error deleting service: {str(e)}"
+        })
+
+@app.get("/mentor/services/deleted", response_class=HTMLResponse)
+async def deleted_services_page(
+    request: Request,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """View deleted services"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    # Get deleted services
+    deleted_services = db.query(Service).filter(
+        Service.mentor_id == mentor.id,
+        Service.deleted_at.isnot(None)
+    ).order_by(Service.deleted_at.desc()).all()
+    
+    return templates.TemplateResponse("deleted_services.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor": mentor,
+        "deleted_services": deleted_services,
+        "now": datetime.now()
+    })
+
+@app.post("/mentor/services/{service_id}/restore")
+async def restore_service(
+    service_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Restore a deleted service"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    # Get deleted service
+    service = db.query(Service).filter(
+        Service.id == service_id,
+        Service.mentor_id == mentor.id,
+        Service.deleted_at.isnot(None)
+    ).first()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Deleted service not found")
+    
+    try:
+        # Restore the service
+        service.deleted_at = None
+        service.is_active = True
+        
+        db.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "message": "Service restored successfully!",
+            "redirect_url": "/mentor/dashboard/services?success=Service%20restored%20successfully."
+        })
+        
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({
+            "success": False,
+            "message": f"Error restoring service: {str(e)}"
+        })
+
+@app.delete("/mentor/services/{service_id}/permanent")
+async def permanent_delete_service(
+    service_id: int,
+    confirm: bool = Form(False),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Permanently delete a service (hard delete)"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    # Get service (must be already soft deleted)
+    service = db.query(Service).filter(
+        Service.id == service_id,
+        Service.mentor_id == mentor.id,
+        Service.deleted_at.isnot(None)
+    ).first()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found or not deleted")
+    
+    # Check if service has any bookings
+    bookings_count = db.query(Booking).filter(
+        Booking.service_id == service_id
+    ).count()
+    
+    if bookings_count > 0 and not confirm:
+        return JSONResponse({
+            "success": False,
+            "requires_confirmation": True,
+            "message": f"This service has {bookings_count} associated booking(s). Permanently deleting will remove all booking history. Are you sure?",
+            "bookings_count": bookings_count
+        })
+    
+    try:
+        # First, delete associated bookings
+        if bookings_count > 0:
+            # Delete time slots
+            time_slots = db.query(TimeSlot).join(Booking).filter(
+                Booking.service_id == service_id
+            ).all()
+            for slot in time_slots:
+                db.delete(slot)
+            
+            # Delete bookings
+            bookings = db.query(Booking).filter(
+                Booking.service_id == service_id
+            ).all()
+            for booking in bookings:
+                db.delete(booking)
+        
+        # Delete the service
+        db.delete(service)
+        db.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "message": "Service permanently deleted!",
+            "redirect_url": "/mentor/services/deleted?success=Service%20permanently%20deleted."
+        })
+        
+    except Exception as e:
+        db.rollback()
+        return JSONResponse({
+            "success": False,
+            "message": f"Error permanently deleting service: {str(e)}"
+        })
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
