@@ -5044,6 +5044,112 @@ async def process_withdrawal_admin(
             "success": False,
             "error": f"Error processing withdrawal: {str(e)}"
         })
+
+
+@app.get("/mentor/dashboard/services/{service_id}/edit", response_class=HTMLResponse)
+async def edit_service_page(
+    request: Request,
+    service_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Edit service page"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    # Get the service to edit
+    service = db.query(Service).filter(
+        Service.id == service_id,
+        Service.mentor_id == mentor.id,
+        Service.deleted_at == None  # Only allow editing non-deleted services
+    ).first()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    return templates.TemplateResponse("edit_service.html", {
+        "request": request,
+        "current_user": current_user,
+        "mentor": mentor,
+        "service": service,
+        "now": datetime.now()
+    })
+
+@app.post("/mentor/services/{service_id}/update")
+async def update_service(
+    service_id: int,
+    name: str = Form(...),
+    description: str = Form(...),
+    category: str = Form(...),
+    price: int = Form(...),
+    duration_minutes: int = Form(60),
+    is_digital: bool = Form(False),
+    digital_product_url: str = Form(None),
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update an existing service"""
+    if not current_user or current_user.role != "mentor":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+    if not mentor:
+        raise HTTPException(status_code=404, detail="Mentor profile not found")
+    
+    # Get the service to update
+    service = db.query(Service).filter(
+        Service.id == service_id,
+        Service.mentor_id == mentor.id,
+        Service.deleted_at == None
+    ).first()
+    
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Validate digital product
+    if is_digital:
+        duration_minutes = 0
+        if not digital_product_url or not digital_product_url.strip():
+            return RedirectResponse(
+                url=f"/mentor/dashboard/services/{service_id}/edit?error=Digital%20product%20requires%20a%20URL",
+                status_code=303
+            )
+        
+        # Validate URL format
+        import re
+        url_pattern = re.compile(
+            r'^(https?://)'  # http:// or https://
+            r'([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'  # domain
+            r'(:\d+)?'  # optional port
+            r'(/.*)?$'  # optional path
+        )
+        
+        if not url_pattern.match(digital_product_url):
+            return RedirectResponse(
+                url=f"/mentor/dashboard/services/{service_id}/edit?error=Please%20enter%20a%20valid%20URL%20starting%20with%20http://%20or%20https://",
+                status_code=303
+            )
+    
+    # Update service
+    service.name = name
+    service.description = description
+    service.category = category
+    service.price = price
+    service.duration_minutes = duration_minutes if not is_digital else 0
+    service.is_digital = is_digital
+    service.digital_product_url = digital_product_url if is_digital else None
+    
+    db.commit()
+    
+    success_msg = "Service updated successfully!"
+    return RedirectResponse(
+        url=f"/mentor/dashboard/services?success={success_msg.replace(' ', '%20')}",
+        status_code=303
+    )
         
 @app.get("/debug/availability/{mentor_id}")
 async def debug_availability(
