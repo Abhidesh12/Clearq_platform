@@ -1857,6 +1857,105 @@ async def payment_callback(
         traceback.print_exc()
         return RedirectResponse(url="/dashboard?error=Callback%20failed")
 
+
+@app.get("/debug/mentor/{mentor_id}/availability")
+async def debug_mentor_availability(
+    mentor_id: int,
+    db: Session = Depends(get_db)
+):
+    """Debug endpoint to check mentor availability"""
+    mentor = db.query(Mentor).filter(Mentor.id == mentor_id).first()
+    if not mentor:
+        return {"error": "Mentor not found"}
+    
+    # Get day preferences
+    day_preferences = db.query(AvailabilityDay).filter(
+        AvailabilityDay.mentor_id == mentor_id
+    ).order_by(AvailabilityDay.day_of_week).all()
+    
+    # Get availabilities (next 7 days)
+    today = date.today()
+    next_week = today + timedelta(days=7)
+    availabilities = db.query(Availability).filter(
+        Availability.mentor_id == mentor_id,
+        Availability.date >= today,
+        Availability.date <= next_week
+    ).order_by(Availability.date).all()
+    
+    return {
+        "mentor_id": mentor_id,
+        "day_preferences": [
+            {
+                "id": dp.id,
+                "day": dp.day_of_week,
+                "start": dp.start_time,
+                "end": dp.end_time,
+                "active": dp.is_active
+            } for dp in day_preferences
+        ],
+        "availabilities": [
+            {
+                "id": a.id,
+                "date": str(a.date),
+                "start": a.start_time,
+                "end": a.end_time,
+                "booked": a.is_booked
+            } for a in availabilities
+        ]
+    }
+
+@app.post("/debug/reset-availability/{mentor_id}")
+async def debug_reset_availability(
+    mentor_id: int,
+    db: Session = Depends(get_db)
+):
+    """Debug endpoint to reset availability for a mentor"""
+    try:
+        # Delete all day preferences
+        db.query(AvailabilityDay).filter(
+            AvailabilityDay.mentor_id == mentor_id
+        ).delete(synchronize_session=False)
+        
+        # Delete all future availabilities
+        today = date.today()
+        db.query(Availability).filter(
+            Availability.mentor_id == mentor_id,
+            Availability.date >= today
+        ).delete(synchronize_session=False)
+        
+        # Create default day preferences
+        default_days = [
+            {"day_of_week": 0, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 1, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 2, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 3, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 4, "start_time": "09:00", "end_time": "21:00", "is_active": True},
+            {"day_of_week": 5, "start_time": "09:00", "end_time": "21:00", "is_active": False},
+            {"day_of_week": 6, "start_time": "09:00", "end_time": "21:00", "is_active": False},
+        ]
+        
+        for day_data in default_days:
+            day_pref = AvailabilityDay(
+                mentor_id=mentor_id,
+                day_of_week=day_data["day_of_week"],
+                start_time=day_data["start_time"],
+                end_time=day_data["end_time"],
+                is_active=day_data["is_active"],
+                created_at=datetime.utcnow()
+            )
+            db.add(day_pref)
+        
+        db.commit()
+        
+        # Generate new availabilities
+        generate_availability_from_day_preferences(mentor_id, db, 30)
+        
+        return {"success": True, "message": f"Availability reset for mentor {mentor_id}"}
+        
+    except Exception as e:
+        db.rollback()
+        return {"error": str(e)}
+
 @app.post("/mentor/availability/cleanup")
 async def cleanup_availability(
     request: Request,
@@ -1989,58 +2088,33 @@ def verify_razorpay_signature(params_dict: dict, received_signature: str) -> boo
     return hmac.compare_digest(generated_signature, received_signature)
     
 def generate_availability_from_day_preferences(mentor_id: int, db: Session = None, days_ahead: int = 30):
-    """Generate Availability records from day preferences"""
+    """Generate Availability records from day preferences - FIXED VERSION"""
+    should_close = False
     if db is None:
         db = SessionLocal()
         should_close = True
-    else:
-        should_close = False
     
     try:
+        print(f"DEBUG: Starting availability generation for mentor {mentor_id}")
+        
         # Get day preferences
         day_preferences = db.query(AvailabilityDay).filter(
             AvailabilityDay.mentor_id == mentor_id,
             AvailabilityDay.is_active == True
         ).all()
         
+        print(f"DEBUG: Found {len(day_preferences)} active day preferences")
+        
         if not day_preferences:
-            print(f"No active day preferences found for mentor {mentor_id}")
-            # Create default with 9AM-9PM
-            default_days = [
-                {"day_of_week": 0, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 1, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 2, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 3, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 4, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 5, "start_time": "10:00", "end_time": "21:00", "is_active": False},
-                {"day_of_week": 6, "start_time": "10:00", "end_time": "21:00", "is_active": False},
-            ]
-            
-            for day_data in default_days:
-                day_pref = AvailabilityDay(
-                    mentor_id=mentor_id,
-                    day_of_week=day_data["day_of_week"],
-                    start_time=day_data["start_time"],
-                    end_time=day_data["end_time"],
-                    is_active=day_data["is_active"],
-                    created_at=datetime.utcnow()
-                )
-                db.add(day_pref)
-            
-            db.commit()
-            print(f"✅ Created default 9AM-9PM schedule for mentor {mentor_id}")
-            
-            # Reload preferences
-            day_preferences = db.query(AvailabilityDay).filter(
-                AvailabilityDay.mentor_id == mentor_id,
-                AvailabilityDay.is_active == True
-            ).all()
+            print(f"INFO: No active day preferences found for mentor {mentor_id}")
+            return
         
         # Get exceptions
         exceptions = db.query(AvailabilityException).filter(
             AvailabilityException.mentor_id == mentor_id
         ).all()
         exception_dates = {ex.date: ex.is_available for ex in exceptions}
+        print(f"DEBUG: Found {len(exceptions)} exceptions")
         
         today = datetime.now().date()
         end_date = today + timedelta(days=days_ahead)
@@ -2051,7 +2125,7 @@ def generate_availability_from_day_preferences(mentor_id: int, db: Session = Non
         # Generate for each day
         current_date = today
         while current_date <= end_date:
-            day_of_week = current_date.weekday()  # 0=Monday, 6=Sunday
+            day_of_week = current_date.weekday()
             
             # Check if mentor is available on this day
             day_pref = next((dp for dp in day_preferences if dp.day_of_week == day_of_week), None)
@@ -2071,32 +2145,34 @@ def generate_availability_from_day_preferences(mentor_id: int, db: Session = Non
                 ).first()
                 
                 if not existing:
-                    # Create new availability with 9AM-9PM
+                    # Create new availability
                     availability = Availability(
                         mentor_id=mentor_id,
                         date=current_date,
                         start_time=day_pref.start_time,
                         end_time=day_pref.end_time,
-                        is_booked=False,  # Start as not booked
+                        is_booked=False,
                         created_at=datetime.utcnow()
                     )
                     db.add(availability)
                     generated_count += 1
+                    print(f"DEBUG: Generated availability for {current_date}")
                 else:
-                    # Update existing availability if times changed
+                    # Update existing if times changed
                     if existing.start_time != day_pref.start_time or existing.end_time != day_pref.end_time:
                         existing.start_time = day_pref.start_time
                         existing.end_time = day_pref.end_time
                         updated_count += 1
+                        print(f"DEBUG: Updated availability for {current_date}")
             
             current_date += timedelta(days=1)
         
         db.commit()
-        print(f"✅ Generated {generated_count} new and updated {updated_count} availability records for mentor {mentor_id} (9AM-9PM)")
+        print(f"SUCCESS: Generated {generated_count} new, updated {updated_count} availability records for mentor {mentor_id}")
         
     except Exception as e:
         db.rollback()
-        print(f"❌ Error generating availability: {e}")
+        print(f"ERROR: Failed to generate availability: {str(e)}")
         import traceback
         traceback.print_exc()
     finally:
@@ -4664,61 +4740,110 @@ async def update_simple_availability(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Update simple availability preferences"""
+    """Update simple availability preferences - FIXED VERSION"""
     if not current_user or current_user.role != "mentor":
         return JSONResponse({"success": False, "message": "Access denied"})
     
+    # Separate session for reading request data
     try:
         data = await request.json()
-        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+        print(f"DEBUG: Received availability update data: {data}")
+    except Exception as e:
+        print(f"ERROR: Failed to parse JSON data: {e}")
+        return JSONResponse({"success": False, "message": f"Invalid request data: {str(e)}"})
+    
+    # Create a new session for database operations
+    new_db = SessionLocal()
+    try:
+        mentor = new_db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
         
         if not mentor:
+            new_db.close()
             return JSONResponse({"success": False, "message": "Mentor not found"})
         
+        print(f"DEBUG: Updating availability for mentor ID: {mentor.id}")
+        
         # Update each day preference
+        days_updated = 0
         for day_data in data.get("days", []):
-            day_pref = db.query(AvailabilityDay).filter(
+            day_of_week = day_data.get("day_of_week")
+            is_active = day_data.get("is_active", False)
+            start_time = day_data.get("start_time", "09:00")
+            end_time = day_data.get("end_time", "21:00")
+            
+            print(f"DEBUG: Processing day {day_of_week} - active: {is_active}, time: {start_time}-{end_time}")
+            
+            # Check if preference exists
+            day_pref = new_db.query(AvailabilityDay).filter(
                 AvailabilityDay.mentor_id == mentor.id,
-                AvailabilityDay.day_of_week == day_data["day_of_week"]
+                AvailabilityDay.day_of_week == day_of_week
             ).first()
             
             if day_pref:
-                day_pref.is_active = day_data.get("is_active", False)
-                if day_data.get("is_active", False):
-                    day_pref.start_time = day_data.get("start_time", "09:00")
-                    day_pref.end_time = day_data.get("end_time", "21:00")
+                # Update existing preference
+                day_pref.is_active = is_active
+                if is_active:
+                    day_pref.start_time = start_time
+                    day_pref.end_time = end_time
+                print(f"DEBUG: Updated existing day preference for day {day_of_week}")
             else:
-                if day_data.get("is_active", False):
+                # Create new preference only if active
+                if is_active:
                     day_pref = AvailabilityDay(
                         mentor_id=mentor.id,
-                        day_of_week=day_data["day_of_week"],
-                        start_time=day_data.get("start_time", "09:00"),
-                        end_time=day_data.get("end_time", "21:00"),
+                        day_of_week=day_of_week,
+                        start_time=start_time,
+                        end_time=end_time,
                         is_active=True
                     )
-                    db.add(day_pref)
+                    new_db.add(day_pref)
+                    print(f"DEBUG: Created new day preference for day {day_of_week}")
+            
+            days_updated += 1
         
-        db.commit()
+        # Commit day preferences first
+        new_db.commit()
+        print(f"DEBUG: Committed {days_updated} day preferences")
         
-        # Delete inactive preferences
-        db.query(AvailabilityDay).filter(
+        # Clean up: Delete inactive preferences
+        deleted_count = new_db.query(AvailabilityDay).filter(
             AvailabilityDay.mentor_id == mentor.id,
             AvailabilityDay.is_active == False
         ).delete(synchronize_session=False)
         
-        db.commit()
+        new_db.commit()
+        print(f"DEBUG: Deleted {deleted_count} inactive preferences")
         
-        # Regenerate availability for next 30 days
-        generate_availability_from_day_preferences(mentor.id, db, 30)
+        # Generate availabilities in background (non-blocking)
+        try:
+            # Close current session first
+            new_db.close()
+            
+            # Create fresh session for generation
+            gen_db = SessionLocal()
+            generate_availability_from_day_preferences(mentor.id, gen_db, 30)
+            gen_db.close()
+            print(f"DEBUG: Generated availabilities for mentor {mentor.id}")
+        except Exception as gen_error:
+            print(f"WARNING: Error generating availabilities: {gen_error}")
+            # Don't fail the main request if generation fails
         
         return JSONResponse({
             "success": True,
             "message": "Availability updated successfully!",
-            "regenerated": True
+            "days_updated": days_updated,
+            "inactive_deleted": deleted_count
         })
         
     except Exception as e:
-        db.rollback()
+        print(f"ERROR: Failed to update availability: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        if 'new_db' in locals() and new_db:
+            new_db.rollback()
+            new_db.close()
+        
         return JSONResponse({
             "success": False,
             "message": f"Error updating availability: {str(e)}"
