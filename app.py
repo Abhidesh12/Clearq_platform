@@ -2836,6 +2836,11 @@ async def register_user(
     password: str = Form(...),
     full_name: str = Form(...),
     role: str = Form("learner"),
+    # ADD THESE NEW FIELDS:
+    bio: str = Form(None),
+    industry: str = Form(None),
+    linkedin_url: str = Form(None),
+    instagram_username: str = Form(None),  # Or github_url depending on what you want
     db: Session = Depends(get_db)
 ):
     # Check if user exists using ORM
@@ -2862,9 +2867,19 @@ async def register_user(
     db.commit()
     db.refresh(new_user) # get the ID
     
-    # Create mentor profile if needed
+    # Create mentor profile if needed WITH ALL FIELDS
     if role == "mentor":
-        mentor = Mentor(user_id=new_user.id, verification_status='pending')
+        # Store instagram_username in github_url field as per frontend logic
+        github_url = f"https://instagram.com/{instagram_username}" if instagram_username else None
+        
+        mentor = Mentor(
+            user_id=new_user.id,
+            bio=bio if bio else "",
+            industry=industry if industry else "",
+            linkedin_url=linkedin_url if linkedin_url else None,
+            github_url=github_url,  # Storing Instagram here
+            verification_status='pending'
+        )
         db.add(mentor)
         db.commit()
     
