@@ -3,7 +3,8 @@ import re
 import uuid
 from sqlalchemy import DECIMAL
 from decimal import Decimal
-import smtplib
+import boto3
+from botocore.exceptions import ClientError
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from fastapi import BackgroundTasks
@@ -857,19 +858,20 @@ def send_email_sync(
     html_content: str,
     text_content: str = None
 ):
-    """Send email via Gmail SMTP"""
+    """Send email via Hostinger SMTP"""
     if not EMAIL_ENABLED:
         print(f"[EMAIL DISABLED] Would send to: {to_email}")
+        print(f"[EMAIL DISABLED] Subject: {subject}")
         return True
     
     # Validate configuration
     if not all([SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, EMAIL_FROM]):
         print("❌ Missing SMTP configuration")
+        print(f"  SMTP_SERVER: {SMTP_SERVER}")
+        print(f"  SMTP_PORT: {SMTP_PORT}")
+        print(f"  SMTP_USERNAME: {SMTP_USERNAME}")
+        print(f"  EMAIL_FROM: {EMAIL_FROM}")
         return False
-    
-    # Gmail-specific validation
-    if SMTP_SERVER != "smtp.gmail.com":
-        print(f"⚠️ Warning: Using non-Gmail server with Gmail function")
     
     try:
         # Create message
@@ -882,16 +884,20 @@ def send_email_sync(
             msg.attach(MIMEText(text_content, 'plain'))
         msg.attach(MIMEText(html_content, 'html'))
         
-        print(f"📧 Sending via Gmail SMTP to: {to_email}")
+        print(f"📧 Sending email via Hostinger to: {to_email}")
+        print(f"📧 Using server: {SMTP_SERVER}:{SMTP_PORT}")
+        print(f"📧 From: {EMAIL_FROM}")
         
-        # Gmail SMTP connection
-        server = smtplib.SMTP(SMTP_SERVER, int(SMTP_PORT), timeout=30)
-        
-        # Debug mode (optional)
-        # server.set_debuglevel(1)
-        
-        server.starttls()  # Secure connection
-        server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        # Hostinger typically uses SSL (port 465)
+        if str(SMTP_PORT) == "465":
+            print("Using SSL connection...")
+            server = smtplib.SMTP_SSL(SMTP_SERVER, int(SMTP_PORT), timeout=30)
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        else:
+            print("Using TLS connection...")
+            server = smtplib.SMTP(SMTP_SERVER, int(SMTP_PORT), timeout=30)
+            server.starttls()
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
         
         # Send email
         server.send_message(msg)
@@ -901,28 +907,224 @@ def send_email_sync(
         return True
         
     except smtplib.SMTPAuthenticationError as e:
-        print(f"❌ Gmail Authentication Failed: {e}")
-        print("Common fixes:")
-        print("1. Enable 2-Step Verification: https://myaccount.google.com/security")
-        print("2. Generate App Password: https://myaccount.google.com/apppasswords")
-        print("3. Use 16-character app password (NOT your Gmail password)")
+        print(f"❌ Authentication Failed for {SMTP_USERNAME}")
+        print(f"Error: {e}")
+        print("Please check:")
+        print("1. Email password is correct")
+        print("2. You're using the right SMTP settings for Hostinger")
+        print("3. Email account is properly set up in Hostinger")
         return False
         
     except Exception as e:
-        print(f"❌ Gmail SMTP Error: {str(e)}")
+        print(f"❌ Email sending failed: {str(e)}")
         
-        # Try alternative port 465 (SSL)
+        # Try alternative ports
+        print("🔄 Trying alternative configurations...")
+        
+        # Try port 587 if 465 failed
+        if str(SMTP_PORT) == "465":
+            try:
+                print("Trying port 587 with TLS...")
+                server = smtplib.SMTP(SMTP_SERVER, 587, timeout=30)
+                server.starttls()
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.send_message(msg)
+                server.quit()
+                print(f"✅ Email sent via port 587")
+                return True
+            except Exception as e2:
+                print(f"❌ Port 587 also failed: {e2}")
+        
+        # Try with mail.clearq.in domain
         try:
-            print("Trying alternative port 465 (SSL)...")
-            server = smtplib.SMTP_SSL(SMTP_SERVER, 465, timeout=30)
+            print("Trying with mail.clearq.in domain...")
+            server = smtplib.SMTP_SSL("mail.clearq.in", 465, timeout=30)
             server.login(SMTP_USERNAME, SMTP_PASSWORD)
             server.send_message(msg)
             server.quit()
-            print(f"✅ Email sent via SSL port to: {to_email}")
+            print(f"✅ Email sent via mail.clearq.in")
             return True
-        except Exception as ssl_error:
-            print(f"❌ SSL also failed: {ssl_error}")
-            return False
+        except Exception as e3:
+            print(f"❌ mail.clearq.in also failed: {e3}")
+        
+        return False
+
+import boto3
+from botocore.exceptions import ClientError
+
+def send_email_ses(
+    to_email: str,
+    subject: str,
+    html_content: str,
+    text_content: str = None
+):
+    """Send email using Amazon SES API"""
+    
+    # Get AWS configuration from environment
+    aws_region = os.getenv("AWS_SES_REGION", "ap-south-1")
+    aws_access_key = os.getenv("AWS_SES_ACCESS_KEY_ID")
+    aws_secret_key = os.getenv("AWS_SES_SECRET_ACCESS_KEY")
+    from_email = os.getenv("AWS_SES_FROM_EMAIL", "support@clearq.in")
+    from_name = os.getenv("AWS_SES_FROM_NAME", "ClearQ Mentorship")
+    
+    if not all([aws_access_key, aws_secret_key, from_email]):
+        print("❌ Missing AWS SES configuration")
+        return False
+    
+    try:
+        # Create SES client
+        ses_client = boto3.client(
+            'ses',
+            region_name=aws_region,
+            aws_access_key_id=aws_access_key,
+            aws_secret_access_key=aws_secret_key
+        )
+        
+        # Prepare email
+        charset = "UTF-8"
+        
+        email_message = {
+            'Body': {
+                'Html': {
+                    'Charset': charset,
+                    'Data': html_content,
+                }
+            },
+            'Subject': {
+                'Charset': charset,
+                'Data': subject,
+            },
+        }
+        
+        # Add text body if provided
+        if text_content:
+            email_message['Body']['Text'] = {
+                'Charset': charset,
+                'Data': text_content,
+            }
+        
+        # Send email
+        response = ses_client.send_email(
+            Destination={
+                'ToAddresses': [to_email],
+            },
+            Message=email_message,
+            Source=f"{from_name} <{from_email}>",
+            # Optional: Reply-To address
+            ReplyToAddresses=["noreply@clearq.in"] if from_email != "noreply@clearq.in" else []
+        )
+        
+        message_id = response.get('MessageId', 'unknown')
+        print(f"✅ Email sent via Amazon SES! Message ID: {message_id}")
+        print(f"   From: {from_email}")
+        print(f"   To: {to_email}")
+        print(f"   Subject: {subject}")
+        
+        return True
+        
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        error_msg = e.response['Error']['Message']
+        print(f"❌ Amazon SES Error ({error_code}): {error_msg}")
+        
+        # Common errors and solutions
+        if error_code == "MessageRejected":
+            print("ℹ️  Email address not verified in SES. Verify both sender and recipient.")
+        elif error_code == "AccessDenied":
+            print("ℹ️  Check IAM permissions for SES")
+        elif error_code == "InvalidParameterValue":
+            print("ℹ️  Check email format and charset")
+        
+        return False
+        
+    except Exception as e:
+        print(f"❌ Error sending email via SES: {str(e)}")
+        return False
+
+def send_email_smtp(
+    to_email: str,
+    subject: str,
+    html_content: str,
+    text_content: str = None
+):
+    """Send email using Amazon SES SMTP (fallback)"""
+    
+    smtp_server = os.getenv("SMTP_SERVER", "email-smtp.ap-south-1.amazonaws.com")
+    smtp_port = int(os.getenv("SMTP_PORT", 587))
+    smtp_username = os.getenv("SMTP_USERNAME")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+    from_email = os.getenv("AWS_SES_FROM_EMAIL", "support@clearq.in")
+    from_name = os.getenv("AWS_SES_FROM_NAME", "ClearQ Mentorship")
+    
+    if not all([smtp_username, smtp_password]):
+        print("❌ Missing SMTP credentials")
+        return False
+    
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = f"{from_name} <{from_email}>"
+        msg['To'] = to_email
+        
+        if text_content:
+            msg.attach(MIMEText(text_content, 'plain'))
+        msg.attach(MIMEText(html_content, 'html'))
+        
+        print(f"📧 Sending via Amazon SES SMTP to: {to_email}")
+        
+        server = smtplib.SMTP(smtp_server, smtp_port, timeout=30)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+        print(f"✅ Email sent via SES SMTP to: {to_email}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ SES SMTP failed: {str(e)}")
+        return False
+
+def send_email_sync(
+    to_email: str,
+    subject: str,
+    html_content: str,
+    text_content: str = None
+):
+    """Main email sending function with fallback options"""
+    
+    if not EMAIL_ENABLED:
+        print(f"[EMAIL DISABLED] Would send to: {to_email}")
+        return True
+    
+    # Get email backend preference
+    email_backend = os.getenv("EMAIL_BACKEND", "ses").lower()
+    
+    print(f"📧 Using email backend: {email_backend}")
+    
+    if email_backend == "ses":
+        # Try Amazon SES API first
+        success = send_email_ses(to_email, subject, html_content, text_content)
+        if not success:
+            print("🔄 Falling back to SES SMTP...")
+            return send_email_smtp(to_email, subject, html_content, text_content)
+        return success
+        
+    elif email_backend == "smtp":
+        # Use SMTP (could be SES SMTP or other)
+        return send_email_smtp(to_email, subject, html_content, text_content)
+        
+    elif email_backend == "test":
+        # Just log for testing
+        print(f"[TEST MODE] Email would be sent:")
+        print(f"  To: {to_email}")
+        print(f"  Subject: {subject}")
+        print(f"  Content: {html_content[:100]}...")
+        return True
+        
+    else:
+        print(f"❌ Unknown email backend: {email_backend}")
+        return False
         
 async def send_email_async(
     to_email: str,
@@ -1794,22 +1996,86 @@ async def startup_event():
         
         if EMAIL_ENABLED:
             print("=== Email Configuration ===")
-            print(f"SMTP Server: {SMTP_SERVER}:{SMTP_PORT}")
-            print(f"SMTP Username: {SMTP_USERNAME}")
-            print(f"Email From: {EMAIL_FROM}")
-            print(f"Email Enabled: {EMAIL_ENABLED}")
+            email_backend = os.getenv("EMAIL_BACKEND", "ses")
+            print(f"Email Backend: {email_backend.upper()}")
             
-            # Test SMTP connection
-            try:
-                server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-                context = ssl.create_default_context()
-                server.starttls(context=context)
-                server.login(SMTP_USERNAME, SMTP_PASSWORD)
-                server.quit()
-                print("✅ SMTP connection test successful")
-            except Exception as e:
-                print(f"❌ SMTP connection test failed: {e}")
-                print("⚠️ Emails will not be sent until SMTP is configured correctly")
+            if email_backend == "ses":
+                aws_region = os.getenv("AWS_SES_REGION", "ap-south-1")
+                from_email = os.getenv("AWS_SES_FROM_EMAIL", "support@clearq.in")
+                print(f"AWS Region: {aws_region}")
+                print(f"From Email: {from_email}")
+                
+                # Test SES connection
+                try:
+                    import boto3
+                    ses_client = boto3.client(
+                        'ses',
+                        region_name=aws_region,
+                        aws_access_key_id=os.getenv("AWS_SES_ACCESS_KEY_ID"),
+                        aws_secret_access_key=os.getenv("AWS_SES_SECRET_ACCESS_KEY")
+                    )
+                    
+                    # Get send quota to test connection
+                    response = ses_client.get_send_quota()
+                    quota = response.get('Max24HourSend', 0)
+                    sent = response.get('SentLast24Hours', 0)
+                    
+                    print(f"✅ Amazon SES connected!")
+                    print(f"   Daily quota: {quota} emails")
+                    print(f"   Sent today: {sent} emails")
+                    
+                    # Verify sender email is confirmed
+                    try:
+                        response = ses_client.get_identity_verification_attributes(
+                            Identities=[from_email]
+                        )
+                        status = response['VerificationAttributes'].get(from_email, {}).get('VerificationStatus')
+                        if status == 'Success':
+                            print(f"✅ Sender email verified: {from_email}")
+                        else:
+                            print(f"⚠️ Sender email not verified: {from_email}")
+                            print("   Please verify in AWS SES console")
+                    except:
+                        print(f"⚠️ Could not verify email status")
+                        
+                except Exception as e:
+                    print(f"❌ Amazon SES connection failed: {e}")
+                    print("   Please check:")
+                    print("   1. AWS credentials are correct")
+                    print("   2. IAM user has SES permissions")
+                    print("   3. AWS region is correct")
+                    print("   4. Email is verified in SES")
+                    
+            elif email_backend == "smtp":
+                smtp_server = os.getenv("SMTP_SERVER")
+                smtp_port = os.getenv("SMTP_PORT")
+                from_email = os.getenv("EMAIL_FROM")
+                print(f"SMTP Server: {smtp_server}:{smtp_port}")
+                print(f"From Email: {from_email}")
+                
+            else:
+                print(f"⚠️ Running in {email_backend} mode - emails won't be sent")
+                
+            # Send test email
+            if email_backend in ["ses", "smtp"]:
+                print("\n📧 Sending test email...")
+                test_result = send_email_sync(
+                    to_email=os.getenv("TEST_EMAIL", "sumitkumara6502@gmail.com"),
+                    subject="ClearQ - Amazon SES Test",
+                    html_content="""
+                    <h1>Amazon SES Test Successful!</h1>
+                    <p>Your ClearQ email system is now using Amazon SES.</p>
+                    <p>Backend: <strong>{email_backend}</strong></p>
+                    <p>Region: <strong>{aws_region}</strong></p>
+                    <p>From: <strong>{from_email}</strong></p>
+                    """,
+                    text_content="Amazon SES Test Successful! Your ClearQ email system is now using Amazon SES."
+                )
+                
+                if test_result:
+                    print("✅ Test email sent successfully!")
+                else:
+                    print("⚠️ Test email failed to send")
         else:
             print("⚠️ Email sending is disabled (EMAIL_ENABLED=false)")
         
@@ -4684,6 +4950,37 @@ async def check_booking_status(
             response["redirect_url"] = "/dashboard"
     
     return JSONResponse(response)
+
+
+@app.get("/test-ses-email")
+async def test_ses_email():
+    """Test Amazon SES email functionality"""
+    try:
+        result = send_email_sync(
+            to_email="sumitkumara6502@gmail.com",
+            subject="Amazon SES Test - ClearQ",
+            html_content="""
+            <h1>Amazon SES Integration Test</h1>
+            <p>This email confirms Amazon SES is working with ClearQ!</p>
+            <p><strong>Features:</strong></p>
+            <ul>
+                <li>High deliverability</li>
+                <li>Scalable email sending</li>
+                <li>Detailed analytics</li>
+                <li>Production-ready</li>
+            </ul>
+            """,
+            text_content="Amazon SES Integration Test - This confirms SES is working with ClearQ!"
+        )
+        
+        return {
+            "success": result,
+            "backend": os.getenv("EMAIL_BACKEND", "ses"),
+            "from_email": os.getenv("AWS_SES_FROM_EMAIL", "support@clearq.in"),
+            "message": "SES test completed. Check AWS console for delivery status."
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 # ============ MENTOR PAYOUT ROUTES ============
 
