@@ -516,107 +516,6 @@ tailwind.config = {
         box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
     }
 
-    /* Rich Text Editor Styles */
-    .rich-text-editor-container {
-        border: 2px solid var(--border-light);
-        border-radius: 1rem;
-        overflow: hidden;
-        background-color: white;
-        transition: all 0.3s ease;
-    }
-
-    .rich-text-editor-container:focus-within {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 4px rgba(255, 107, 74, 0.1);
-    }
-
-    .editor-toolbar {
-        display: flex;
-        padding: 1rem;
-        background: linear-gradient(135deg, var(--background-light) 0%, var(--accent-beige) 100%);
-        border-bottom: 2px solid var(--border-light);
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .toolbar-btn {
-        background: white;
-        border: 2px solid var(--border-light);
-        border-radius: 0.75rem;
-        width: 2.5rem;
-        height: 2.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: var(--primary);
-        font-size: 1rem;
-        transition: all 0.2s ease;
-        padding: 0;
-    }
-
-    .toolbar-btn:hover {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: white;
-        transform: translateY(-1px);
-    }
-
-    .toolbar-btn.active {
-        background: var(--accent);
-        border-color: var(--accent);
-        color: white;
-    }
-
-    .toolbar-separator {
-        width: 2px;
-        height: 1.5rem;
-        background-color: var(--border-light);
-        margin: 0 0.25rem;
-    }
-
-    .editor-content {
-        min-height: 180px;
-        padding: 1.5rem;
-        font-size: 1rem;
-        line-height: 1.6;
-        overflow-y: auto;
-        outline: none;
-        color: var(--primary);
-        font-family: inherit;
-    }
-
-    .editor-content:focus {
-        outline: none;
-    }
-
-    .editor-content p {
-        margin-bottom: 1rem;
-    }
-
-    .editor-content ul, .editor-content ol {
-        padding-left: 1.5rem;
-        margin-bottom: 1rem;
-    }
-
-    .editor-content h2 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin: 1rem 0 0.75rem;
-        color: var(--primary);
-    }
-
-    .editor-content[placeholder]:empty:before {
-        content: attr(placeholder);
-        color: var(--text-secondary-light);
-        opacity: 0.6;
-    }
-
-    .hidden-textarea {
-        display: none;
-    }
-
     /* Services List */
     .services-list-card {
         background: var(--card-light);
@@ -938,6 +837,160 @@ tailwind.config = {
         font-size: 1.25rem;
     }
 
+    /* Confirmation Modal */
+    .confirmation-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(31, 31, 31, 0.8);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .confirmation-modal.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal-content {
+        background: var(--card-light);
+        border-radius: 2rem;
+        padding: 2.5rem;
+        max-width: 480px;
+        width: 90%;
+        box-shadow: 0 24px 64px rgba(31, 31, 31, 0.2);
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+    }
+
+    .confirmation-modal.show .modal-content {
+        transform: translateY(0);
+    }
+
+    .modal-icon {
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, var(--brand-red), #d32f2f);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-align: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .modal-message {
+        font-size: 1rem;
+        color: var(--text-secondary-light);
+        text-align: center;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .modal-button {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 1.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 120px;
+    }
+
+    .modal-button.cancel {
+        background: var(--border-light);
+        color: var(--text-secondary-light);
+    }
+
+    .modal-button.cancel:hover {
+        background: var(--text-secondary-light);
+        color: white;
+    }
+
+    .modal-button.delete {
+        background: linear-gradient(135deg, var(--brand-red), #d32f2f);
+        color: white;
+        box-shadow: 0 8px 24px rgba(255, 63, 31, 0.3);
+    }
+
+    .modal-button.delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 32px rgba(255, 63, 31, 0.4);
+    }
+
+    .modal-button.delete:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .delete-loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Loading State */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(31, 31, 31, 0.6);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .loading-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .loading-spinner {
+        width: 4rem;
+        height: 4rem;
+        border: 4px solid var(--border-light);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
     /* Responsive Design */
     @media (min-width: 640px) {
         .services-header {
@@ -981,10 +1034,6 @@ tailwind.config = {
         .radio-option {
             flex: 1;
         }
-        
-        .editor-toolbar {
-            gap: 0.75rem;
-        }
     }
 
     @media (min-width: 768px) {
@@ -1001,10 +1050,6 @@ tailwind.config = {
         .create-service-card,
         .services-list-card {
             margin-bottom: 0;
-        }
-        
-        .editor-content {
-            min-height: 200px;
         }
     }
 
@@ -1080,7 +1125,11 @@ tailwind.config = {
                         Avg. Price
                     </div>
                     <div class="stat-value">
-                        ₹{{ (services|map(attribute='price')|sum / services|length if services and services|length > 0 else 0)|int }}
+                        {% if services and services|length > 0 %}
+                            ₹{{ (services|map(attribute='price')|sum / services|length)|int }}
+                        {% else %}
+                            0
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -1128,23 +1177,21 @@ tailwind.config = {
                                 </select>
                             </div>
                             
-                            <!-- Simple Description Box -->
-<div class="form-group">
-    <label class="form-label">
-        <i class="fas fa-align-left mr-2"></i>
-        Description <span class="form-required">*</span>
-    </label>
-    <textarea name="description" 
-              rows="5" 
-              required 
-              class="form-textarea w-full"
-              placeholder="Describe what learners will get from this service..."
-              id="description-textarea"></textarea>
-    <p class="form-help mt-2">
-        <i class="fas fa-lightbulb mr-1"></i>
-        Describe what makes your service valuable to learners.
-    </p>
-</div>
+                            <!-- Description -->
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-align-left"></i>
+                                    Description <span class="form-required">*</span>
+                                </label>
+                                <textarea name="description" required 
+                                          class="form-textarea"
+                                          placeholder="Describe what learners will get from this service..."
+                                          rows="4"></textarea>
+                                <p class="form-help">
+                                    <i class="fas fa-lightbulb"></i>
+                                    Describe what makes your service valuable to learners.
+                                </p>
+                            </div>
                             
                             <!-- Price, Duration, Type -->
                             <div class="form-group">
@@ -1257,19 +1304,15 @@ tailwind.config = {
                     {% if services and services|length > 0 %}
                     <div class="services-list">
                         {% for service in services %}
-                        <div class="service-item">
+                        <div class="service-item" id="service-{{ service.id }}">
                             <div class="service-header">
                                 <div>
                                     <div class="service-name">
                                         {{ service.name }}
                                         {% if service.is_digital %}
-                                        <div class="digital-product-info">
-                                            <h4>
-                                                <i class="fas fa-download"></i>
-                                                Digital Product - Instant Access
-                                            </h4>
-                                            <p>Purchase this product and get immediate download access. No scheduling needed!</p>
-                                        </div>
+                                        <span class="service-type-indicator type-digital">
+                                            <i class="fas fa-download"></i> Digital
+                                        </span>
                                         {% else %}
                                         <span class="service-type-indicator type-live">
                                             <i class="fas fa-video"></i> Live
@@ -1288,7 +1331,7 @@ tailwind.config = {
                             </div>
                             
                             <div class="service-description">
-                                {{ service.description|striptags|truncate(120) }}
+                                {{ service.description|truncate(120) }}
                             </div>
                             
                             {% if service.is_digital and service.digital_product_url %}
@@ -1313,7 +1356,8 @@ tailwind.config = {
                                     <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="action-button delete-button" title="Delete Service" onclick="deleteService({{ service.id }})">
+                                    <button class="action-button delete-button" title="Delete Service" 
+                                            onclick="confirmDeleteService({{ service.id }}, '{{ service.name|escapejs }}')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -1336,117 +1380,40 @@ tailwind.config = {
     </div>
 </div>
 
+<!-- Confirmation Modal -->
+<div class="confirmation-modal" id="confirmation-modal">
+    <div class="modal-content">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3 class="modal-title">Delete Service</h3>
+        <p class="modal-message" id="modal-message">
+            Are you sure you want to delete this service? This action cannot be undone.
+        </p>
+        <div class="modal-actions">
+            <button class="modal-button cancel" onclick="closeConfirmationModal()">
+                Cancel
+            </button>
+            <button class="modal-button delete" id="confirm-delete-btn" onclick="deleteService()">
+                Delete Service
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+</div>
+
 <!-- Notification Container -->
 <div id="notification-container"></div>
 
 <script>
+    // Service to delete
+    let serviceToDelete = null;
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Rich Text Editor Functionality
-        const editor = document.getElementById('rich-text-editor');
-        const textarea = document.getElementById('description-textarea');
-        const toolbarButtons = document.querySelectorAll('.toolbar-btn');
-        
-        // Sanitize HTML function
-        function sanitizeHTML(html) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
-            
-            // Remove problematic elements and styles
-            const elementsToRemove = tempDiv.querySelectorAll('[style*="grid-column"], [style*="grid-template-columns"]');
-            elementsToRemove.forEach(el => {
-                el.remove();
-            });
-            
-            const allElements = tempDiv.querySelectorAll('*');
-            allElements.forEach(el => {
-                if (el.hasAttribute('style')) {
-                    const style = el.getAttribute('style');
-                    const cleanStyle = style.replace(/grid-column[^;]+;?/g, '')
-                                           .replace(/grid-template-columns[^;]+;?/g, '')
-                                           .replace(/display[^;]+;?/g, '')
-                                           .replace(/color[^;]+;?/g, '');
-                    
-                    if (cleanStyle.trim() === '') {
-                        el.removeAttribute('style');
-                    } else {
-                        el.setAttribute('style', cleanStyle);
-                    }
-                }
-                
-                if (el.hasAttribute('class')) {
-                    const classes = el.getAttribute('class');
-                    if (classes.includes('form-group') || classes.includes('grid-column')) {
-                        el.removeAttribute('class');
-                    }
-                }
-            });
-            
-            let cleanedHTML = tempDiv.innerHTML;
-            cleanedHTML = cleanedHTML.replace(/style="[^"]*"/g, (match) => {
-                if (match.includes('grid-column') || match.includes('grid-template-columns') || match.includes('display:')) {
-                    return '';
-                }
-                return match;
-            });
-            
-            cleanedHTML = cleanedHTML.replace(/style=""/g, '');
-            return cleanedHTML;
-        }
-        
-        // Initialize textarea with sanitized editor content
-        function updateTextarea() {
-            const originalContent = editor.innerHTML;
-            const sanitizedContent = sanitizeHTML(originalContent);
-            textarea.value = sanitizedContent;
-            
-            if (originalContent !== sanitizedContent) {
-                editor.innerHTML = sanitizedContent;
-            }
-        }
-        
-        // Set initial placeholder
-        if (!editor.textContent.trim()) {
-            editor.innerHTML = '';
-        }
-        
-        // Update textarea when editor content changes
-        editor.addEventListener('input', updateTextarea);
-        editor.addEventListener('blur', updateTextarea);
-        
-        // Handle toolbar button clicks
-        toolbarButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                const command = this.dataset.command;
-                const value = this.dataset.value;
-                
-                editor.focus();
-                
-                if (command === 'formatBlock' && value) {
-                    document.execCommand(command, false, value);
-                } else {
-                    document.execCommand(command, false, null);
-                }
-                
-                // Update active state
-                if (value) {
-                    toolbarButtons.forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                }
-                
-                updateTextarea();
-                editor.focus();
-            });
-        });
-        
-        // Clean up paste events
-        editor.addEventListener('paste', function(e) {
-            e.preventDefault();
-            const text = (e.clipboardData || window.clipboardData).getData('text');
-            document.execCommand('insertText', false, text);
-            updateTextarea();
-        });
-        
         // Digital product fields toggle
         const digitalProductFields = document.getElementById('digital-product-fields');
         const digitalProductUrl = document.getElementById('digital-product-url');
@@ -1507,17 +1474,6 @@ tailwind.config = {
         // Form submission handler
         const form = document.getElementById('create-service-form');
         form.addEventListener('submit', function(e) {
-            // Ensure textarea has the latest sanitized content
-            updateTextarea();
-            
-            // Validate that description is not empty
-            if (!editor.textContent.trim() || editor.innerHTML === '<br>') {
-                e.preventDefault();
-                showNotification('Please provide a description for your service.', 'error');
-                editor.focus();
-                return;
-            }
-            
             // Validate digital product URL if digital product is selected
             const isDigital = document.querySelector('input[name="is_digital"][value="true"]').checked;
             if (isDigital) {
@@ -1552,42 +1508,6 @@ tailwind.config = {
                 submitButton.disabled = false;
             }, 5000);
         });
-        
-        // Service action buttons functions
-        window.editService = function(serviceId) {
-            // In a real app, this would open an edit modal
-            // For now, redirect to edit page
-            window.location.href = `/mentor/dashboard/services/${serviceId}/edit`;
-        };
-        
-        window.deleteService = function(serviceId) {
-            showNotification('Are you sure you want to delete this service? This action cannot be undone.', 'info');
-            
-            // Create confirmation dialog
-            if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
-                fetch(`/mentor/services/${serviceId}/delete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Service deleted successfully!', 'success');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
-                    } else {
-                        showNotification('Failed to delete service: ' + data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('An error occurred while deleting the service.', 'error');
-                });
-            }
-        };
         
         // Input validation
         priceInput.addEventListener('input', function() {
@@ -1714,6 +1634,152 @@ tailwind.config = {
                 item.style.transform = 'translateY(0)';
             }, index * 100);
         });
+    });
+
+    // Service action functions
+    window.editService = function(serviceId) {
+        // In a real app, this would open an edit modal
+        // For now, redirect to edit page
+        window.location.href = `/mentor/dashboard/services/${serviceId}/edit`;
+    };
+
+    // Confirmation modal functions
+    window.confirmDeleteService = function(serviceId, serviceName) {
+        serviceToDelete = serviceId;
+        
+        // Update modal message
+        document.getElementById('modal-message').innerHTML = 
+            `Are you sure you want to delete "<strong>${serviceName}</strong>"?<br><br>
+             This action cannot be undone and all associated data will be permanently removed.`;
+        
+        // Show modal
+        document.getElementById('confirmation-modal').classList.add('show');
+        document.getElementById('confirm-delete-btn').disabled = false;
+        document.getElementById('confirm-delete-btn').innerHTML = 'Delete Service';
+    };
+
+    window.closeConfirmationModal = function() {
+        document.getElementById('confirmation-modal').classList.remove('show');
+        serviceToDelete = null;
+    };
+
+    // Delete service function
+    window.deleteService = async function() {
+        if (!serviceToDelete) return;
+        
+        // Get references to elements
+        const confirmBtn = document.getElementById('confirm-delete-btn');
+        const serviceElement = document.getElementById(`service-${serviceToDelete}`);
+        
+        // Show loading state
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="delete-loading"><i class="fas fa-spinner fa-spin"></i> Deleting...</span>';
+        
+        // Show loading overlay
+        document.getElementById('loading-overlay').classList.add('show');
+        
+        try {
+            // Send DELETE request to server
+            const response = await fetch(`/mentor/services/${serviceToDelete}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            });
+            
+            const data = await response.json();
+            
+            // Hide loading overlay
+            document.getElementById('loading-overlay').classList.remove('show');
+            
+            if (response.ok && data.success) {
+                // Show success notification
+                showNotification('Service deleted successfully!', 'success');
+                
+                // Close confirmation modal
+                closeConfirmationModal();
+                
+                // Remove service from UI with animation
+                if (serviceElement) {
+                    serviceElement.style.transition = 'all 0.3s ease';
+                    serviceElement.style.opacity = '0';
+                    serviceElement.style.transform = 'translateX(100px)';
+                    serviceElement.style.height = '0';
+                    serviceElement.style.padding = '0';
+                    serviceElement.style.margin = '0';
+                    serviceElement.style.border = 'none';
+                    
+                    setTimeout(() => {
+                        serviceElement.remove();
+                        
+                        // Update stats if needed
+                        updateServiceStats();
+                        
+                        // Show empty state if no services left
+                        const servicesList = document.querySelector('.services-list');
+                        if (servicesList && servicesList.children.length === 0) {
+                            location.reload(); // Reload to show empty state
+                        }
+                    }, 300);
+                } else {
+                    // If element not found, reload the page
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                }
+            } else {
+                // Show error message
+                const errorMsg = data.message || 'Failed to delete service. Please try again.';
+                showNotification(errorMsg, 'error');
+                
+                // Reset button state
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = 'Delete Service';
+            }
+        } catch (error) {
+            console.error('Error deleting service:', error);
+            
+            // Hide loading overlay
+            document.getElementById('loading-overlay').classList.remove('show');
+            
+            // Show error notification
+            showNotification('An error occurred while deleting the service. Please try again.', 'error');
+            
+            // Reset button state
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = 'Delete Service';
+        }
+    };
+
+    // Function to update service stats after deletion
+    function updateServiceStats() {
+        const totalServicesStat = document.querySelector('.stat-card:nth-child(1) .stat-value');
+        const activeServicesStat = document.querySelector('.stat-card:nth-child(2) .stat-value');
+        const avgPriceStat = document.querySelector('.stat-card:nth-child(4) .stat-value');
+        
+        if (totalServicesStat) {
+            const currentTotal = parseInt(totalServicesStat.textContent) || 0;
+            totalServicesStat.textContent = Math.max(0, currentTotal - 1);
+        }
+        
+        // Note: Active services and average price would need more complex logic
+        // For simplicity, we'll reload the page after a short delay if stats update is needed
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('confirmation-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeConfirmationModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && document.getElementById('confirmation-modal').classList.contains('show')) {
+            closeConfirmationModal();
+        }
     });
 </script>
 {% endblock %}
