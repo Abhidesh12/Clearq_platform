@@ -5111,6 +5111,7 @@ async def update_payout_status(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error updating payout: {str(e)}")
 
+
 @app.post("/api/create-booking")
 async def create_booking(
     request: Request,
@@ -5210,51 +5211,47 @@ async def create_booking(
             db.add(booking)
             db.commit()
             db.refresh(booking)
-
+            
             try:
-        # Get user details for email
-        mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
-    learner_user = db.query(User).filter(User.id == current_user.id).first()
-    service = db.query(Service).filter(Service.id == service_id).first()
-    
-    if mentor_user and learner_user and service:
-        # Check if it's a digital product
-        if service.is_digital:
-            print(f"Skipping email for free digital product: {service.name}")
-        else:
-            # Format date and time
-            booking_date_str = target_date.strftime("%B %d, %Y")
+                # Get user details for email
+                mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
+                learner_user = db.query(User).filter(User.id == current_user.id).first()
+                
+                if mentor_user and learner_user and service:
+                    # Check if it's a digital product
+                    if service.is_digital:
+                        print(f"Skipping email for free digital product: {service.name}")
+                    else:
+                        # Format date and time
+                        booking_date_str = target_date.strftime("%B %d, %Y")
+                        
+                        # Send booking confirmation email
+                        email_sent = send_booking_confirmation_email(
+                            booking=booking,
+                            mentor_email=mentor_user.email,
+                            learner_email=learner_user.email,
+                            mentor_name=mentor_user.full_name or mentor_user.username,
+                            learner_name=learner_user.full_name or learner_user.username,
+                            service_name=service.name
+                        )
+                        
+                        if email_sent:
+                            print(f"✅ Free session confirmation email sent")
+                        else:
+                            print(f"⚠️ Free session email failed to send")
+            except Exception as e:
+                print(f"⚠️ Error sending free session email: {e}")
             
-            # Send booking confirmation email
-            email_sent = send_booking_confirmation_email(
-                booking=booking,
-                mentor_email=mentor_user.email,
-                learner_email=learner_user.email,
-                mentor_name=mentor_user.full_name or mentor_user.username,
-                learner_name=learner_user.full_name or learner_user.username,
-                service_name=service.name
-            )
-            
-            if email_sent:
-                print(f"✅ Free session confirmation email sent")
-            else:
-                print(f"⚠️ Free session email failed to send")
-except Exception as e:
-    print(f"⚠️ Error sending free session email: {e}")
-    # ============ END ADDITION ============
-    
-    return JSONResponse({
-        "success": True,
-        "booking_id": booking.id,
-        "redirect_url": f"/meeting/{booking.id}",
-        "meeting_link": meeting_link,
-        "meeting_id": meeting_id,
-        "is_digital": False,
-        "is_free": True,
-        "message": "Free session booked successfully!"
-    })
-            
-
+            return JSONResponse({
+                "success": True,
+                "booking_id": booking.id,
+                "redirect_url": f"/meeting/{booking.id}",
+                "meeting_link": None,
+                "meeting_id": None,
+                "is_digital": True,
+                "is_free": True,
+                "message": "Free digital product purchased successfully!"
+            })
         else:
             # Free session - generate meeting link
             meeting_id = f"clearq-{uuid.uuid4().hex[:12]}"
@@ -5330,6 +5327,28 @@ except Exception as e:
                     availability.is_booked = True
             
             db.commit()
+            
+            # Send email notification
+            try:
+                mentor_user = db.query(User).filter(User.id == mentor.user_id).first()
+                learner_user = db.query(User).filter(User.id == current_user.id).first()
+                
+                if mentor_user and learner_user and service:
+                    email_sent = send_booking_confirmation_email(
+                        booking=booking,
+                        mentor_email=mentor_user.email,
+                        learner_email=learner_user.email,
+                        mentor_name=mentor_user.full_name or mentor_user.username,
+                        learner_name=learner_user.full_name or learner_user.username,
+                        service_name=service.name
+                    )
+                    
+                    if email_sent:
+                        print(f"✅ Free session confirmation email sent")
+                    else:
+                        print(f"⚠️ Free session email failed to send")
+            except Exception as e:
+                print(f"⚠️ Error sending free session email: {e}")
             
             return JSONResponse({
                 "success": True,
@@ -5504,6 +5523,8 @@ except Exception as e:
             except Exception as e:
                 db.rollback()
                 raise HTTPException(status_code=500, detail=f"Error creating booking: {str(e)}")
+
+                
 # Add this new API endpoint for generating time slots
 
 @app.post("/api/generate-time-slots")
