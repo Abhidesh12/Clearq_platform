@@ -1033,41 +1033,12 @@
     </span>
 </div>
                                 <div class="service-actions">
-                                    <!-- <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
+                                    <button class="action-button edit-button" title="Edit Service" onclick="editService({{ service.id }})">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="action-button delete-button" title="Delete Service" onclick="deleteService({{ service.id }})">
                                         <i class="fas fa-trash"></i>
-                                    </button> -->
-                                    <!-- Add this delete button to your service card template -->
-<div class="service-card" data-service-id="{{ service.id }}">
-  <!-- Your existing service content here -->
-  
-  <!-- Delete button (only show if service is active) -->
-  {% if service.deleted_at is none %}
-  <div class="service-actions">
-    <!-- Your existing edit button -->
-    <button class="btn btn-edit" onclick="editService({{ service.id }})">
-      <i class="fas fa-edit"></i> Edit
-    </button>
-    
-    <!-- Delete button -->
-    <button 
-      class="btn btn-danger" 
-      onclick="deleteService({{ service.id }})"
-      {% if service.has_active_bookings %}data-has-bookings="true"{% endif %}
-    >
-      <i class="fas fa-trash"></i> Delete
-    </button>
-  </div>
-  {% else %}
-  <!-- Show if service is deleted -->
-  <div class="service-status deleted">
-    <span class="badge badge-danger">Deleted</span>
-    <small>Deleted on {{ service.deleted_at.strftime('%Y-%m-%d') }}</small>
-  </div>
-  {% endif %}
-</div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1303,278 +1274,31 @@
             window.location.href = `/mentor/dashboard/services/${serviceId}/edit`;
         };
         
-       // Delete Service Function
-async function deleteService(serviceId) {
-    const serviceCard = document.querySelector(`[data-service-id="${serviceId}"]`);
-    const hasBookings = serviceCard.querySelector('.btn-danger').getAttribute('data-has-bookings') === 'true';
-    
-    // If service has bookings, show custom confirmation first
-    if (hasBookings) {
-        const confirmed = await showConfirmationModal(
-            "Active Bookings Detected",
-            "This service has active bookings. Deleting will cancel all future bookings. Are you sure you want to continue?",
-            "warning"
-        );
-        if (!confirmed) return;
-    }
-    
-    // Show loading state
-    const deleteBtn = serviceCard.querySelector('.btn-danger');
-    const originalText = deleteBtn.innerHTML;
-    deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
-    deleteBtn.disabled = true;
-    
-    try {
-        const response = await fetch(`/mentor/services/${serviceId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `confirm=${hasBookings}`
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            // Show success message and reload
-            showNotification('Service deleted successfully!', 'success');
-            setTimeout(() => {
-                window.location.href = result.redirect_url || '/mentor/dashboard/services';
-            }, 1500);
-        } else if (result.requires_confirmation) {
-            // Show confirmation modal for active bookings
-            const confirmDelete = await showConfirmationModal(
-                "Confirm Deletion",
-                result.message,
-                "warning",
-                `Yes, Delete (${result.active_bookings} bookings will be cancelled)`,
-                "Cancel"
-            );
-            
-            if (confirmDelete) {
-                // Call delete again with confirmation
-                await deleteServiceWithConfirmation(serviceId);
-            } else {
-                // Reset button state
-                deleteBtn.innerHTML = originalText;
-                deleteBtn.disabled = false;
+        window.deleteService = function(serviceId) {
+            if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+                fetch(`/mentor/services/${serviceId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('Service deleted successfully!', 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        showNotification('Failed to delete service: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('An error occurred while deleting the service.', 'error');
+                });
             }
-        } else {
-            // Show error
-            showNotification(result.message || 'Error deleting service', 'error');
-            deleteBtn.innerHTML = originalText;
-            deleteBtn.disabled = false;
-        }
-    } catch (error) {
-        console.error('Error deleting service:', error);
-        showNotification('Network error. Please try again.', 'error');
-        deleteBtn.innerHTML = originalText;
-        deleteBtn.disabled = false;
-    }
-}
-
-// Delete with confirmation
-async function deleteServiceWithConfirmation(serviceId) {
-    try {
-        const response = await fetch(`/mentor/services/${serviceId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'confirm=true'
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Service deleted successfully!', 'success');
-            setTimeout(() => {
-                window.location.href = result.redirect_url || '/mentor/dashboard/services';
-            }, 1500);
-        } else {
-            showNotification(result.message || 'Error deleting service', 'error');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('Network error. Please try again.', 'error');
-    }
-}
-
-// Restore Service Function
-async function restoreService(serviceId) {
-    const confirmed = await showConfirmationModal(
-        "Restore Service",
-        "Are you sure you want to restore this service?",
-        "info"
-    );
-    
-    if (!confirmed) return;
-    
-    try {
-        const response = await fetch(`/mentor/services/${serviceId}/restore`, {
-            method: 'POST',
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Service restored successfully!', 'success');
-            setTimeout(() => {
-                window.location.href = result.redirect_url || '/mentor/dashboard/services';
-            }, 1500);
-        } else {
-            showNotification(result.message || 'Error restoring service', 'error');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('Network error. Please try again.', 'error');
-    }
-}
-
-// Permanent Delete Function
-async function permanentDeleteService(serviceId) {
-    // First confirmation
-    const confirmed = await showConfirmationModal(
-        "Permanent Deletion",
-        "This action cannot be undone. The service and all its data will be permanently deleted. Are you sure?",
-        "error"
-    );
-    
-    if (!confirmed) return;
-    
-    try {
-        const response = await fetch(`/mentor/services/${serviceId}/permanent`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'confirm=false'
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Service permanently deleted!', 'success');
-            setTimeout(() => {
-                window.location.href = result.redirect_url || '/mentor/services/deleted';
-            }, 1500);
-        } else if (result.requires_confirmation) {
-            // Additional confirmation for bookings
-            const finalConfirm = await showConfirmationModal(
-                "Final Warning",
-                result.message,
-                "error",
-                `Yes, Delete Permanently (${result.bookings_count} records will be lost)`,
-                "Cancel"
-            );
-            
-            if (finalConfirm) {
-                await finalizePermanentDelete(serviceId);
-            }
-        } else {
-            showNotification(result.message || 'Error deleting service', 'error');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('Network error. Please try again.', 'error');
-    }
-}
-
-// Finalize permanent delete
-async function finalizePermanentDelete(serviceId) {
-    try {
-        const response = await fetch(`/mentor/services/${serviceId}/permanent`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'confirm=true'
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Service permanently deleted!', 'success');
-            setTimeout(() => {
-                window.location.href = result.redirect_url || '/mentor/services/deleted';
-            }, 1500);
-        } else {
-            showNotification(result.message || 'Error deleting service', 'error');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('Network error. Please try again.', 'error');
-    }
-}
-
-// Utility Functions
-function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <span>${message}</span>
-        </div>
-        <button class="notification-close" onclick="this.parentElement.remove()">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
-    
-    // Add to page
-    document.body.appendChild(notification);
-    
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
-}
-
-async function showConfirmationModal(title, message, type = 'warning', confirmText = 'Confirm', cancelText = 'Cancel') {
-    return new Promise((resolve) => {
-        // Create modal
-        const modal = document.createElement('div');
-        modal.className = 'confirmation-modal';
-        modal.innerHTML = `
-            <div class="modal-overlay"></div>
-            <div class="modal-content">
-                <div class="modal-header modal-${type}">
-                    <h3>${title}</h3>
-                    <button class="modal-close" onclick="closeModal(false)">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="modal-icon">
-                        <i class="fas fa-${type === 'warning' ? 'exclamation-triangle' : type === 'error' ? 'times-circle' : 'info-circle'}"></i>
-                    </div>
-                    <p>${message}</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" onclick="closeModal(false)">${cancelText}</button>
-                    <button class="btn btn-${type === 'error' ? 'danger' : type === 'warning' ? 'warning' : 'primary'}" onclick="closeModal(true)">${confirmText}</button>
-                </div>
-            </div>
-        `;
-        
-        // Add to page
-        document.body.appendChild(modal);
-        
-        // Store the modal reference
-        window.currentModal = modal;
-        window.modalResolve = resolve;
-    });
-}
-
-function closeModal(result) {
-    if (window.currentModal && window.currentModal.parentElement) {
-        window.currentModal.remove();
-    }
-    if (window.modalResolve) {
-        window.modalResolve(result);
-    }
-}
+        };
         
         // Input validation
         priceInput.addEventListener('input', function() {
