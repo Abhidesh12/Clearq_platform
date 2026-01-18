@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deleted Services - ClearQ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    {% include "components/header.html" %}
+    
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Deleted Services</h1>
+            <p class="text-gray-600 mt-2">View and manage your deleted services</p>
+            
+            <div class="mt-4">
+                <a href="/mentor/dashboard/services" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Active Services
+                </a>
+            </div>
+        </div>
+        
+        {% if success %}
+        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">{{ success }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if error %}
+        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-400"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700">{{ error }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if deleted_services %}
+        <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            <ul class="divide-y divide-gray-200">
+                {% for service in deleted_services %}
+                <li class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">{{ service.name }}</h3>
+                                    <p class="mt-1 text-sm text-gray-500">{{ service.description[:100] }}{% if service.description|length > 100 %}...{% endif %}</p>
+                                    <div class="mt-2 flex items-center text-sm text-gray-500">
+                                        <span class="mr-4">
+                                            <i class="fas fa-rupee-sign mr-1"></i>{{ service.price }}
+                                        </span>
+                                        {% if not service.is_digital %}
+                                        <span class="mr-4">
+                                            <i class="fas fa-clock mr-1"></i>{{ service.duration_minutes }} min
+                                        </span>
+                                        {% endif %}
+                                        <span>
+                                            <i class="fas fa-calendar-times mr-1"></i>
+                                            Deleted on {{ service.deleted_at.strftime('%b %d, %Y') }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="ml-4 flex-shrink-0">
+                                    <div class="flex space-x-2">
+                                        <button onclick="restoreService({{ service.id }})"
+                                                class="inline-flex items-center px-3 py-2 border border-green-300 text-sm font-medium rounded-md text-green-700 bg-white hover:bg-green-50">
+                                            <i class="fas fa-undo mr-2"></i>Restore
+                                        </button>
+                                        <button onclick="permanentDeleteService({{ service.id }})"
+                                                class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50">
+                                            <i class="fas fa-trash-alt mr-2"></i>Permanent Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-trash-alt text-gray-300 text-5xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No deleted services</h3>
+            <p class="text-gray-500">You haven't deleted any services yet.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <script>
+    async function restoreService(serviceId) {
+        if (!confirm('Restore this service?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/mentor/services/${serviceId}/restore`, {
+                method: 'POST'
+            });
+            
+            const result = await response.json();
+            alert(result.message);
+            
+            if (result.redirect_url) {
+                window.location.href = result.redirect_url;
+            } else {
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while restoring the service.');
+        }
+    }
+    
+    async function permanentDeleteService(serviceId) {
+        if (!confirm('Permanently delete this service? This action cannot be undone.')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/mentor/services/${serviceId}/permanent`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'confirm': 'false'
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.requires_confirmation) {
+                const confirmed = confirm(result.message);
+                if (confirmed) {
+                    const confirmResponse = await fetch(`/mentor/services/${serviceId}/permanent`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            'confirm': 'true'
+                        })
+                    });
+                    
+                    const confirmResult = await confirmResponse.json();
+                    alert(confirmResult.message);
+                    
+                    if (confirmResult.redirect_url) {
+                        window.location.href = confirmResult.redirect_url;
+                    } else {
+                        window.location.reload();
+                    }
+                }
+            } else if (result.success) {
+                alert(result.message);
+                if (result.redirect_url) {
+                    window.location.href = result.redirect_url;
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                alert('Error: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the service.');
+        }
+    }
+    </script>
+</body>
+</html>
