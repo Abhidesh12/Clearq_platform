@@ -1,0 +1,654 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Service - ClearQ{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #3B82F6;
+        --primary-dark: #2563EB;
+        --primary-light: #60A5FA;
+        --secondary: #8B5CF6;
+        --accent: #06B6D4;
+        --success: #10B981;
+        --warning: #F59E0B;
+        --danger: #EF4444;
+        --gray-900: #0F172A;
+        --gray-800: #1E293B;
+        --gray-700: #334155;
+        --gray-600: #475569;
+        --gray-500: #64748B;
+        --gray-400: #94A3B8;
+        --gray-300: #CBD5E1;
+        --gray-200: #E2E8F0;
+        --gray-100: #F1F5F9;
+        --gray-50: #F8FAFC;
+        --white: #FFFFFF;
+        --radius-sm: 0.375rem;
+        --radius: 0.5rem;
+        --radius-md: 0.75rem;
+        --radius-lg: 1rem;
+        --radius-xl: 1.5rem;
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --transition: all 0.2s ease;
+    }
+
+    .edit-service-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Header */
+    .edit-header {
+        margin-bottom: 2rem;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--white);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        color: var(--gray-700);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: var(--transition);
+        margin-bottom: 1rem;
+    }
+
+    .back-button:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-400);
+        color: var(--gray-900);
+        transform: translateY(-1px);
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-text h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+    }
+
+    .header-text p {
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    /* Service Type Badge */
+    .service-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-lg);
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-live {
+        background: #E0F2FE;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+    }
+
+    .badge-digital {
+        background: #F3E8FF;
+        color: #7C3AED;
+        border: 1px solid #E9D5FF;
+    }
+
+    /* Edit Form */
+    .edit-form-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+        padding: 2rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-required {
+        color: var(--danger);
+    }
+
+    .form-input, .form-select, .form-textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius);
+        font-size: 0.9375rem;
+        color: var(--gray-900);
+        background: var(--white);
+        transition: var(--transition);
+        font-family: inherit;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-input::placeholder {
+        color: var(--gray-400);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .price-input {
+        position: relative;
+    }
+
+    .price-prefix {
+        position: absolute;
+        left: 0.75rem;
+        top: 0.75rem;
+        color: var(--gray-500);
+        font-size: 0.9375rem;
+    }
+
+    .price-input .form-input {
+        padding-left: 2rem;
+    }
+
+    /* Radio Group */
+    .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .radio-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid var(--gray-300);
+        border-radius: 50%;
+        appearance: none;
+        position: relative;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .radio-input:checked {
+        border-color: var(--primary);
+        background: var(--primary);
+    }
+
+    .radio-input:checked::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 0.5rem;
+        height: 0.5rem;
+        background: var(--white);
+        border-radius: 50%;
+    }
+
+    .radio-label {
+        font-size: 0.9375rem;
+        color: var(--gray-700);
+        cursor: pointer;
+    }
+
+    /* Digital Fields */
+    .digital-fields {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: var(--gray-50);
+        border-radius: var(--radius);
+        border: 1px solid var(--gray-200);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .digital-fields.hidden {
+        display: none;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 2rem;
+        margin-top: 2rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .delete-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--white);
+        border: 1px solid var(--danger);
+        border-radius: var(--radius);
+        color: var(--danger);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .delete-button:hover {
+        background: var(--danger);
+        color: var(--white);
+        transform: translateY(-1px);
+    }
+
+    .save-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        border: none;
+        border-radius: var(--radius);
+        color: var(--white);
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .save-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .save-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Responsive */
+    @media (min-width: 640px) {
+        .edit-service-container {
+            padding: 2rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .form-group:nth-child(3),
+        .form-group:nth-child(5) {
+            grid-column: span 2;
+        }
+        
+        .radio-group {
+            flex-direction: row;
+            gap: 1.5rem;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .edit-form-card {
+            padding: 2.5rem;
+        }
+    }
+</style>
+
+<div class="edit-service-container">
+    <!-- Header -->
+    <div class="edit-header">
+        <a href="/mentor/dashboard/services" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Back to Services
+        </a>
+        
+        <div class="header-content">
+            <div class="header-text">
+                <h1>Edit Service</h1>
+                <p>Update your service details and settings</p>
+            </div>
+            
+            <div class="service-type-badge {% if service.is_digital %}badge-digital{% else %}badge-live{% endif %}">
+                {% if service.is_digital %}
+                    <i class="fas fa-download"></i>
+                    Digital Product
+                {% else %}
+                    <i class="fas fa-video"></i>
+                    Live Session
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="edit-form-card">
+        <form id="edit-service-form" action="/mentor/services/{{ service.id }}/update" method="POST">
+            <div class="form-grid">
+                <!-- Service Name -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Service Name <span class="form-required">*</span>
+                    </label>
+                    <input type="text" name="name" required 
+                           class="form-input"
+                           value="{{ service.name }}"
+                           placeholder="e.g., Mock Interview, Resume Review">
+                </div>
+                
+                <!-- Category -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Category <span class="form-required">*</span>
+                    </label>
+                    <select name="category" required class="form-select">
+                        <option value="">Select Category</option>
+                        <option value="mock-interview" {% if service.category == 'mock-interview' %}selected{% endif %}>Mock Interview</option>
+                        <option value="resume-review" {% if service.category == 'resume-review' %}selected{% endif %}>Resume Review</option>
+                        <option value="career-guidance" {% if service.category == 'career-guidance' %}selected{% endif %}>Career Guidance</option>
+                        <option value="technical-coaching" {% if service.category == 'technical-coaching' %}selected{% endif %}>Technical Coaching</option>
+                        <option value="portfolio-review" {% if service.category == 'portfolio-review' %}selected{% endif %}>Portfolio Review</option>
+                        <option value="salary-negotiation" {% if service.category == 'salary-negotiation' %}selected{% endif %}>Salary Negotiation</option>
+                        <option value="digital-product" {% if service.category == 'digital-product' %}selected{% endif %}>Digital Product</option>
+                        <option value="other" {% if service.category == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                
+                <!-- Description -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Description <span class="form-required">*</span>
+                    </label>
+                    <textarea name="description" rows="4" required 
+                              class="form-textarea"
+                              placeholder="Describe what learners will get from this service...">{{ service.description }}</textarea>
+                </div>
+                
+                <!-- Price -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Price (INR) <span class="form-required">*</span>
+                    </label>
+                    <div class="price-input">
+                        <span class="price-prefix">₹</span>
+                        <input type="number" name="price" required min="0"
+                               class="form-input"
+                               value="{{ service.price }}"
+                               placeholder="999"
+                               id="price-input">
+                    </div>
+                </div>
+                
+                <!-- Duration -->
+                <div class="form-group">
+                    <label class="form-label" id="duration-label">
+                        Duration (minutes) <span class="form-required">*</span>
+                    </label>
+                    <input type="number" name="duration_minutes" 
+                           value="{% if service.is_digital %}0{% else %}{{ service.duration_minutes|default('60') }}{% endif %}" 
+                           required min="15" step="15"
+                           class="form-input"
+                           id="duration-input"
+                           {% if service.is_digital %}disabled{% endif %}>
+                </div>
+                
+                <!-- Service Type -->
+                <div class="form-group">
+                    <label class="form-label">
+                        Service Type
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="is_digital" value="false" 
+                                   class="radio-input service-type-radio"
+                                   data-type="live"
+                                   {% if not service.is_digital %}checked{% endif %}>
+                            <span class="radio-label">Live Session</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="is_digital" value="true" 
+                                   class="radio-input service-type-radio"
+                                   data-type="digital"
+                                   {% if service.is_digital %}checked{% endif %}>
+                            <span class="radio-label">Digital Product</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Digital Product Fields -->
+            <div id="digital-product-fields" class="digital-fields {% if not service.is_digital %}hidden{% endif %}">
+                <div class="form-group">
+                    <label class="form-label">
+                        Digital Product URL <span class="form-required" id="digital-url-required">{% if service.is_digital %}*{% else %}{% endif %}</span>
+                    </label>
+                    <input type="url" name="digital_product_url"
+                           class="form-input"
+                           value="{{ service.digital_product_url if service.digital_product_url else '' }}"
+                           placeholder="https://drive.google.com/file/... or https://clearq.in/download"
+                           id="digital-product-url">
+                    <p style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.25rem;">
+                        Learners will get access to this URL immediately after purchase.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="button" class="delete-button" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i>
+                    Delete Service
+                </button>
+                
+                <button type="submit" class="save-button" id="save-button">
+                    <i class="fas fa-save"></i>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Digital product fields toggle
+        const digitalProductFields = document.getElementById('digital-product-fields');
+        const digitalProductUrl = document.getElementById('digital-product-url');
+        const digitalUrlRequired = document.getElementById('digital-url-required');
+        const durationInput = document.getElementById('duration-input');
+        const durationLabel = document.getElementById('duration-label');
+        const serviceTypeRadios = document.querySelectorAll('.service-type-radio');
+        
+        function toggleDigitalFields() {
+            const isDigital = document.querySelector('input[name="is_digital"][value="true"]').checked;
+            
+            if (isDigital) {
+                digitalProductFields.classList.remove('hidden');
+                digitalProductUrl.required = true;
+                digitalUrlRequired.innerHTML = '*';
+                
+                // For digital products, duration is "Instant Access"
+                durationInput.value = 0;
+                durationInput.disabled = true;
+                durationLabel.innerHTML = 'Access Type <span class="form-required">*</span>';
+                
+                // Add help text for digital products
+                if (!document.querySelector('.digital-help')) {
+                    const helpDiv = document.createElement('div');
+                    helpDiv.className = 'form-help digital-help';
+                    helpDiv.innerHTML = '<i class="fas fa-info-circle"></i> For digital products, learners get instant access after purchase';
+                    durationInput.parentNode.appendChild(helpDiv);
+                }
+            } else {
+                digitalProductFields.classList.add('hidden');
+                digitalProductUrl.required = false;
+                digitalUrlRequired.innerHTML = '';
+                
+                // For live sessions, enable duration input
+                durationInput.disabled = false;
+                durationInput.value = durationInput.value === '0' ? '60' : durationInput.value;
+                durationLabel.innerHTML = 'Duration (minutes) <span class="form-required">*</span>';
+                
+                // Remove digital help text
+                const helpDiv = document.querySelector('.digital-help');
+                if (helpDiv) {
+                    helpDiv.remove();
+                }
+            }
+        }
+        
+        // Add event listeners
+        serviceTypeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleDigitalFields);
+        });
+        
+        // Initialize
+        toggleDigitalFields();
+        
+        // Form submission handler
+        const form = document.getElementById('edit-service-form');
+        const saveButton = document.getElementById('save-button');
+        
+        form.addEventListener('submit', function(e) {
+            // Validate digital product URL if digital product is selected
+            const isDigital = document.querySelector('input[name="is_digital"][value="true"]').checked;
+            if (isDigital) {
+                const digitalUrl = digitalProductUrl.value.trim();
+                if (!digitalUrl) {
+                    e.preventDefault();
+                    alert('Please provide a download URL for your digital product.');
+                    digitalProductUrl.focus();
+                    return;
+                }
+                
+                // Basic URL validation
+                try {
+                    new URL(digitalUrl);
+                } catch (_) {
+                    e.preventDefault();
+                    alert('Please enter a valid URL starting with http:// or https://');
+                    digitalProductUrl.focus();
+                    return;
+                }
+            }
+            
+            // Show loading state
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            // Re-enable after 5 seconds if still on page
+            setTimeout(() => {
+                saveButton.disabled = false;
+                saveButton.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            }, 5000);
+        });
+        
+        // Input validation
+        const priceInput = document.getElementById('price-input');
+        priceInput.addEventListener('input', function() {
+            if (this.value < 0) this.value = 0;
+        });
+        
+        durationInput.addEventListener('input', function() {
+            if (this.disabled) return;
+            if (this.value < 15) this.value = 15;
+            // Round to nearest 15
+            this.value = Math.round(this.value / 15) * 15;
+        });
+        
+        // Category selection handler
+        const categorySelect = document.querySelector('select[name="category"]');
+        categorySelect.addEventListener('change', function() {
+            if (this.value === 'digital-product') {
+                // Auto-select digital product type
+                document.querySelector('input[name="is_digital"][value="true"]').checked = true;
+                toggleDigitalFields();
+            } else if (this.value !== '') {
+                // Auto-select live session for other categories
+                document.querySelector('input[name="is_digital"][value="false"]').checked = true;
+                toggleDigitalFields();
+            }
+        });
+        
+        // Delete confirmation
+        window.confirmDelete = function() {
+            if (confirm('Are you sure you want to delete this service? This action cannot be undone.')) {
+                // Navigate to delete endpoint
+                window.location.href = `/mentor/services/{{ service.id }}/delete?return_url=${encodeURIComponent('/mentor/dashboard/services')}`;
+            }
+        };
+        
+        // Check for URL parameters for messages
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+        const error = urlParams.get('error');
+        
+        if (success) {
+            alert(decodeURIComponent(success));
+            // Clean URL
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+        
+        if (error) {
+            alert(decodeURIComponent(error));
+            // Clean URL
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+    });
+</script>
+{% endblock %}
