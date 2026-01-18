@@ -73,6 +73,10 @@ class CSPMiddleware(BaseHTTPMiddleware):
 
 # Add to your app
 app.add_middleware(CSPMiddleware)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static/uploads", StaticFiles(directory="static/uploads"), name="uploads")
+
+
 
 # Database configuration
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/clearq")
@@ -91,6 +95,7 @@ Base = declarative_base()
 async def add_now_to_context(request: Request):
     return {"now": datetime.now()}
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static/uploads", StaticFiles(directory="static/uploads"), name="uploads")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["now"] = datetime.now()
 
@@ -1211,49 +1216,43 @@ Thank you for mentoring on ClearQ!
         return False
 
 
-def save_profile_image_fixed(file: UploadFile, user_id: int) -> str:
-    """Save uploaded profile image and return filename - FIXED VERSION"""
-    print(f"💾 Saving profile image for user {user_id}: {file.filename}")
+def save_profile_image(file: UploadFile, user_id: int) -> str:
+    """Save uploaded profile image and return filename"""
+    print(f"Saving profile image for user {user_id}: {file.filename}")
     
-    # Validate file type
-    ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
-    if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {ALLOWED_EXTENSIONS}")
+    if not allowed_file(file.filename):
+        raise HTTPException(status_code=400, detail="Invalid file type")
     
     # Create uploads/profile_images directory if it doesn't exist
     profile_images_dir = UPLOAD_DIR / "profile_images"
     profile_images_dir.mkdir(parents=True, exist_ok=True)
-    print(f"📁 Upload directory: {profile_images_dir}")
+    print(f"Upload directory: {profile_images_dir}")
     
     # Generate unique filename
+    ext = file.filename.rsplit('.', 1)[1].lower()
     filename = f"profile_{user_id}_{uuid.uuid4().hex[:8]}.{ext}"
     file_path = profile_images_dir / filename
     
-    print(f"💿 Saving file to: {file_path}")
+    print(f"Saving file to: {file_path}")
     
     # Save file
     try:
-        # Reset file pointer to beginning
-        await file.seek(0) if hasattr(file, 'seek') else file.file.seek(0)
+        # Reset file pointer (important!)
+        file.file.seek(0)
         
-        # Read file content
-        content = await file.read() if hasattr(file, 'read') else file.file.read()
-        
-        # Write to file
+        # Copy file content
         with open(file_path, "wb") as buffer:
-            buffer.write(content)
+            shutil.copyfileobj(file.file, buffer)
         
-        print(f"✅ File saved successfully: {filename}")
-        
+        print(f"File saved successfully: {filename}")
     except Exception as e:
-        print(f"❌ Error saving file: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error saving file: {str(e)}")
+        print(f"Error saving file: {str(e)}")
+        raise
     
     # Return relative path for database storage
-    relative_path = f"uploads/profile_images/{filename}"
-    print(f"📝 Returning relative path: {relative_path}")
+    # IMPORTANT: WITHOUT "static/" prefix
+    relative_path = f"uploads/profile_images/{filename}"  # ✅ NO "static/" here
+    print(f"Returning relative path: {relative_path}")
     return relative_path
     
 def generate_reset_token() -> str:
@@ -1900,6 +1899,55 @@ async def payment_callback(
         import traceback
         traceback.print_exc()
         return RedirectResponse(url="/dashboard?error=Callback%20failed")
+
+
+@app.get("/debug/validate-image/{user_id}")
+async def validate_user_image(user_id: int, db: Session = Depends(get_db)):
+    """Validate user profile image paths"""
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    if not user:
+        return {"error": "User not found"}
+    
+    # Check database value
+    db_path = user.profile_image
+    
+    # Check different URL variations
+    test_urls = {
+        "database_value": db_path,
+        "with_static_prefix": f"/static/{db_path}" if db_path else None,
+        "without_prefix": f"/{db_path}" if db_path else None,
+    }
+    
+    # Check file existence
+    file_exists = False
+    if db_path:
+        # Try different possible locations
+        possible_paths = [
+            Path(db_path),                      # Direct path
+            Path("static") / db_path,           # With static/
+            UPLOAD_DIR / db_path.split("/")[-1] # Just filename in uploads
+        ]
+        
+        for path in possible_paths:
+            if path.exists():
+                file_exists = True
+                test_urls["actual_file_location"] = str(path)
+                break
+    
+    return {
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email
+        },
+        "profile_image": {
+            "database": db_path,
+            "file_exists": file_exists
+        },
+        "test_urls": test_urls,
+        "recommended_url": f"/static/{db_path}" if db_path else "/static/default-avatar.png"
+    }
 
 
 @app.get("/debug/mentor/{mentor_id}/availability")
