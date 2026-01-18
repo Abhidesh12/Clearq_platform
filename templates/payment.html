@@ -16,55 +16,41 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     
     <style>
-        /* Enhanced Theme CSS Variables */
+        /* Theme CSS Variables */
         :root {
             --primary: #1f1f1f;
             --primary-hover: #000000;
             --accent: #ff6b4a;
-            --accent-light: #fff0ec;
             --secondary: #2D3748;
             --brand-red: #FF3F1F;
-            --brand-red-light: #fff2f0;
-            --background-light: linear-gradient(135deg, #fff5ec 0%, #fff9f5 100%);
+            --background-light: #fff5ec;
             --background-dark: #151022;
             --card-light: #ffffff;
             --card-dark: #1e1a2e;
             --text-light: #1f1f1f;
             --text-dark: #ffffff;
-            --text-secondary-light: #6b7280;
+            --text-secondary-light: #555555;
             --text-secondary-dark: #a09db3;
             --border-light: #E5E4E0;
             --border-dark: #2d2a3b;
-            --card-green: #10b981;
-            --card-green-light: #f0fdf4;
-            --card-blue: #3b82f6;
-            --card-blue-light: #eff6ff;
-            --card-purple: #8b5cf6;
-            --card-purple-light: #f5f3ff;
-            --card-yellow: #f59e0b;
-            --card-yellow-light: #fffbeb;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --card-green: #9CCB5C;
+            --card-blue: #85C3EA;
         }
 
         body {
-            background: var(--background-light);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
+            background-color: var(--background-light);
+            font-family: Inter, sans-serif;
         }
 
-        /* Enhanced Loader */
         .loader {
             border: 3px solid var(--border-light);
             border-top: 3px solid var(--accent);
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
             display: inline-block;
+            margin-right: 10px;
         }
         
         @keyframes spin {
@@ -72,377 +58,11 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Glow Effects */
-        .glow-effect {
-            position: relative;
-        }
-        
-        .glow-effect::after {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            background: linear-gradient(45deg, var(--accent), var(--card-blue), var(--card-green));
-            border-radius: inherit;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .glow-effect:hover::after {
-            opacity: 0.4;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-        
-        @keyframes glow {
-            from {
-                filter: blur(10px);
-                opacity: 0.3;
-            }
-            to {
-                filter: blur(20px);
-                opacity: 0.6;
-            }
-        }
-        
-        /* Enhanced Animations */
         .payment-success {
-            animation: fadeInUp 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            animation: fadeInUp 0.5s ease-out;
         }
         
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        
-        /* Floating Animation */
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .float-animation {
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        /* Enhanced Status Indicator */
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin: 30px 0;
-            position: relative;
-        }
-        
-        .status-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .status-dot {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: white;
-            border: 3px solid var(--border-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .status-dot.active {
-            border-color: var(--accent);
-            background: var(--accent);
-            transform: scale(1.1);
-            box-shadow: 0 0 0 4px rgba(255, 107, 74, 0.2);
-        }
-        
-        .status-dot.active::before {
-            content: '';
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            border: 2px solid var(--accent);
-            animation: pulse 2s infinite;
-        }
-        
-        .status-dot.completed {
-            border-color: var(--card-green);
-            background: var(--card-green);
-        }
-        
-        .status-dot.completed::after {
-            content: '✓';
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        
-        .status-label {
-            margin-top: 8px;
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-secondary-light);
-            transition: all 0.3s ease;
-            text-align: center;
-            min-width: 80px;
-        }
-        
-        .status-label.active {
-            color: var(--accent);
-            font-weight: 600;
-        }
-        
-        .status-label.completed {
-            color: var(--card-green);
-        }
-        
-        .status-line {
-            flex: 1;
-            height: 3px;
-            background: linear-gradient(to right, var(--border-light), var(--border-light));
-            margin: 0 10px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .status-line.active::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, var(--card-green), var(--accent));
-            animation: lineProgress 1s ease-out;
-            transform-origin: left;
-        }
-        
-        @keyframes lineProgress {
-            from { transform: scaleX(0); }
-            to { transform: scaleX(1); }
-        }
-        
-        /* Enhanced Progress Bar */
-        .progress-container {
-            width: 100%;
-            height: 8px;
-            background: var(--border-light);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 30px 0;
-            position: relative;
-        }
-        
-        .progress-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, 
-                transparent 25%, 
-                rgba(255, 255, 255, 0.3) 50%, 
-                transparent 75%);
-            animation: shimmer 2s infinite;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, 
-                var(--card-green), 
-                var(--card-blue), 
-                var(--accent));
-            width: 0%;
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 4px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        
-        /* Enhanced Cards */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .gradient-border {
-            border: double 2px transparent;
-            background-image: linear-gradient(white, white), 
-                              linear-gradient(45deg, var(--accent), var(--card-blue));
-            background-origin: border-box;
-            background-clip: content-box, border-box;
-        }
-        
-        /* Enhanced Payment Options */
-        .payment-option {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .payment-option::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, 
-                rgba(255, 107, 74, 0.1), 
-                rgba(59, 130, 246, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .payment-option:hover::before {
-            opacity: 1;
-        }
-        
-        .payment-option.active {
-            border-color: var(--accent) !important;
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .payment-option.active::before {
-            opacity: 1;
-        }
-        
-        /* Enhanced Notification */
-        .notification-toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 20px;
-            border-radius: 12px;
-            font-weight: 500;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            max-width: 400px;
-            transform: translateX(120%);
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: var(--shadow-xl);
-        }
-        
-        .notification-toast.show {
-            transform: translateX(0);
-        }
-        
-        /* Enhanced Inputs */
-        .input-glow:focus {
-            box-shadow: 0 0 0 4px rgba(255, 107, 74, 0.1),
-                        0 0 0 1px var(--accent);
-            border-color: transparent;
-        }
-        
-        /* Enhanced Buttons */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent), var(--brand-red));
-            color: white;
-            font-weight: 600;
-            padding: 16px 32px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .btn-primary:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-        
-        /* Enhanced Badges */
-        .status-badge {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            backdrop-filter: blur(10px);
-        }
-        
-        /* Enhanced Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--border-light);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--brand-red);
-        }
-        
-        /* Hover Effects */
-        .hover-lift {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .hover-lift:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        /* Page Load Animation */
-        @keyframes pageLoad {
             from {
                 opacity: 0;
                 transform: translateY(20px);
@@ -453,105 +73,94 @@
             }
         }
         
-        .page-content {
-            animation: pageLoad 0.6s ease-out;
-        }
-        
-        /* Success Check Animation */
-        .success-check {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
+        /* Status Indicator */
+        .status-indicator {
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto;
-            position: relative;
+            gap: 10px;
+            margin: 20px 0;
         }
         
-        .success-check::before {
-            content: '';
-            position: absolute;
-            inset: -4px;
+        .status-dot {
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            border: 3px solid var(--card-green);
-            animation: checkRing 0.6s ease-out;
+            background: var(--border-light);
         }
         
-        .success-check i {
-            font-size: 36px;
-            color: var(--card-green);
-            animation: checkScale 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        .status-dot.active {
+            background: var(--card-green);
+            animation: pulse 2s infinite;
         }
         
-        @keyframes checkRing {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        .status-dot.completed {
+            background: var(--card-green);
         }
         
-        @keyframes checkScale {
-            0% { transform: scale(0); }
-            70% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
-        /* Ripple Effect */
-        .ripple {
-            position: relative;
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: var(--border-light);
+            border-radius: 3px;
             overflow: hidden;
+            margin: 20px 0;
         }
         
-        .ripple::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--card-green), var(--card-blue));
+            width: 0%;
+            transition: width 0.3s ease;
         }
         
-        .ripple:focus:not(:active)::after {
-            animation: ripple 1s ease-out;
+        /* Error States */
+        .error-alert {
+            animation: shake 0.5s ease-in-out;
         }
         
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(20, 20);
-                opacity: 0;
-            }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .payment-option {
+            transition: all 0.3s ease;
+        }
+        
+        .payment-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(31, 31, 31, 0.1);
+        }
+        
+        .payment-option.active {
+            border-color: var(--accent);
+            background-color: var(--background-light);
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-white via-orange-50 to-pink-50 min-h-screen">
-    <!-- Enhanced Navigation -->
-    <nav class="sticky top-0 z-40 backdrop-blur-lg bg-white/80 shadow-sm border-b border-gray-100">
+<body class="bg-background-light">
+    <!-- Navigation -->
+    <nav class="bg-card-light shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="/dashboard" class="text-xl font-bold text-gray-900 hover:text-accent transition-colors flex items-center gap-2">
-                        <div class="w-8 h-8 bg-gradient-to-br from-accent to-brand-red rounded-lg flex items-center justify-center">
-                            <i class="fas fa-graduation-cap text-white text-sm"></i>
-                        </div>
-                        <span>ClearQ</span>
+                    <a href="/dashboard" class="text-xl font-bold text-accent">
+                        <i class="fas fa-graduation-cap mr-2"></i>ClearQ
                     </a>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full">
-                        <div class="w-6 h-6 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-white text-xs"></i>
-                        </div>
-                        <span class="text-sm font-medium text-gray-700">{{ current_user.full_name.split()[0] }}</span>
-                    </div>
-                    <a href="/logout" class="p-2 text-gray-400 hover:text-brand-red transition-colors rounded-full hover:bg-red-50">
+                <div class="flex items-center">
+                    <span class="text-text-secondary-light mr-4">
+                        <i class="fas fa-user mr-1"></i>{{ current_user.full_name }}
+                    </span>
+                    <a href="/logout" class="text-brand-red hover:text-red-700">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </div>
@@ -560,183 +169,143 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <!-- Back Button with Enhanced Style -->
-        <a href="/dashboard" class="inline-flex items-center gap-2 text-gray-600 hover:text-accent transition-colors mb-6 group">
-            <div class="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-accent/10 flex items-center justify-center transition-colors">
-                <i class="fas fa-arrow-left text-sm group-hover:text-accent"></i>
-            </div>
-            <span class="font-medium">Back to Dashboard</span>
+    <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <!-- Back Button -->
+        <a href="/dashboard" class="inline-flex items-center text-accent hover:text-primary-hover mb-6">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
         </a>
 
         <!-- Page Header -->
-        <div class="text-center mb-12">
-            <div class="inline-block p-3 bg-gradient-to-br from-accent/10 to-brand-red/10 rounded-2xl mb-4 float-animation">
-                <i class="fas fa-credit-card text-3xl text-accent"></i>
-            </div>
-            <h1 class="text-4xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-gray-900 via-accent to-brand-red bg-clip-text text-transparent">
-                Complete Your Payment
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-primary mb-2">
+                <i class="fas fa-credit-card mr-2"></i>Complete Your Payment
             </h1>
-            <p class="text-gray-600 max-w-2xl mx-auto text-lg">
+            <p class="text-text-secondary-light">
                 {% if mentor and mentor.user %}
-                    Secure payment for your booking with 
-                    <span class="font-semibold text-accent">{{ mentor.user.full_name }}</span>
+                    Secure payment for your booking with {{ mentor.user.full_name }}
                 {% elif mentor %}
-                    Secure payment for your booking with 
-                    <span class="font-semibold text-accent">{{ mentor.full_name if mentor.full_name else 'Mentor' }}</span>
+                    Secure payment for your booking with {{ mentor.full_name if mentor.full_name else 'Mentor' }}
                 {% else %}
-                    Complete your secure payment to confirm the booking
+                    Secure payment for your booking
                 {% endif %}
             </p>
         </div>
 
-        <!-- Enhanced Status Indicator -->
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100">
-            <div class="status-indicator">
-                <div class="status-step">
-                    <div class="status-dot completed"></div>
-                    <div class="status-label completed">Select Service</div>
-                </div>
-                <div class="status-line active"></div>
-                <div class="status-step">
-                    <div class="status-dot completed"></div>
-                    <div class="status-label completed">Choose Time</div>
-                </div>
-                <div class="status-line active"></div>
-                <div class="status-step">
-                    <div class="status-dot active"></div>
-                    <div class="status-label active">Make Payment</div>
-                </div>
-            </div>
+        <!-- Status Indicator -->
+        <div class="status-indicator mb-6">
+            <div class="status-dot completed"></div>
+            <div class="text-sm text-text-secondary-light">Select Service</div>
+            <div class="flex-1 h-0.5 bg-border-light mx-4"></div>
+            <div class="status-dot completed"></div>
+            <div class="text-sm text-text-secondary-light">Choose Time</div>
+            <div class="flex-1 h-0.5 bg-border-light mx-4"></div>
+            <div class="status-dot active"></div>
+            <div class="text-sm font-medium text-accent">Make Payment</div>
         </div>
 
-        <!-- Booking Summary Card -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <!-- Service Details Card -->
-            <div class="lg:col-span-2">
-                <div class="glass-card rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover-lift">
-                    <div class="bg-gradient-to-r from-gray-900 to-gray-800 p-6">
-                        <h2 class="text-xl font-semibold text-white flex items-center gap-2">
-                            <i class="fas fa-receipt"></i>
-                            Booking Summary
-                        </h2>
-                        <p class="text-gray-300 text-sm mt-1">Review your booking details before payment</p>
-                    </div>
-                    
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Service Details -->
-                            <div>
-                                <div class="flex items-start gap-3 mb-4">
-                                    <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-book text-blue-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600 mb-1">Service</p>
-                                        <p class="font-semibold text-gray-900">{{ service.name if service else 'N/A' }}</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-start gap-3 mb-4">
-                                    <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-money-bill text-green-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600 mb-1">Price</p>
-                                        <p class="font-semibold text-gray-900">
-                                            ₹{{ booking.amount_paid if booking.amount_paid else service.price }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Mentor & Timing -->
-                            <div>
-                                {% if mentor and mentor.user %}
-                                <div class="flex items-start gap-3 mb-4">
-                                    <div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-user-tie text-accent"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600 mb-1">Mentor</p>
-                                        <p class="font-semibold text-gray-900">{{ mentor.user.full_name }}</p>
-                                    </div>
-                                </div>
-                                {% endif %}
-                                
-                                <div class="flex items-start gap-3 mb-4">
-                                    <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-calendar-alt text-purple-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600 mb-1">Booking ID</p>
-                                        <p class="font-semibold text-gray-900">#{{ booking.id }}</p>
-                                    </div>
-                                </div>
-                                
-                                {% if booking.selected_time %}
-                                <div class="flex items-start gap-3">
-                                    <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-clock text-yellow-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600 mb-1">Time</p>
-                                        <p class="font-semibold text-gray-900">{{ booking.selected_time }}</p>
-                                    </div>
-                                </div>
-                                {% endif %}
-                            </div>
+        <!-- Booking Summary -->
+        <div class="bg-card-light rounded-xl shadow-lg p-6 mb-8 border border-border-light">
+            <h2 class="text-xl font-semibold text-primary mb-4 pb-3 border-b border-border-light">
+                <i class="fas fa-receipt mr-2"></i>Booking Summary
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Service Details -->
+                <div>
+                    <h3 class="font-medium text-text-secondary-light mb-3">Service Details</h3>
+                    <div class="space-y-3">
+                        {% if service %}
+                        <div class="flex items-center">
+                            <i class="fas fa-book text-card-blue w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-text-secondary-light">Service:</span>
+                                <span class="font-medium ml-2 text-primary">{{ service.name }}</span>
+                            </span>
                         </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-money-bill text-card-green w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-text-secondary-light">Price:</span>
+                                <span class="font-medium ml-2 text-primary">₹{{ booking.amount_paid if booking.amount_paid else service.price }}</span>
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if mentor and mentor.user %}
+                        <div class="flex items-center">
+                            <i class="fas fa-user-tie text-accent w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-text-secondary-light">Mentor:</span>
+                                <span class="font-medium ml-2 text-primary">{{ mentor.user.full_name }}</span>
+                            </span>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-            </div>
 
-            <!-- Payment Summary Card -->
-            <div class="lg:col-span-1">
-                <div class="glass-card rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover-lift">
-                    <div class="bg-gradient-to-r from-accent to-brand-red p-6">
-                        <h2 class="text-xl font-semibold text-white flex items-center gap-2">
-                            <i class="fas fa-money-check-alt"></i>
-                            Payment Summary
-                        </h2>
-                    </div>
-                    
-                    <div class="p-6">
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">Amount</span>
-                                <span class="font-semibold text-gray-900">
+                <!-- Booking & Payment Details -->
+                <div>
+                    <h3 class="font-medium text-text-secondary-light mb-3">Booking & Payment Details</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-alt text-primary w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-text-secondary-light">Booking ID:</span>
+                                <span class="font-medium ml-2 text-primary">#{{ booking.id }}</span>
+                            </span>
+                        </div>
+                        
+                        {% if booking.booking_date %}
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-day text-card-blue w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-text-secondary-light">Date:</span>
+                                <span class="font-medium ml-2 text-primary">
+                                    {% if booking.booking_date is string %}
+                                        {{ booking.booking_date }}
+                                    {% else %}
+                                        {{ booking.booking_date.strftime('%d %b %Y') }}
+                                    {% endif %}
+                                </span>
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if booking.selected_time %}
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-card-green w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-text-secondary-light">Time:</span>
+                                <span class="font-medium ml-2 text-primary">{{ booking.selected_time }}</span>
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Amount to Pay -->
+                        <div class="flex items-center pt-3 border-t border-border-light">
+                            <i class="fas fa-money-check-alt text-accent w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-text-secondary-light">Amount to Pay:</span>
+                                <span class="font-bold text-lg ml-2 text-primary">
                                     ₹{{ booking.amount_paid if booking.amount_paid else (service.price if service else 0) }}
                                 </span>
-                            </div>
-                            
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">Processing Fees</span>
-                                <span class="font-semibold text-gray-900">₹0.00</span>
-                            </div>
-                            
-                            <div class="border-t border-gray-200 pt-4 mt-4">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-lg font-semibold text-gray-900">Total Amount</span>
-                                    <span class="text-2xl font-bold text-accent">
-                                        ₹{{ booking.amount_paid if booking.amount_paid else (service.price if service else 0) }}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <div class="pt-4">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-gray-600">Status</span>
-                                    <span class="status-badge 
-                                        {% if booking.payment_status == 'pending' %}bg-yellow-100 text-yellow-800
-                                        {% elif booking.payment_status == 'paid' %}bg-green-100 text-green-800
-                                        {% elif booking.payment_status == 'failed' %}bg-red-100 text-red-800
-                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                        <i class="fas fa-circle text-xs"></i>
-                                        {{ booking.payment_status if booking.payment_status else 'pending' }}
-                                    </span>
-                                </div>
-                            </div>
+                            </span>
+                        </div>
+                        
+                        <!-- Payment Status -->
+                        <div class="flex items-center">
+                            <i class="fas fa-tag text-brand-red w-6"></i>
+                            <span class="ml-3">
+                                <span class="text-text-secondary-light">Status:</span>
+                                <span class="font-medium ml-2 capitalize px-3 py-1 rounded-full text-sm 
+                                    {% if booking.payment_status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif booking.payment_status == 'paid' %}bg-card-green text-green-800
+                                    {% elif booking.payment_status == 'failed' %}bg-brand-red text-red-800
+                                    {% elif booking.payment_status == 'refunded' %}bg-card-blue text-blue-800
+                                    {% else %}bg-border-light text-primary{% endif %}">
+                                    {{ booking.payment_status if booking.payment_status else 'pending' }}
+                                </span>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -744,445 +313,282 @@
         </div>
 
         <!-- Payment Section -->
-        <div class="glass-card rounded-2xl shadow-lg overflow-hidden border border-gray-100 mb-8">
-            <div class="p-8">
-                <!-- Payment Header -->
-                <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-900 mb-2">
-                            <i class="fas fa-lock text-accent mr-2"></i>
-                            Secure Payment
-                        </h2>
-                        <p class="text-gray-600">Choose your preferred payment method</p>
-                    </div>
-                    <div class="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full">
-                        <i class="fas fa-shield-alt text-green-600"></i>
-                        <span class="text-sm font-medium text-green-700">256-bit SSL Secured</span>
+        <div class="bg-card-light rounded-xl shadow-lg p-6 border border-border-light">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-primary">
+                    <i class="fas fa-lock mr-2"></i>Secure Payment
+                </h2>
+                <div class="flex items-center text-card-green">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    <span class="text-sm">256-bit SSL Secured</span>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="mb-8">
+                <div class="flex items-center justify-center mb-6">
+                    <div class="bg-accent-beige px-4 py-2 rounded-lg">
+                        <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" class="h-8">
                     </div>
                 </div>
-
-                <!-- Payment Provider -->
-                <div class="flex flex-col items-center justify-center mb-8">
-                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-4 rounded-xl mb-4">
-                        <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" class="h-10">
-                    </div>
-                    <p class="text-gray-600 text-center max-w-lg">
-                        You'll be redirected to Razorpay's secure payment gateway to complete your transaction.
-                        All transactions are encrypted and secure.
-                    </p>
-                </div>
-
-                <!-- Payment Methods -->
+                
+                <!-- Payment Method Selection -->
                 <div class="mb-8">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <i class="fas fa-credit-card text-gray-400"></i>
-                        Choose Payment Method
-                    </h3>
+                    <h3 class="font-medium text-text-secondary-light mb-4">Choose Payment Method:</h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Credit/Debit Card -->
-                        <div class="payment-option p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover-lift" 
+                        <div class="payment-option p-4 border-2 border-border-light rounded-lg cursor-pointer text-center hover:border-accent" 
                              onclick="selectPaymentMethod('card')" id="cardOption">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center mb-3">
-                                    <i class="fas fa-credit-card text-blue-600 text-2xl"></i>
-                                </div>
-                                <p class="font-semibold text-gray-900">Credit/Debit Card</p>
-                                <p class="text-sm text-gray-600 mt-1">Visa, MasterCard, RuPay</p>
-                                <div class="flex gap-1 mt-2">
-                                    <div class="w-8 h-5 bg-blue-500 rounded"></div>
-                                    <div class="w-8 h-5 bg-red-500 rounded"></div>
-                                    <div class="w-8 h-5 bg-yellow-500 rounded"></div>
-                                </div>
+                            <div class="w-12 h-12 bg-accent-beige rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-credit-card text-accent text-xl"></i>
                             </div>
+                            <p class="font-medium text-primary">Credit/Debit Card</p>
+                            <p class="text-xs text-text-secondary-light mt-1">Visa, MasterCard, RuPay</p>
                         </div>
                         
                         <!-- UPI -->
-                        <div class="payment-option p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover-lift"
+                        <div class="payment-option p-4 border-2 border-border-light rounded-lg cursor-pointer text-center hover:border-card-green"
                              onclick="selectPaymentMethod('upi')" id="upiOption">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center mb-3">
-                                    <i class="fas fa-mobile-alt text-green-600 text-2xl"></i>
-                                </div>
-                                <p class="font-semibold text-gray-900">UPI</p>
-                                <p class="text-sm text-gray-600 mt-1">Google Pay, PhonePe, Paytm</p>
-                                <div class="flex gap-2 mt-2">
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded">GPay</span>
-                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">PhonePe</span>
-                                </div>
+                            <div class="w-12 h-12 bg-card-green/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-mobile-alt text-card-green text-xl"></i>
                             </div>
+                            <p class="font-medium text-primary">UPI</p>
+                            <p class="text-xs text-text-secondary-light mt-1">Google Pay, PhonePe, Paytm</p>
                         </div>
                         
                         <!-- Net Banking -->
-                        <div class="payment-option p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover-lift"
+                        <div class="payment-option p-4 border-2 border-border-light rounded-lg cursor-pointer text-center hover:border-accent"
                              onclick="selectPaymentMethod('netbanking')" id="netbankingOption">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center mb-3">
-                                    <i class="fas fa-university text-purple-600 text-2xl"></i>
-                                </div>
-                                <p class="font-semibold text-gray-900">Net Banking</p>
-                                <p class="text-sm text-gray-600 mt-1">All major banks</p>
-                                <div class="flex gap-1 mt-2">
-                                    <div class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">HDFC</div>
-                                    <div class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">ICICI</div>
-                                    <div class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">SBI</div>
-                                </div>
+                            <div class="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-university text-accent text-xl"></i>
                             </div>
+                            <p class="font-medium text-primary">Net Banking</p>
+                            <p class="text-xs text-text-secondary-light mt-1">All major banks</p>
                         </div>
                     </div>
                     
-                    <!-- Selected Method Indicator -->
-                    <div id="selectedMethod" class="mt-6 p-4 bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/20 rounded-xl hidden">
+                    <!-- Selected method indicator -->
+                    <div id="selectedMethod" class="mt-4 p-3 bg-accent-beige border border-accent rounded-lg hidden">
                         <div class="flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-white text-sm"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900">Selected Method</p>
-                                <p class="text-sm text-gray-600" id="selectedMethodText"></p>
-                            </div>
+                            <i class="fas fa-check-circle text-accent mr-2"></i>
+                            <span class="font-medium text-primary" id="selectedMethodText"></span>
                         </div>
                     </div>
                 </div>
-
-                <!-- Amount Display -->
-                <div class="text-center mb-8">
+                
+                <p class="text-text-secondary-light text-center mb-6">
+                    You'll be redirected to Razorpay's secure payment gateway to complete your transaction.
+                </p>
+                
+                <!-- Display the amount -->
+                <div class="text-center mb-6">
                     {% set payment_amount = booking.amount_paid if booking.amount_paid else (service.price if service else 0) %}
-                    <div class="inline-block bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 rounded-2xl shadow-inner">
-                        <p class="text-sm text-gray-600 mb-2">Total Amount to Pay</p>
-                        <p class="text-4xl font-bold text-gray-900 mb-1">₹{{ payment_amount }}</p>
-                        <p class="text-xs text-gray-500">+ Razorpay processing fees may apply</p>
+                    <div class="inline-block bg-accent-beige px-6 py-3 rounded-lg">
+                        <p class="text-sm text-text-secondary-light">Total Amount</p>
+                        <p class="text-3xl font-bold text-primary">₹{{ payment_amount }}</p>
+                        <p class="text-xs text-text-secondary-light mt-1">+ Razorpay processing fees may apply</p>
                     </div>
                 </div>
+            </div>
 
-                <!-- Payment Button -->
-                <div class="text-center">
-                    {% set payment_amount = booking.amount_paid if booking.amount_paid else (service.price if service else 0) %}
-                    
-                    {% if booking.payment_status == 'paid' %}
-                    <div class="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-2xl p-8 mb-6 payment-success">
-                        <div class="success-check mb-4">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <p class="text-green-800 font-semibold text-lg mb-2">Payment Already Completed</p>
-                        <p class="text-green-600 mb-6">Your booking is confirmed and paid.</p>
-                        <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                            {% if service and service.is_digital %}
-                            <a href="/digital-product/{{ service.id }}" 
-                               class="btn-primary bg-gradient-to-r from-green-600 to-green-700">
-                                <i class="fas fa-download mr-2"></i>Access Digital Product
-                            </a>
-                            {% elif booking.meeting_link %}
-                            <a href="/meeting/{{ booking.id }}" 
-                               class="btn-primary bg-gradient-to-r from-blue-600 to-blue-700">
-                                <i class="fas fa-video mr-2"></i>Go to Meeting
-                            </a>
-                            {% endif %}
-                            <a href="/dashboard" 
-                               class="px-6 py-3 bg-gray-900 hover:bg-black text-white font-semibold rounded-lg transition-colors">
-                                <i class="fas fa-home mr-2"></i>Go to Dashboard
-                            </a>
-                        </div>
+            <!-- Payment Button -->
+            <div class="text-center">
+                {% set payment_amount = booking.amount_paid if booking.amount_paid else (service.price if service else 0) %}
+                
+                {% if booking.payment_status == 'paid' %}
+                <div class="bg-card-green/10 border border-card-green rounded-lg p-6 mb-4 payment-success">
+                    <i class="fas fa-check-circle text-card-green text-4xl mb-3"></i>
+                    <p class="text-card-green font-medium text-lg mb-1">Payment Already Completed</p>
+                    <p class="text-card-green">Your booking is confirmed and paid.</p>
+                    <div class="mt-4">
+                        {% if service and service.is_digital %}
+                        <a href="/digital-product/{{ service.id }}" 
+                           class="inline-block bg-card-green hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition duration-300 mr-2">
+                            Access Digital Product
+                        </a>
+                        {% elif booking.meeting_link %}
+                        <a href="/meeting/{{ booking.id }}" 
+                           class="inline-block bg-card-green hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg transition duration-300 mr-2">
+                            Go to Meeting
+                        </a>
+                        {% endif %}
+                        <a href="/dashboard" 
+                           class="inline-block bg-secondary hover:bg-primary-hover text-white font-bold py-2 px-6 rounded-lg transition duration-300">
+                            Go to Dashboard
+                        </a>
                     </div>
-                    {% else %}
-                    <button id="payButton" 
-                            class="btn-primary px-12 py-4 text-lg font-semibold glow-effect ripple mb-6"
-                            onclick="initializePayment()">
-                        <i class="fas fa-lock mr-3"></i>
-                        Pay ₹{{ payment_amount }} Now
-                    </button>
-                    
-                    <!-- Progress Bar -->
-                    <div class="progress-container mb-6">
-                        <div class="progress-bar" id="paymentProgress"></div>
-                    </div>
-                    
-                    <!-- Manual UPI Option -->
-                    <div class="mt-8 p-5 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl">
-                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                            <i class="fas fa-qrcode text-accent"></i>
-                            Manual UPI Payment
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="flex flex-col justify-center">
-                                <p class="text-sm text-gray-600 mb-2">Use this UPI ID:</p>
-                                <div class="flex items-center gap-3">
-                                    <code class="font-mono text-lg text-accent bg-white px-4 py-2 rounded-lg">clearq@razorpay</code>
-                                    <button onclick="copyUPI()" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                                        <i class="fas fa-copy mr-2"></i>Copy
-                                    </button>
-                                </div>
-                                <p class="text-xs text-gray-500 mt-2">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Include Booking ID: #{{ booking.id }} in the payment note
-                                </p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <div class="w-32 h-32 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-                                    <i class="fas fa-qrcode text-4xl text-gray-300"></i>
-                                </div>
-                                <p class="text-xs text-gray-500 mt-2">Scan to pay via any UPI app</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Terms -->
-                    <p class="text-gray-600 text-sm mt-8 text-center">
-                        <i class="fas fa-lock mr-1"></i>
-                        By proceeding, you agree to our 
-                        <a href="/terms" class="text-accent hover:underline font-medium">Terms of Service</a> and 
-                        <a href="/privacy" class="text-accent hover:underline font-medium">Privacy Policy</a>
+                </div>
+                {% else %}
+                <button id="payButton" 
+                        class="bg-accent hover:bg-brand-red text-white font-bold py-4 px-10 rounded-lg 
+                               transition duration-300 transform hover:scale-105 shadow-lg 
+                               flex items-center justify-center mx-auto"
+                        onclick="initializePayment()">
+                    <i class="fas fa-lock mr-3"></i>
+                    <span>Pay ₹{{ payment_amount }} Now</span>
+                </button>
+                
+                <!-- Manual UPI Payment Option -->
+                <div class="mt-4 p-4 bg-accent-beige border border-border-light rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">
+                        <i class="fas fa-mobile-alt mr-2"></i>Manual UPI Payment
+                    </h4>
+                    <p class="text-sm text-text-secondary-light mb-2">
+                        Scan QR code or use UPI ID:
                     </p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Important Notes -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Security Info -->
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center">
-                        <i class="fas fa-shield-alt text-blue-600"></i>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-mono text-accent">clearq@razorpay</p>
+                            <p class="text-xs text-text-secondary-light">Include Booking ID: #{{ booking.id }}</p>
+                        </div>
+                        <button onclick="copyUPI()" class="px-3 py-1 bg-accent-beige text-accent rounded text-sm hover:bg-accent/20">
+                            <i class="fas fa-copy mr-1"></i>Copy
+                        </button>
                     </div>
-                    <h4 class="font-semibold text-gray-900">Bank-Level Security</h4>
                 </div>
-                <p class="text-sm text-gray-700">
-                    All payments are encrypted with 256-bit SSL security. Your card details are never stored on our servers.
+                
+                <div class="progress-container mt-4">
+                    <div class="progress-bar" id="paymentProgress"></div>
+                </div>
+                
+                <p class="text-text-secondary-light text-sm mt-4">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    By proceeding, you agree to our <a href="/terms" class="text-accent hover:underline">Terms of Service</a> and <a href="/privacy" class="text-accent hover:underline">Privacy Policy</a>
                 </p>
+                {% endif %}
             </div>
-            
-            <!-- Support Info -->
-            <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-5">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center">
-                        <i class="fas fa-headset text-green-600"></i>
-                    </div>
-                    <h4 class="font-semibold text-gray-900">24/7 Support</h4>
-                </div>
-                <p class="text-sm text-gray-700">
-                    Need help? Contact our support team anytime at 
-                    <a href="mailto:support@clearq.in" class="text-green-700 hover:underline">support@clearq.in</a>
-                </p>
-            </div>
-            
-            <!-- Refund Info -->
-            <div class="bg-gradient-to-br from-accent/10 to-accent/20 border border-accent/30 rounded-xl p-5">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                        <i class="fas fa-undo text-accent"></i>
-                    </div>
-                    <h4 class="font-semibold text-gray-900">Easy Refunds</h4>
-                </div>
-                <p class="text-sm text-gray-700">
-                    Cancel anytime up to 24 hours before the session for a full refund. Refunds processed within 5-7 business days.
-                </p>
+
+            <!-- Important Notes -->
+            <div class="mt-8 p-4 bg-accent/10 border border-accent/20 rounded-lg">
+                <h3 class="font-medium text-primary mb-2">
+                    <i class="fas fa-exclamation-circle mr-2 text-accent"></i>Important Notes
+                </h3>
+                <ul class="text-sm text-primary space-y-1">
+                    <li>• Your booking will be confirmed only after successful payment</li>
+                    <li>• The meeting link will be shared after payment confirmation</li>
+                    <li>• You can cancel and get a refund up to 24 hours before the session</li>
+                    <li>• All payments are processed securely via Razorpay</li>
+                    <li>• In case of payment failure, amount will be refunded within 5-7 business days</li>
+                </ul>
             </div>
         </div>
 
-        <!-- Support Footer -->
-        <div class="text-center py-6 border-t border-gray-200">
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <div class="flex items-center gap-2 text-gray-600">
-                    <i class="fas fa-question-circle"></i>
-                    <span>Need assistance?</span>
-                </div>
-                <a href="mailto:support@clearq.in" class="px-4 py-2 bg-accent hover:bg-brand-red text-white rounded-lg font-medium transition-colors">
-                    <i class="fas fa-envelope mr-2"></i>Contact Support
-                </a>
-                <a href="tel:+911234567890" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">
-                    <i class="fas fa-phone mr-2"></i>+91 12345 67890
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Success Modal -->
-    <div id="successModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center border border-gray-100 shadow-2xl transform transition-all duration-300 scale-95" id="successModalContent">
-            <div class="success-check mb-6">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">Payment Successful! 🎉</h3>
-            <p class="text-gray-600 mb-6" id="successMessage">Your payment has been verified. Redirecting...</p>
-            <div class="flex justify-center mb-6">
-                <div class="loader"></div>
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" id="redirectProgress" style="width: 0%"></div>
-            </div>
-            <p class="text-sm text-gray-500 mt-4">Please wait while we confirm your booking...</p>
-        </div>
-    </div>
-
-    <!-- Error Modal -->
-    <div id="errorModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-2xl p-8 max-w-md mx-4 text-center border border-gray-100 shadow-2xl error-alert">
-            <div class="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h3>
-            <p class="text-gray-600 mb-6" id="errorMessage">There was an issue processing your payment.</p>
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <button id="retryButton" class="px-6 py-3 bg-accent hover:bg-brand-red text-white rounded-lg font-semibold transition-colors">
-                    <i class="fas fa-redo mr-2"></i>Try Again
-                </button>
-                <button onclick="closeErrorModal()" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold transition-colors">
-                    <i class="fas fa-times mr-2"></i>Cancel
-                </button>
-            </div>
-            <p class="text-sm text-gray-500 mt-4">
-                <i class="fas fa-info-circle mr-1"></i>
-                If the issue persists, please contact support.
+        <!-- Support Info -->
+        <div class="mt-8 text-center">
+            <p class="text-text-secondary-light">
+                <i class="fas fa-question-circle mr-2"></i>
+                Need help? 
+                <a href="mailto:support@clearq.in" class="text-accent hover:underline">
+                    Contact Support
+                </a> or call +91-XXXXXXXXXX
             </p>
         </div>
     </div>
 
-    <!-- Notification Container -->
-    <div id="notification-container" class="fixed top-6 right-6 z-50"></div>
+    <!-- Success Modal (Hidden by default) -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-card-light rounded-2xl p-8 max-w-md mx-4 text-center border border-border-light">
+            <div class="w-20 h-20 bg-card-green/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-check text-card-green text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-primary mb-2">Payment Successful! 🎉</h3>
+            <p class="text-text-secondary-light mb-6" id="successMessage">Your payment has been verified. Redirecting...</p>
+            <div class="loader mx-auto mb-4"></div>
+            <div class="progress-container">
+                <div class="progress-bar" id="redirectProgress" style="width: 0%"></div>
+            </div>
+            <p class="text-sm text-text-secondary-light mt-4">Please wait while we confirm your booking...</p>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-card-light rounded-2xl p-8 max-w-md mx-4 text-center error-alert border border-border-light">
+            <div class="w-20 h-20 bg-brand-red/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-exclamation-triangle text-brand-red text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-primary mb-2">Payment Failed</h3>
+            <p class="text-text-secondary-light mb-6" id="errorMessage">There was an issue processing your payment.</p>
+            <div class="flex gap-4 justify-center">
+                <button id="retryButton" class="px-6 py-2 bg-accent text-white rounded-lg hover:bg-brand-red transition">
+                    <i class="fas fa-redo mr-2"></i>Try Again
+                </button>
+                <button onclick="closeErrorModal()" class="px-6 py-2 bg-border-light text-primary rounded-lg hover:bg-border-dark transition">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- JavaScript -->
     <script>
-        // Enhanced JavaScript with improved animations
+        // Global variables
         let selectedPaymentMethod = 'card';
         let currentRazorpayInstance = null;
         
-        // Enhanced payment method selection with animation
+        // Payment method selection
         function selectPaymentMethod(method) {
             selectedPaymentMethod = method;
             
-            // Remove active class from all
+            // Update UI
             document.querySelectorAll('.payment-option').forEach(option => {
-                option.classList.remove('active', 'border-accent', 'border-green-500', 'border-blue-500');
-                option.style.transform = '';
+                option.classList.remove('active');
+                option.classList.remove('border-accent', 'border-card-green');
             });
             
-            // Add active class to selected with animation
             const selectedOption = document.getElementById(method + 'Option');
             if (selectedOption) {
                 selectedOption.classList.add('active');
-                const colors = {
-                    'card': 'accent',
-                    'upi': 'green-500',
-                    'netbanking': 'blue-500'
-                };
-                selectedOption.classList.add(`border-${colors[method] || 'accent'}`);
-                
-                // Bounce animation
-                selectedOption.style.transform = 'scale(1.02)';
-                setTimeout(() => {
-                    selectedOption.style.transform = '';
-                }, 300);
+                if (method === 'card') selectedOption.classList.add('border-accent');
+                if (method === 'upi') selectedOption.classList.add('border-card-green');
+                if (method === 'netbanking') selectedOption.classList.add('border-accent');
             }
             
-            // Show selected method with fade in
+            // Show selected method
             const methodNames = {
                 'card': 'Credit/Debit Card',
                 'upi': 'UPI (Google Pay, PhonePe, Paytm)',
                 'netbanking': 'Net Banking'
             };
             
-            const selectedMethod = document.getElementById('selectedMethod');
-            const selectedMethodText = document.getElementById('selectedMethodText');
-            
-            selectedMethodText.textContent = methodNames[method] || method;
-            
-            // Animate in
-            selectedMethod.classList.remove('hidden');
-            selectedMethod.style.opacity = '0';
-            selectedMethod.style.transform = 'translateY(-10px)';
-            
-            setTimeout(() => {
-                selectedMethod.style.transition = 'all 0.3s ease';
-                selectedMethod.style.opacity = '1';
-                selectedMethod.style.transform = 'translateY(0)';
-            }, 10);
+            document.getElementById('selectedMethodText').textContent = 
+                `Selected: ${methodNames[method] || method}`;
+            document.getElementById('selectedMethod').classList.remove('hidden');
         }
         
-        // Enhanced copy UPI ID with toast
+        // Copy UPI ID
         function copyUPI() {
             const upiId = 'clearq@razorpay';
             navigator.clipboard.writeText(upiId)
                 .then(() => {
-                    showNotification('UPI ID copied to clipboard!', 'success');
+                    // Show toast
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed top-4 right-4 bg-card-green/10 border border-card-green text-card-green px-4 py-3 rounded z-50';
+                    toast.innerHTML = '<i class="fas fa-check-circle mr-2"></i> UPI ID copied!';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
                 })
-                .catch(err => {
-                    showNotification('Failed to copy UPI ID', 'error');
-                    console.error('Copy failed:', err);
-                });
+                .catch(err => console.error('Copy failed:', err));
         }
         
-        // Enhanced progress bar update
+        // Update progress bar
         function updateProgress(bar, percent) {
             if (bar) {
-                bar.style.transition = 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
                 bar.style.width = percent + '%';
             }
         }
         
-        // Enhanced notification system
-        function showNotification(message, type = 'info') {
-            const container = document.getElementById('notification-container');
-            
-            // Remove existing notifications
-            container.querySelectorAll('.notification-toast').forEach(toast => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            });
-            
-            // Create new notification
-            const toast = document.createElement('div');
-            toast.className = `notification-toast ${type}`;
-            
-            // Set colors based on type
-            let bgColor = 'bg-gradient-to-r from-blue-500 to-blue-600 text-white';
-            let icon = 'info-circle';
-            
-            if (type === 'success') {
-                bgColor = 'bg-gradient-to-r from-green-500 to-green-600 text-white';
-                icon = 'check-circle';
-            } else if (type === 'error') {
-                bgColor = 'bg-gradient-to-r from-red-500 to-red-600 text-white';
-                icon = 'exclamation-circle';
-            }
-            
-            toast.className += ' ' + bgColor;
-            toast.innerHTML = `
-                <i class="fas fa-${icon} text-lg"></i>
-                <span class="font-medium">${message}</span>
-                <button onclick="this.parentElement.classList.remove('show')" class="ml-auto">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            container.appendChild(toast);
-            
-            // Show with animation
-            setTimeout(() => toast.classList.add('show'), 10);
-            
-            // Auto remove
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
-        }
-        
-        // Enhanced success modal
+        // Show success modal
         function showSuccessModal(message) {
             const successModal = document.getElementById('successModal');
-            const successModalContent = document.getElementById('successModalContent');
             const successMessage = document.getElementById('successMessage');
             
             if (successMessage && message) {
                 successMessage.textContent = message;
             }
-            
             if (successModal) {
                 successModal.classList.remove('hidden');
-                setTimeout(() => {
-                    successModalContent.style.transform = 'scale(1)';
-                }, 10);
             }
             
             // Animate redirect progress
@@ -1197,7 +603,7 @@
             }, 20);
         }
         
-        // Enhanced error modal
+        // Show error modal
         function showErrorModal(message) {
             const errorModal = document.getElementById('errorModal');
             const errorMessage = document.getElementById('errorMessage');
@@ -1205,13 +611,12 @@
             if (errorMessage && message) {
                 errorMessage.textContent = message;
             }
-            
             if (errorModal) {
                 errorModal.classList.remove('hidden');
             }
         }
         
-        // Close error modal with animation
+        // Close error modal
         function closeErrorModal() {
             const errorModal = document.getElementById('errorModal');
             if (errorModal) {
@@ -1219,41 +624,310 @@
             }
         }
         
-        // Enhanced payment button reset
+        // Reset payment button
         function resetPaymentButton() {
             const payButton = document.getElementById('payButton');
             if (payButton) {
                 payButton.disabled = false;
-                payButton.innerHTML = '<i class="fas fa-lock mr-3"></i>Pay ₹{{ payment_amount }} Now';
-                payButton.classList.remove('opacity-50');
+                payButton.innerHTML = '<i class="fas fa-lock mr-3"></i><span>Pay ₹{{ payment_amount }} Now</span>';
             }
         }
         
-        // Initialize enhanced animations
+        // Initialize payment
+        async function initializePayment() {
+            try {
+                const payButton = document.getElementById('payButton');
+                const paymentProgress = document.getElementById('paymentProgress');
+                
+                // Disable button and show loading
+                payButton.disabled = true;
+                payButton.innerHTML = '<div class="loader"></div> Initializing Payment...';
+                updateProgress(paymentProgress, 10);
+                
+                // Check if Razorpay is loaded
+                if (typeof Razorpay === 'undefined') {
+                    throw new Error('Payment system not loaded. Please reload the page.');
+                }
+                
+                // Get amount in paise
+                const amount = {{ booking.amount_paid * 100 if booking.amount_paid else (service.price * 100 if service else 0) }};
+                
+                if (amount <= 0) {
+                    throw new Error('Invalid amount. Please contact support.');
+                }
+                
+                console.log('Payment amount in paise:', amount);
+                updateProgress(paymentProgress, 30);
+                
+                // Check for existing order ID
+                let orderId = "{{ booking.razorpay_order_id|default('') }}";
+                
+                // Create new order if needed
+                if (!orderId || orderId === 'None' || orderId === '' || orderId === 'null') {
+                    console.log('Creating new Razorpay order...');
+                    
+                    const response = await fetch('/api/create-razorpay-order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-Token': '{{ csrf_token if csrf_token else "" }}'
+                        },
+                        body: JSON.stringify({
+                            booking_id: {{ booking.id }},
+                            amount: amount
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || 'Failed to create payment order');
+                    }
+                    
+                    const data = await response.json();
+                    if (!data.order_id) {
+                        throw new Error('No order ID received from server');
+                    }
+                    
+                    orderId = data.order_id;
+                    console.log('New order ID:', orderId);
+                } else {
+                    console.log('Using existing order ID:', orderId);
+                }
+                
+                updateProgress(paymentProgress, 50);
+                
+                // Razorpay options based on selected method
+                const options = {
+                    key: "{{ RAZORPAY_KEY_ID }}",
+                    amount: amount,
+                    currency: "INR",
+                    name: "ClearQ Mentorship",
+                    description: "Payment for {{ service.name if service else 'Booking' }} #{{ booking.id }}",
+                    order_id: orderId,
+                    handler: async function(response) {
+                        console.log('✅ Payment successful! Response:', response);
+                        updateProgress(paymentProgress, 80);
+                        
+                        // Show success modal
+                        showSuccessModal('Verifying your payment...');
+                        
+                        // Verify payment with retry logic
+                        await verifyPaymentWithRetry(response);
+                    },
+                    prefill: {
+                        name: "{{ current_user.full_name }}",
+                        email: "{{ current_user.email }}",
+                        contact: ""
+                    },
+                    theme: {
+                        color: "#ff6b4a"
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            console.log('Payment modal closed by user');
+                            resetPaymentButton();
+                            updateProgress(paymentProgress, 0);
+                        }
+                    },
+                    notes: {
+                        booking_id: "{{ booking.id }}",
+                        service_type: "{{ 'digital' if service and service.is_digital else 'session' }}"
+                    }
+                };
+                
+                // Set payment method restrictions
+                if (selectedPaymentMethod === 'card') {
+                    options.method = {
+                        netbanking: false,
+                        card: true,
+                        upi: false,
+                        wallet: false
+                    };
+                } else if (selectedPaymentMethod === 'upi') {
+                    options.method = {
+                        netbanking: false,
+                        card: false,
+                        upi: true,
+                        wallet: false
+                    };
+                } else if (selectedPaymentMethod === 'netbanking') {
+                    options.method = {
+                        netbanking: true,
+                        card: false,
+                        upi: false,
+                        wallet: false
+                    };
+                }
+                
+                console.log('Opening Razorpay with options:', options);
+                
+                // Open Razorpay checkout
+                currentRazorpayInstance = new Razorpay(options);
+                currentRazorpayInstance.open();
+                
+                // Handle payment failures
+                currentRazorpayInstance.on('payment.failed', function(response) {
+                    console.error('Payment failed:', response.error);
+                    let errorMsg = 'Payment failed. ';
+                    
+                    if (response.error && response.error.description) {
+                        errorMsg += response.error.description;
+                    } else if (response.error && response.error.reason) {
+                        errorMsg += response.error.reason;
+                    } else {
+                        errorMsg += 'Please try again or contact support.';
+                    }
+                    
+                    showErrorModal(errorMsg);
+                    resetPaymentButton();
+                    updateProgress(paymentProgress, 0);
+                });
+                
+            } catch (error) {
+                console.error('Payment initialization error:', error);
+                showErrorModal('Error: ' + error.message);
+                resetPaymentButton();
+                const paymentProgress = document.getElementById('paymentProgress');
+                updateProgress(paymentProgress, 0);
+            }
+        }
+        
+        // Verify payment with retry logic
+        async function verifyPaymentWithRetry(response, attempt = 1) {
+            const maxRetries = 3;
+            const paymentProgress = document.getElementById('paymentProgress');
+            
+            try {
+                console.log(`Payment verification attempt ${attempt}...`);
+                
+                const verifyResponse = await fetch('/api/verify-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_signature: response.razorpay_signature,
+                        booking_id: {{ booking.id }}
+                    })
+                });
+                
+                const result = await verifyResponse.json();
+                console.log('Verification response:', result);
+                
+                if (result.success) {
+                    console.log('✅ Payment verified successfully!');
+                    updateProgress(paymentProgress, 100);
+                    
+                    // Update success message
+                    const successMessage = document.getElementById('successMessage');
+                    if (result.is_digital) {
+                        successMessage.textContent = 'Your digital product is now available! Redirecting...';
+                    } else {
+                        successMessage.textContent = 'Your booking is confirmed! Redirecting...';
+                    }
+                    
+                    // Redirect after delay
+                    setTimeout(() => {
+                        window.location.href = result.redirect_url || '/dashboard';
+                    }, 2000);
+                    
+                } else {
+                    // Retry logic
+                    if (attempt < maxRetries) {
+                        console.log(`Retrying verification... (${attempt}/${maxRetries})`);
+                        setTimeout(() => {
+                            verifyPaymentWithRetry(response, attempt + 1);
+                        }, 1000);
+                    } else {
+                        throw new Error(result.message || 'Payment verification failed');
+                    }
+                }
+            } catch (verifyError) {
+                console.error('Verification error:', verifyError);
+                
+                if (attempt < maxRetries) {
+                    setTimeout(() => {
+                        verifyPaymentWithRetry(response, attempt + 1);
+                    }, 1000);
+                } else {
+                    const errorModal = document.getElementById('errorModal');
+                    const errorMessage = document.getElementById('errorMessage');
+                    
+                    errorMessage.textContent = 
+                        'Payment verification failed. Your payment was successful but we could not confirm it. ' +
+                        'Please contact support with payment ID: ' + response.razorpay_payment_id;
+                    
+                    errorModal.classList.remove('hidden');
+                    resetPaymentButton();
+                    updateProgress(paymentProgress, 0);
+                }
+            }
+        }
+        
+        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Enhanced payment page loaded');
+            console.log('Payment page loaded');
+            console.log('Booking ID:', {{ booking.id }});
+            console.log('Payment status:', "{{ booking.payment_status }}");
+            console.log('Razorpay key available:', "{{ RAZORPAY_KEY_ID }}" ? 'Yes' : 'No');
             
-            // Set default payment method with animation
-            setTimeout(() => {
-                selectPaymentMethod('card');
-            }, 500);
+            // Set default payment method
+            selectPaymentMethod('card');
             
-            // Enhanced retry button
+            // Setup retry button
             const retryButton = document.getElementById('retryButton');
             if (retryButton) {
-                retryButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
+                retryButton.addEventListener('click', function() {
                     closeErrorModal();
                     resetPaymentButton();
                     const paymentProgress = document.getElementById('paymentProgress');
                     updateProgress(paymentProgress, 0);
-                    
-                    // Add slight delay for better UX
-                    setTimeout(() => {
-                        initializePayment();
-                    }, 300);
                 });
+            }
+            
+            // Check if payment already completed
+            {% if booking.payment_status == 'paid' %}
+            console.log('Payment already completed');
+            {% else %}
+            console.log('Payment pending - ready to accept payment');
+            {% endif %}
+            
+            // Auto-check for payment status changes (polling)
+            {% if booking.payment_status == 'pending' %}
+            const checkInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/check-booking-status/{{ booking.id }}');
+                    const data = await response.json();
+                    
+                    if (data.payment_status === 'paid') {
+                        clearInterval(checkInterval);
+                        
+                        // Show success and redirect
+                        showSuccessModal('Payment confirmed! Redirecting...');
+                        setTimeout(() => {
+                            if (data.redirect_url) {
+                                window.location.href = data.redirect_url;
+                            } else {
+                                window.location.href = '/dashboard?payment=success';
+                            }
+                        }, 2000);
+                    }
+                } catch (error) {
+                    console.error('Status check error:', error);
+                }
+            }, 5000); // Check every 5 seconds
+            {% endif %}
+            
+            // Handle URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('payment_success') === 'true') {
+                showSuccessModal('Payment successful! Processing your booking...');
+            }
+            
+            if (urlParams.get('payment_error')) {
+                showErrorModal(decodeURIComponent(urlParams.get('payment_error')));
             }
             
             // Keyboard shortcuts
@@ -1270,51 +944,12 @@
                 // Escape to close modals
                 if (e.key === 'Escape') {
                     closeErrorModal();
-                    const successModal = document.getElementById('successModal');
-                    if (successModal) {
-                        successModal.classList.add('hidden');
-                    }
                     if (currentRazorpayInstance) {
                         currentRazorpayInstance.close();
                     }
                 }
             });
-            
-            // Add hover effects to all interactive elements
-            document.querySelectorAll('button, a').forEach(element => {
-                if (element.classList.contains('no-hover')) return;
-                
-                element.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-2px)';
-                });
-                
-                element.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
-            
-            // Animate elements on scroll
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('animate-fadeIn');
-                    }
-                });
-            }, observerOptions);
-            
-            // Observe all cards
-            document.querySelectorAll('.glass-card').forEach(card => {
-                observer.observe(card);
-            });
         });
-
-        // Keep all existing payment functionality exactly as before
-        // (initializePayment, verifyPaymentWithRetry functions remain unchanged)
     </script>
 </body>
 </html>
