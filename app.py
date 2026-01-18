@@ -2090,12 +2090,25 @@ def verify_razorpay_signature(params_dict: dict, received_signature: str) -> boo
 def generate_availability_from_day_preferences(mentor_id: int, db: Session = None, days_ahead: int = 30):
     """Generate Availability records from day preferences - FIXED VERSION"""
     should_close = False
-    if db is None:
-        db = SessionLocal()
-        should_close = True
     
     try:
-        print(f"DEBUG: Starting availability generation for mentor {mentor_id}")
+        # Create or use existing session
+        if db is None:
+            db = SessionLocal()
+            should_close = True
+        
+        print(f"🔄 Starting availability generation for mentor {mentor_id} (next {days_ahead} days)")
+        
+        # First, delete any old generated availabilities to avoid duplicates
+        today = datetime.now().date()
+        deleted_old = db.query(Availability).filter(
+            Availability.mentor_id == mentor_id,
+            Availability.date >= today,
+            Availability.is_generated == True  # Only delete auto-generated ones
+        ).delete(synchronize_session=False)
+        
+        if deleted_old > 0:
+            print(f"🗑️ Deleted {deleted_old} old generated availabilities")
         
         # Get day preferences
         day_preferences = db.query(AvailabilityDay).filter(
@@ -2103,10 +2116,12 @@ def generate_availability_from_day_preferences(mentor_id: int, db: Session = Non
             AvailabilityDay.is_active == True
         ).all()
         
-        print(f"DEBUG: Found {len(day_preferences)} active day preferences")
+        print(f"📅 Found {len(day_preferences)} active day preferences")
         
+        # If no day preferences exist, return early
         if not day_preferences:
-            print(f"INFO: No active day preferences found for mentor {mentor_id}")
+            print(f"⚠️ No active day preferences found for mentor {mentor_id}")
+            db.commit()
             return
         
         # Get exceptions
@@ -2114,18 +2129,20 @@ def generate_availability_from_day_preferences(mentor_id: int, db: Session = Non
             AvailabilityException.mentor_id == mentor_id
         ).all()
         exception_dates = {ex.date: ex.is_available for ex in exceptions}
-        print(f"DEBUG: Found {len(exceptions)} exceptions")
+        print(f"📋 Found {len(exceptions)} exceptions")
         
-        today = datetime.now().date()
         end_date = today + timedelta(days=days_ahead)
         
         generated_count = 0
-        updated_count = 0
+        skipped_count = 0
+        
+        print(f"📆 Generating from {today} to {end_date}")
         
         # Generate for each day
         current_date = today
+        
         while current_date <= end_date:
-            day_of_week = current_date.weekday()
+            day_of_week = current_date.weekday()  # 0=Monday, 6=Sunday
             
             # Check if mentor is available on this day
             day_pref = next((dp for dp in day_preferences if dp.day_of_week == day_of_week), None)
@@ -2138,47 +2155,68 @@ def generate_availability_from_day_preferences(mentor_id: int, db: Session = Non
                 is_available = True
             
             if is_available and day_pref:
-                # Check if availability already exists
-                existing = db.query(Availability).filter(
+                # Check if there are any manual availabilities for this date
+                manual_availability = db.query(Availability).filter(
                     Availability.mentor_id == mentor_id,
-                    Availability.date == current_date
+                    Availability.date == current_date,
+                    Availability.is_generated == False  # Manual ones
                 ).first()
                 
-                if not existing:
-                    # Create new availability
-                    availability = Availability(
-                        mentor_id=mentor_id,
-                        date=current_date,
-                        start_time=day_pref.start_time,
-                        end_time=day_pref.end_time,
-                        is_booked=False,
-                        created_at=datetime.utcnow()
-                    )
-                    db.add(availability)
-                    generated_count += 1
-                    print(f"DEBUG: Generated availability for {current_date}")
+                if not manual_availability:
+                    # Create new generated availability
+                    try:
+                        availability = Availability(
+                            mentor_id=mentor_id,
+                            date=current_date,
+                            start_time=day_pref.start_time,
+                            end_time=day_pref.end_time,
+                            is_booked=False,
+                            is_generated=True,  # Mark as auto-generated
+                            created_at=datetime.utcnow()
+                        )
+                        db.add(availability)
+                        generated_count += 1
+                        
+                        if generated_count <= 5:  # Only log first few for brevity
+                            print(f"  ➕ Generated: {current_date} ({current_date.strftime('%A')}) {day_pref.start_time}-{day_pref.end_time}")
+                            
+                    except Exception as e:
+                        print(f"  ❌ Error creating availability for {current_date}: {e}")
                 else:
-                    # Update existing if times changed
-                    if existing.start_time != day_pref.start_time or existing.end_time != day_pref.end_time:
-                        existing.start_time = day_pref.start_time
-                        existing.end_time = day_pref.end_time
-                        updated_count += 1
-                        print(f"DEBUG: Updated availability for {current_date}")
+                    skipped_count += 1
+                    if skipped_count <= 5:
+                        print(f"  ⏭️ Skipped {current_date} - manual availability exists")
+            else:
+                skipped_count += 1
+                if skipped_count <= 5:
+                    reason = "exception" if current_date in exception_dates else "no day preference"
+                    print(f"  ❌ Skipped {current_date} - {reason}")
             
             current_date += timedelta(days=1)
         
-        db.commit()
-        print(f"SUCCESS: Generated {generated_count} new, updated {updated_count} availability records for mentor {mentor_id}")
+        # Final commit
+        try:
+            db.commit()
+            print(f"✅ SUCCESS: Generated {generated_count} new availability records, skipped {skipped_count}")
+            
+        except Exception as commit_error:
+            db.rollback()
+            print(f"❌ Failed to commit changes: {commit_error}")
+            raise
         
     except Exception as e:
-        db.rollback()
-        print(f"ERROR: Failed to generate availability: {str(e)}")
+        print(f"❌ CRITICAL ERROR generating availability: {e}")
         import traceback
         traceback.print_exc()
+        
     finally:
+        # Always close the session if we created it
         if should_close and db:
-            db.close()
-
+            try:
+                db.close()
+                print(f"🗂️ Closed database session")
+            except Exception as close_error:
+                print(f"⚠️ Error closing session: {close_error}")
 
 def create_admin_user(db: Session):
     """Create an admin user if not exists"""
@@ -4744,109 +4782,92 @@ async def update_simple_availability(
     if not current_user or current_user.role != "mentor":
         return JSONResponse({"success": False, "message": "Access denied"})
     
-    # Separate session for reading request data
     try:
         data = await request.json()
-        print(f"DEBUG: Received availability update data: {data}")
-    except Exception as e:
-        print(f"ERROR: Failed to parse JSON data: {e}")
-        return JSONResponse({"success": False, "message": f"Invalid request data: {str(e)}"})
-    
-    # Create a new session for database operations
-    new_db = SessionLocal()
-    try:
-        mentor = new_db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
+        print(f"📱 Received availability update data: {data}")
+        
+        mentor = db.query(Mentor).filter(Mentor.user_id == current_user.id).first()
         
         if not mentor:
-            new_db.close()
             return JSONResponse({"success": False, "message": "Mentor not found"})
         
-        print(f"DEBUG: Updating availability for mentor ID: {mentor.id}")
+        print(f"👨‍🏫 Updating availability for mentor ID: {mentor.id}")
         
         # Update each day preference
-        days_updated = 0
+        days_processed = 0
         for day_data in data.get("days", []):
-            day_of_week = day_data.get("day_of_week")
-            is_active = day_data.get("is_active", False)
-            start_time = day_data.get("start_time", "09:00")
-            end_time = day_data.get("end_time", "21:00")
+            # FIX: Use 'id' field as day_of_week (frontend sends 'id' not 'day_of_week')
+            day_of_week = day_data.get("id")  # This is the day number (0-6)
             
-            print(f"DEBUG: Processing day {day_of_week} - active: {is_active}, time: {start_time}-{end_time}")
+            print(f"📅 Processing day {day_of_week} - active: {day_data.get('is_active', False)}, time: {day_data.get('start_time', '09:00')}-{day_data.get('end_time', '21:00')}")
             
-            # Check if preference exists
-            day_pref = new_db.query(AvailabilityDay).filter(
+            # Validate day_of_week is a number
+            if day_of_week is None:
+                print(f"⚠️ Skipping - no day_of_week/id found in: {day_data}")
+                continue
+                
+            day_pref = db.query(AvailabilityDay).filter(
                 AvailabilityDay.mentor_id == mentor.id,
                 AvailabilityDay.day_of_week == day_of_week
             ).first()
             
             if day_pref:
-                # Update existing preference
-                day_pref.is_active = is_active
-                if is_active:
-                    day_pref.start_time = start_time
-                    day_pref.end_time = end_time
-                print(f"DEBUG: Updated existing day preference for day {day_of_week}")
+                day_pref.is_active = day_data.get("is_active", False)
+                if day_pref.is_active:
+                    day_pref.start_time = day_data.get("start_time", "09:00")
+                    day_pref.end_time = day_data.get("end_time", "21:00")
+                print(f"✅ Updated existing day preference for day {day_of_week}")
             else:
-                # Create new preference only if active
-                if is_active:
+                # Only create if active
+                if day_data.get("is_active", False):
                     day_pref = AvailabilityDay(
                         mentor_id=mentor.id,
-                        day_of_week=day_of_week,
-                        start_time=start_time,
-                        end_time=end_time,
+                        day_of_week=day_of_week,  # Use the 'id' field
+                        start_time=day_data.get("start_time", "09:00"),
+                        end_time=day_data.get("end_time", "21:00"),
                         is_active=True
                     )
-                    new_db.add(day_pref)
-                    print(f"DEBUG: Created new day preference for day {day_of_week}")
+                    db.add(day_pref)
+                    print(f"➕ Created new day preference for day {day_of_week}")
             
-            days_updated += 1
+            days_processed += 1
         
-        # Commit day preferences first
-        new_db.commit()
-        print(f"DEBUG: Committed {days_updated} day preferences")
+        db.commit()
+        print(f"✅ Updated {days_processed} day preferences for mentor {mentor.id}")
         
-        # Clean up: Delete inactive preferences
-        deleted_count = new_db.query(AvailabilityDay).filter(
+        # Clean up inactive preferences
+        deleted_count = db.query(AvailabilityDay).filter(
             AvailabilityDay.mentor_id == mentor.id,
             AvailabilityDay.is_active == False
         ).delete(synchronize_session=False)
         
-        new_db.commit()
-        print(f"DEBUG: Deleted {deleted_count} inactive preferences")
+        db.commit()
+        print(f"🗑️ Deleted {deleted_count} inactive preferences")
         
-        # Generate availabilities in background (non-blocking)
+        # Generate availabilities in a separate try-catch to not fail the whole request
         try:
-            # Close current session first
-            new_db.close()
-            
-            # Create fresh session for generation
-            gen_db = SessionLocal()
-            generate_availability_from_day_preferences(mentor.id, gen_db, 30)
-            gen_db.close()
-            print(f"DEBUG: Generated availabilities for mentor {mentor.id}")
+            print(f"🔄 Generating availabilities for mentor {mentor.id}")
+            generate_availability_from_day_preferences(mentor.id, db, 30)
         except Exception as gen_error:
-            print(f"WARNING: Error generating availabilities: {gen_error}")
-            # Don't fail the main request if generation fails
+            print(f"⚠️ Availability generation had issues (but preferences saved): {gen_error}")
+            # Continue - preferences were saved successfully
         
         return JSONResponse({
             "success": True,
-            "message": "Availability updated successfully!",
-            "days_updated": days_updated,
+            "message": "Availability preferences updated successfully!",
+            "days_updated": days_processed,
             "inactive_deleted": deleted_count
         })
         
     except Exception as e:
-        print(f"ERROR: Failed to update availability: {str(e)}")
+        db.rollback()
+        print(f"❌ Error updating preferences: {str(e)}")
         import traceback
         traceback.print_exc()
         
-        if 'new_db' in locals() and new_db:
-            new_db.rollback()
-            new_db.close()
-        
         return JSONResponse({
             "success": False,
-            "message": f"Error updating availability: {str(e)}"
+            "message": f"Error updating preferences: {str(e)}"
         })
     
     
