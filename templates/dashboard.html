@@ -315,6 +315,12 @@
         .mentor-section {
             grid-template-columns: 2fr 1fr;
         }
+        
+        #mentor-services.active,
+        #mentor-earnings.active,
+        #mentor-profile.active {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* Main Content */
@@ -412,41 +418,6 @@
     }
 
     /* Services List - Updated from services page */
-    .services-list-card {
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-light);
-        transition: var(--transition);
-    }
-
-    .services-list-card:hover {
-        box-shadow: var(--shadow-lg);
-    }
-
-    .list-header {
-        padding: 1.25rem;
-        border-bottom: 1px solid var(--border-light);
-        background: linear-gradient(135deg, var(--accent-beige) 0%, white 100%);
-    }
-
-    .list-header h2 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--primary);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .list-content {
-        padding: 1.25rem;
-        min-height: 200px;
-        display: flex;
-        flex-direction: column;
-    }
-
     .services-list {
         display: flex;
         flex-direction: column;
@@ -465,7 +436,8 @@
     .service-item:hover {
         border-color: var(--accent);
         background: var(--accent-beige);
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
     }
 
     .service-header {
@@ -505,8 +477,8 @@
     }
 
     .status-inactive {
-        background: var(--gray-100);
-        color: var(--gray-700);
+        background: var(--border-light);
+        color: var(--text-secondary-light);
     }
 
     .service-footer {
@@ -1308,7 +1280,7 @@
         gap: 0.75rem;
     }
 
-    .action-button {
+    .action-btn {
         padding: 0.75rem 1.5rem;
         border: none;
         border-radius: var(--radius);
@@ -1326,7 +1298,7 @@
         box-shadow: var(--shadow-md);
     }
 
-    .action-button::before {
+    .action-btn::before {
         content: '';
         position: absolute;
         top: 0;
@@ -1340,7 +1312,7 @@
         transition: left 0.5s;
     }
 
-    .action-button:hover::before {
+    .action-btn:hover::before {
         left: 100%;
     }
 
@@ -1599,6 +1571,25 @@
         box-shadow: var(--shadow-md);
     }
 
+    /* Services & Availability Grid */
+    .services-availability-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .services-availability-grid {
+            grid-template-columns: 2fr 1fr;
+        }
+    }
+
+    .services-section, .availability-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
     /* Responsive Design */
     @media (min-width: 640px) {
         .dashboard-header {
@@ -1727,10 +1718,10 @@
         <div class="header-content">
             <div class="user-info">
                 <div class="user-avatar">
-    <img src="https://cdn-icons-png.flaticon.com/512/5951/5951752.png" 
-         alt="{{ current_user.full_name or current_user.username }}"
-         class="user-avatar-img">
-</div>
+                    <img src="https://cdn-icons-png.flaticon.com/512/5951/5951752.png" 
+                         alt="{{ current_user.full_name or current_user.username }}"
+                         class="user-avatar-img">
+                </div>
                 <div class="user-details">
                     <h1>Welcome back, {{ current_user.full_name or current_user.username }}</h1>
                     <p>{{ current_user.role|title }} Dashboard</p>
@@ -2438,19 +2429,21 @@
             </div>
         </div>
 
-        <!-- Combined Services & Availability Section -->
+        <!-- Services & Availability Section -->
         <div id="mentor-services" class="mentor-section">
             <div style="grid-column: 1 / -1;">
                 <div class="services-availability-grid">
                     <!-- Services Column -->
                     <div class="services-section">
-                        <!-- Services Header - Updated from services page -->
-                        <div class="services-list-card">
-                            <div class="list-header">
-                                <h2>Your Services</h2>
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h2><i class="fas fa-list-alt"></i> Your Services</h2>
+                                <a href="/mentor/dashboard/services" class="header-action-btn" style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); color: white; border: none;">
+                                    <i class="fas fa-plus"></i> Add Service
+                                </a>
                             </div>
                             
-                            <div class="list-content">
+                            <div class="card-content">
                                 {% if services and services|length > 0 %}
                                 <div class="services-list">
                                     {% for service in services %}
@@ -2470,7 +2463,7 @@
                                                     {% endif %}
                                                 </div>
                                                 <div class="service-category">
-                                                    {{ service.category|replace('-', ' ')|title }}
+                                                    {{ service.category|replace('-', ' ')|title if service.category else 'General' }}
                                                 </div>
                                             </div>
                                             <span class="service-status {% if service.is_active %}status-active{% else %}status-inactive{% endif %}">
@@ -2480,12 +2473,12 @@
                                         
                                         <div style="margin-bottom: 0.5rem;">
                                             <p style="font-size: 0.8125rem; color: var(--text-secondary-light); line-height: 1.4; margin-bottom: 0.5rem;">
-                                                {{ service.description|truncate(120) }}
+                                                {{ service.description|truncate(120) if service.description else 'No description' }}
                                             </p>
                                             {% if service.is_digital and service.digital_product_url %}
                                             <div style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--text-secondary-light);">
                                                 <i class="fas fa-link"></i>
-                                                <span>Download link added</span>
+                                                <span>Download link available</span>
                                             </div>
                                             {% endif %}
                                         </div>
@@ -2513,7 +2506,6 @@
                                     </div>
                                     {% endfor %}
                                 </div>
-                                
                                 {% else %}
                                 <div class="empty-state">
                                     <div class="empty-icon">
@@ -2528,7 +2520,6 @@
                                 {% endif %}
                             </div>
                         </div>
-
                     </div>
 
                     <!-- Availability Column -->
@@ -2544,9 +2535,16 @@
                             
                             <div class="card-content">
                                 <div class="availability-summary">
+                                    {% set available_days_count = 0 %}
+                                    {% if availability_schedule %}
+                                        {% for day in availability_schedule %}
+                                            {% if day.is_available %} {% set available_days_count = available_days_count + 1 %} {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    
                                     <div style="text-align: center; margin-bottom: 1.5rem;">
                                         <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                                            {{ available_days|default(5) }}/7
+                                            {{ available_days_count }}/7
                                         </div>
                                         <div style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">
                                             Days Available This Week
@@ -2555,25 +2553,25 @@
                                     
                                     <div class="availability-days">
                                         {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
-                                        {% for day in days %}
+                                        {% for day_name in days %}
                                         <div class="availability-day">
                                             <span class="day-name">
                                                 <i class="fas fa-calendar-day"></i>
-                                                {{ day }}
+                                                {{ day_name }}
                                             </span>
-                                            <span class="day-status day-available">
-                                                <i class="fas fa-check"></i>
-                                                Available
-                                            </span>
+                                            {% if availability_schedule and availability_schedule[loop.index0].is_available %}
+                                                <span class="day-status day-available">
+                                                    <i class="fas fa-check"></i>
+                                                    Available
+                                                </span>
+                                            {% else %}
+                                                <span class="day-status day-unavailable">
+                                                    <i class="fas fa-times"></i>
+                                                    Unavailable
+                                                </span>
+                                            {% endif %}
                                         </div>
                                         {% endfor %}
-                                    </div>
-                                    
-                                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
-                                        <div style="font-size: 0.875rem; color: var(--text-secondary-light); text-align: center; font-weight: 500;">
-                                            <i class="fas fa-info-circle"></i>
-                                            Set specific time slots for each day in the availability manager
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2601,11 +2599,11 @@
                                         <span class="action-text">Manage Availability</span>
                                     </a>
                                     
-                                    <a href="/mentor/dashboard/services" class="quick-action">
+                                    <a href="/profile/edit" class="quick-action">
                                         <div class="action-icon" style="background: linear-gradient(135deg, var(--card-purple), #7c3aed);">
-                                            <i class="fas fa-chart-line"></i>
+                                            <i class="fas fa-user-edit"></i>
                                         </div>
-                                        <span class="action-text">View Analytics</span>
+                                        <span class="action-text">Edit Profile</span>
                                     </a>
                                 </div>
                             </div>
@@ -2615,9 +2613,9 @@
             </div>
         </div>
 
-        <!-- Earnings Section - Updated with Withdrawal System -->
+        <!-- Earnings Section -->
         <div id="mentor-earnings" class="mentor-section">
-            <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+            <div style="grid-column: 1 / -1;">
                 <!-- Earnings Summary with Withdrawal -->
                 <div class="dashboard-card">
                     <div class="card-header">
@@ -2716,52 +2714,46 @@
                                         <td><strong style="background: linear-gradient(135deg, var(--accent), var(--brand-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">₹{{ withdrawal.amount|int }}</strong></td>
                                         <td>
                                             <span style="font-size: 0.875rem; color: var(--text-secondary-light); font-weight: 500;">
-                                                {{ withdrawal.payment_method|default('N/A') }}
+                                                {{ withdrawal.payment_method|default('N/A')|upper }}
                                             </span>
                                         </td>
                                         <td>
-    {% if withdrawal.status == 'paid' %}
-        <span class="status-badge status-paid" style="display: inline-flex; font-size: 0.75rem;">
-            <i class="fas fa-check-circle"></i> Paid
-        </span>
-    {% elif withdrawal.status == 'approved' %}
-        <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; display: inline-flex; font-size: 0.75rem;">
-            <i class="fas fa-check"></i> Approved
-        </span>
-    {% elif withdrawal.status == 'pending' %}
-        <span class="status-badge status-pending" style="display: inline-flex; font-size: 0.75rem;">
-            <i class="fas fa-clock"></i> Pending
-        </span>
-    {% elif withdrawal.status == 'rejected' %}
-        <span class="status-badge" style="background: linear-gradient(135deg, var(--card-pink), #e4b9b7); color: #8a4d49; display: inline-flex; font-size: 0.75rem;">
-            <i class="fas fa-times-circle"></i> Rejected
-        </span>
-    {% endif %}
-</td>
-<td>
-    {% if withdrawal.processed_at %}
-        <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
-            {{ withdrawal.processed_at.strftime('%Y-%m-%d') }}
-        </span>
-    {% else %}
-        <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-style: italic;">
-            {% if withdrawal.status == 'paid' %}Paid{% else %}Not processed{% endif %}
-        </span>
-    {% endif %}
-</td>
+                                            {% if withdrawal.status == 'paid' %}
+                                                <span class="status-badge status-paid" style="display: inline-flex; font-size: 0.75rem;">
+                                                    <i class="fas fa-check-circle"></i> Paid
+                                                </span>
+                                            {% elif withdrawal.status == 'approved' %}
+                                                <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; display: inline-flex; font-size: 0.75rem;">
+                                                    <i class="fas fa-check"></i> Approved
+                                                </span>
+                                            {% elif withdrawal.status == 'pending' %}
+                                                <span class="status-badge status-pending" style="display: inline-flex; font-size: 0.75rem;">
+                                                    <i class="fas fa-clock"></i> Pending
+                                                </span>
+                                            {% elif withdrawal.status == 'rejected' %}
+                                                <span class="status-badge" style="background: linear-gradient(135deg, var(--card-pink), #e4b9b7); color: #8a4d49; display: inline-flex; font-size: 0.75rem;">
+                                                    <i class="fas fa-times-circle"></i> Rejected
+                                                </span>
+                                            {% else %}
+                                                <span class="status-badge" style="background: var(--border-light); color: var(--text-secondary-light); display: inline-flex; font-size: 0.75rem;">
+                                                    {{ withdrawal.status|title|default('Pending') }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
                                             <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
-                                                {{ withdrawal.requested_at.strftime('%Y-%m-%d') if withdrawal.requested_at else '' }}
+                                                {{ withdrawal.requested_at.strftime('%Y-%m-%d') if withdrawal.requested_at else 'N/A' }}
                                             </span>
                                         </td>
                                         <td>
                                             {% if withdrawal.processed_at %}
-                                            <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
-                                                {{ withdrawal.processed_at.strftime('%Y-%m-%d') }}
-                                            </span>
+                                                <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
+                                                    {{ withdrawal.processed_at.strftime('%Y-%m-%d %H:%M') }}
+                                                </span>
                                             {% else %}
-                                            <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-style: italic;">
-                                                Not processed
-                                            </span>
+                                                <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-style: italic;">
+                                                    Not processed
+                                                </span>
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -2933,7 +2925,7 @@
         </div>
 
         {% elif current_user.role == 'admin' %}
-        <!-- Admin Dashboard - Add Withdrawal Requests Section -->
+        <!-- Admin Dashboard -->
         <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
             <!-- Pending Withdrawal Requests -->
             <div class="dashboard-card">
@@ -2998,41 +2990,39 @@
                             </div>
                             
                             <!-- Action Buttons -->
-                            <!-- AJAX version: -->
-<!-- AJAX version: -->
-<div class="mentor-actions">
-    <button type="button" 
-            onclick="processWithdrawal({{ withdrawal.id }}, 'approve')" 
-            class="action-button action-approve">
-        <i class="fas fa-check"></i>
-        Approve Request
-    </button>
-    <button type="button" 
-            onclick="processWithdrawal({{ withdrawal.id }}, 'mark_paid')"  <!-- ADDED withdrawal.id -->
-            class="action-button" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white;">
-        <i class="fas fa-money-bill-wave"></i>
-        Mark as Paid
-    </button>
-    <button type="button" 
-            onclick="processWithdrawal({{ withdrawal.id }}, 'reject')" 
-            class="action-button action-reject">
-        <i class="fas fa-times"></i>
-        Reject
-    </button>
-</div>
+                            <div class="mentor-actions">
+                                <button type="button" 
+                                        onclick="processWithdrawal({{ withdrawal.id }}, 'approve')" 
+                                        class="action-btn action-approve">
+                                    <i class="fas fa-check"></i>
+                                    Approve Request
+                                </button>
+                                <button type="button" 
+                                        onclick="processWithdrawal({{ withdrawal.id }}, 'mark_paid')"
+                                        class="action-btn" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white;">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    Mark as Paid
+                                </button>
+                                <button type="button" 
+                                        onclick="processWithdrawal({{ withdrawal.id }}, 'reject')" 
+                                        class="action-btn action-reject">
+                                    <i class="fas fa-times"></i>
+                                    Reject
+                                </button>
+                            </div>
                             
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
                                     const notesTextarea = document.getElementById('adminNotes{{ withdrawal.id }}');
-                                    const notesInput = document.getElementById('adminNotesInput{{ withdrawal.id }}');
                                     
-                                    if (notesTextarea && notesInput) {
+                                    if (notesTextarea) {
                                         notesTextarea.addEventListener('input', function() {
-                                            notesInput.value = this.value;
+                                            // Store notes for later use in AJAX request
+                                            this.dataset.currentValue = this.value;
                                         });
                                         
-                                        // Set initial value
-                                        notesInput.value = notesTextarea.value;
+                                        // Initialize value
+                                        notesTextarea.dataset.currentValue = notesTextarea.value;
                                     }
                                 });
                             </script>
@@ -3094,11 +3084,11 @@
                             </div>
                             
                             <form action="/admin/mentor/{{ mentor.id }}/verify" method="POST" class="mentor-actions">
-                                <button type="submit" name="action" value="approve" class="action-button action-approve">
+                                <button type="submit" name="action" value="approve" class="action-btn action-approve">
                                     <i class="fas fa-check"></i>
                                     Approve
                                 </button>
-                                <button type="submit" name="action" value="reject" class="action-button action-reject">
+                                <button type="submit" name="action" value="reject" class="action-btn action-reject">
                                     <i class="fas fa-times"></i>
                                     Reject
                                 </button>
@@ -3336,7 +3326,6 @@
                         <div style="text-align: right;">
                             <div style="font-size: 0.75rem; color: var(--text-secondary-light); margin-bottom: 0.25rem;">
                                 Minimum: ₹1
-                            
                             </div>
                             <div style="font-size: 0.75rem; color: var(--accent); font-weight: 500;">
                                 80% of total earnings
@@ -3585,7 +3574,7 @@
         }
     }
 
-    // Delete Service Function - Updated to match services page
+    // Delete Service Function
     async function deleteService(serviceId) {
         const confirmed = confirm('Are you sure you want to delete this service? This action cannot be undone.');
         if (!confirmed) return;
@@ -3746,54 +3735,56 @@
     }
 
     async function processWithdrawal(withdrawalId, action) {
-    // Map 'mark_paid' to 'completed' for the backend
-    const backendAction = action === 'mark_paid' ? 'completed' : action;
-    
-    if (action === 'reject' || action === 'mark_paid') {
-        if (!confirm(`Are you sure you want to ${action === 'mark_paid' ? 'mark as paid' : 'reject'} this withdrawal request?`)) {
-            return;
+        // Map 'mark_paid' to 'completed' for the backend
+        const backendAction = action === 'mark_paid' ? 'completed' : action;
+        
+        if (action === 'reject' || action === 'mark_paid') {
+            if (!confirm(`Are you sure you want to ${action === 'mark_paid' ? 'mark as paid' : 'reject'} this withdrawal request?`)) {
+                return;
+            }
         }
-    }
-    
-    const adminNotes = document.getElementById(`adminNotes${withdrawalId}`).value;
-    
-    const button = event.target;
-    const originalText = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    
-    try {
-        const response = await fetch(`/api/admin/withdrawal/${withdrawalId}/process`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: backendAction,
-                admin_notes: adminNotes
-            })
-        });
         
-        const data = await response.json();
+        const adminNotesElement = document.getElementById(`adminNotes${withdrawalId}`);
+        const adminNotes = adminNotesElement ? adminNotesElement.value : '';
         
-        if (data.success) {
-            showNotification(`Withdrawal ${action === 'mark_paid' ? 'marked as paid' : backendAction}d successfully!`, 'success');
-            // Reload the page to show updated status
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
-        } else {
-            showNotification(data.error || `Failed to ${action} withdrawal`, 'error');
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        
+        try {
+            const response = await fetch(`/api/admin/withdrawal/${withdrawalId}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: backendAction,
+                    admin_notes: adminNotes
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification(`Withdrawal ${action === 'mark_paid' ? 'marked as paid' : backendAction}d successfully!`, 'success');
+                // Reload the page to show updated status
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showNotification(data.error || `Failed to ${action} withdrawal`, 'error');
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification('An error occurred. Please try again.', 'error');
             button.disabled = false;
             button.innerHTML = originalText;
         }
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('An error occurred. Please try again.', 'error');
-        button.disabled = false;
-        button.innerHTML = originalText;
     }
-}
+
     async function submitWithdrawal(event) {
         event.preventDefault();
         
