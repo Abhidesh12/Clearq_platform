@@ -176,47 +176,140 @@
                             <p class="mt-1 text-xs text-text-secondary-light dark:text-text-secondary-dark">This will appear on your public mentor profile</p>
                         </div>
 
-                       <!-- Industry Field -->
-<div class="mb-4">
-    <label for="industry" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
-        <i class="fas fa-industry mr-2 text-accent"></i>
-        Industry
-    </label>
-    <input type="text" 
-           id="industry" 
-           name="industry" 
-           class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
-           placeholder="Technology, Finance, Healthcare">
-</div>
+                        <!-- Industry Field -->
+                        <div class="mb-4">
+                            <label for="industry" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
+                                <i class="fas fa-industry mr-2 text-accent"></i>
+                                Industry
+                            </label>
+                            <input type="text" 
+                                   id="industry" 
+                                   name="industry" 
+                                   class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                   placeholder="Technology, Finance, Healthcare">
+                        </div>
 
-<!-- Social Links Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div>
-        <label for="linkedin_url" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
-            <i class="fab fa-linkedin mr-2 text-[#0077b5]"></i>
-            LinkedIn
-        </label>
-        <input type="url" 
-               id="linkedin_url" 
-               name="linkedin_url" 
-               class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
-               placeholder="https://linkedin.com/in/username">
-    </div>
+                        <!-- Job Title and Company -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="job_title" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+                                    Job Title
+                                </label>
+                                <input type="text" 
+                                       id="job_title" 
+                                       name="job_title" 
+                                       class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                       placeholder="Senior Software Engineer">
+                            </div>
+                            
+                            <div>
+                                <label for="company" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+                                    Company
+                                </label>
+                                <input type="text" 
+                                       id="company" 
+                                       name="company" 
+                                       class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                       placeholder="Google, Microsoft, etc.">
+                            </div>
+                        </div>
 
-    <div>
-        <label for="instagram_username" class="block text-sm font-medium text-text-light dark:text-text-dark mb-2">
-            <i class="fab fa-instagram mr-2 text-[#E1306C]"></i>
-            Instagram Username
-        </label>
-        <input type="text" 
-               id="instagram_username" 
-               name="instagram_username" 
-               class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
-               placeholder="username (without @)">
-        <p class="mt-1 text-xs text-text-secondary-light dark:text-text-secondary-dark">We'll store this in the github_url field for now</p>
-    </div>
-</div>
+                        <!-- Experience Years -->
+                        <div class="mb-4">
+                            <label for="experience_years" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+                                <i class="fas fa-calendar-alt mr-2 text-accent"></i>
+                                Years of Experience
+                            </label>
+                            <div class="relative">
+                                <input type="number" 
+                                       id="experience_years" 
+                                       name="experience_years" 
+                                       min="0" 
+                                       max="50"
+                                       class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                       placeholder="5">
+                                <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">
+                                    years
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Social Links Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="linkedin_url" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+                                    <i class="fab fa-linkedin mr-2 text-[#0077b5]"></i>
+                                    LinkedIn URL
+                                </label>
+                                <input type="url" 
+                                       id="linkedin_url" 
+                                       name="linkedin_url" 
+                                       class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                       placeholder="https://linkedin.com/in/username">
+                            </div>
+
+                            <div>
+                                <label for="github_url" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+                                    <i class="fab fa-github mr-2 text-gray-800 dark:text-gray-300"></i>
+                                    GitHub URL
+                                </label>
+                                <input type="url" 
+                                       id="github_url" 
+                                       name="github_url" 
+                                       class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                       placeholder="https://github.com/username">
+                            </div>
+                            
+                            <div>
+                                <label for="instagram_url" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+                                    <i class="fab fa-instagram mr-2 text-[#E1306C]"></i>
+                                    Instagram URL
+                                </label>
+                                <input type="url" 
+                                       id="instagram_url" 
+                                       name="instagram_url" 
+                                       class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                       placeholder="https://instagram.com/username">
+                                <p class="mt-1 text-xs text-text-secondary-light dark:text-text-secondary-dark">Optional social links</p>
+                            </div>
+
+                            <div>
+                                <label for="twitter_url" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+                                    <i class="fab fa-twitter mr-2 text-[#1DA1F2]"></i>
+                                    Twitter/X URL
+                                </label>
+                                <input type="url" 
+                                       id="twitter_url" 
+                                       name="twitter_url" 
+                                       class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                       placeholder="https://twitter.com/username">
+                            </div>
+                            
+                            <div class="md:col-span-2">
+                                <label for="website_url" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+                                    <i class="fas fa-globe mr-2 text-green-600"></i>
+                                    Website/Blog URL
+                                </label>
+                                <input type="url" 
+                                       id="website_url" 
+                                       name="website_url" 
+                                       class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                       placeholder="https://yourwebsite.com">
+                            </div>
+                        </div>
                         
+                        <!-- Skills Field -->
+                        <div class="mb-4">
+                            <label for="skills" class="block text-sm font-medium text-text-light dark:text-text-dark mb-1">
+                                <i class="fas fa-code mr-2 text-accent"></i>
+                                Skills (comma separated)
+                            </label>
+                            <input type="text" 
+                                   id="skills" 
+                                   name="skills" 
+                                   class="w-full px-4 py-3 bg-accent-beige dark:bg-dark-card border border-border-light dark:border-border-dark rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all text-text-light dark:text-text-dark"
+                                   placeholder="Python, React, Product Management, Data Science">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -275,11 +368,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 mentorFields.style.transform = 'translateY(0)';
             }, 10);
             
-            // Make mentor fields optional
-            document.getElementById('bio').removeAttribute('required');
-            document.getElementById('industry').removeAttribute('required');
-            document.getElementById('linkedin_url').removeAttribute('required');
-            document.getElementById('instagram_username').removeAttribute('required'); // Updated field name
+            // Make mentor fields optional (not required for form submission)
+            const mentorInputs = mentorFields.querySelectorAll('input, textarea');
+            mentorInputs.forEach(input => {
+                input.removeAttribute('required');
+            });
+            
         } else {
             mentorFields.style.opacity = '0';
             mentorFields.style.transform = 'translateY(-10px)';
@@ -289,11 +383,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 mentorFields.classList.add('hidden');
             }, 300);
             
-            // Clear mentor fields when switching to learner
-            document.getElementById('bio').value = '';
-            document.getElementById('industry').value = '';
-            document.getElementById('linkedin_url').value = '';
-            document.getElementById('instagram_username').value = ''; // Updated field name
+            // Clear mentor fields when switching to learner (optional)
+            const clearFields = confirm('Switch to learner? This will clear all mentor information.');
+            if (clearFields) {
+                const mentorInputs = mentorFields.querySelectorAll('input, textarea');
+                mentorInputs.forEach(input => {
+                    input.value = '';
+                });
+            }
         }
     }
     
@@ -304,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
     learnerRadio.addEventListener('change', toggleMentorFields);
     mentorRadio.addEventListener('change', toggleMentorFields);
     
-    // Smooth scrolling to mentor fields when selected (mobile friendly)
+    // Smooth scrolling to mentor fields when selected
     function scrollToMentorFields() {
         if (document.getElementById('mentor').checked) {
             const mentorFields = document.getElementById('mentor-fields');
@@ -319,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
     mentorRadio.addEventListener('change', scrollToMentorFields);
 });
 
-// ================== DATA STORAGE JAVASCRIPT ==================
+// ================== FORM HANDLING JAVASCRIPT ==================
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the form
@@ -330,40 +427,34 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Get the three specific fields - UPDATED FIELD NAMES
-    const industryField = document.getElementById('industry');
-    const linkedinField = document.getElementById('linkedin_url');
-    const instagramField = document.getElementById('instagram_username'); // CHANGED from github_url
-    const bioField = document.getElementById('bio');
+    // Get all mentor specific fields
+    const mentorFields = {
+        bio: document.getElementById('bio'),
+        industry: document.getElementById('industry'),
+        job_title: document.getElementById('job_title'),
+        company: document.getElementById('company'),
+        experience_years: document.getElementById('experience_years'),
+        linkedin_url: document.getElementById('linkedin_url'),
+        github_url: document.getElementById('github_url'),
+        instagram_url: document.getElementById('instagram_url'),
+        twitter_url: document.getElementById('twitter_url'),
+        website_url: document.getElementById('website_url'),
+        skills: document.getElementById('skills')
+    };
+    
     const roleRadios = document.querySelectorAll('input[name="role"]');
     
     // Load saved data from localStorage
     loadSavedFormData();
     
-    // Save data to localStorage on input
-    if (industryField) {
-        industryField.addEventListener('input', function() {
-            localStorage.setItem('registration_industry', this.value);
-        });
-    }
-    
-    if (linkedinField) {
-        linkedinField.addEventListener('input', function() {
-            localStorage.setItem('registration_linkedin_url', this.value);
-        });
-    }
-    
-    if (instagramField) {
-        instagramField.addEventListener('input', function() {
-            localStorage.setItem('registration_instagram_username', this.value); // CHANGED
-        });
-    }
-    
-    if (bioField) {
-        bioField.addEventListener('input', function() {
-            localStorage.setItem('registration_bio', this.value);
-        });
-    }
+    // Save mentor field data to localStorage
+    Object.entries(mentorFields).forEach(([key, field]) => {
+        if (field) {
+            field.addEventListener('input', function() {
+                localStorage.setItem(`registration_${key}`, this.value);
+            });
+        }
+    });
     
     // Save role selection
     roleRadios.forEach(radio => {
@@ -372,7 +463,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Form submission handler - UPDATED FOR INSTAGRAM
+    // Save all form fields to localStorage
+    const allFormInputs = form.querySelectorAll('input[name], textarea[name]');
+    allFormInputs.forEach(input => {
+        if (input.type === 'password') return;
+        
+        const savedValue = localStorage.getItem(`registration_${input.name}`);
+        if (savedValue !== null && (!input.value || input.value.trim() === '')) {
+            input.value = savedValue;
+        }
+        
+        input.addEventListener('input', function() {
+            localStorage.setItem(`registration_${this.name}`, this.value);
+        });
+    });
+    
+    // Form submission handler
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -380,13 +486,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Get form data
         const formData = new FormData(this);
+        const role = formData.get('role');
         
         // Validate required fields
         const fullName = formData.get('full_name');
         const email = formData.get('email');
         const username = formData.get('username');
         const password = formData.get('password');
-        const role = formData.get('role');
         
         // Basic validation
         if (!fullName || fullName.trim() === '') {
@@ -414,27 +520,57 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Validate LinkedIn URL format if provided
-        const linkedinUrl = linkedinField ? linkedinField.value : '';
-        if (linkedinUrl && !isValidLinkedInUrl(linkedinUrl)) {
-            showNotification('Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)', 'warning');
-            linkedinField.focus();
+        // Validate password strength (optional)
+        if (password.length < 8) {
+            showNotification('Password must be at least 8 characters long', 'warning');
             return;
         }
         
-        // Validate Instagram username if provided
-        const instagramUsername = instagramField ? instagramField.value : '';
-        if (instagramUsername && !isValidInstagramUsername(instagramUsername)) {
-            showNotification('Instagram username should not contain special characters except underscore', 'warning');
-            instagramField.focus();
+        // Validate URLs if provided
+        const linkedinUrl = formData.get('linkedin_url');
+        if (linkedinUrl && !isValidUrl(linkedinUrl)) {
+            showNotification('Please enter a valid LinkedIn URL', 'warning');
+            mentorFields.linkedin_url.focus();
             return;
         }
         
-        // IMPORTANT: Store Instagram username in github_url field for database compatibility
-        if (instagramUsername) {
-            const cleanedUsername = instagramUsername.replace('@', '').trim();
-            // Add a hidden field for github_url or modify form data
-            formData.set('github_url', cleanedUsername); // This stores Instagram in github_url field
+        const githubUrl = formData.get('github_url');
+        if (githubUrl && !isValidUrl(githubUrl)) {
+            showNotification('Please enter a valid GitHub URL', 'warning');
+            mentorFields.github_url.focus();
+            return;
+        }
+        
+        const instagramUrl = formData.get('instagram_url');
+        if (instagramUrl && !isValidUrl(instagramUrl)) {
+            showNotification('Please enter a valid Instagram URL', 'warning');
+            mentorFields.instagram_url.focus();
+            return;
+        }
+        
+        const twitterUrl = formData.get('twitter_url');
+        if (twitterUrl && !isValidUrl(twitterUrl)) {
+            showNotification('Please enter a valid Twitter URL', 'warning');
+            mentorFields.twitter_url.focus();
+            return;
+        }
+        
+        const websiteUrl = formData.get('website_url');
+        if (websiteUrl && !isValidUrl(websiteUrl)) {
+            showNotification('Please enter a valid Website URL', 'warning');
+            mentorFields.website_url.focus();
+            return;
+        }
+        
+        // Validate experience years
+        const experienceYears = formData.get('experience_years');
+        if (experienceYears) {
+            const expNum = parseInt(experienceYears);
+            if (isNaN(expNum) || expNum < 0 || expNum > 50) {
+                showNotification('Experience years must be between 0 and 50', 'warning');
+                mentorFields.experience_years.focus();
+                return;
+            }
         }
         
         // Show loading state
@@ -458,26 +594,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Get the redirect URL
                 const redirectUrl = response.url;
                 
-                // Check if there are success/error messages in the URL
-                const urlParams = new URL(redirectUrl).searchParams;
-                
-                if (urlParams.has('error')) {
-                    showNotification(decodeURIComponent(urlParams.get('error')), 'error');
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                    return;
-                }
+                // Show success message
+                showNotification('Account created successfully! Redirecting...', 'success');
                 
                 // Redirect to login or dashboard
-                showNotification('Account created successfully! Redirecting...', 'success');
                 setTimeout(() => {
                     window.location.href = redirectUrl;
-                }, 2000);
+                }, 1500);
                 
                 return;
             }
             
-            // Try to parse as JSON
+            // Try to parse as JSON (for API errors)
             try {
                 const data = await response.json();
                 
@@ -494,17 +622,26 @@ document.addEventListener('DOMContentLoaded', function() {
                         } else {
                             window.location.href = '/login';
                         }
-                    }, 2000);
+                    }, 1500);
                 } else {
                     throw new Error(data.message || 'Failed to create account');
                 }
             } catch (jsonError) {
-                // If response is HTML and not JSON, assume success and redirect
-                clearRegistrationLocalStorage();
-                showNotification('Account created successfully!', 'success');
-                setTimeout(() => {
-                    window.location.href = '/login';
-                }, 2000);
+                // If response is HTML and not JSON, check for errors in response text
+                const responseText = await response.text();
+                
+                if (responseText.includes('already registered') || responseText.includes('already exists')) {
+                    showNotification('Email or username already registered', 'error');
+                } else if (!response.ok) {
+                    showNotification('Registration failed. Please try again.', 'error');
+                } else {
+                    // Assume success if response is OK
+                    clearRegistrationLocalStorage();
+                    showNotification('Account created successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 1500);
+                }
             }
             
         } catch (error) {
@@ -517,50 +654,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // LinkedIn URL validation
-    if (linkedinField) {
-        linkedinField.addEventListener('blur', function() {
-            const url = this.value.trim();
-            if (url && !isValidLinkedInUrl(url)) {
-                showNotification('Please enter a valid LinkedIn URL format', 'warning');
-                this.classList.add('border-brand-red');
-            } else {
-                this.classList.remove('border-brand-red');
-            }
-        });
-    }
-    
-    // Instagram username validation
-    if (instagramField) {
-        instagramField.addEventListener('blur', function() {
-            const username = this.value.trim();
-            if (username && !isValidInstagramUsername(username)) {
-                showNotification('Instagram username can only contain letters, numbers, periods and underscores', 'warning');
-                this.classList.add('border-brand-red');
-            } else {
-                this.classList.remove('border-brand-red');
-            }
-        });
-        
-        // Auto-remove @ symbol
-        instagramField.addEventListener('input', function() {
-            this.value = this.value.replace('@', '');
-        });
-    }
-    
-    // Auto-save all form fields to localStorage
-    const allFormInputs = form.querySelectorAll('input[name], textarea[name], select[name]');
-    allFormInputs.forEach(input => {
-        if (input.type === 'file' || input.type === 'password') return;
-        
-        const savedValue = localStorage.getItem(`registration_${input.name}`);
-        if (savedValue !== null && (!input.value || input.value.trim() === '')) {
-            input.value = savedValue;
+    // URL validation helper
+    function isValidUrl(string) {
+        if (!string || string.trim() === '') return true; // Empty is OK
+        try {
+            const url = new URL(string);
+            return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch (_) {
+            return false;
         }
-        
-        input.addEventListener('input', function() {
-            localStorage.setItem(`registration_${this.name}`, this.value);
-        });
+    }
+    
+    // Add validation styling to URL fields
+    Object.entries(mentorFields).forEach(([key, field]) => {
+        if (field && (key.includes('_url') || key === 'github_url')) {
+            field.addEventListener('blur', function() {
+                const value = this.value.trim();
+                if (value && !isValidUrl(value)) {
+                    this.classList.add('border-red-500', 'bg-red-50');
+                } else {
+                    this.classList.remove('border-red-500', 'bg-red-50');
+                }
+            });
+        }
     });
     
     // Functions
@@ -577,75 +693,37 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Load saved bio
-        if (bioField) {
-            const savedBio = localStorage.getItem('registration_bio');
-            if (savedBio) {
-                bioField.value = savedBio;
+        // Load saved mentor fields
+        Object.entries(mentorFields).forEach(([key, field]) => {
+            if (field) {
+                const savedValue = localStorage.getItem(`registration_${key}`);
+                if (savedValue !== null) {
+                    field.value = savedValue;
+                }
             }
-        }
+        });
         
-        // Load saved industry
-        if (industryField) {
-            const savedIndustry = localStorage.getItem('registration_industry');
-            if (savedIndustry) {
-                industryField.value = savedIndustry;
+        // Load basic fields
+        const basicFields = ['full_name', 'email', 'username'];
+        basicFields.forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                const savedValue = localStorage.getItem(`registration_${fieldName}`);
+                if (savedValue !== null) {
+                    field.value = savedValue;
+                }
             }
-        }
-        
-        // Load saved LinkedIn
-        if (linkedinField) {
-            const savedLinkedIn = localStorage.getItem('registration_linkedin_url');
-            if (savedLinkedIn) {
-                linkedinField.value = savedLinkedIn;
-            }
-        }
-        
-        // Load saved Instagram - UPDATED
-        if (instagramField) {
-            const savedInstagram = localStorage.getItem('registration_instagram_username');
-            if (savedInstagram) {
-                instagramField.value = savedInstagram;
-            }
-        }
+        });
     }
     
     function clearRegistrationLocalStorage() {
-        const registrationKeys = [
-            'registration_industry',
-            'registration_linkedin_url', 
-            'registration_instagram_username', // UPDATED
-            'registration_bio',
-            'registration_role',
-            'registration_full_name',
-            'registration_email',
-            'registration_username',
-            'registration_terms'
-        ];
-        
-        registrationKeys.forEach(key => {
-            localStorage.removeItem(key);
-        });
-        
-        // Also clear any other registration-related data
+        // Clear all registration-related keys
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key.startsWith('registration_')) {
+            if (key && key.startsWith('registration_')) {
                 localStorage.removeItem(key);
             }
         }
-    }
-    
-    function isValidLinkedInUrl(url) {
-        if (!url) return true; // Optional field
-        const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/(in|company)\/[a-zA-Z0-9-]+$/;
-        return linkedinRegex.test(url.trim());
-    }
-    
-    function isValidInstagramUsername(username) {
-        if (!username) return true; // Optional field
-        const instagramRegex = /^[a-zA-Z0-9._]+$/;
-        return instagramRegex.test(username.trim());
     }
     
     // Notification function
@@ -657,10 +735,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create notification element
         const notification = document.createElement('div');
         notification.className = `notification-toast fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg transform transition-all duration-300 translate-x-0 ${
-            type === 'success' ? 'bg-card-green text-white border border-green-600' :
-            type === 'error' ? 'bg-brand-red text-white border border-red-600' :
-            type === 'warning' ? 'bg-accent text-white border border-orange-600' :
-            'bg-card-blue text-white border border-blue-600'
+            type === 'success' ? 'bg-green-500 text-white border border-green-600' :
+            type === 'error' ? 'bg-red-500 text-white border border-red-600' :
+            type === 'warning' ? 'bg-yellow-500 text-white border border-yellow-600' :
+            'bg-blue-500 text-white border border-blue-600'
         }`;
         
         notification.innerHTML = `
@@ -709,7 +787,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 </script>
-<!-- css styleing -->
+<!-- CSS Styling -->
 <style>
     /* Radio button styling */
     input[type="radio"]:checked + label {
@@ -726,12 +804,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     #mentor-fields.block {
-        max-height: 600px;
+        max-height: 1000px;
         opacity: 1;
     }
     
     /* Improve form focus states */
-    textarea:focus, input[type="url"]:focus, input[type="text"]:focus {
+    textarea:focus, input[type="url"]:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="number"]:focus {
         outline: none;
         ring: 2px;
         ring-color: var(--accent);
@@ -763,8 +841,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     /* Validation styles */
-    .border-brand-red {
-        border-color: #FF3F1F !important;
+    .border-red-500 {
+        border-color: #ef4444 !important;
+    }
+    
+    .bg-red-50 {
+        background-color: #fef2f2 !important;
     }
     
     /* Loading spinner animation */
@@ -837,6 +919,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     .dark input::placeholder, .dark textarea::placeholder {
         color: var(--text-secondary-dark);
+    }
+    
+    /* Ensure mentor fields have proper spacing in dark mode */
+    .dark .bg-accent-beige {
+        background-color: var(--dark-card);
+    }
+    
+    /* Style for required field asterisk */
+    label:has(+ input[required])::after,
+    label:has(+ textarea[required])::after {
+        content: " *";
+        color: #ef4444;
     }
 </style>
 {% endblock %}
