@@ -161,50 +161,22 @@ tailwind.config = {
                             </div>
                         </div>
 
-                        <form id="profile-form" action="/profile/edit" method="POST" enctype="multipart/form-data" class="space-y-6">
-                            <!-- Profile Photo Section -->
+                        <form id="profile-form" action="/profile/edit" method="POST" class="space-y-6">
+                            <!-- Avatar Section -->
                             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-4 bg-accent-beige rounded-xl">
                                 <div class="relative">
-                                    {% if current_user.profile_image and current_user.profile_image != 'default-avatar.png' %}
-                                    <img src="/static/{{ current_user.profile_image }}" 
-                                         alt="{{ current_user.full_name or current_user.username }}"
-                                         id="profile-preview"
-                                         class="w-20 h-20 rounded-xl object-cover border-2 border-white shadow-md">
-                                    {% else %}
                                     <div id="avatar-preview" 
                                          class="w-20 h-20 rounded-xl bg-gradient-to-br from-accent to-brand-red flex items-center justify-center text-text-dark text-2xl font-bold border-2 border-white shadow-md">
                                         {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper if current_user.full_name or current_user.username else 'U' }}
                                     </div>
-                                    {% endif %}
                                 </div>
                                 
                                 <div class="flex-1">
                                     <label class="block text-sm font-medium text-text-light mb-2">
-                                        Profile Photo
+                                        Profile Avatar
                                     </label>
-                                    <div class="flex flex-col sm:flex-row gap-3">
-                                        <label class="cursor-pointer">
-                                            <input type="file" 
-                                                   id="profile_photo" 
-                                                   name="profile_photo" 
-                                                   accept="image/*"
-                                                   class="hidden">
-                                            <span class="inline-flex items-center px-4 py-2.5 bg-card-light border border-border-light rounded-lg text-sm font-medium text-text-light hover:bg-accent-beige hover:border-accent transition-colors">
-                                                <i class="fas fa-upload mr-2"></i>
-                                                Upload Photo
-                                            </span>
-                                        </label>
-                                        {% if current_user.profile_image and current_user.profile_image != 'default-avatar.png' %}
-                                        <button type="button"
-                                                id="remove-photo-btn"
-                                                class="px-4 py-2.5 text-sm text-brand-red hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors">
-                                            <i class="fas fa-trash mr-2"></i>
-                                            Remove
-                                        </button>
-                                        {% endif %}
-                                    </div>
-                                    <p class="mt-2 text-xs text-text-secondary-light">
-                                        JPG, PNG or GIF. Max 5MB. Recommended: 400×400px
+                                    <p class="text-sm text-text-secondary-light">
+                                        Your avatar is generated from your initials. Change your name above to update it.
                                     </p>
                                 </div>
                             </div>
@@ -221,7 +193,8 @@ tailwind.config = {
                                            name="full_name" 
                                            value="{{ current_user.full_name or '' }}"
                                            class="w-full px-4 py-3 bg-accent-beige border border-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
-                                           placeholder="Enter your full name">
+                                           placeholder="Enter your full name"
+                                           required>
                                 </div>
 
                                 {% if current_user.role == 'mentor' %}
@@ -308,6 +281,21 @@ tailwind.config = {
                                     </div>
                                 </div>
 
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="company" class="block text-sm font-medium text-text-light mb-2">
+                                            <i class="fas fa-building mr-2 text-accent"></i>
+                                            Company
+                                        </label>
+                                        <input type="text" 
+                                               id="company" 
+                                               name="company" 
+                                               value="{{ mentor_profile.company if mentor_profile else '' }}"
+                                               class="w-full px-4 py-3 bg-accent-beige border border-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                                               placeholder="Current company">
+                                    </div>
+                                </div>
+
                                 <!-- Social Links Grid -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
@@ -334,6 +322,45 @@ tailwind.config = {
                                                value="{{ mentor_profile.github_url if mentor_profile else '' }}"
                                                class="w-full px-4 py-3 bg-accent-beige border border-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
                                                placeholder="https://github.com/username">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="instagram_url" class="block text-sm font-medium text-text-light mb-2">
+                                            <i class="fab fa-instagram mr-2 text-pink-600"></i>
+                                            Instagram
+                                        </label>
+                                        <input type="url" 
+                                               id="instagram_url" 
+                                               name="instagram_url" 
+                                               value="{{ mentor_profile.instagram_url if mentor_profile else '' }}"
+                                               class="w-full px-4 py-3 bg-accent-beige border border-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                                               placeholder="https://instagram.com/username">
+                                    </div>
+
+                                    <div>
+                                        <label for="twitter_url" class="block text-sm font-medium text-text-light mb-2">
+                                            <i class="fab fa-twitter mr-2 text-blue-400"></i>
+                                            Twitter/X
+                                        </label>
+                                        <input type="url" 
+                                               id="twitter_url" 
+                                               name="twitter_url" 
+                                               value="{{ mentor_profile.twitter_url if mentor_profile else '' }}"
+                                               class="w-full px-4 py-3 bg-accent-beige border border-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                                               placeholder="https://twitter.com/username">
+                                    </div>
+                                    
+                                    <div class="md:col-span-2">
+                                        <label for="website_url" class="block text-sm font-medium text-text-light mb-2">
+                                            <i class="fas fa-globe mr-2 text-green-600"></i>
+                                            Website/Blog
+                                        </label>
+                                        <input type="url" 
+                                               id="website_url" 
+                                               name="website_url" 
+                                               value="{{ mentor_profile.website_url if mentor_profile else '' }}"
+                                               class="w-full px-4 py-3 bg-accent-beige border border-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-all"
+                                               placeholder="https://yourwebsite.com">
                                     </div>
                                 </div>
                             </div>
@@ -437,15 +464,9 @@ tailwind.config = {
 
                         <div class="bg-card-light rounded-xl p-4 shadow-sm border border-border-light">
                             <div class="flex items-center space-x-4 mb-4">
-                                {% if current_user.profile_image and current_user.profile_image != 'default-avatar.png' %}
-                                <img src="/static/{{ current_user.profile_image }}" 
-                                     alt="{{ current_user.full_name or current_user.username }}"
-                                     class="w-14 h-14 rounded-xl object-cover border-2 border-white shadow">
-                                {% else %}
                                 <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-accent to-brand-red flex items-center justify-center text-text-dark font-bold shadow">
                                     {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper if current_user.full_name or current_user.username else 'U' }}
                                 </div>
-                                {% endif %}
                                 <div>
                                     <h4 class="font-bold text-text-light text-sm">
                                         {{ current_user.full_name or current_user.username }}
@@ -485,6 +506,38 @@ tailwind.config = {
                                 </div>
                             </div>
                             {% endif %}
+                            
+                            {% if current_user.role == 'mentor' and mentor_profile %}
+                            <div class="mt-4 pt-4 border-t border-border-light">
+                                <p class="text-xs text-text-secondary-light mb-2 font-medium">Social Links</p>
+                                <div class="flex flex-wrap gap-2">
+                                    {% if mentor_profile.linkedin_url %}
+                                    <a href="{{ mentor_profile.linkedin_url }}" target="_blank" 
+                                       class="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
+                                        <i class="fab fa-linkedin mr-1"></i> LinkedIn
+                                    </a>
+                                    {% endif %}
+                                    {% if mentor_profile.github_url %}
+                                    <a href="{{ mentor_profile.github_url }}" target="_blank" 
+                                       class="px-2.5 py-1 bg-gray-50 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                                        <i class="fab fa-github mr-1"></i> GitHub
+                                    </a>
+                                    {% endif %}
+                                    {% if mentor_profile.instagram_url %}
+                                    <a href="{{ mentor_profile.instagram_url }}" target="_blank" 
+                                       class="px-2.5 py-1 bg-pink-50 text-pink-700 text-xs font-medium rounded-lg border border-pink-200 hover:bg-pink-100 transition-colors">
+                                        <i class="fab fa-instagram mr-1"></i> Instagram
+                                    </a>
+                                    {% endif %}
+                                    {% if mentor_profile.twitter_url %}
+                                    <a href="{{ mentor_profile.twitter_url }}" target="_blank" 
+                                       class="px-2.5 py-1 bg-blue-50 text-blue-400 text-xs font-medium rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
+                                        <i class="fab fa-twitter mr-1"></i> Twitter
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -493,104 +546,10 @@ tailwind.config = {
     </div>
 </div>
 
-<!-- Profile Photo Preview Script -->
+<!-- Form Handling Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Profile photo preview
-    const profilePhotoInput = document.getElementById('profile_photo');
-    const profilePreview = document.getElementById('profile-preview');
-    const avatarPreview = document.getElementById('avatar-preview');
     const form = document.getElementById('profile-form');
-    
-    // Profile photo preview handler
-    if (profilePhotoInput) {
-        profilePhotoInput.addEventListener('change', function() {
-            console.log('Profile photo selected:', this.files[0]?.name);
-            if (this.files && this.files[0]) {
-                const file = this.files[0];
-                const reader = new FileReader();
-                
-                // Validate file
-                const maxSize = 5 * 1024 * 1024; // 5MB
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-                
-                if (!allowedTypes.includes(file.type)) {
-                    showNotification('Please select a valid image file (JPEG, PNG, GIF)', 'error');
-                    this.value = '';
-                    return;
-                }
-                
-                if (file.size > maxSize) {
-                    showNotification('File size must be less than 5MB', 'error');
-                    this.value = '';
-                    return;
-                }
-                
-                reader.onload = function(e) {
-                    if (profilePreview) {
-                        profilePreview.src = e.target.result;
-                        profilePreview.style.display = 'block';
-                    } else if (avatarPreview) {
-                        avatarPreview.style.display = 'none';
-                        const img = document.createElement('img');
-                        img.id = 'profile-preview';
-                        img.src = e.target.result;
-                        img.className = 'w-20 h-20 rounded-xl object-cover border-2 border-white shadow-md';
-                        avatarPreview.parentNode.appendChild(img);
-                    }
-                    
-                    // Add a visual indicator that file is selected
-                    const uploadButton = profilePhotoInput.closest('label').querySelector('span');
-                    if (uploadButton) {
-                        uploadButton.innerHTML = '<i class="fas fa-check mr-2"></i> Photo Selected';
-                        uploadButton.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
-                        uploadButton.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
-                    }
-                }
-                
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-    
-    // Remove photo button
-    const removePhotoBtn = document.getElementById('remove-photo-btn');
-    if (removePhotoBtn) {
-        removePhotoBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            
-            if (confirm('Are you sure you want to remove your profile photo?')) {
-                try {
-                    const originalText = this.innerHTML;
-                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Removing...';
-                    this.disabled = true;
-                    
-                    const response = await fetch('/profile/remove-photo', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-Token': getCSRFToken()
-                        }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        showNotification('Profile photo removed successfully!', 'success');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        throw new Error(data.message || 'Failed to remove photo');
-                    }
-                } catch (error) {
-                    showNotification('Failed to remove photo: ' + error.message, 'error');
-                    this.innerHTML = originalText;
-                    this.disabled = false;
-                }
-            }
-        });
-    }
     
     // Form submission handler
     if (form) {
@@ -695,8 +654,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Load saved data
         formInputs.forEach(input => {
-            if (input.type === 'file') return; // Skip file inputs
-            
             const savedValue = localStorage.getItem(`profile_${input.name}`);
             if (savedValue !== null && (!input.value || input.value.trim() === '')) {
                 input.value = savedValue;
@@ -705,23 +662,36 @@ document.addEventListener('DOMContentLoaded', function() {
             // Save on input
             input.addEventListener('input', function() {
                 localStorage.setItem(`profile_${this.name}`, this.value);
-            });
-        });
-        
-        // Save radio buttons
-        const radioButtons = form.querySelectorAll('input[type="radio"]');
-        radioButtons.forEach(radio => {
-            const savedValue = localStorage.getItem(`profile_${radio.name}`);
-            if (savedValue === radio.value) {
-                radio.checked = true;
-            }
-            
-            radio.addEventListener('change', function() {
-                if (this.checked) {
-                    localStorage.setItem(`profile_${this.name}`, this.value);
+                
+                // Update avatar preview if name changes
+                if (this.name === 'full_name' && this.value.trim()) {
+                    updateAvatarPreview(this.value.trim());
                 }
             });
         });
+        
+        // Update avatar preview on name input
+        const fullNameInput = document.getElementById('full_name');
+        if (fullNameInput) {
+            fullNameInput.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    updateAvatarPreview(this.value.trim());
+                }
+            });
+        }
+    }
+    
+    // Update avatar preview function
+    function updateAvatarPreview(name) {
+        const avatarPreview = document.getElementById('avatar-preview');
+        if (avatarPreview) {
+            avatarPreview.textContent = name[0].toUpperCase();
+        }
+        
+        const previewAvatar = document.querySelector('#profile-preview .w-14');
+        if (previewAvatar) {
+            previewAvatar.textContent = name[0].toUpperCase();
+        }
     }
     
     // Clear localStorage function
@@ -736,10 +706,26 @@ document.addEventListener('DOMContentLoaded', function() {
         keys.forEach(key => localStorage.removeItem(key));
     }
     
-    // Get CSRF token function
-    function getCSRFToken() {
-        const csrfInput = document.querySelector('input[name="csrf_token"]');
-        return csrfInput ? csrfInput.value : '';
+    // URL validation helper
+    document.querySelectorAll('input[type="url"]').forEach(input => {
+        input.addEventListener('blur', function() {
+            const value = this.value.trim();
+            if (value && !isValidUrl(value)) {
+                this.classList.add('border-red-300', 'bg-red-50');
+                showNotification('Please enter a valid URL starting with http:// or https://', 'error');
+            } else {
+                this.classList.remove('border-red-300', 'bg-red-50');
+            }
+        });
+    });
+    
+    function isValidUrl(string) {
+        try {
+            const url = new URL(string);
+            return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch (_) {
+            return false;
+        }
     }
 });
 
@@ -799,27 +785,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Form validation helper
-function validateFile(file) {
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    
-    if (!allowedTypes.includes(file.type)) {
-        return {
-            valid: false,
-            message: 'Please select a valid image file (JPEG, PNG, GIF, WebP)'
-        };
+// Avatar hover effect
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarPreview = document.getElementById('avatar-preview');
+    if (avatarPreview) {
+        avatarPreview.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
+        });
+        
+        avatarPreview.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = '';
+        });
     }
-    
-    if (file.size > maxSize) {
-        return {
-            valid: false,
-            message: 'File size must be less than 5MB'
-        };
-    }
-    
-    return { valid: true };
-}
+});
 </script>
 
 <style>
@@ -843,18 +823,6 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
     box-shadow: 0 0 0 3px rgba(255, 107, 74, 0.1);
     border-color: var(--accent);
-}
-
-/* File input styling */
-input[type="file"] {
-    border: 0;
-    clip: rect(0,0,0,0);
-    height: 1px;
-    overflow: hidden;
-    padding: 0;
-    position: absolute !important;
-    white-space: nowrap;
-    width: 1px;
 }
 
 /* Custom scrollbar for textareas */
@@ -886,19 +854,19 @@ textarea::-webkit-scrollbar-thumb:hover {
     animation: spin 1s linear infinite;
 }
 
-/* Preview image styling */
-#profile-preview, #avatar-preview {
+/* Avatar styling */
+#avatar-preview {
     transition: all 0.3s ease;
-}
-
-#profile-preview:hover, #avatar-preview:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 /* Apply theme font */
 .font-display {
     font-family: 'Inter', sans-serif;
+}
+
+/* Social link icons */
+.fab {
+    font-size: 1.1em;
 }
 </style>
 {% endblock %}
