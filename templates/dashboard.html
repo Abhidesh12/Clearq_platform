@@ -1703,10 +1703,16 @@
         <div class="header-content">
             <div class="user-info">
                 <div class="user-avatar">
-    <img src="https://cdn-icons-png.flaticon.com/512/5951/5951752.png" 
-         alt="{{ current_user.full_name or current_user.username }}"
-         class="user-avatar-img">
-</div>
+                    {% if current_user.profile_image %}
+                    <img src="/static/{{ current_user.profile_image }}" 
+                         alt="{{ current_user.full_name or current_user.username }}"
+                         class="user-avatar-img">
+                    {% else %}
+                    <div class="user-avatar-initial">
+                        {{ (current_user.full_name[0] if current_user.full_name else current_user.username[0])|upper }}
+                    </div>
+                    {% endif %}
+                </div>
                 <div class="user-details">
                     <h1>Welcome back, {{ current_user.full_name or current_user.username }}</h1>
                     <p>{{ current_user.role|title }} Dashboard</p>
@@ -2769,35 +2775,25 @@
                                             </span>
                                         </td>
                                         <td>
-    {% if withdrawal.status == 'paid' %}
-        <span class="status-badge status-paid" style="display: inline-flex; font-size: 0.75rem;">
-            <i class="fas fa-check-circle"></i> Paid
-        </span>
-    {% elif withdrawal.status == 'approved' %}
-        <span class="status-badge" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white; display: inline-flex; font-size: 0.75rem;">
-            <i class="fas fa-check"></i> Approved
-        </span>
-    {% elif withdrawal.status == 'pending' %}
-        <span class="status-badge status-pending" style="display: inline-flex; font-size: 0.75rem;">
-            <i class="fas fa-clock"></i> Pending
-        </span>
-    {% elif withdrawal.status == 'rejected' %}
-        <span class="status-badge" style="background: linear-gradient(135deg, var(--card-pink), #e4b9b7); color: #8a4d49; display: inline-flex; font-size: 0.75rem;">
-            <i class="fas fa-times-circle"></i> Rejected
-        </span>
-    {% endif %}
-</td>
-<td>
-    {% if withdrawal.processed_at %}
-        <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
-            {{ withdrawal.processed_at.strftime('%Y-%m-%d') }}
-        </span>
-    {% else %}
-        <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-style: italic;">
-            {% if withdrawal.status == 'paid' %}Paid{% else %}Not processed{% endif %}
-        </span>
-    {% endif %}
-</td>
+                                            {% if withdrawal.status == 'approved' %}
+                                            <span class="status-badge status-confirmed" style="display: inline-flex; font-size: 0.75rem;">
+                                                <i class="fas fa-check-circle"></i> Approved
+                                            </span>
+                                            {% elif withdrawal.status == 'pending' %}
+                                            <span class="status-badge status-pending" style="display: inline-flex; font-size: 0.75rem;">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                            {% elif withdrawal.status == 'paid' %}
+                                            <span class="status-badge status-paid" style="display: inline-flex; font-size: 0.75rem;">
+                                                <i class="fas fa-money-bill-wave"></i> Paid
+                                            </span>
+                                            {% elif withdrawal.status == 'rejected' %}
+                                            <span class="status-badge" style="background: linear-gradient(135deg, var(--card-pink), #e4b9b7); color: #8a4d49; border-color: rgba(246, 208, 206, 0.3); display: inline-flex; font-size: 0.75rem;">
+                                                <i class="fas fa-times-circle"></i> Rejected
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
                                             <span style="font-size: 0.8125rem; color: var(--text-secondary-light); font-weight: 500;">
                                                 {{ withdrawal.requested_at.strftime('%Y-%m-%d') if withdrawal.requested_at else '' }}
                                             </span>
@@ -3047,28 +3043,17 @@
                             </div>
                             
                             <!-- Action Buttons -->
-                            <!-- AJAX version: -->
-<!-- AJAX version: -->
-<div class="mentor-actions">
-    <button type="button" 
-            onclick="processWithdrawal({{ withdrawal.id }}, 'approve')" 
-            class="action-button action-approve">
-        <i class="fas fa-check"></i>
-        Approve Request
-    </button>
-    <button type="button" 
-            onclick="processWithdrawal({{ withdrawal.id }}, 'mark_paid')"  <!-- ADDED withdrawal.id -->
-            class="action-button" style="background: linear-gradient(135deg, var(--card-blue), var(--card-teal)); color: white;">
-        <i class="fas fa-money-bill-wave"></i>
-        Mark as Paid
-    </button>
-    <button type="button" 
-            onclick="processWithdrawal({{ withdrawal.id }}, 'reject')" 
-            class="action-button action-reject">
-        <i class="fas fa-times"></i>
-        Reject
-    </button>
-</div>
+                            <form action="/admin/withdrawal/{{ withdrawal.id }}/process" method="POST" class="mentor-actions">
+                                <button type="submit" name="action" value="approve" class="action-button action-approve">
+                                    <i class="fas fa-check"></i>
+                                    Approve & Mark Paid
+                                </button>
+                                <button type="submit" name="action" value="reject" class="action-button action-reject">
+                                    <i class="fas fa-times"></i>
+                                    Reject
+                                </button>
+                                <input type="hidden" name="admin_notes" id="adminNotesInput{{ withdrawal.id }}">
+                            </form>
                             
                             <script>
                                 document.addEventListener('DOMContentLoaded', function() {
@@ -3384,8 +3369,7 @@
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 0.75rem; color: var(--text-secondary-light); margin-bottom: 0.25rem;">
-                                Minimum: ₹1
-                            
+                                Minimum: ₹500
                             </div>
                             <div style="font-size: 0.75rem; color: var(--accent); font-weight: 500;">
                                 80% of total earnings
@@ -3403,7 +3387,7 @@
                         <input type="number" 
                                id="withdrawalAmount" 
                                name="amount"
-                               min="1" 
+                               min="500" 
                                max="{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}"
                                step="100"
                                required
@@ -3415,7 +3399,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
                         <div style="font-size: 0.75rem; color: var(--text-secondary-light);">
-                            Enter amount between ₹1 - ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
+                            Enter amount between ₹500 - ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
                         </div>
                         <button type="button" 
                                 onclick="setMaxAmount()" 
@@ -3749,55 +3733,6 @@
         amountInput.value = availableBalance;
     }
 
-    async function processWithdrawal(withdrawalId, action) {
-    // Map 'mark_paid' to 'completed' for the backend
-    const backendAction = action === 'mark_paid' ? 'completed' : action;
-    
-    if (action === 'reject' || action === 'mark_paid') {
-        if (!confirm(`Are you sure you want to ${action === 'mark_paid' ? 'mark as paid' : 'reject'} this withdrawal request?`)) {
-            return;
-        }
-    }
-    
-    const adminNotes = document.getElementById(`adminNotes${withdrawalId}`).value;
-    
-    const button = event.target;
-    const originalText = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    
-    try {
-        const response = await fetch(`/api/admin/withdrawal/${withdrawalId}/process`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: backendAction,
-                admin_notes: adminNotes
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showNotification(`Withdrawal ${action === 'mark_paid' ? 'marked as paid' : backendAction}d successfully!`, 'success');
-            // Reload the page to show updated status
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
-        } else {
-            showNotification(data.error || `Failed to ${action} withdrawal`, 'error');
-            button.disabled = false;
-            button.innerHTML = originalText;
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('An error occurred. Please try again.', 'error');
-        button.disabled = false;
-        button.innerHTML = originalText;
-    }
-}
     async function submitWithdrawal(event) {
         event.preventDefault();
         
@@ -3813,7 +3748,7 @@
         spinner.style.display = 'inline-block';
         
         try {
-            const response = await fetch('/api/mentor/withdrawal/request', {
+            const response = await fetch('/mentor/withdrawal/request', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
