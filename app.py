@@ -2314,11 +2314,11 @@ def generate_availability_from_day_preferences(mentor_id: int, db: Session = Non
 
 def create_admin_user(db: Session):
     """Create an admin user if not exists"""
-    admin_email = "admin@clearq.com"
+    admin_email = "admin@clearq.in"
     admin_user = db.query(User).filter(User.email == admin_email).first()
     
     if not admin_user:
-        hashed_password = pwd_context.hash("admin123")  # Change this password
+        hashed_password = pwd_context.hash("commonadminclearq1901")  # Change this password
         admin_user = User(
             email=admin_email,
             username="admin",
