@@ -100,6 +100,9 @@
         --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         --linkedin: #0077b5;
         --instagram: #e4405f;
+        --twitter: #1DA1F2;
+        --github: #333333;
+        --website: #6B7280;
     }
 
     /* Apply theme background */
@@ -367,8 +370,20 @@
         background: linear-gradient(135deg, var(--linkedin), #005582);
     }
 
+    .header-social-link.github {
+        background: linear-gradient(135deg, var(--github), #24292e);
+    }
+
+    .header-social-link.twitter {
+        background: linear-gradient(135deg, var(--twitter), #1a91da);
+    }
+
     .header-social-link.instagram {
         background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+    }
+
+    .header-social-link.website {
+        background: linear-gradient(135deg, var(--website), #4B5563);
     }
 
     .header-social-link.disabled {
@@ -381,6 +396,14 @@
         background: linear-gradient(135deg, rgba(0, 119, 181, 0.6), rgba(0, 85, 130, 0.6));
     }
 
+    .header-social-link.disabled.github {
+        background: linear-gradient(135deg, rgba(51, 51, 51, 0.6), rgba(36, 41, 46, 0.6));
+    }
+
+    .header-social-link.disabled.twitter {
+        background: linear-gradient(135deg, rgba(29, 161, 242, 0.6), rgba(26, 145, 218, 0.6));
+    }
+
     .header-social-link.disabled.instagram {
         background: linear-gradient(45deg, 
             rgba(64, 93, 230, 0.6), 
@@ -390,6 +413,10 @@
             rgba(225, 48, 108, 0.6), 
             rgba(253, 29, 29, 0.6)
         );
+    }
+
+    .header-social-link.disabled.website {
+        background: linear-gradient(135deg, rgba(107, 114, 128, 0.6), rgba(75, 85, 99, 0.6));
     }
 
     .header-social-link:hover:not(.disabled) {
@@ -427,6 +454,13 @@
         color: var(--white);
         text-transform: uppercase;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Dynamic avatar with initials */
+    .avatar-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .verified-badge {
@@ -1200,6 +1234,28 @@
     .scroll-smooth {
         scroll-behavior: smooth;
     }
+    
+    /* Star rating */
+    .star-rating {
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .star-rating .star {
+        color: #e5e7eb;
+        font-size: 0.875rem;
+        margin-right: 0.125rem;
+    }
+    
+    .star-rating .star.filled {
+        color: #fbbf24;
+    }
+    
+    .star-rating .star.half-filled {
+        background: linear-gradient(90deg, #fbbf24 50%, #e5e7eb 50%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 </style>
 
 <!-- Mobile Header -->
@@ -1225,65 +1281,139 @@
     <div class="profile-sidebar animate-fadeIn">
         <!-- Profile Header -->
         <div class="profile-header">
-           <!-- Social Links in Top Right Corner - ALWAYS VISIBLE -->
-<div class="profile-header-top-bar">
-    <!-- LinkedIn Icon - Always Visible -->
-    {% if mentor.linkedin_url %}
-    <a href="{{ mentor.linkedin_url }}" 
-       target="_blank" 
-       rel="noopener noreferrer" 
-       class="header-social-link linkedin"
-       title="LinkedIn Profile">
-        <i class="fab fa-linkedin-in"></i>
-    </a>
-    {% else %}
-    <span class="header-social-link linkedin disabled" title="LinkedIn not available">
-        <i class="fab fa-linkedin-in"></i>
-    </span>
-    {% endif %}
-    
-    <!-- Instagram Icon - Always Visible -->
-    {% if mentor.github_url %}
-    {% set instagram_username = mentor.github_url|replace('@', '')|trim %}
-    <a href="https://instagram.com/{{ instagram_username }}"
-       target="_blank"
-       rel="noopener noreferrer"
-       class="header-social-link instagram"
-       title="Instagram Profile (@{{ instagram_username }})">
-        <i class="fab fa-instagram"></i>
-    </a>
-    {% else %}
-    <span class="header-social-link instagram disabled" title="Instagram not available">
-        <i class="fab fa-instagram"></i>
-    </span>
-    {% endif %}
-</div>
-           <!-- User Avatar (Always shows initials) -->
-<div class="profile-avatar">
-    <div class="avatar-initial">
-        {% if mentor.user.full_name %}
-            {% set name = mentor.user.full_name %}
-            {% set words = name.strip().split() %}
-            {% if words|length == 1 %}
-                {{ words[0][:2]|upper }}
-            {% else %}
-                {{ (words[0][0] + words[-1][0])|upper }}
-            {% endif %}
-        {% else %}
-            {% set name = mentor.user.username %}
-            {{ name[:2]|upper }}
-        {% endif %}
-    </div>
-    <div class="verified-badge">
-        <i class="fas fa-check"></i>
-    </div>
-</div>
+            <!-- Social Links in Top Right Corner - ALL REAL SOCIAL LINKS -->
+            <div class="profile-header-top-bar">
+                <!-- LinkedIn -->
+                {% if mentor.linkedin_url %}
+                <a href="{{ mentor.linkedin_url }}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="header-social-link linkedin"
+                   title="LinkedIn Profile">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                {% else %}
+                <span class="header-social-link linkedin disabled" title="LinkedIn not available">
+                    <i class="fab fa-linkedin-in"></i>
+                </span>
+                {% endif %}
+                
+                <!-- GitHub -->
+                {% if mentor.github_url and 'github.com' in mentor.github_url %}
+                <a href="{{ mentor.github_url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="header-social-link github"
+                   title="GitHub Profile">
+                    <i class="fab fa-github"></i>
+                </a>
+                {% elif mentor.github_url and 'instagram.com' in mentor.github_url %}
+                <!-- If github_url actually contains Instagram URL -->
+                <a href="{{ mentor.github_url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="header-social-link instagram"
+                   title="Instagram Profile">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                {% else %}
+                <span class="header-social-link github disabled" title="GitHub not available">
+                    <i class="fab fa-github"></i>
+                </span>
+                {% endif %}
+                
+                <!-- Twitter -->
+                {% if mentor.twitter_url %}
+                <a href="{{ mentor.twitter_url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="header-social-link twitter"
+                   title="Twitter Profile">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                {% else %}
+                <span class="header-social-link twitter disabled" title="Twitter not available">
+                    <i class="fab fa-twitter"></i>
+                </span>
+                {% endif %}
+                
+                <!-- Website -->
+                {% if mentor.website_url %}
+                <a href="{{ mentor.website_url }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="header-social-link website"
+                   title="Personal Website">
+                    <i class="fas fa-globe"></i>
+                </a>
+                {% else %}
+                <span class="header-social-link website disabled" title="Website not available">
+                    <i class="fas fa-globe"></i>
+                </span>
+                {% endif %}
+            </div>
+            
+            <!-- User Avatar (Shows profile image if exists, otherwise initials) -->
+            <div class="profile-avatar">
+                {% if mentor.user.profile_image and mentor.user.profile_image != 'default-avatar.png' %}
+                <img src="/static/{{ mentor.user.profile_image }}" 
+                     alt="{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}"
+                     class="avatar-image">
+                {% else %}
+                <div class="avatar-initial">
+                    {% if mentor.user.full_name %}
+                        {% set name = mentor.user.full_name %}
+                        {% set words = name.strip().split() %}
+                        {% if words|length == 1 %}
+                            {{ words[0][:2]|upper }}
+                        {% else %}
+                            {{ (words[0][0] + words[-1][0])|upper }}
+                        {% endif %}
+                    {% else %}
+                        {% set name = mentor.user.username %}
+                        {{ name[:2]|upper }}
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Verified Badge - Only show if mentor is verified -->
+                {% if mentor.is_verified_by_admin %}
+                <div class="verified-badge" title="Verified Mentor">
+                    <i class="fas fa-check"></i>
+                </div>
+                {% endif %}
+            </div>
             
             <div class="profile-info">
                 <h1>{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }}</h1>
                 <p>{{ mentor.job_title if mentor.job_title else 'Expert Mentor' }}</p>
                 
-                <!-- <div class="profile-rating">
+                <!-- Real Star Rating -->
+                {% if mentor.rating and mentor.rating > 0 %}
+                <div class="profile-rating">
+                    <span class="stars">
+                        {% set rating = mentor.rating %}
+                        {% set full_stars = rating|int %}
+                        {% set half_star = rating - full_stars >= 0.5 %}
+                        {% set empty_stars = 5 - full_stars - (1 if half_star else 0) %}
+                        
+                        {% for i in range(full_stars) %}
+                        <i class="fas fa-star"></i>
+                        {% endfor %}
+                        
+                        {% if half_star %}
+                        <i class="fas fa-star-half-alt"></i>
+                        {% endif %}
+                        
+                        {% for i in range(empty_stars) %}
+                        <i class="far fa-star"></i>
+                        {% endfor %}
+                    </span>
+                    <span class="rating">{{ "%.1f"|format(rating) }}</span>
+                    <span class="reviews">({{ mentor.review_count if mentor.review_count else 0 }})</span>
+                </div>
+                {% elif mentor.review_count and mentor.review_count > 0 %}
+                <div class="profile-rating">
                     <span class="stars">
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
@@ -1291,9 +1421,10 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star-half-alt"></i>
                     </span>
-                    <span class="rating">{{ mentor.rating if mentor.rating else '4.9' }}</span>
-                    <span class="reviews">({{ mentor.review_count if mentor.review_count else '24' }})</span>
-                </div> -->
+                    <span class="rating">4.5</span>
+                    <span class="reviews">({{ mentor.review_count }})</span>
+                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -1305,14 +1436,14 @@
                     <div class="quick-stat-value">{{ mentor.experience_years if mentor.experience_years else '5+' }}+</div>
                     <div class="quick-stat-label">Years</div>
                 </div>
-                <!-- <div class="quick-stat">
-                    <div class="quick-stat-value">{{ mentor.total_sessions if mentor.total_sessions else '100+' }}</div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value">{{ mentor.total_sessions if mentor.total_sessions else '0' }}</div>
                     <div class="quick-stat-label">Sessions</div>
-                </div> -->
-                <!-- <div class="quick-stat">
-                    <div class="quick-stat-value">95%</div>
-                    <div class="quick-stat-label">Success</div>
-                </div> -->
+                </div>
+                <div class="quick-stat">
+                    <div class="quick-stat-value">{{ mentor.review_count if mentor.review_count else '0' }}</div>
+                    <div class="quick-stat-label">Reviews</div>
+                </div>
             </div>
 
             <!-- About -->
@@ -1324,37 +1455,50 @@
                 <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm leading-relaxed mb-2">
                     {{ mentor.bio if mentor.bio else 'Experienced professional with a passion for mentoring and helping others grow in their careers.' }}
                 </p>
+                
+                <!-- Company Info -->
+                {% if mentor.company %}
+                <div class="flex items-center gap-1 text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                    <i class="fas fa-building"></i>
+                    <span>{{ mentor.company }}</span>
+                </div>
+                {% endif %}
+                
+                <!-- Industry Info -->
                 {% if mentor.industry %}
-                <div class="flex items-center gap-1 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                <div class="flex items-center gap-1 text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">
                     <i class="fas fa-industry"></i>
                     <span>{{ mentor.industry }}</span>
+                </div>
+                {% endif %}
+                
+                <!-- Job Title -->
+                {% if mentor.job_title and mentor.job_title != 'Expert Mentor' %}
+                <div class="flex items-center gap-1 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                    <i class="fas fa-briefcase"></i>
+                    <span>{{ mentor.job_title }}</span>
                 </div>
                 {% endif %}
             </div>
 
             <!-- Skills -->
+            {% if mentor.skills %}
             <div class="profile-section">
                 <h3 class="section-title">
                     <i class="fas fa-star"></i>
                     Skills & Expertise
                 </h3>
                 <div class="skills-container">
-                    {% if mentor.skills %}
-                        {% set skills_list = mentor.skills.split(',') %}
-                        {% for skill in skills_list[:6] %}
-                        <span class="skill-tag">{{ skill }}</span>
-                        {% endfor %}
-                        {% if skills_list|length > 6 %}
-                        <span class="skill-tag">+{{ skills_list|length - 6 }}</span>
-                        {% endif %}
-                    {% else %}
-                        <span class="skill-tag">Career</span>
-                        <span class="skill-tag">Interview</span>
-                        <span class="skill-tag">Resume</span>
-                        <span class="skill-tag">Leadership</span>
+                    {% set skills_list = mentor.skills.split(',') %}
+                    {% for skill in skills_list[:8] %}
+                    <span class="skill-tag">{{ skill.strip() }}</span>
+                    {% endfor %}
+                    {% if skills_list|length > 8 %}
+                    <span class="skill-tag">+{{ skills_list|length - 8 }}</span>
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
 
             <!-- Copy Link Button -->
             <button onclick="copyProfileUrl()" class="copy-btn">
@@ -1383,6 +1527,7 @@
             <a href="/{{ mentor.user.username }}/service/{{ service.id }}" 
                class="service-card-link">
                 <div class="service-card {% if service.is_digital %}digital-product{% endif %}">
+                    <!-- Popular Badge - Only show for top 2 services -->
                     {% if loop.index <= 2 %}
                     <div class="service-card-badge">
                         {% if loop.index == 1 %}🔥 Best Seller{% else %}⭐ Popular{% endif %}
@@ -1423,9 +1568,6 @@
                         <div class="service-price">
                             <span class="currency">₹</span>
                             <span>{{ service.price if service.price else 0 }}</span>
-                            {% if service.original_price and service.original_price > service.price %}
-                            <span class="original">₹{{ service.original_price }}</span>
-                            {% endif %}
                         </div>
                         
                         <p class="service-description">
@@ -1655,7 +1797,7 @@ if (navigator.share) {
     document.querySelector('.share-btn-mobile').addEventListener('click', async () => {
         try {
             await navigator.share({
-                title: '{{ mentor.user.full_name if mentor.user else mentor.username }} - ClearQ Mentor',
+                title: '{{ mentor.user.full_name if mentor.user.full_name else mentor.user.username }} - ClearQ Mentor',
                 text: 'Check out this amazing mentor on ClearQ!',
                 url: window.location.href,
             });
@@ -1685,21 +1827,5 @@ pulseStyle.textContent = `
     }
 `;
 document.head.appendChild(pulseStyle);
-
-// Function to get avatar initials
-function getAvatarInitials(name) {
-    if (!name) return 'U';
-    
-    // Remove extra spaces and split
-    const words = name.trim().split(/\s+/);
-    
-    if (words.length === 1) {
-        // Single word - take first 2 letters
-        return words[0].substring(0, 2).toUpperCase();
-    } else {
-        // Multiple words - take first letter of first and last word
-        return (words[0][0] + words[words.length - 1][0]).toUpperCase();
-    }
-}
 </script>
 {% endblock %}
