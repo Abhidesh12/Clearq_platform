@@ -2215,7 +2215,7 @@
                                         Next Payout
                                     </span>
                                     <span style="font-size: 1rem; font-weight: 700; color: var(--primary);">
-                                        ₹{{ (earnings|default(0) * 0.8)|int }}
+                                        ₹{{ (earnings|default(0) * 0.98)|int }}
                                     </span>
                                 </div>
                                 <div class="payout-row">
@@ -3325,10 +3325,10 @@
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 0.75rem; color: var(--text-secondary-light); margin-bottom: 0.25rem;">
-                                Minimum: ₹1
+                                Minimum: ₹500
                             </div>
                             <div style="font-size: 0.75rem; color: var(--accent); font-weight: 500;">
-                                80% of total earnings
+                                98% of total earnings
                             </div>
                         </div>
                     </div>
@@ -3343,7 +3343,7 @@
                         <input type="number" 
                                id="withdrawalAmount" 
                                name="amount"
-                               min="1" 
+                               min="500" 
                                max="{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}"
                                step="100"
                                required
@@ -3355,7 +3355,7 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
                         <div style="font-size: 0.75rem; color: var(--text-secondary-light);">
-                            Enter amount between ₹1 - ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
+                            Enter amount between ₹500 - ₹{{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }}
                         </div>
                         <button type="button" 
                                 onclick="setMaxAmount()" 
@@ -3729,10 +3729,14 @@
     }
 
     function setMaxAmount() {
-        const availableBalance = {{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }};
-        const amountInput = document.getElementById('withdrawalAmount');
+    const availableBalance = {{ earnings_data.available_balance|default(0)|int if earnings_data else 0 }};
+    const amountInput = document.getElementById('withdrawalAmount');
+    if (availableBalance >= 500) {
         amountInput.value = availableBalance;
+    } else {
+        alert('Minimum withdrawal amount is ₹500. Your available balance is insufficient.');
     }
+}
 
     async function processWithdrawal(withdrawalId, action) {
         // Map 'mark_paid' to 'completed' for the backend
@@ -3793,6 +3797,13 @@
         const submitBtn = form.querySelector('button[type="submit"]');
         const submitText = document.getElementById('submitBtnText');
         const spinner = submitBtn.querySelector('.fa-spinner');
+        const amount = parseFloat(formData.get('amount'));
+    
+    // Validate minimum withdrawal amount
+    if (amount < 500) {
+        showNotification('Minimum withdrawal amount is ₹500', 'error');
+        return;
+    }
         
         // Show loading state
         submitBtn.disabled = true;
