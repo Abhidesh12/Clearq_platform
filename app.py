@@ -513,7 +513,7 @@ def update_mentor_earnings(mentor_id: int, amount: float, db: Session):
     balance.total_earnings += Decimal(str(amount))
     
     # Calculate platform fee (20%) and mentor's share (80%)
-    mentor_share = amount * 0.8
+    mentor_share = amount * 0.98
     
     # Add to available balance
     balance.available_balance += Decimal(str(mentor_share))
@@ -527,8 +527,8 @@ def can_withdraw(mentor_id: int, amount: float, db: Session):
     balance = get_mentor_balance(mentor_id, db)
     
     # Minimum withdrawal amount
-    if amount < 1:
-        return False, "Minimum withdrawal amount is ₹1"
+    if amount < 500:
+        return False, "Minimum withdrawal amount is ₹500"
     
     # Check available balance
     if amount > float(balance.available_balance):
@@ -3320,7 +3320,7 @@ async def dashboard(
                 'available_balance': float(balance.available_balance),
                 'pending_withdrawals': len([w for w in withdrawal_requests if w.status in ['pending', 'processing']]),
                 'completed_withdrawals': len([w for w in withdrawal_requests if w.status == 'completed']),
-                'min_withdrawal_amount': 1
+                'min_withdrawal_amount': 500
             }
             # ============ END NEW CODE ============
             
@@ -5922,7 +5922,7 @@ async def request_withdrawal(
         raise HTTPException(status_code=400, detail="Balance not found")
     
     # Check minimum withdrawal amount
-    if amount < 1:  # Minimum 500 INR
+    if amount < 500:  # Minimum 500 INR
         raise HTTPException(status_code=400, detail="Minimum withdrawal amount is ₹500")
     
     # Check if sufficient balance
@@ -7791,7 +7791,7 @@ async def verify_payment_api(request: Request, background_tasks: BackgroundTasks
         if booking.mentor_id and booking.amount_paid and booking.amount_paid > 0:
             try:
                 # Calculate mentor's share (80% of amount)
-                mentor_share = booking.amount_paid * 0.8
+                mentor_share = booking.amount_paid * 0.98
                 
                 # Get or create mentor balance
                 balance = db.query(MentorBalance).filter(MentorBalance.mentor_id == booking.mentor_id).first()
@@ -7805,7 +7805,7 @@ async def verify_payment_api(request: Request, background_tasks: BackgroundTasks
                     )
                     db.add(balance)
                 
-                # Add to total earnings (80% share)
+                # Add to total earnings (98% share)
                 balance.total_earnings += Decimal(str(mentor_share))
                 
                 # Add to available balance (80% share)
