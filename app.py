@@ -3907,65 +3907,64 @@ async def update_profile(
             print(f"Updated full_name: {full_name}")
         
         # Handle profile photo upload
-        # Handle profile photo upload
-if profile_photo and profile_photo.filename:
-    print(f"📸 Processing profile photo: {profile_photo.filename}")
-    
-    # Validate file type
-    if not allowed_file(profile_photo.filename):
-        error_msg = "Invalid file type. Allowed: PNG, JPG, JPEG, GIF"
-        print(f"❌ {error_msg}")
-        return RedirectResponse(
-            url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
-            status_code=303
-        )
-    
-    try:
-        # IMPORTANT: Read file contents once and store in memory
-        file_contents = await profile_photo.read()
-        file_size = len(file_contents)
-        print(f"📊 File size: {file_size} bytes")
-        
-        if file_size > 5 * 1024 * 1024:  # 5MB
-            error_msg = "File size must be less than 5MB"
-            print(f"❌ {error_msg}")
-            return RedirectResponse(
-                url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
-                status_code=303
-            )
-        
-        # Delete old profile image if exists and not default
-        if user.profile_image and user.profile_image != "default-avatar.png":
-            old_image_path = UPLOAD_DIR / user.profile_image
-            if old_image_path.exists():
-                print(f"🗑️ Deleting old image: {old_image_path}")
-                old_image_path.unlink()
-        
-        # Save new profile image using the file contents
-        # Create a new BytesIO object from the file contents
-        from io import BytesIO
-        file_like = BytesIO(file_contents)
-        
-        # Create a new UploadFile-like object
-        from fastapi import UploadFile
-        temp_upload_file = UploadFile(
-            filename=profile_photo.filename,
-            file=file_like
-        )
-        
-        # Save using the modified function
-        filename = save_profile_image_fixed(temp_upload_file, current_user.id)
-        user.profile_image = filename
-        print(f"✅ New profile image saved: {filename}")
-        
-    except Exception as e:
-        print(f"❌ Error processing profile photo: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return RedirectResponse(
-            url=f"/profile/edit?error=Error%20processing%20profile%20photo%20-%20{str(e).replace(' ', '%20')}",
-            status_code=303
-        )
+        if profile_photo and profile_photo.filename:
+            print(f"📸 Processing profile photo: {profile_photo.filename}")
+            
+            # Validate file type
+            if not allowed_file(profile_photo.filename):
+                error_msg = "Invalid file type. Allowed: PNG, JPG, JPEG, GIF"
+                print(f"❌ {error_msg}")
+                return RedirectResponse(
+                    url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
+                    status_code=303
+                )
+            
+            try:
+                # IMPORTANT: Read file contents once and store in memory
+                file_contents = await profile_photo.read()
+                file_size = len(file_contents)
+                print(f"📊 File size: {file_size} bytes")
+                
+                if file_size > 5 * 1024 * 1024:  # 5MB
+                    error_msg = "File size must be less than 5MB"
+                    print(f"❌ {error_msg}")
+                    return RedirectResponse(
+                        url=f"/profile/edit?error={error_msg.replace(' ', '%20')}",
+                        status_code=303
+                    )
+                
+                # Delete old profile image if exists and not default
+                if user.profile_image and user.profile_image != "default-avatar.png":
+                    old_image_path = UPLOAD_DIR / user.profile_image
+                    if old_image_path.exists():
+                        print(f"🗑️ Deleting old image: {old_image_path}")
+                        old_image_path.unlink()
+                
+                # Save new profile image using the file contents
+                # Create a new BytesIO object from the file contents
+                from io import BytesIO
+                file_like = BytesIO(file_contents)
+                
+                # Create a new UploadFile-like object
+                from fastapi import UploadFile
+                temp_upload_file = UploadFile(
+                    filename=profile_photo.filename,
+                    file=file_like
+                )
+                
+                # Save using the modified function
+                filename = save_profile_image_fixed(temp_upload_file, current_user.id)
+                user.profile_image = filename
+                print(f"✅ New profile image saved: {filename}")
+                
+            except Exception as e:
+                print(f"❌ Error processing profile photo: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                return RedirectResponse(
+                    url=f"/profile/edit?error=Error%20processing%20profile%20photo%20-%20{str(e).replace(' ', '%20')}",
+                    status_code=303
+                )
         
         # Update mentor profile if exists
         if current_user.role == "mentor":
