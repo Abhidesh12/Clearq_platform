@@ -3282,9 +3282,9 @@ async def dashboard(
             total_earnings = earnings_query.scalar() or 0
             
             # Update balance with actual earnings if different
-            if Decimal(str(total_earnings * 0.8)) != balance.total_earnings:
+            if Decimal(str(total_earnings * 0.98)) != balance.total_earnings:
                 # Calculate mentor's share (80% of total earnings)
-                mentor_share = total_earnings * 0.8
+                mentor_share = total_earnings * 0.98
                 
                 # Update only if there's a difference
                 current_mentor_share = float(balance.total_earnings)
