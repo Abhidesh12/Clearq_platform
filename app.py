@@ -6277,7 +6277,7 @@ async def create_booking(
             return JSONResponse({
                 "success": True,
                 "booking_id": booking.id,
-                "redirect_url": f"/meeting/{booking.id}",
+                "redirect_url": f"/digital-product/{service.id}",  # ✅ FIXED: Changed from /meeting/ to /digital-product/
                 "meeting_link": None,
                 "meeting_id": None,
                 "is_digital": True,
