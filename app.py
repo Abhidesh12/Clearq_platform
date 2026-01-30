@@ -2682,7 +2682,90 @@ async def debug_social_links(mentor_id: int, db: Session = Depends(get_db)):
         "website": mentor.website_url
     }
 
+@app.post("/api/available-dates")
+async def get_available_dates(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get available dates for a mentor and service"""
+    try:
+        data = await request.json()
+        mentor_id = data.get("mentor_id")
+        service_id = data.get("service_id")
+        
+        if not mentor_id:
+            return JSONResponse({"success": False, "message": "Mentor ID required"})
+        
+        # Get available dates using your existing function
+        available_dates = get_available_dates_for_mentor(mentor_id, 30, db)
+        
+        return JSONResponse({
+            "success": True,
+            "dates": available_dates,
+            "count": len(available_dates)
+        })
+        
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Error: {str(e)}"})
 
+@app.post("/api/time-slots-with-duration")
+async def get_time_slots_with_duration(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get time slots with service duration consideration"""
+    try:
+        data = await request.json()
+        mentor_id = data.get("mentor_id")
+        date_str = data.get("date")
+        service_id = data.get("service_id")
+        
+        if not all([mentor_id, date_str]):
+            return JSONResponse({"success": False, "message": "Mentor ID and date required"})
+        
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        today = date.today()
+        
+        # Validate date
+        if target_date < today:
+            return JSONResponse({"success": False, "message": "Cannot book sessions for past dates"})
+        
+        # Get availability for this date
+        availability = db.query(Availability).filter(
+            Availability.mentor_id == mentor_id,
+            Availability.date == target_date,
+            Availability.is_booked == False
+        ).first()
+        
+        if not availability:
+            return JSONResponse({"success": False, "message": "No availability for this date"})
+        
+        # Get service to know duration
+        service = None
+        if service_id:
+            service = db.query(Service).filter(Service.id == service_id).first()
+        
+        # Use the generate_time_slots_for_availability function
+        time_slots = generate_time_slots_for_availability(
+            mentor_id, target_date,
+            availability.start_time, availability.end_time,
+            db,
+            interval_minutes=service.duration_minutes if service and service.duration_minutes else 30
+        )
+        
+        return JSONResponse({
+            "success": True,
+            "slots": time_slots,
+            "availability": {
+                "start_time": availability.start_time,
+                "end_time": availability.end_time
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in time-slots-with-duration: {e}")
+        return JSONResponse({"success": False, "message": f"Error: {str(e)}"})
+        
 @app.post("/api/time-slots-with-duration")
 async def get_time_slots_with_duration(
     request: Request,
