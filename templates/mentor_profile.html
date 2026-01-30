@@ -1061,6 +1061,479 @@
         border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
+    /* ============ NEW AVAILABILITY STYLES ============ */
+    .availability-section {
+        margin-bottom: 1.25rem;
+    }
+
+    .availability-header {
+        margin-bottom: 1rem;
+    }
+
+    .availability-header h3 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dark .availability-header h3 {
+        color: var(--text-dark);
+    }
+
+    .availability-header h3 i {
+        color: var(--accent);
+    }
+
+    .availability-header p {
+        color: var(--text-secondary-light);
+        font-size: 0.875rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .dark .availability-header p {
+        color: var(--text-secondary-dark);
+    }
+
+    /* Date Picker Container */
+    .date-picker-container {
+        background: linear-gradient(135deg, var(--white), var(--background-light));
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        border: 1px solid rgba(255, 107, 74, 0.1);
+        box-shadow: var(--shadow);
+        margin-bottom: 1.5rem;
+    }
+
+    .dark .date-picker-container {
+        background: linear-gradient(135deg, var(--card-dark), var(--background-dark));
+        border: 1px solid rgba(255, 107, 74, 0.1);
+    }
+
+    .date-picker-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-light);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dark .date-picker-title {
+        color: var(--text-dark);
+    }
+
+    .date-picker-title i {
+        color: var(--accent);
+        font-size: 0.875rem;
+    }
+
+    /* Date Cards */
+    .dates-container {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        padding: 0.5rem 0;
+        margin-bottom: 0.75rem;
+        scrollbar-width: thin;
+    }
+
+    .dates-container::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .dates-container::-webkit-scrollbar-track {
+        background: var(--gray-100);
+        border-radius: 10px;
+    }
+
+    .dates-container::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, var(--accent), #e55a3a);
+        border-radius: 10px;
+    }
+
+    .date-card {
+        min-width: 3.5rem;
+        padding: 0.75rem 0.5rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-light);
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
+        text-align: center;
+        cursor: pointer;
+        transition: var(--transition);
+        flex-shrink: 0;
+    }
+
+    .dark .date-card {
+        border: 1px solid var(--border-dark);
+        background: linear-gradient(135deg, #2d2a3b, var(--card-dark));
+    }
+
+    .date-card:hover {
+        border-color: var(--accent-light);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .date-card.selected {
+        background: linear-gradient(135deg, var(--accent-light), var(--accent));
+        border-color: var(--accent);
+        color: var(--white);
+        box-shadow: var(--shadow-md);
+    }
+
+    .date-card.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+    }
+
+    .dark .date-card.disabled {
+        background: linear-gradient(135deg, var(--border-dark), #2d2a3b);
+    }
+
+    .date-card .day-name {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-secondary-light);
+        margin-bottom: 0.25rem;
+    }
+
+    .date-card.selected .day-name {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .date-card.disabled .day-name {
+        color: var(--text-secondary-light);
+    }
+
+    .date-card .day-num {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-light);
+        margin-bottom: 0.125rem;
+    }
+
+    .date-card.selected .day-num {
+        color: var(--white);
+    }
+
+    .date-card.disabled .day-num {
+        color: var(--text-secondary-light);
+    }
+
+    .date-card .month {
+        font-size: 0.6875rem;
+        font-weight: 500;
+        color: var(--text-secondary-light);
+        text-transform: uppercase;
+    }
+
+    .date-card.selected .month {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .date-card.disabled .month {
+        color: var(--text-secondary-light);
+    }
+
+    /* Time Slots Container */
+    .time-slots-container {
+        background: linear-gradient(135deg, var(--white), var(--background-light));
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        border: 1px solid rgba(255, 107, 74, 0.1);
+        box-shadow: var(--shadow);
+        margin-bottom: 1.5rem;
+    }
+
+    .dark .time-slots-container {
+        background: linear-gradient(135deg, var(--card-dark), var(--background-dark));
+        border: 1px solid rgba(255, 107, 74, 0.1);
+    }
+
+    .time-slots-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--text-light);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dark .time-slots-title {
+        color: var(--text-dark);
+    }
+
+    .time-slots-title i {
+        color: var(--accent);
+        font-size: 0.875rem;
+    }
+
+    .time-slots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .time-slots-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+    }
+
+    .time-slot {
+        padding: 0.75rem 0.5rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-light);
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
+        text-align: center;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--text-light);
+    }
+
+    .dark .time-slot {
+        border: 1px solid var(--border-dark);
+        background: linear-gradient(135deg, #2d2a3b, var(--card-dark));
+        color: var(--text-dark);
+    }
+
+    .time-slot:hover:not(.booked) {
+        border-color: var(--accent-light);
+        background: linear-gradient(135deg, #ffede5, #ffd9cc);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .dark .time-slot:hover:not(.booked) {
+        background: linear-gradient(135deg, rgba(255, 107, 74, 0.15), rgba(255, 107, 74, 0.1));
+    }
+
+    .time-slot.selected {
+        background: linear-gradient(135deg, var(--accent-light), var(--accent));
+        border-color: var(--accent);
+        color: var(--white);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .time-slot.booked {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+        color: var(--text-secondary-light);
+    }
+
+    .dark .time-slot.booked {
+        background: linear-gradient(135deg, var(--border-dark), #2d2a3b);
+        color: var(--text-secondary-dark);
+    }
+
+    .no-time-slots {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        color: var(--text-secondary-light);
+        font-size: 0.875rem;
+    }
+
+    .dark .no-time-slots {
+        color: var(--text-secondary-dark);
+    }
+
+    /* Booking Modal */
+    .booking-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .booking-modal.active {
+        display: flex;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .booking-modal-content {
+        background: linear-gradient(135deg, var(--white), var(--background-light));
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid rgba(255, 107, 74, 0.1);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .dark .booking-modal-content {
+        background: linear-gradient(135deg, var(--card-dark), var(--background-dark));
+        border: 1px solid rgba(255, 107, 74, 0.1);
+    }
+
+    .booking-modal-header {
+        margin-bottom: 1.25rem;
+    }
+
+    .booking-modal-header h3 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dark .booking-modal-header h3 {
+        color: var(--text-dark);
+    }
+
+    .booking-modal-header h3 i {
+        color: var(--accent);
+    }
+
+    .booking-modal-header p {
+        color: var(--text-secondary-light);
+        font-size: 0.875rem;
+    }
+
+    .dark .booking-modal-header p {
+        color: var(--text-secondary-dark);
+    }
+
+    .booking-details {
+        background: linear-gradient(135deg, var(--gray-50), var(--white));
+        border-radius: var(--radius);
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid var(--border-light);
+    }
+
+    .dark .booking-details {
+        background: linear-gradient(135deg, #2d2a3b, var(--card-dark));
+        border: 1px solid var(--border-dark);
+    }
+
+    .booking-detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .booking-detail-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .booking-detail-label {
+        color: var(--text-secondary-light);
+        font-weight: 500;
+    }
+
+    .dark .booking-detail-label {
+        color: var(--text-secondary-dark);
+    }
+
+    .booking-detail-value {
+        color: var(--text-light);
+        font-weight: 600;
+    }
+
+    .dark .booking-detail-value {
+        color: var(--text-dark);
+    }
+
+    .booking-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+
+    .booking-confirm-btn {
+        flex: 1;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, var(--accent), #e55a3a);
+        color: var(--white);
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .booking-confirm-btn:hover:not(:disabled) {
+        background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .booking-confirm-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .booking-cancel-btn {
+        padding: 0.75rem 1.25rem;
+        background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+        color: var(--text-secondary-light);
+        border: none;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .dark .booking-cancel-btn {
+        background: linear-gradient(135deg, #2d2a3b, var(--border-dark));
+        color: var(--text-secondary-dark);
+    }
+
+    .booking-cancel-btn:hover {
+        background: linear-gradient(135deg, var(--gray-200), var(--gray-300));
+        color: var(--text-light);
+    }
+
+    .dark .booking-cancel-btn:hover {
+        background: linear-gradient(135deg, var(--border-dark), #2d2a3b);
+        color: var(--text-dark);
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        display: none;
+        width: 1.5rem;
+        height: 1.5rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--white);
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
         .mentor-profile-container {
@@ -1105,6 +1578,20 @@
 
         .header-social-link i {
             font-size: 1rem;
+        }
+
+        .date-picker-container,
+        .time-slots-container {
+            padding: 0.75rem;
+        }
+
+        .time-slots-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .booking-modal-content {
+            padding: 1rem;
+            max-width: 90%;
         }
     }
 
@@ -1508,7 +1995,7 @@
         </div>
     </div>
 
-    <!-- Right Section - Services -->
+    <!-- Right Section - Services & Availability -->
     <div class="animate-fadeIn" style="animation-delay: 0.1s;">
         <!-- Services Header -->
         <div class="services-header">
@@ -1519,6 +2006,54 @@
                 {{ services|length if services else 0 }} Services
             </div>
         </div>
+
+        <!-- ============ AVAILABILITY SECTION ============ -->
+        {% if available_dates and available_dates|length > 0 %}
+        <div class="availability-section">
+            <div class="availability-header">
+                <h3><i class="fas fa-calendar-alt"></i> Available Time Slots</h3>
+                <p>Select a date and time to book your session</p>
+            </div>
+
+            <!-- Date Picker -->
+            <div class="date-picker-container">
+                <div class="date-picker-title">
+                    <i class="far fa-calendar"></i>
+                    Select a Date
+                </div>
+                
+                <div class="dates-container">
+                    {% for date in available_dates %}
+                    <div class="date-card" 
+                         data-date="{{ date.full_date }}"
+                         data-time-slots='{{ date.time_slots|tojson|safe }}'
+                         onclick="selectDate(this, '{{ date.full_date }}')">
+                        <div class="day-name">{{ date.day_short }}</div>
+                        <div class="day-num">{{ date.day_num }}</div>
+                        <div class="month">{{ date.month }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Time Slots -->
+            <div class="time-slots-container">
+                <div class="time-slots-title">
+                    <i class="far fa-clock"></i>
+                    Available Times for <span id="selected-date-text">Select a date</span>
+                </div>
+                
+                <div class="time-slots-grid" id="time-slots-grid">
+                    <!-- Time slots will be loaded here -->
+                </div>
+                
+                <div class="no-time-slots" id="no-slots-message">
+                    Please select a date to see available time slots
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <!-- ============ END AVAILABILITY SECTION ============ -->
 
         <!-- Services Grid -->
         {% if services and services|length > 0 %}
@@ -1641,6 +2176,47 @@
     </div>
 </div>
 
+<!-- Booking Modal -->
+<div class="booking-modal" id="bookingModal">
+    <div class="booking-modal-content">
+        <div class="booking-modal-header">
+            <h3><i class="fas fa-calendar-check"></i> Confirm Booking</h3>
+            <p>Please review your booking details before confirming</p>
+        </div>
+        
+        <div class="booking-details">
+            <div class="booking-detail-row">
+                <span class="booking-detail-label">Service:</span>
+                <span class="booking-detail-value" id="modal-service-name">-</span>
+            </div>
+            <div class="booking-detail-row">
+                <span class="booking-detail-label">Date:</span>
+                <span class="booking-detail-value" id="modal-booking-date">-</span>
+            </div>
+            <div class="booking-detail-row">
+                <span class="booking-detail-label">Time:</span>
+                <span class="booking-detail-value" id="modal-booking-time">-</span>
+            </div>
+            <div class="booking-detail-row">
+                <span class="booking-detail-label">Duration:</span>
+                <span class="booking-detail-value" id="modal-service-duration">-</span>
+            </div>
+            <div class="booking-detail-row">
+                <span class="booking-detail-label">Price:</span>
+                <span class="booking-detail-value" id="modal-service-price">-</span>
+            </div>
+        </div>
+        
+        <div class="booking-actions">
+            <button class="booking-cancel-btn" onclick="closeBookingModal()">Cancel</button>
+            <button class="booking-confirm-btn" id="confirmBookingBtn" onclick="confirmBooking()">
+                <span>Confirm & Pay</span>
+                <div class="loading-spinner" id="bookingSpinner"></div>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Floating Action Button -->
 <button onclick="copyProfileUrl()" class="fab animate-float" title="Copy Profile Link">
     <i class="fas fa-copy"></i>
@@ -1650,6 +2226,12 @@
 <div id="notificationContainer"></div>
 
 <script>
+// Global variables for booking
+let selectedDate = null;
+let selectedTime = null;
+let selectedService = null;
+let selectedTimeSlotValue = null;
+
 // Copy Profile URL Function
 function copyProfileUrl() {
     const url = window.location.href;
@@ -1728,7 +2310,257 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-// Add hover effects to social links
+// ============ AVAILABILITY FUNCTIONS ============
+
+// Select a date
+function selectDate(dateCard, date) {
+    // Remove selected class from all date cards
+    document.querySelectorAll('.date-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked card
+    dateCard.classList.add('selected');
+    
+    // Update selected date
+    selectedDate = date;
+    
+    // Update selected date text
+    document.getElementById('selected-date-text').textContent = formatDate(date);
+    
+    // Get time slots from data attribute
+    const timeSlotsData = dateCard.dataset.timeSlots;
+    let timeSlots = [];
+    
+    try {
+        if (timeSlotsData) {
+            timeSlots = JSON.parse(timeSlotsData);
+        }
+    } catch (e) {
+        console.error('Error parsing time slots:', e);
+    }
+    
+    // Display time slots
+    displayTimeSlots(timeSlots);
+}
+
+// Format date for display
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+}
+
+// Display time slots
+function displayTimeSlots(timeSlots) {
+    const timeSlotsGrid = document.getElementById('time-slots-grid');
+    const noSlotsMessage = document.getElementById('no-slots-message');
+    
+    // Clear previous time slots
+    timeSlotsGrid.innerHTML = '';
+    
+    if (timeSlots && timeSlots.length > 0) {
+        // Hide no slots message
+        noSlotsMessage.style.display = 'none';
+        
+        // Add each time slot
+        timeSlots.forEach(slot => {
+            const timeSlotElement = document.createElement('div');
+            timeSlotElement.className = 'time-slot';
+            timeSlotElement.innerHTML = slot.display;
+            timeSlotElement.dataset.time = slot.value;
+            timeSlotElement.dataset.endTime = slot.end_time;
+            timeSlotElement.onclick = () => selectTimeSlot(timeSlotElement, slot);
+            timeSlotsGrid.appendChild(timeSlotElement);
+        });
+    } else {
+        // Show no slots message
+        noSlotsMessage.style.display = 'block';
+        noSlotsMessage.textContent = 'No available time slots for this date';
+    }
+}
+
+// Select a time slot
+function selectTimeSlot(timeSlotElement, slotData) {
+    // Remove selected class from all time slots
+    document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked slot
+    timeSlotElement.classList.add('selected');
+    
+    // Update selected time
+    selectedTime = slotData.display;
+    selectedTimeSlotValue = slotData.value;
+    
+    // Find first non-digital service for booking
+    const nonDigitalService = findNonDigitalService();
+    if (nonDigitalService) {
+        showBookingModal(nonDigitalService);
+    } else {
+        showNotification('Please select a service to book', 'error');
+    }
+}
+
+// Find first non-digital service
+function findNonDigitalService() {
+    // This function should find the first available non-digital service
+    // For now, we'll get it from the services data passed to template
+    const serviceCards = document.querySelectorAll('.service-card:not(.digital-product)');
+    if (serviceCards.length > 0) {
+        const firstServiceCard = serviceCards[0];
+        const serviceLink = firstServiceCard.closest('.service-card-link');
+        if (serviceLink) {
+            const href = serviceLink.getAttribute('href');
+            const serviceId = href.split('/').pop();
+            const serviceName = firstServiceCard.querySelector('.service-title').textContent.trim();
+            const servicePrice = firstServiceCard.querySelector('.service-price span:last-child').textContent.trim();
+            const serviceDuration = firstServiceCard.querySelector('.service-duration').textContent.replace('m', '').trim();
+            
+            return {
+                id: serviceId,
+                name: serviceName,
+                price: servicePrice,
+                duration: serviceDuration + ' minutes'
+            };
+        }
+    }
+    return null;
+}
+
+// Show booking modal
+function showBookingModal(service) {
+    selectedService = service;
+    
+    // Update modal content
+    document.getElementById('modal-service-name').textContent = service.name;
+    document.getElementById('modal-booking-date').textContent = formatDate(selectedDate);
+    document.getElementById('modal-booking-time').textContent = selectedTime;
+    document.getElementById('modal-service-duration').textContent = service.duration;
+    document.getElementById('modal-service-price').textContent = `₹${service.price}`;
+    
+    // Show modal
+    document.getElementById('bookingModal').classList.add('active');
+}
+
+// Close booking modal
+function closeBookingModal() {
+    document.getElementById('bookingModal').classList.remove('active');
+    selectedService = null;
+}
+
+// Confirm booking
+async function confirmBooking() {
+    if (!selectedDate || !selectedTimeSlotValue || !selectedService) {
+        showNotification('Please select date, time and service', 'error');
+        return;
+    }
+    
+    const confirmBtn = document.getElementById('confirmBookingBtn');
+    const spinner = document.getElementById('bookingSpinner');
+    
+    // Disable button and show spinner
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<div class="loading-spinner" style="display: block;"></div>';
+    
+    try {
+        // Prepare booking data
+        const bookingData = {
+            service_id: selectedService.id,
+            date: selectedDate,
+            time: selectedTimeSlotValue
+        };
+        
+        // Check if user is logged in
+        const isLoggedIn = await checkLoginStatus();
+        
+        if (!isLoggedIn) {
+            // Redirect to login with return URL
+            const returnUrl = encodeURIComponent(window.location.href);
+            window.location.href = `/login?return_url=${returnUrl}`;
+            return;
+        }
+        
+        // Create booking via API
+        const response = await fetch('/api/create-booking', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(bookingData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success message
+            showNotification('Booking created successfully! Redirecting to payment...', 'success');
+            
+            // Close modal
+            closeBookingModal();
+            
+            // Reset selections
+            resetSelections();
+            
+            // Redirect to payment page
+            setTimeout(() => {
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    window.location.href = `/payment/${data.booking_id}`;
+                }
+            }, 1500);
+            
+        } else {
+            throw new Error(data.message || 'Failed to create booking');
+        }
+        
+    } catch (error) {
+        console.error('Booking error:', error);
+        showNotification(`Booking failed: ${error.message}`, 'error');
+    } finally {
+        // Re-enable button
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<span>Confirm & Pay</span><div class="loading-spinner" id="bookingSpinner"></div>';
+    }
+}
+
+// Check login status
+async function checkLoginStatus() {
+    try {
+        const response = await fetch('/api/check-login');
+        const data = await response.json();
+        return data.logged_in || false;
+    } catch (error) {
+        console.error('Login check error:', error);
+        return false;
+    }
+}
+
+// Reset selections
+function resetSelections() {
+    selectedDate = null;
+    selectedTime = null;
+    selectedService = null;
+    selectedTimeSlotValue = null;
+    
+    // Reset UI
+    document.querySelectorAll('.date-card.selected, .time-slot.selected').forEach(el => {
+        el.classList.remove('selected');
+    });
+    
+    document.getElementById('selected-date-text').textContent = 'Select a date';
+    document.getElementById('time-slots-grid').innerHTML = '';
+    document.getElementById('no-slots-message').style.display = 'block';
+    document.getElementById('no-slots-message').textContent = 'Please select a date to see available time slots';
+}
+
+// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     // Header social links
     const headerSocialLinks = document.querySelectorAll('.header-social-link:not(.disabled)');
@@ -1780,6 +2612,14 @@ document.addEventListener('DOMContentLoaded', function() {
             icon.style.animation = '';
         });
     });
+    
+    // Select first date by default if available
+    const firstDateCard = document.querySelector('.date-card');
+    if (firstDateCard) {
+        setTimeout(() => {
+            selectDate(firstDateCard, firstDateCard.dataset.date);
+        }, 500);
+    }
 });
 
 // Add bounce animation for digital product icons
@@ -1827,5 +2667,26 @@ pulseStyle.textContent = `
     }
 `;
 document.head.appendChild(pulseStyle);
+
+// API endpoint for login check (you need to add this to your backend)
+fetch('/api/check-login', {
+    method: 'GET',
+    headers: {
+        'Content-Type': 'application/json'
+    }
+})
+.then(response => response.json())
+.then(data => {
+    if (data.logged_in) {
+        // User is logged in
+        console.log('User is logged in');
+    } else {
+        // User is not logged in
+        console.log('User is not logged in');
+    }
+})
+.catch(error => {
+    console.error('Error checking login status:', error);
+});
 </script>
 {% endblock %}
