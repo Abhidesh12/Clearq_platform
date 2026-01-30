@@ -660,7 +660,7 @@ def generate_availabilities_for_mentor(mentor_id: int, days_ahead: int = 30, db:
             db.close()
 
 def get_available_dates_for_mentor(mentor_id: int, days_ahead: int = 30, db: Session = None):
-    """Get available dates for a mentor based on their day preferences"""
+    """Get available dates and time slots for a mentor"""
     if db is None:
         db = SessionLocal()
         should_close = True
@@ -668,102 +668,55 @@ def get_available_dates_for_mentor(mentor_id: int, days_ahead: int = 30, db: Ses
         should_close = False
     
     try:
-        # Get mentor's day preferences
-        day_preferences = db.query(AvailabilityDay).filter(
-            AvailabilityDay.mentor_id == mentor_id,
-            AvailabilityDay.is_active == True
-        ).all()
-        
-        # If no day preferences exist, create default ones with 9AM-9PM
-        if not day_preferences:
-            print(f"Creating default day preferences for mentor {mentor_id} with 9AM-9PM")
-            # CHANGED: 9AM to 9PM instead of 9AM to 5PM
-            default_days = [
-                {"day_of_week": 0, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 1, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 2, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 3, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 4, "start_time": "09:00", "end_time": "21:00", "is_active": True},
-                {"day_of_week": 5, "start_time": "10:00", "end_time": "21:00", "is_active": False},
-                {"day_of_week": 6, "start_time": "10:00", "end_time": "21:00", "is_active": False},
-            ]
-            
-            for day_data in default_days:
-                day_pref = AvailabilityDay(
-                    mentor_id=mentor_id,
-                    day_of_week=day_data["day_of_week"],
-                    start_time=day_data["start_time"],
-                    end_time=day_data["end_time"],
-                    is_active=day_data["is_active"],
-                    created_at=datetime.utcnow()
-                )
-                db.add(day_pref)
-            
-            db.commit()
-            
-            # Reload preferences
-            day_preferences = db.query(AvailabilityDay).filter(
-                AvailabilityDay.mentor_id == mentor_id,
-                AvailabilityDay.is_active == True
-            ).all()
-        
-        # Get exceptions
-        exceptions = db.query(AvailabilityException).filter(
-            AvailabilityException.mentor_id == mentor_id
-        ).all()
-        exception_dates = {ex.date: ex.is_available for ex in exceptions}
-        
         today = datetime.now().date()
         end_date = today + timedelta(days=days_ahead)
         
-        # Generate list of available dates
+        # Get availabilities for the mentor
+        availabilities = db.query(Availability).filter(
+            Availability.mentor_id == mentor_id,
+            Availability.date >= today,
+            Availability.date <= end_date,
+            Availability.is_booked == False
+        ).order_by(Availability.date).all()
+        
+        # Group by date and get time slots
         available_dates = []
-        current_date = today
         
-        while current_date <= end_date:
-            day_of_week = current_date.weekday()  # 0=Monday, 6=Sunday
+        for availability in availabilities:
+            # Get mentor's day preferences for this day of week
+            day_of_week = availability.date.weekday()
+            day_pref = db.query(AvailabilityDay).filter(
+                AvailabilityDay.mentor_id == mentor_id,
+                AvailabilityDay.day_of_week == day_of_week,
+                AvailabilityDay.is_active == True
+            ).first()
             
-            # Check if mentor is available on this day
-            day_pref = next((dp for dp in day_preferences if dp.day_of_week == day_of_week), None)
+            # Skip if day is not active in preferences
+            if not day_pref:
+                continue
             
-            # Check for exceptions
-            is_available = False
-            if current_date in exception_dates:
-                is_available = exception_dates[current_date]
-            elif day_pref:
-                is_available = True
+            # Generate time slots for this availability
+            time_slots = generate_time_slots_for_availability(
+                mentor_id, availability.date, 
+                availability.start_time, availability.end_time, 
+                db
+            )
             
-            if is_available:
-                # Get availability for this date
-                availability = db.query(Availability).filter(
-                    Availability.mentor_id == mentor_id,
-                    Availability.date == current_date,
-                    Availability.is_booked == False
-                ).first()
-                
-                if availability:
-                    # Check time slots
-                    time_slots = db.query(TimeSlot).join(Booking).filter(
-                        Booking.mentor_id == mentor_id,
-                        TimeSlot.date == current_date
-                    ).all()
-                    
-                    # If no time slots or some slots available, add to list
-                    if not time_slots or any(not ts.is_booked for ts in time_slots):
-                        available_dates.append({
-                            'date_obj': current_date,
-                            'full_date': current_date.strftime("%Y-%m-%d"),
-                            'day_name': current_date.strftime("%A"),
-                            'day_short': current_date.strftime("%a"),
-                            'day_num': current_date.day,
-                            'month': current_date.strftime("%b"),
-                            'start_time': availability.start_time if availability else (day_pref.start_time if day_pref else "09:00"),
-                            'end_time': availability.end_time if availability else (day_pref.end_time if day_pref else "21:00")
-                        })
-            
-            current_date += timedelta(days=1)
+            # Only add date if there are available time slots
+            if time_slots:
+                available_dates.append({
+                    'date_obj': availability.date,
+                    'full_date': availability.date.strftime("%Y-%m-%d"),
+                    'day_name': availability.date.strftime("%A"),
+                    'day_short': availability.date.strftime("%a"),
+                    'day_num': availability.date.day,
+                    'month': availability.date.strftime("%b"),
+                    'start_time': availability.start_time,
+                    'end_time': availability.end_time,
+                    'time_slots': time_slots  # Add actual time slots
+                })
         
-        print(f"✅ Found {len(available_dates)} available dates for mentor {mentor_id} with 9AM-9PM schedule")
+        print(f"✅ Found {len(available_dates)} available dates with time slots for mentor {mentor_id}")
         return available_dates[:14]  # Return next 14 available dates
         
     except Exception as e:
@@ -774,6 +727,68 @@ def get_available_dates_for_mentor(mentor_id: int, days_ahead: int = 30, db: Ses
     finally:
         if should_close and db:
             db.close()
+
+def generate_time_slots_for_availability(mentor_id: int, date: date, start_time: str, end_time: str, db: Session, interval_minutes: int = 30):
+    """Generate time slots for a given availability window"""
+    try:
+        # Convert string times to datetime objects
+        start_dt = datetime.strptime(start_time, "%H:%M")
+        end_dt = datetime.strptime(end_time, "%H:%M")
+        
+        # If availability ends at 00:00, treat it as 24:00
+        if end_dt.hour == 0 and end_dt.minute == 0:
+            end_dt = datetime.strptime("24:00", "%H:%M")
+        
+        time_slots = []
+        current_time = start_dt
+        
+        while current_time + timedelta(minutes=interval_minutes) <= end_dt:
+            slot_start = current_time.strftime("%H:%M")
+            slot_end = (current_time + timedelta(minutes=interval_minutes)).strftime("%H:%M")
+            
+            # Check if this slot is already booked
+            is_booked = False
+            
+            # Check Booking table
+            booking = db.query(Booking).filter(
+                Booking.mentor_id == mentor_id,
+                Booking.booking_date == date,
+                Booking.selected_time == slot_start,
+                Booking.status.in_(["confirmed", "pending"])
+            ).first()
+            
+            if booking:
+                is_booked = True
+            
+            # Check TimeSlot table
+            if not is_booked:
+                time_slot = db.query(TimeSlot).join(Booking).filter(
+                    Booking.mentor_id == mentor_id,
+                    TimeSlot.date == date,
+                    TimeSlot.start_time == slot_start,
+                    TimeSlot.is_booked == True
+                ).first()
+                if time_slot:
+                    is_booked = True
+            
+            if not is_booked:
+                # Format for display
+                display_start = current_time.strftime("%I:%M %p").lstrip("0").replace(" 0", " ")
+                display_end = (current_time + timedelta(minutes=interval_minutes)).strftime("%I:%M %p").lstrip("0").replace(" 0", " ")
+                
+                time_slots.append({
+                    "value": slot_start,
+                    "display": f"{display_start} - {display_end}",
+                    "end_time": slot_end
+                })
+            
+            current_time += timedelta(minutes=interval_minutes)
+        
+        return time_slots
+        
+    except Exception as e:
+        print(f"Error generating time slots: {e}")
+        return []
             
             
 def generate_meeting_link(booking_id: int, db: Session):
@@ -2579,6 +2594,71 @@ def save_profile_image(file: UploadFile, user_id: int) -> str:
     relative_path = f"uploads/profile_images/{filename}"
     print(f"Returning relative path: {relative_path}")
     return relative_path
+
+
+def generate_time_slots_for_availability(mentor_id: int, date: date, start_time: str, end_time: str, db: Session, interval_minutes: int = 30):
+    """Generate time slots for a given availability window"""
+    try:
+        # Convert string times to datetime objects
+        start_dt = datetime.strptime(start_time, "%H:%M")
+        end_dt = datetime.strptime(end_time, "%H:%M")
+        
+        # If availability ends at 00:00, treat it as 24:00
+        if end_dt.hour == 0 and end_dt.minute == 0:
+            end_dt = datetime.strptime("24:00", "%H:%M")
+        
+        time_slots = []
+        current_time = start_dt
+        
+        while current_time + timedelta(minutes=interval_minutes) <= end_dt:
+            slot_start = current_time.strftime("%H:%M")
+            slot_end = (current_time + timedelta(minutes=interval_minutes)).strftime("%H:%M")
+            
+            # Check if this slot is already booked
+            is_booked = False
+            
+            # Check Booking table
+            booking = db.query(Booking).filter(
+                Booking.mentor_id == mentor_id,
+                Booking.booking_date == date,
+                Booking.selected_time == slot_start,
+                Booking.status.in_(["confirmed", "pending"])
+            ).first()
+            
+            if booking:
+                is_booked = True
+            
+            # Check TimeSlot table
+            if not is_booked:
+                time_slot = db.query(TimeSlot).join(Booking).filter(
+                    Booking.mentor_id == mentor_id,
+                    TimeSlot.date == date,
+                    TimeSlot.start_time == slot_start,
+                    TimeSlot.is_booked == True
+                ).first()
+                if time_slot:
+                    is_booked = True
+            
+            if not is_booked:
+                # Format for display
+                display_start = current_time.strftime("%I:%M %p").lstrip("0").replace(" 0", " ")
+                display_end = (current_time + timedelta(minutes=interval_minutes)).strftime("%I:%M %p").lstrip("0").replace(" 0", " ")
+                
+                time_slots.append({
+                    "value": slot_start,
+                    "display": f"{display_start} - {display_end}",
+                    "end_time": slot_end
+                })
+            
+            current_time += timedelta(minutes=interval_minutes)
+        
+        return time_slots
+        
+    except Exception as e:
+        print(f"Error generating time slots: {e}")
+        return []
+        
+
 # ============ ROUTES ============
 
 @app.get("/", response_class=HTMLResponse)
@@ -2601,6 +2681,142 @@ async def debug_social_links(mentor_id: int, db: Session = Depends(get_db)):
         "twitter": mentor.twitter_url,
         "website": mentor.website_url
     }
+
+@app.post("/api/available-dates")
+async def get_available_dates(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get available dates for a mentor and service"""
+    try:
+        data = await request.json()
+        mentor_id = data.get("mentor_id")
+        service_id = data.get("service_id")
+        
+        if not mentor_id:
+            return JSONResponse({"success": False, "message": "Mentor ID required"})
+        
+        # Get available dates using your existing function
+        available_dates = get_available_dates_for_mentor(mentor_id, 30, db)
+        
+        return JSONResponse({
+            "success": True,
+            "dates": available_dates,
+            "count": len(available_dates)
+        })
+        
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Error: {str(e)}"})
+
+@app.post("/api/time-slots-with-duration")
+async def get_time_slots_with_duration(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get time slots with service duration consideration"""
+    try:
+        data = await request.json()
+        mentor_id = data.get("mentor_id")
+        date_str = data.get("date")
+        service_id = data.get("service_id")
+        
+        if not all([mentor_id, date_str]):
+            return JSONResponse({"success": False, "message": "Mentor ID and date required"})
+        
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        today = date.today()
+        
+        # Validate date
+        if target_date < today:
+            return JSONResponse({"success": False, "message": "Cannot book sessions for past dates"})
+        
+        # Get availability for this date
+        availability = db.query(Availability).filter(
+            Availability.mentor_id == mentor_id,
+            Availability.date == target_date,
+            Availability.is_booked == False
+        ).first()
+        
+        if not availability:
+            return JSONResponse({"success": False, "message": "No availability for this date"})
+        
+        # Get service to know duration
+        service = None
+        if service_id:
+            service = db.query(Service).filter(Service.id == service_id).first()
+        
+        # Use the generate_time_slots_for_availability function
+        time_slots = generate_time_slots_for_availability(
+            mentor_id, target_date,
+            availability.start_time, availability.end_time,
+            db,
+            interval_minutes=service.duration_minutes if service and service.duration_minutes else 30
+        )
+        
+        return JSONResponse({
+            "success": True,
+            "slots": time_slots,
+            "availability": {
+                "start_time": availability.start_time,
+                "end_time": availability.end_time
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in time-slots-with-duration: {e}")
+        return JSONResponse({"success": False, "message": f"Error: {str(e)}"})
+        
+@app.post("/api/time-slots-with-duration")
+async def get_time_slots_with_duration(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get time slots with service duration consideration"""
+    data = await request.json()
+    mentor_id = data.get("mentor_id")
+    date_str = data.get("date")
+    service_id = data.get("service_id")
+    
+    if not all([mentor_id, date_str]):
+        return JSONResponse({"success": False, "message": "Missing parameters"})
+    
+    try:
+        # Get service to know duration
+        service = None
+        if service_id:
+            service = db.query(Service).filter(Service.id == service_id).first()
+        
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        
+        # Get availability for this date
+        availability = db.query(Availability).filter(
+            Availability.mentor_id == mentor_id,
+            Availability.date == target_date,
+            Availability.is_booked == False
+        ).first()
+        
+        if not availability:
+            return JSONResponse({"success": False, "message": "No availability for this date"})
+        
+        # Generate time slots
+        time_slots = generate_time_slots_for_availability(
+            mentor_id, target_date,
+            availability.start_time, availability.end_time,
+            db,
+            interval_minutes=service.duration_minutes if service else 30
+        )
+        
+        return JSONResponse({
+            "success": True,
+            "slots": time_slots,
+            "availability": {
+                "start_time": availability.start_time,
+                "end_time": availability.end_time
+            }
+        })
+        
+    except Exception as e:
+        return JSONResponse({"success": False, "message": f"Error: {str(e)}"})
 
 @app.get("/mentor/availability/days", response_class=HTMLResponse)
 async def mentor_availability_days_page(
@@ -7180,7 +7396,7 @@ async def user_profile(
                 db.rollback()
                 print(f"⚠️ Error generating availability: {e}")
             
-            # Get available dates
+            # Get available dates WITH TIME SLOTS
             try:
                 today = datetime.now().date()
                 end_date = today + timedelta(days=30)
@@ -7220,26 +7436,37 @@ async def user_profile(
                     is_active_day = any(day.day_of_week == day_of_week for day in active_days)
                     
                     if is_active_day:
-                        available_dates.append({
-                            'date_obj': avail.date,
-                            'full_date': avail.date.strftime("%Y-%m-%d"),
-                            'day_name': avail.date.strftime("%A"),
-                            'day_short': avail.date.strftime("%a"),
-                            'day_num': avail.date.day,
-                            'month': avail.date.strftime("%b"),
-                            'start_time': avail.start_time,
-                            'end_time': avail.end_time
-                        })
+                        # Generate time slots for this availability
+                        time_slots = generate_time_slots_for_availability(
+                            mentor.id, avail.date, 
+                            avail.start_time, avail.end_time, 
+                            db
+                        )
+                        
+                        if time_slots:  # Only add dates that have available time slots
+                            available_dates.append({
+                                'date_obj': avail.date,
+                                'full_date': avail.date.strftime("%Y-%m-%d"),
+                                'day_name': avail.date.strftime("%A"),
+                                'day_short': avail.date.strftime("%a"),
+                                'day_num': avail.date.day,
+                                'month': avail.date.strftime("%b"),
+                                'start_time': avail.start_time,
+                                'end_time': avail.end_time,
+                                'time_slots': time_slots  # Add actual time slots here
+                            })
                 
                 # Sort by date
                 available_dates.sort(key=lambda x: x['date_obj'])
                 
-                print(f"✅ Found {len(available_dates)} available dates for mentor {mentor.id}")
+                print(f"✅ Found {len(available_dates)} available dates with time slots for mentor {mentor.id}")
                 for date in available_dates[:3]:
-                    print(f"  - {date['full_date']} ({date['day_name']}) {date['start_time']}-{date['end_time']}")
+                    print(f"  - {date['full_date']} ({date['day_name']}) - {len(date['time_slots'])} slots available")
                     
             except Exception as e:
                 print(f"⚠️ Error getting available dates: {e}")
+                import traceback
+                traceback.print_exc()
                 available_dates = []
             
             # Prepare mentor data for template
@@ -7316,7 +7543,7 @@ async def user_profile(
             "error_code": 500,
             "error_message": "Something went wrong. Please try again later."
         }, status_code=500)
-# Service page by username and service ID
+        
 @app.get("/{username}/service/{service_id}", response_class=HTMLResponse)
 async def user_service_page(
     request: Request,
@@ -7369,48 +7596,34 @@ async def user_service_page(
         )
     ).order_by(Availability.date).all()
     
-    # Group availabilities by date
-    from collections import defaultdict
-    date_slots = defaultdict(list)
-    
+    # Prepare available dates with time slots
+    available_dates = []
     for avail in availabilities:
-        if isinstance(avail.date, datetime):
-            date_str = avail.date.strftime("%Y-%m-%d")
-            date_obj = avail.date
-        elif isinstance(avail.date, date):
-            date_str = avail.date.strftime("%Y-%m-%d")
-            date_obj = avail.date
-        else:
-            try:
-                date_str = datetime.strptime(str(avail.date), "%Y-%m-%d").strftime("%Y-%m-%d")
-                date_obj = datetime.strptime(str(avail.date), "%Y-%m-%d").date()
-            except:
-                continue
+        date_str = avail.date.strftime("%Y-%m-%d")
         
-        # Only include if date is not in the past
-        if date_obj >= today:
-            date_slots[date_str].append({
-                "start_time": avail.start_time,
-                "end_time": avail.end_time
+        # Generate time slots for this availability - use service duration as interval
+        time_slots = generate_time_slots_for_availability(
+            mentor.id, avail.date, 
+            avail.start_time, avail.end_time, 
+            db,
+            interval_minutes=service.duration_minutes  # Use service duration
+        )
+        
+        if time_slots:  # Only add dates with available slots
+            available_dates.append({
+                "day_name": avail.date.strftime("%a"),
+                "day_num": avail.date.day,
+                "month": avail.date.strftime("%b"),
+                "full_date": date_str,
+                "time_slots": time_slots  # Pass actual time slots
             })
     
-    # Prepare available dates for display (only dates with availability)
-    available_dates = []
-    for date_str in sorted(date_slots.keys()):
-        try:
-            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-            if date_obj >= today:  # Ensure date is not in the past
-                time_slots = date_slots[date_str]
-                if time_slots:
-                    available_dates.append({
-                        "day_name": date_obj.strftime("%a"),
-                        "day_num": date_obj.day,
-                        "month": date_obj.strftime("%b"),
-                        "full_date": date_str,
-                        "time_slots": time_slots
-                    })
-        except ValueError:
-            continue
+    # Sort by date
+    available_dates.sort(key=lambda x: x['full_date'])
+    
+    print(f"✅ Found {len(available_dates)} available dates for service {service_id}")
+    for date in available_dates[:3]:
+        print(f"  - {date['full_date']} ({date['day_name']}) - {len(date['time_slots'])} slots available")
     
     # Limit to 7 dates for display
     return templates.TemplateResponse("service_page.html", {
@@ -7429,6 +7642,74 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
+@app.post("/api/time-slots-for-service")
+async def get_time_slots_for_service(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get time slots for a specific service and date"""
+    data = await request.json()
+    service_id = data.get("service_id")
+    date_str = data.get("date")
+    
+    if not all([service_id, date_str]):
+        return JSONResponse({"success": False, "message": "Missing parameters"})
+    
+    try:
+        # Get service to know mentor and duration
+        service = db.query(Service).filter(Service.id == service_id).first()
+        if not service:
+            return JSONResponse({"success": False, "message": "Service not found"})
+        
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        today = datetime.now().date()
+        
+        # Validate date
+        if target_date < today:
+            return JSONResponse({"success": False, "message": "Cannot book sessions for past dates"})
+        
+        # Get availability for this date
+        availability = db.query(Availability).filter(
+            Availability.mentor_id == service.mentor_id,
+            Availability.date == target_date,
+            Availability.is_booked == False,
+            or_(
+                Availability.service_id == service_id,
+                Availability.service_id == None
+            )
+        ).first()
+        
+        if not availability:
+            return JSONResponse({"success": False, "message": "No availability for this date"})
+        
+        # Generate time slots with service duration
+        time_slots = generate_time_slots_for_availability(
+            service.mentor_id, target_date,
+            availability.start_time, availability.end_time,
+            db,
+            interval_minutes=service.duration_minutes
+        )
+        
+        if time_slots:
+            return JSONResponse({
+                "success": True,
+                "slots": time_slots,
+                "availability": {
+                    "start_time": availability.start_time,
+                    "end_time": availability.end_time
+                }
+            })
+        else:
+            return JSONResponse({
+                "success": False,
+                "message": "No available time slots for this date"
+            })
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse({"success": False, "message": f"Error: {str(e)}"})
     
 @app.post("/api/create-razorpay-order")
 async def create_razorpay_order(request: Request, db: Session = Depends(get_db)):
