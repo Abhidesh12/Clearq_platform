@@ -74,8 +74,6 @@ class CSPMiddleware(BaseHTTPMiddleware):
 # Add to your app
 app.add_middleware(CSPMiddleware)
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/static/uploads", StaticFiles(directory="static/uploads"), name="uploads")
-
 
 
 # Database configuration
