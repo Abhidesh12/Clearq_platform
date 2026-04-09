@@ -97,7 +97,7 @@ async def add_now_to_context(request: Request):
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/static/uploads", StaticFiles(directory="static/uploads"), name="uploads")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["now"] = datetime.now()
+templates.env.globals["now"] = lambda: datetime.now()
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],
